@@ -94,7 +94,7 @@ export async function deployToCloudflare(projectId: string) {
       console.log(`Generated ${filename}`);
     }
 
-    const command = `npx wrangler pages deploy "${tempDir}" --project-name="${projectName}" --branch="main"`;
+    const command = `npx --no-install wrangler pages deploy "${tempDir}" --project-name="${projectName}" --branch="main"`;
     
     const env = { 
       ...process.env, 
