@@ -34,11 +34,10 @@ export async function updateSession(request: NextRequest) {
               headers: request.headers,
             },
           })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
+          // Transfer ALL cookies from request to response to maintain sync
+          request.cookies.getAll().forEach((cookie) => {
+             response.cookies.set(cookie.name, cookie.value, options);
+          });
         },
         remove(name: string, options: CookieOptions) {
           request.cookies.set({
@@ -51,11 +50,10 @@ export async function updateSession(request: NextRequest) {
               headers: request.headers,
             },
           })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
+           // Transfer ALL cookies from request to response to maintain sync
+           request.cookies.getAll().forEach((cookie) => {
+             response.cookies.set(cookie.name, cookie.value, options);
+          });
         },
       },
     }
