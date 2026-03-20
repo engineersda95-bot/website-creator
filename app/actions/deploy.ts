@@ -94,11 +94,13 @@ export async function deployToCloudflare(projectId: string) {
       console.log(`Generated ${filename}`);
     }
 
-    const command = `./node_modules/.bin/wrangler pages deploy "${tempDir}" --project-name="${projectName}" --branch="main"`;
+    const command = `npx --yes wrangler pages deploy "${tempDir}" --project-name="${projectName}" --branch="main"`;
     
     const env = { 
       ...process.env, 
       HOME: '/tmp',
+      WRANGLER_HOME: '/tmp',
+      XDG_CACHE_HOME: '/tmp',
       CLOUDFLARE_API_TOKEN: API_TOKEN, 
       CLOUDFLARE_ACCOUNT_ID: ACCOUNT_ID,
       WRANGLER_SKIP_UPDATE_CHECK: '1'
