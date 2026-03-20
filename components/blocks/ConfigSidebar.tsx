@@ -64,6 +64,8 @@ const ICON_MAP: Record<string, any> = {
   rocket: Rocket
 };
 
+const DEFAULT_CTA = { enabled: false, label: 'Prenota', url: '#', theme: 'primary' as const };
+
 export const ConfigSidebar: React.FC = () => {
   const { project, selectedBlockId, currentPage, updateBlock, removeBlock, updateProjectSettings, viewport, updateBlockStyle } = useEditorStore();
   const [activeTab, setActiveTab] = useState<'content' | 'style'>('content');
@@ -279,18 +281,18 @@ export const ConfigSidebar: React.FC = () => {
                      </div>
                      <div className="flex items-center gap-3">
                        <span className="text-[8px] font-black text-zinc-300 uppercase">{project?.settings?.floatingCTA?.enabled ? 'ON' : 'OFF'}</span>
-                       <input type="checkbox" className="w-6 h-6 rounded-lg border-zinc-300 text-zinc-900 focus:ring-zinc-900" checked={!!project?.settings?.floatingCTA?.enabled} onChange={(e) => updateProjectSettings({ floatingCTA: { ...(project?.settings?.floatingCTA || { label: 'Prenota', url: '#', theme: 'primary' }), enabled: e.target.checked } })} />
+                       <input type="checkbox" className="w-6 h-6 rounded-lg border-zinc-300 text-zinc-900 focus:ring-zinc-900" checked={!!project?.settings?.floatingCTA?.enabled} onChange={(e) => updateProjectSettings({ floatingCTA: { ...(project?.settings?.floatingCTA || DEFAULT_CTA), enabled: e.target.checked } as any })} />
                      </div>
                   </div>
                   {project?.settings?.floatingCTA?.enabled && (
                      <div className="space-y-3 p-4 bg-zinc-50 rounded-2xl border border-zinc-100 animate-in slide-in-from-top duration-300">
                         <div>
                            <label className="text-[8px] font-bold text-zinc-400 uppercase mb-1 block">Testo Pulsante</label>
-                           <input className="w-full p-2.5 bg-white border border-zinc-200 rounded-xl text-xs font-bold" placeholder="es: Scrivici" value={project?.settings?.floatingCTA?.label} onChange={(e) => updateProjectSettings({ floatingCTA: { ...(project?.settings?.floatingCTA || {}), label: e.target.value } })} />
+                           <input className="w-full p-2.5 bg-white border border-zinc-200 rounded-xl text-xs font-bold" placeholder="es: Scrivici" value={project?.settings?.floatingCTA?.label} onChange={(e) => updateProjectSettings({ floatingCTA: { ...(project?.settings?.floatingCTA || DEFAULT_CTA), label: e.target.value } as any })} />
                         </div>
                         <div>
                            <label className="text-[8px] font-bold text-zinc-400 uppercase mb-1 block">Link Destinazione</label>
-                           <input className="w-full p-2.5 bg-white border border-zinc-200 rounded-xl text-[10px]" placeholder="es: tel:+39... o https://wa.me/..." value={project?.settings?.floatingCTA?.url} onChange={(e) => updateProjectSettings({ floatingCTA: { ...(project?.settings?.floatingCTA || {}), url: e.target.value } })} />
+                           <input className="w-full p-2.5 bg-white border border-zinc-200 rounded-xl text-[10px]" placeholder="es: tel:+39... o https://wa.me/..." value={project?.settings?.floatingCTA?.url} onChange={(e) => updateProjectSettings({ floatingCTA: { ...(project?.settings?.floatingCTA || DEFAULT_CTA), url: e.target.value } as any })} />
                         </div>
                      </div>
                   )}
