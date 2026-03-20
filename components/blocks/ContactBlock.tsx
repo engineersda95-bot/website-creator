@@ -85,17 +85,17 @@ export const ContactBlock: React.FC<ContactProps> = ({ content, style }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
-           {[
-             { icon: <Mail size={32}/>, label: 'Email', value: content.email || 'info@esempio.it', link: i => i ? `mailto:${i}` : '#' },
-             { icon: <Phone size={32}/>, label: 'Telefono', value: content.phone || '+39 011 123 4567', link: i => i ? `tel:${i}` : '#' },
-             { icon: <MapPin size={32}/>, label: 'Indirizzo', value: content.address || 'Via Torino, 1', link: i => i ? `https://maps.google.com/?q=${encodeURIComponent(i)}` : '#' }
-           ].map((item, i) => {
+            {[
+              { icon: <Mail size={32}/>, label: 'Email', value: content.email || 'info@esempio.it', link: (i: string) => i ? `mailto:${i}` : '#' },
+              { icon: <Phone size={32}/>, label: 'Telefono', value: content.phone || '+39 011 123 4567', link: (i: string) => i ? `tel:${i}` : '#' },
+              { icon: <MapPin size={32}/>, label: 'Indirizzo', value: content.address || 'Via Torino, 1', link: (i: string) => i ? `https://maps.google.com/?q=${encodeURIComponent(i)}` : '#' }
+            ].map((item, index) => {
              const val = item.value;
-             if (!val && i > 0) return null; // Only show if value exists, except email
+             if (!val && index > 0) return null; // Only show if value exists, except email
              
              return (
                <a 
-                key={i}
+                key={index}
                 href={item.link(val)}
                 className="p-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[3rem] flex flex-col items-center gap-6 hover:bg-white/10 transition-all group no-underline text-inherit shadow-2xl"
                 style={{ backgroundColor: style.backgroundColor === '#ffffff' ? '#f8fafc' : undefined }}

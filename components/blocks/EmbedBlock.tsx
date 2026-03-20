@@ -65,7 +65,7 @@ export const EmbedBlock: React.FC<EmbedProps> = ({ content, style }) => {
               height="720"
               frameBorder="0"
               scrolling="no"
-              allowtransparency="true"
+              allowTransparency
               className="max-w-full"
             />
           </div>
