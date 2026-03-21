@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
+import { cn } from '@/lib/utils';
 import { BlockType } from '@/types/editor';
 import { 
   Square, 
@@ -13,6 +14,7 @@ import {
   Phone, 
   MapPin,
   ChevronRight,
+  ChevronLeft,
   MousePointer2,
   Columns,
   Plus,
@@ -31,6 +33,7 @@ const blockLibrary: { type: BlockType; label: string; icon: any }[] = [
 
 export const BlockSidebar: React.FC = () => {
   const { addBlock } = useEditorStore();
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   // NOTE: The provided code snippet for "ConfigSidebar theme color picker"
   // seems to be intended for a different component (ConfigSidebar) and
@@ -55,8 +58,27 @@ export const BlockSidebar: React.FC = () => {
   // already largely in place, but ensure the button styling is "square".
 
   return (
-    <aside className="w-72 bg-white border-r border-zinc-200 flex flex-col h-full shadow-sm">
-      <div className="p-6 space-y-8 overflow-y-auto flex-1">
+    <aside className={cn(
+      "shrink-0 bg-white border-r border-zinc-200 flex flex-col h-full shadow-sm z-20 transition-all duration-300 relative",
+      isCollapsed ? "w-12" : "w-72"
+    )}>
+      
+      {/* TOGGLE BUTTON */}
+      <button 
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute -right-3 top-6 flex items-center justify-center bg-white border border-zinc-200 rounded-full w-6 h-6 shadow-md hover:bg-zinc-50 z-30 transition-transform active:scale-90"
+        title={isCollapsed ? "Espandi Sidebar" : "Riduci Sidebar"}
+      >
+        {isCollapsed ? <ChevronRight size={14} className="text-zinc-500" /> : <ChevronLeft size={14} className="text-zinc-500" />}
+      </button>
+
+      {/* CONTENT WRAPPER */}
+      <div className="w-full h-full flex flex-col overflow-hidden relative">
+        <div className={cn(
+          "w-72 flex flex-col h-full shrink-0 transition-opacity duration-300",
+          isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+        )}>
+          <div className="p-6 space-y-8 overflow-y-auto flex-1">
         <PageManager />
         
         <div className="border-t border-zinc-100 pt-8">
@@ -92,6 +114,9 @@ export const BlockSidebar: React.FC = () => {
           Clicca un elemento sul canvas per configurarlo nel dettaglio.
         </p>
       </div>
-    </aside>
+
+    </div>
+  </div>
+</aside>
   );
 };

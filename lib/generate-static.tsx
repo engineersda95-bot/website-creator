@@ -271,6 +271,7 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
           content={content} 
           style={style} 
           project={project}
+          allPages={allPages}
         />
       ));
 

@@ -1,129 +1,122 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn, toPx } from '@/lib/utils';
 import { Project } from '@/types/editor';
-import { 
-  Facebook, 
-  Instagram, 
-  X, 
-  Linkedin, 
-  Mail, 
-  Phone,
-  ArrowRight
+import {
+   Facebook,
+   Instagram,
+   Linkedin,
+   Mail,
+   Phone
 } from 'lucide-react';
 
+const BrandX = ({ size = 20 }: { size?: number }) => (
+   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+   </svg>
+);
+
 interface FooterProps {
-  content: {
-    logoText?: string;
-    copyright?: string;
-    layout?: 'simple' | 'columns' | 'social';
-    socialLinks?: Array<{ platform: string; url: string }>;
-    columns?: Array<{ title: string; links: Array<{ label: string; url: string }> }>;
-  };
-  style: {
-    padding?: string;
-    backgroundColor?: string;
-    textColor?: string;
-    align?: 'left' | 'center' | 'right';
-  };
-  project?: Project;
+   content: {
+      logoType?: 'text' | 'image' | 'both';
+      logoImage?: string;
+      logoText?: string;
+      showLogo?: boolean;
+      copyright?: string;
+      socialLinks?: Array<{ platform: string; url: string }>;
+      links?: Array<{ label: string; url: string }>;
+   };
+   style: any;
+   project?: Project;
+   allPages?: any[];
 }
 
 const SOCIAL_ICONS: Record<string, any> = {
-  facebook: Facebook,
-  instagram: Instagram,
-  x: X,
-  linkedin: Linkedin,
-  mail: Mail,
-  phone: Phone
+   facebook: Facebook,
+   instagram: Instagram,
+   x: BrandX,
+   linkedin: Linkedin,
+   mail: Mail,
+   phone: Phone,
+   twitter: BrandX,
 };
 
-export const FooterBlock: React.FC<FooterProps> = ({ content, style, project }) => {
-  const layout = content.layout || 'simple';
+export const FooterBlock: React.FC<FooterProps> = ({ content, style, project, allPages }) => {
+   const appearance = project?.settings?.appearance || 'light';
+   const themeBg = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff');
+   const themeText = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.text || '#ffffff') : (project?.settings?.themeColors?.light?.text || '#000000');
 
-    const appearance = project?.settings?.appearance || 'light';
-    const themeBg = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff');
-    const themeText = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.text || '#ffffff') : (project?.settings?.themeColors?.light?.text || '#000000');
+   const navLogoImage = allPages?.flatMap(p => p.blocks).find(b => b.type === 'navigation')?.content?.logoImage;
+   const displayLogoImage = content.logoImage || navLogoImage;
 
-    return (
-      <footer 
-        className={cn("border-t", appearance === 'dark' ? "border-zinc-800" : "border-zinc-100")}
-        style={{ 
-          backgroundColor: style.backgroundColor || themeBg, 
-          color: style.textColor || themeText,
-          paddingTop: style.padding,
-          paddingBottom: style.padding,
-        }}
+   return (
+      <footer
+         className={cn("w-full transition-all duration-300 mx-auto", appearance === 'dark' ? "border-t border-zinc-800" : "border-t border-zinc-100")}
+         style={{
+            backgroundColor: style.backgroundColor || themeBg,
+            color: style.textColor || themeText,
+            paddingTop: toPx(style.padding, '16px'),
+            paddingBottom: toPx(style.padding, '16px'),
+            paddingLeft: toPx(style.hPadding, '0px'),
+            paddingRight: toPx(style.hPadding, '0px'),
+            marginLeft: toPx(style.marginLeft, '0px'),
+            marginRight: toPx(style.marginRight, '0px'),
+            marginTop: toPx(style.marginTop, '0px'),
+            marginBottom: toPx(style.marginBottom, '0px'),
+            width: (style.marginLeft || style.marginRight) ? `calc(100% - ${toPx(style.marginLeft || 0)} - ${toPx(style.marginRight || 0)})` : '100%'
+         }}
       >
-      <div className="max-w-7xl mx-auto px-8">
-        {layout === 'simple' && (
-          <div className={cn(
-            "flex flex-col items-center text-center",
-            style.align === 'left' && "items-start text-left",
-            style.align === 'right' && "items-end text-right"
-          )}>
-            <div className="text-2xl font-black tracking-tighter mb-6">{content.logoText || 'SV'}</div>
-            <p className="text-zinc-400 font-bold text-sm uppercase tracking-widest">{content.copyright || `© ${new Date().getFullYear()} SitiVetrina`}</p>
-          </div>
-        )}
-
-        {layout === 'social' && (
-           <div className="flex flex-col items-center gap-10">
-              <div className="text-3xl font-black tracking-tighter">{content.logoText || 'SV'}</div>
-              <div className="flex gap-4">
-                 {(content.socialLinks || []).map((social, i) => (
-                   <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white border border-zinc-100 flex items-center justify-center text-zinc-900 hover:bg-zinc-900 hover:text-white transition-all shadow-sm">
-                      {React.createElement(SOCIAL_ICONS[social.platform.toLowerCase()] || Mail, { size: 20 })}
-                   </a>
-                 ))}
-              </div>
-              <p className="text-zinc-400 font-bold text-xs uppercase tracking-[0.2em] pt-10 border-t border-zinc-200 w-full text-center">
-                {content.copyright || `© ${new Date().getFullYear()} SitiVetrina`}
-              </p>
-           </div>
-        )}
-
-        {layout === 'columns' && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
-            <div className="col-span-1 md:col-span-1">
-               <div className="text-2xl font-black tracking-tighter mb-4">{content.logoText || 'SV'}</div>
-               <p className="text-zinc-400 text-sm font-medium leading-relaxed mb-6 italic opacity-80">
-                 Progettiamo il futuro della tua immagine digitale con amore e precisione.
-               </p>
-               <div className="flex gap-3">
-                 {(content.socialLinks || []).map((social, i) => (
-                   <a key={i} href={social.url} className="text-zinc-400 hover:text-zinc-900 transition-colors">
-                      {React.createElement(SOCIAL_ICONS[social.platform.toLowerCase()] || Mail, { size: 18 })}
-                   </a>
-                 ))}
+         <div className={cn(
+            "flex flex-col text-center w-full max-w-7xl mx-auto px-8 gap-6",
+            style.align === 'left' ? "items-start text-left" : style.align === 'right' ? "items-end text-right" : "items-center text-center"
+         )}>
+            {content.showLogo !== false && (
+               <div
+                  className="flex flex-col gap-2"
+                  style={{
+                     alignItems: style.align === 'left' ? 'flex-start' : style.align === 'right' ? 'flex-end' : 'center'
+                  }}
+               >
+                  {(content.logoType === 'image' || content.logoType === 'both') && displayLogoImage && (
+                     <img src={displayLogoImage} alt="Logo" style={{ height: toPx(style.titleSize, '24px'), width: 'auto' }} className="object-contain" />
+                  )}
+                  {content.logoType !== 'image' && (
+                     <div className="font-black tracking-tighter" style={{ fontSize: toPx(style.titleSize, '24px') }}>
+                        {content.logoText || (project?.name ? project.name : 'SitiVetrina')}
+                     </div>
+                  )}
                </div>
-            </div>
-            
-            {(content.columns || [
-              { title: 'Servizi', links: [{ label: 'Web Design', url: '#' }, { label: 'SEO', url: '#' }] },
-              { title: 'Azienda', links: [{ label: 'Chi Siamo', url: '#' }, { label: 'Contatti', url: '#' }] }
-            ]).map((col, i) => (
-              <div key={i} className="space-y-6">
-                <h4 className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">{col.title}</h4>
-                <ul className="space-y-3">
-                   {col.links.map((link, j) => (
-                     <li key={j}>
-                        <a href={link.url} className="text-sm font-bold text-zinc-400 hover:text-zinc-900 transition-colors flex items-center gap-2 group">
-                          <ArrowRight size={10} className="transition-transform group-hover:translate-x-1" />
-                          {link.label}
-                        </a>
-                     </li>
-                   ))}
-                </ul>
-              </div>
-            ))}
+            )}
 
-            <div className="col-span-full pt-16 mt-16 border-t border-zinc-100 flex flex-col md:flex-row justify-between items-center gap-6">
-              <p className="text-zinc-400 font-bold text-[10px] uppercase tracking-widest">{content.copyright || `© ${new Date().getFullYear()} SitiVetrina`}</p>
-              <p className="text-zinc-300 font-bold text-[10px] uppercase tracking-widest">Built with Proximatica</p>
-            </div>
-          </div>
-        )}
-      </div>
-    </footer>
-  );
+            {content.socialLinks && content.socialLinks.length > 0 && (
+               <div className={cn("flex gap-4", style.align === 'left' ? "justify-start" : style.align === 'right' ? "justify-end" : "justify-center")}>
+                  {content.socialLinks.map((social, i) => {
+                     const Icon = SOCIAL_ICONS[social.platform.toLowerCase()] || Mail;
+                     return (
+                        <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 hover:scale-110 transition-all p-1">
+                           <Icon size={20} />
+                        </a>
+                     );
+                  })}
+               </div>
+            )}
+
+            {content.links && content.links.length > 0 && (
+               <div className={cn("flex flex-wrap gap-4 md:gap-8", style.align === 'left' ? "justify-start" : style.align === 'right' ? "justify-end" : "justify-center")}>
+                  {content.links.map((link, i) => (
+                     <a key={i} href={link.url} className="font-medium opacity-70 hover:opacity-100 transition-opacity whitespace-nowrap" style={{ fontSize: toPx(style.fontSize, '14px') }}>
+                        {link.label}
+                     </a>
+                  ))}
+               </div>
+            )}
+
+            <p
+               className="font-bold uppercase tracking-widest opacity-50"
+               style={{ fontSize: toPx(style.fontSize, '14px') }}
+            >
+               {content.copyright || `© ${new Date().getFullYear()} ${project?.name || 'SitiVetrina'}`}
+            </p>
+         </div>
+      </footer>
+   );
 };

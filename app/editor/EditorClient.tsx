@@ -11,6 +11,7 @@ import { deployToCloudflare } from '@/app/actions/deploy';
 import { v4 as uuidv4 } from 'uuid';
 import { Loader2, Save } from 'lucide-react';
 import { UserMenu } from '@/components/auth/UserMenu';
+import { cn } from '@/lib/utils';
 
 export function EditorClient({ 
   initialUser, 
@@ -33,7 +34,8 @@ export function EditorClient({
     currentPage, 
     isLoading, 
     isInitialized, 
-    user 
+    user,
+    hasUnsavedChanges
   } = useEditorStore();
   
   const searchParams = useSearchParams();
@@ -58,6 +60,17 @@ export function EditorClient({
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   const handlePublish = async () => {
     if (!project || !currentPage) return;
@@ -158,7 +171,7 @@ export function EditorClient({
     <div className="flex h-screen bg-zinc-50 overflow-hidden">
       <BlockSidebar />
 
-      <div className="flex-1 flex flex-col h-full">
+      <div className="flex-1 min-w-0 z-10 relative flex flex-col h-full shadow-2xl">
         <header className="h-16 bg-white border-b border-zinc-200 flex items-center justify-between px-8 shrink-0">
           <div className="flex items-center gap-4">
             <h1 className="font-bold text-lg text-zinc-900">SitiVetrina <span className="text-zinc-400 font-normal">Editor</span></h1>
@@ -169,10 +182,16 @@ export function EditorClient({
           <div className="flex items-center gap-3">
             <button 
               onClick={() => saveCurrentPage()}
-              className="p-2 text-zinc-400 hover:text-zinc-900 border border-zinc-100 rounded-lg hover:bg-zinc-50 transition-all mr-2"
-              title="Salva Modifiche"
+              disabled={!hasUnsavedChanges && !isLoading}
+              className={cn("flex items-center gap-2 px-4 py-2 font-bold rounded-lg transition-all mr-2 text-sm", 
+                hasUnsavedChanges 
+                  ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md" 
+                  : "bg-zinc-100 text-zinc-400 cursor-not-allowed border border-zinc-200"
+              )}
+              title={hasUnsavedChanges ? "Salva Modifiche (Non salvate)" : "Tutto Salvato"}
             >
-              <Save size={18} />
+              <Save size={16} />
+              {hasUnsavedChanges ? 'Salva Modifiche' : 'Salvato'}
             </button>
 
             <div className="h-4 w-px bg-zinc-200 mr-2" />
