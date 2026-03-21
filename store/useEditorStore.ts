@@ -35,13 +35,16 @@ interface EditorState {
   redo: () => void;
   
   // Block Actions
-  addBlock: (type: BlockType) => void;
+  addBlock: (type: BlockType, atIndex?: number) => void;
   updateBlock: (id: string, content: any, style?: any) => void;
   updateBlockStyle: (id: string, style: any) => void;
   removeBlock: (id: string) => void;
   moveBlockUp: (id: string) => void;
   moveBlockDown: (id: string) => void;
   selectBlock: (id: string | null) => void;
+  duplicateBlock: (id: string) => void;
+  copyBlock: (id: string) => void;
+  pasteBlock: (atIndex?: number) => void;
   syncGuestData: () => Promise<void>;
   hydrateEditor: (project: Project, pages: Page[]) => void;
 }
@@ -290,22 +293,26 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ user: null, project: null, projectPages: [], currentPage: null });
   },
 
-  addBlock: (type) => {
-    const { currentPage, project, projectPages } = get();
-    if (!currentPage || !project) return;
+  addBlock: (type, atIndex) => set((state) => {
+    const { project, currentPage, projectPages } = state;
+    if (!project || !currentPage) return state;
 
+    // Check if block type is already present (for global blocks like navigation/footer)
     if (type === 'navigation' || type === 'footer') {
-       const existingBlock = projectPages.flatMap(p => p.blocks).find(b => b.type === type);
+       const existingBlock = currentPage.blocks.find(b => b.type === type);
        if (existingBlock) {
           const newBlock = { ...existingBlock, id: uuidv4() };
-          const newCurrentPage = { ...currentPage, blocks: [...currentPage.blocks, newBlock] };
-          set({
+          const newBlocks = [...currentPage.blocks];
+          const insertPos = atIndex !== undefined ? atIndex : newBlocks.length;
+          newBlocks.splice(insertPos, 0, newBlock);
+          
+          const newCurrentPage = { ...currentPage, blocks: newBlocks };
+          triggerAutoSave(() => ({ ...state, currentPage: newCurrentPage }), set);
+          return {
              currentPage: newCurrentPage,
              projectPages: projectPages.map(p => p.id === currentPage.id ? newCurrentPage : p),
              selectedBlockId: newBlock.id
-          });
-          triggerAutoSave(get, set);
-          return;
+          };
        }
     }
 
@@ -392,15 +399,19 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       style: d.style
     };
 
-    const newCurrentPage = { ...currentPage, blocks: [...currentPage.blocks, newBlock] };
+    const newBlocks = [...currentPage.blocks];
+    const insertPos = atIndex !== undefined ? atIndex : newBlocks.length;
+    newBlocks.splice(insertPos, 0, newBlock);
 
-    set({ 
+    const newCurrentPage = { ...currentPage, blocks: newBlocks };
+
+    triggerAutoSave(() => ({ ...state, currentPage: newCurrentPage }), set);
+    return { 
       currentPage: newCurrentPage,
       projectPages: projectPages.map(p => p.id === currentPage.id ? newCurrentPage : p),
       selectedBlockId: newBlock.id
-    });
-    triggerAutoSave(get, set);
-  },
+    };
+  }),
 
   updateBlock: (id, content, style) => {
     const { currentPage, viewport, projectPages } = get();
@@ -545,10 +556,77 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       currentPage: newCurrentPage,
       projectPages: projectPages.map(p => p.id === currentPage.id ? newCurrentPage : p) 
     });
-    triggerAutoSave(get);
+    triggerAutoSave(get, set);
   },
 
   selectBlock: (id) => set({ selectedBlockId: id }),
+
+  duplicateBlock: (id) => set((state) => {
+    const { currentPage, projectPages } = state;
+    if (!currentPage) return state;
+
+    const block = currentPage.blocks.find(b => b.id === id);
+    if (!block) return state;
+
+    const newBlock = { 
+       ...block, 
+       id: uuidv4()
+    };
+
+    const index = currentPage.blocks.findIndex(b => b.id === id);
+    const newBlocks = [...currentPage.blocks];
+    newBlocks.splice(index + 1, 0, newBlock);
+
+    const newCurrentPage = { ...currentPage, blocks: newBlocks };
+    triggerAutoSave(() => ({ ...state, currentPage: newCurrentPage }), set);
+    
+    return {
+      currentPage: newCurrentPage,
+      projectPages: projectPages.map(p => p.id === currentPage.id ? newCurrentPage : p),
+      selectedBlockId: newBlock.id
+    };
+  }),
+
+  copyBlock: (id) => {
+    const { currentPage } = get();
+    if (!currentPage) return;
+    const block = currentPage.blocks.find(b => b.id === id);
+    if (block) {
+      localStorage.setItem('sv_copied_block', JSON.stringify(block));
+    }
+  },
+
+  pasteBlock: (atIndex) => set((state) => {
+    const { currentPage, projectPages } = state;
+    if (!currentPage) return state;
+
+    const copiedData = localStorage.getItem('sv_copied_block');
+    if (!copiedData) return state;
+
+    try {
+      const block = JSON.parse(copiedData);
+      const newBlock = {
+        ...block,
+        id: uuidv4()
+      };
+
+      const newBlocks = [...currentPage.blocks];
+      const insertPos = atIndex !== undefined ? atIndex : newBlocks.length;
+      newBlocks.splice(insertPos, 0, newBlock);
+
+      const newCurrentPage = { ...currentPage, blocks: newBlocks };
+      triggerAutoSave(() => ({ ...state, currentPage: newCurrentPage }), set);
+
+      return {
+        currentPage: newCurrentPage,
+        projectPages: projectPages.map(p => p.id === currentPage.id ? newCurrentPage : p),
+        selectedBlockId: newBlock.id
+      };
+    } catch (e) {
+      console.error('Failed to paste block', e);
+      return state;
+    }
+  }),
 
   syncGuestData: async () => {
     const guestData = localStorage.getItem('sv_guest_data');

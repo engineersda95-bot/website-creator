@@ -946,13 +946,27 @@ export const ConfigSidebar: React.FC = () => {
                                  <input type="range" min="10" max="120" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('titleSize', 24)} onChange={(e) => updateStyle({ titleSize: parseInt(e.target.value) })} />
                               </div>
                               <div>
-                                 <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
-                                    <span>Dimensione Copyright / Link</span>
-                                    <span className="text-zinc-900 font-bold">{getStyleValue('fontSize', 14)}px</span>
-                                 </label>
-                                 <input type="range" min="8" max="40" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('fontSize', 14)} onChange={(e) => updateStyle({ fontSize: parseInt(e.target.value) })} />
-                              </div>
-                           </>
+                                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                                     <span>Dimensione Link</span>
+                                     <span className="text-zinc-900 font-bold">{getStyleValue('fontSize', 14)}px</span>
+                                  </label>
+                                  <input type="range" min="8" max="40" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('fontSize', 14)} onChange={(e) => updateStyle({ fontSize: parseInt(e.target.value) })} />
+                               </div>
+                               <div>
+                                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                                     <span>Dimensione Icone Social</span>
+                                     <span className="text-zinc-900 font-bold">{getStyleValue('socialIconSize', 20)}px</span>
+                                  </label>
+                                  <input type="range" min="12" max="60" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('socialIconSize', 20)} onChange={(e) => updateStyle({ socialIconSize: parseInt(e.target.value) })} />
+                               </div>
+                               <div>
+                                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                                     <span>Dimensione Copyright</span>
+                                     <span className="text-zinc-900 font-bold">{getStyleValue('copyrightSize', 12)}px</span>
+                                  </label>
+                                  <input type="range" min="8" max="30" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('copyrightSize', 12)} onChange={(e) => updateStyle({ copyrightSize: parseInt(e.target.value) })} />
+                               </div>
+                            </>
                         ) : (
                            <div>
                               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">

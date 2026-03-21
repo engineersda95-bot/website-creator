@@ -50,7 +50,7 @@ export const FooterBlock: React.FC<FooterProps> = ({ content, style, project, al
 
    return (
       <footer
-         className={cn("w-full transition-all duration-300 mx-auto", appearance === 'dark' ? "border-t border-zinc-800" : "border-t border-zinc-100")}
+         className={cn("w-full transition-all duration-300 mx-auto")}
          style={{
             backgroundColor: style.backgroundColor || themeBg,
             color: style.textColor || themeText,
@@ -88,12 +88,13 @@ export const FooterBlock: React.FC<FooterProps> = ({ content, style, project, al
             )}
 
             {content.socialLinks && content.socialLinks.length > 0 && (
-               <div className={cn("flex gap-4", style.align === 'left' ? "justify-start" : style.align === 'right' ? "justify-end" : "justify-center")}>
+               <div className={cn("flex gap-6 items-center", style.align === 'left' ? "justify-start" : style.align === 'right' ? "justify-end" : "justify-center")}>
                   {content.socialLinks.map((social, i) => {
                      const Icon = SOCIAL_ICONS[social.platform.toLowerCase()] || Mail;
+                     const iconSize = Number(style.socialIconSize) || 20;
                      return (
-                        <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 hover:scale-110 transition-all p-1">
-                           <Icon size={20} />
+                        <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 hover:scale-110 transition-all">
+                           <Icon size={iconSize} />
                         </a>
                      );
                   })}
@@ -112,7 +113,7 @@ export const FooterBlock: React.FC<FooterProps> = ({ content, style, project, al
 
             <p
                className="font-bold uppercase tracking-widest opacity-50"
-               style={{ fontSize: toPx(style.fontSize, '14px') }}
+               style={{ fontSize: toPx(style.copyrightSize, '12px') }}
             >
                {content.copyright || `© ${new Date().getFullYear()} ${project?.name || 'SitiVetrina'}`}
             </p>
