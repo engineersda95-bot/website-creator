@@ -78,7 +78,7 @@ export const BlockSidebar: React.FC = () => {
           "w-72 flex flex-col h-full shrink-0 transition-opacity duration-300",
           isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
         )}>
-          <div className="p-6 space-y-8 overflow-y-auto flex-1">
+          <div className="p-6 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
             <PageManager />
 
             <div className="border-t border-zinc-100 pt-8">

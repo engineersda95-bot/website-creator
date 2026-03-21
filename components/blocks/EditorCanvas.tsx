@@ -98,6 +98,14 @@ export const EditorCanvas: React.FC = () => {
   const font = project?.settings?.fontFamily || 'Outfit';
   const googleFontUrl = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap`;
 
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return <div className="flex-1 bg-zinc-100" />;
+
   if (!currentPage) return (
     <div className="flex-1 flex items-center justify-center text-zinc-400 bg-zinc-50 uppercase text-[10px] font-black tracking-widest">
       Seleziona una pagina per iniziare
@@ -175,7 +183,7 @@ export const EditorCanvas: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-12 flex justify-center scroll-smooth bg-zinc-100/50">
+      <div className="flex-1 overflow-y-auto p-12 flex justify-center scroll-smooth bg-zinc-100/50 custom-scrollbar">
         <style>{`
           #editor-content {
             font-family: '${font}', sans-serif !important;
@@ -184,7 +192,10 @@ export const EditorCanvas: React.FC = () => {
             font-family: inherit !important;
           }
           .dark#editor-content {
-            background-color: #0c0c0e !important;
+            background-color: ${project?.settings?.themeColors?.dark?.bg || '#0c0c0e'} !important;
+          }
+          #editor-content {
+            background-color: ${project?.settings?.appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff')} !important;
           }
           /* Custom responsive widths for editor */
           .canvas-desktop { max-width: 100%; width: 1200px; }
@@ -316,8 +327,11 @@ export const EditorCanvas: React.FC = () => {
                         onUpdate={(newContent: any) => updateBlock(block.id, newContent)}
                       />
 
-                       {/* Block Controls - Repositioned and stylized */}
-                       <div className="absolute right-6 top-6 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100 bg-zinc-900/90 backdrop-blur-md shadow-2xl rounded-2xl p-2 border border-white/20 z-40 transform translate-x-4 group-hover:translate-x-0">
+                       {/* Block Controls - Repositioned to avoid overlap with nav elements if it's the first block */}
+                       <div className={cn(
+                         "absolute flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100 bg-zinc-900/90 backdrop-blur-md shadow-2xl rounded-2xl p-2 border border-white/20 z-[10001] transform",
+                         index === 0 ? "left-6 bottom-6 -translate-x-4 group-hover:translate-x-0" : "right-6 top-6 translate-x-4 group-hover:translate-x-0"
+                       )}>
                          <div className="flex items-center gap-1 pr-2 mr-2 border-r border-white/10 text-[10px] font-black text-white/40 uppercase tracking-widest pl-2">
                             Sezione
                          </div>

@@ -36,6 +36,14 @@ function toPx(value: any, defaultValue: string = ''): string {
   return value;
 }
 
+function formatRichText(text: string = ''): string {
+  if (!text) return '';
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br />');
+}
+
 export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: Project): string {
   const blocksHtml = page.blocks.map(block => renderBlock(block, allPages, project)).join('\n');
   const font = project?.settings?.fontFamily || 'Outfit';
@@ -90,6 +98,18 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
             50% { opacity: 0.5; transform: scale(0.8); }
         }
         .animate-pulse-slow { animation: pulse-white 2s infinite; }
+
+        /* Custom Scrollbar - Premium & Minimal */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: ${project?.settings?.appearance === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'}; 
+            border-radius: 10px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: ${project?.settings?.appearance === 'dark' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.2)'}; 
+        }
+        * { scrollbar-width: thin; scrollbar-color: ${project?.settings?.appearance === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'} transparent; }
     </style>
 </head>
 <body class="antialiased min-h-screen" style="background-color: ${project?.settings?.appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff')}; color: ${project?.settings?.appearance === 'dark' ? (project?.settings?.themeColors?.dark?.text || '#ffffff') : (project?.settings?.themeColors?.light?.text || '#000000')};">
@@ -143,6 +163,9 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
   const responsiveStyles = block.responsiveStyles || {};
   
   const appearance = project?.settings?.appearance || 'light';
+  const buttonTextColor = style.buttonTheme === 'secondary' 
+    ? (project?.settings?.themeColors?.buttonTextSecondary || project?.settings?.themeColors?.buttonText || '#ffffff')
+    : (project?.settings?.themeColors?.buttonText || '#ffffff');
   const themeBg = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff');
   const themeText = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.text || '#ffffff') : (project?.settings?.themeColors?.light?.text || '#000000');
 
@@ -193,11 +216,15 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
             ${s.align !== undefined ? `justify-content: ${s.align === 'center' ? 'center' : s.align === 'right' ? 'flex-end' : 'flex-start'} !important;` : ''}
             ${s.maxWidth !== undefined ? `max-width: ${s.maxWidth}${typeof s.maxWidth === 'number' && s.maxWidth <= 100 ? '%' : 'px'} !important;` : ''}
             ${s.gap !== undefined ? `gap: ${toPx(s.gap)} !important;` : ''}
+            ${s.backgroundSize !== undefined ? `background-size: ${s.backgroundSize} !important;` : ''}
+            ${s.backgroundPosition !== undefined ? `background-position: ${s.backgroundPosition} !important;` : ''}
           }
           #${blockId} section, #${blockId} nav { 
              ${s.minHeight !== undefined ? `min-height: ${toPx(s.minHeight)} !important;` : ''}
              ${s.hPadding !== undefined ? `padding-left: ${toPx(s.hPadding)} !important; padding-right: ${toPx(s.hPadding)} !important;` : ''}
              ${s.padding !== undefined ? `padding-top: ${toPx(s.padding)} !important; padding-bottom: ${toPx(s.padding)} !important;` : ''}
+             ${s.backgroundSize !== undefined ? `background-size: ${s.backgroundSize} !important;` : ''}
+             ${s.backgroundPosition !== undefined ? `background-position: ${s.backgroundPosition} !important;` : ''}
 
              /* Button Overrides from Global Project Settings */
              ${project?.settings?.responsive?.[view as 'mobile'|'tablet']?.buttonRadius !== undefined ? `--btn-radius: ${toPx(project.settings.responsive[view as 'mobile'|'tablet']?.buttonRadius)} !important;` : ''}
@@ -211,6 +238,11 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
               `filter: ${s.grayscale ? 'grayscale(100%)' : ''} ${s.brightness ? `brightness(${s.brightness}%)` : ''} ${s.blur !== undefined ? `blur(${s.blur}px)` : ''} !important;` 
               : ''
             }
+          }
+          #${blockId} [style*="url"] {
+             ${s.backgroundSize !== undefined ? `background-size: ${s.backgroundSize} !important;` : ''}
+             ${s.backgroundPosition !== undefined ? `background-position: ${s.backgroundPosition} !important;` : ''}
+             background-attachment: scroll !important;
           }
           #${blockId} .flex { 
             ${s.align !== undefined ? `justify-content: ${s.align === 'center' ? 'center' : s.align === 'right' ? 'flex-end' : 'flex-start'} !important;` : ''}
@@ -234,6 +266,7 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
           /* Special Nav/Logo overrides */
           ${s.logoSize !== undefined ? `#${blockId} nav img { height: ${toPx(s.logoSize)} !important; }` : ''}
           ${s.logoTextSize !== undefined ? `#${blockId} nav span { font-size: ${toPx(s.logoTextSize)} !important; }` : ''}
+          ${s.fontSize !== undefined ? `#${blockId} nav a { font-size: ${toPx(s.fontSize)} !important; }` : ''}
           ${s.hPadding !== undefined ? `#${blockId} nav > div { padding-left: ${toPx(s.hPadding)} !important; padding-right: ${toPx(s.hPadding)} !important; }` : ''}
           ${s.hMargin !== undefined ? `#${blockId} nav { padding-left: ${toPx(s.hMargin)} !important; padding-right: ${toPx(s.hMargin)} !important; }` : ''}
         }
@@ -307,10 +340,10 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
                   </div>
                 </div>
                 <div class="flex-1 w-full ${alignClass}">
-                  <h2 class="font-black tracking-tighter mb-6 leading-tight" style="${fontSizeStyle}">${content.title}</h2>
-                  <p class="text-lg opacity-80 leading-relaxed font-semibold mb-8" style="${textStyle}">${content.text}</p>
+                  <h2 class="font-black tracking-tighter mb-6 leading-tight" style="${fontSizeStyle}">${formatRichText(content.title)}</h2>
+                  <p class="text-lg opacity-80 leading-relaxed font-semibold mb-8" style="${textStyle}">${formatRichText(content.text)}</p>
                   ${content.cta ? `
-                    <button class="px-8 py-4 rounded-full text-white font-black shadow-xl hover:brightness-110 active:scale-95 border-0" style="background-color: ${activeColor};">
+                    <button class="px-8 py-4 rounded-full font-black shadow-xl hover:brightness-110 active:scale-95 border-0" style="background-color: ${activeColor}; color: ${buttonTextColor};">
                       ${content.cta}
                     </button>
                   ` : ''}
@@ -382,7 +415,7 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
                             \${iconSvg}
                         </div>
                         <h3 class="text-2xl font-black mb-4 tracking-tighter" style="\${textStyle}">\${item.title}</h3>
-                        <p class="text-zinc-500 leading-relaxed font-bold text-base opacity-80" style="\${textStyle}">\${item.description}</p>
+                        <p class="text-zinc-500 leading-relaxed font-bold text-base opacity-80" style="${textStyle}">${formatRichText(item.description)}</p>
                         \${item.url ? \`<a href="\${item.url}" class="mt-auto pt-6 text-sm font-black underline underline-offset-4 decoration-current transition-opacity hover:opacity-70" style="\${textStyle}">Scopri di più</a>\` : ''}
                     </div>
                   `;
@@ -396,8 +429,8 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
         <section class="block-contact px-8 overflow-hidden" style="${bgStyle} ${paddingStyle} ${marginStyle}">
           <div class="max-w-[1200px] mx-auto flex flex-col ${alignClass.includes('items-start') ? 'items-start text-left' : alignClass.includes('items-end') ? 'items-end text-right' : 'items-center text-center'}">
             <div class="max-w-2xl w-full mb-16">
-              <h2 class="font-black tracking-tighter leading-tight" style="font-size: ${toPx(style.titleSize || style.fontSize, '3rem')}; ${textStyle}">${content.title}</h2>
-              <p class="mt-4 opacity-80 leading-relaxed font-bold" style="font-size: ${toPx(style.subtitleSize || '1.125rem')}; ${textStyle}">${content.subtitle}</p>
+              <h2 class="font-black tracking-tighter leading-tight" style="font-size: ${toPx(style.titleSize || style.fontSize, '3rem')}; ${textStyle}">${formatRichText(content.title)}</h2>
+              <p class="mt-4 opacity-80 leading-relaxed font-bold" style="font-size: ${toPx(style.subtitleSize || '1.125rem')}; ${textStyle}">${formatRichText(content.subtitle)}</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
@@ -445,7 +478,7 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
         <section class="block-reviews px-8" style="${bgStyle} ${paddingStyle} ${marginStyle}">
             <div class="max-w-[1200px] mx-auto">
                 <div class="max-w-3xl mb-16 text-center mx-auto">
-                  <h2 class="font-black tracking-tight" style="font-size: ${toPx(style.titleSize || style.fontSize, '3rem')}; ${textStyle}">${content.title}</h2>
+                  <h2 class="font-black tracking-tight" style="font-size: ${toPx(style.titleSize || style.fontSize, '3rem')}; ${textStyle}">${formatRichText(content.title)}</h2>
                   <p class="mt-4 leading-relaxed font-bold opacity-80" style="font-size: ${toPx(style.subtitleSize, '1.125rem')}; ${textStyle}">${content.subtitle}</p>
                 </div>
                 <div class="${isPuzzle ? 'columns-1 md:columns-2 lg:columns-3 space-y-6 gap-6' : 'grid grid-cols-1 md:grid-cols-3 gap-8'}" style="gap: ${toPx(style.gap, '2rem')};">
@@ -454,7 +487,7 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
                           <div class="text-blue-500/20 mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2H3c-1.25 0-2 .75-2 2v8c0 1.25.75 2 2 2h3c0 4-4 6-4 6zM14 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2h-5c-1.25 0-2 .75-2 2v8c0 1.25.75 2 2 2h3c0 4-4 6-4 6z"/></svg>
                           </div>
-                          <p class="text-zinc-600 italic leading-relaxed mb-8 flex-1">"\${item.text || item.review}"</p>
+                          <p class="text-zinc-600 italic leading-relaxed mb-8 flex-1">"${formatRichText(item.text || item.review)}"</p>
                           <div class="flex items-center gap-4">
                             \${(item.image || item.avatar) ? \`<img src="\${item.image || item.avatar}" alt="\${item.name}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md" />\` : ''}
                             <div>
@@ -473,15 +506,15 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
       return blockWrapper(`
         <section class="block-product-carousel py-24 overflow-hidden" style="${bgStyle} ${paddingStyle} ${marginStyle}">
             <div class="max-w-7xl mx-auto px-8">
-                <h2 class="text-4xl font-black mb-12" style="${textStyle}">${content.title}</h2>
+                <h2 class="text-4xl font-black mb-12" style="${textStyle}">${formatRichText(content.title)}</h2>
                 <div class="flex gap-8 overflow-x-auto pb-8 scrollbar-hide">
                     ${content.items?.map((item: any) => `
                         <div class="w-80 shrink-0 bg-white rounded-3xl overflow-hidden shadow-lg border border-zinc-100">
                           <img src="${item.image}" class="w-full aspect-[4/5] object-cover" />
                           <div class="p-6">
                             <h3 class="font-bold text-xl mb-2">${item.title}</h3>
-                            <p class="text-sm text-zinc-500 mb-6">${item.description}</p>
-                            <a href="${item.url || '#'}" class="px-6 py-2 rounded-full text-white no-underline text-sm font-bold inline-block" style="background-color: ${pColor};">Dettagli</a>
+                            <p class="text-sm text-zinc-500 mb-6">${formatRichText(item.description)}</p>
+                            <a href="${item.url || '#'}" class="px-6 py-2 rounded-full no-underline text-sm font-bold inline-block" style="background-color: ${activeColor}; color: ${buttonTextColor};">Dettagli</a>
                           </div>
                         </div>
                     `).join('')}

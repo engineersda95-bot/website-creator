@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn, toPx, getButtonStyle, formatLink } from '@/lib/utils';
+import { cn, toPx, getButtonStyle, formatLink, formatRichText } from '@/lib/utils';
 import { Project, ProjectSettings } from '@/types/editor';
 
 interface HeroProps {
@@ -83,6 +83,8 @@ export const Hero: React.FC<HeroProps> = ({ content, style, project, viewport })
         marginBottom: toPx(style.marginBottom),
         marginLeft: toPx(style.marginLeft),
         marginRight: toPx(style.marginRight),
+        paddingTop: toPx(style.padding),
+        paddingBottom: toPx(style.padding),
         borderRadius: toPx(style.borderRadius), // Apply borderRadius to the section
         color: style.textColor || defaultText, // Ensure textColor is applied to the section
       }}
@@ -130,9 +132,9 @@ export const Hero: React.FC<HeroProps> = ({ content, style, project, viewport })
             textAlign: style.align || 'center',
             fontWeight: style.titleBold === false ? 400 : 900,
             fontStyle: style.titleItalic ? 'italic' : 'normal'
-          }}>
-            {content.title}
-          </h1>
+          }}
+          dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+          />
           <p className={cn(
             "max-w-2xl leading-relaxed transition-all duration-500",
             style.subtitleSize ? "" : "text-xl sm:text-2xl",
@@ -142,9 +144,9 @@ export const Hero: React.FC<HeroProps> = ({ content, style, project, viewport })
             textAlign: style.align || 'center',
             fontWeight: style.subtitleBold ? 700 : 500,
             fontStyle: style.subtitleItalic ? 'italic' : 'normal'
-          }}>
-            {content.subtitle}
-          </p>
+          }}
+          dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+          />
         </div>
         
         <div 
@@ -158,7 +160,7 @@ export const Hero: React.FC<HeroProps> = ({ content, style, project, viewport })
             <a 
               {...formatLink(content.ctaUrl || '#')}
               className="font-bold transition-all active:scale-95 border-0 outline-none no-underline inline-flex items-center justify-center"
-              style={getButtonStyle(project, activeColor, viewport as any)}
+              style={getButtonStyle(project, activeColor, viewport as any, style.buttonTheme)}
             >
               {content.cta}
             </a>

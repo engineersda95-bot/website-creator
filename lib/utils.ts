@@ -5,18 +5,26 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function toPx(val: string | number | undefined, defaultVal?: string) {
-  if (val === undefined || val === null || val === '') return defaultVal;
-  if (typeof val === 'number') return `${val}px`;
-  if (!isNaN(Number(val))) return `${val}px`;
-  return val;
-}
+export const formatRichText = (text: string = '') => {
+  if (!text) return '';
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br />');
+};
 
-export function getButtonStyle(project: any, activeColor: string, viewportOverride?: 'desktop' | 'tablet' | 'mobile') {
+export const toPx = (value: any, defaultValue: string = ''): string => {
+  if (value === undefined || value === null || value === '') return defaultValue;
+  if (typeof value === 'number') return `${value}px`;
+  if (!isNaN(Number(value))) return `${value}px`;
+  return value;
+};
+
+export function getButtonStyle(project: any, activeColor: string, viewportOverride?: 'desktop' | 'tablet' | 'mobile', theme: 'primary' | 'secondary' = 'primary') {
   let viewport: 'desktop' | 'tablet' | 'mobile' = viewportOverride || 'desktop';
 
   // Se siamo sul client e non è forzato un viewport, rileviamo quello reale
-  if (!viewportOverride && typeof window !== 'undefined') {
+  if (!viewportOverride && typeof window !== 'undefined' && window.innerWidth) {
     if (window.innerWidth < 768) viewport = 'mobile';
     else if (window.innerWidth < 1024) viewport = 'tablet';
   }
@@ -28,7 +36,9 @@ export function getButtonStyle(project: any, activeColor: string, viewportOverri
     settings = { ...settings, ...settings.responsive[viewport] };
   }
   
-  const buttonTextColor = settings.themeColors?.buttonText || '#ffffff';
+  const buttonTextColor = theme === 'secondary'
+    ? (project?.settings?.themeColors?.buttonTextSecondary || project?.settings?.themeColors?.buttonText || '#ffffff')
+    : (project?.settings?.themeColors?.buttonText || '#ffffff');
   
   // Se non abbiamo un viewport forzato, usiamo le variabili CSS per la reattività dinamica (Live Site)
   const isStatic = !viewportOverride;

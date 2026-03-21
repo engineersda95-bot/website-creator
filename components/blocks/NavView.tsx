@@ -119,15 +119,23 @@ export const NavView: React.FC<NavViewProps> = ({
           {renderLogo()}
         </LogoWrapper>
 
-        {/* DESKTOP LINKS */}
+        {/* DESKTOP (AND MOBILE IF STANDARD) LINKS */}
         {content.layoutType !== 'hamburger' && (
-          <div className="hidden md:flex items-center gap-8 ml-auto">
+          <div className={cn(
+            "md:flex items-center gap-8 ml-auto",
+            content.layoutType === 'standard' ? "flex" : "hidden"
+          )}>
             {links.map((link, i) => (
               <a 
                 key={i} 
                 {...formatLink(isEditing ? '#' : link.url)}
                 className="font-medium transition-all hover:opacity-70 no-underline"
-                style={{ fontSize: style.fontSize || 14, color }}
+                style={{ 
+                  fontSize: style.fontSize || 14, 
+                  color,
+                  fontWeight: style.titleBold ? 700 : 400,
+                  fontStyle: style.titleItalic ? 'italic' : 'normal'
+                }}
               >
                 {link.label}
               </a>
@@ -150,7 +158,7 @@ export const NavView: React.FC<NavViewProps> = ({
           data-open={isMenuOpen}
           className={cn(
             "p-2 rounded-lg relative z-[1000]",
-            content.layoutType === 'hamburger' ? "flex" : "md:hidden flex"
+            content.layoutType === 'hamburger' ? "flex" : "hidden"
           )}
           onClick={toggleMenu}
           style={{ color }}
@@ -182,10 +190,15 @@ export const NavView: React.FC<NavViewProps> = ({
               key={i} 
               {...formatLink(isEditing ? '#' : link.url)}
               className={cn(
-                "text-lg font-medium border-b py-2 no-underline block hover:translate-x-2 transition-all",
+                "text-lg border-b py-2 no-underline block hover:translate-x-2 transition-all",
                 isDark ? "border-white/10" : "border-black/5"
               )}
-              style={{ color }}
+              style={{ 
+                color,
+                fontSize: style.fontSize || 18, // Use a larger default if not specified or just fontSize
+                fontWeight: style.titleBold ? 700 : 500,
+                fontStyle: style.titleItalic ? 'italic' : 'normal'
+              }}
               onClick={toggleMenu}
             >
               {link.label}

@@ -55,6 +55,7 @@ export interface ProjectSettings {
     light?: { bg: string; text: string };
     dark?: { bg: string; text: string };
     buttonText?: string;
+    buttonTextSecondary?: string;
   };
   buttonRadius: number;
   buttonShadow: 'none' | 'S' | 'M' | 'L';

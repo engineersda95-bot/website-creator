@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn, toPx } from '@/lib/utils';
+import { cn, toPx, formatRichText } from '@/lib/utils';
 
 interface TextProps {
   content: {
@@ -28,8 +28,6 @@ export const TextBlock: React.FC<TextProps> = ({ content, style }) => {
     right: 'text-right',
   };
 
-  // No maps needed
-
   return (
     <section 
       className="w-full transition-all"
@@ -50,14 +48,14 @@ export const TextBlock: React.FC<TextProps> = ({ content, style }) => {
         paddingLeft: toPx(style.hPadding, '2rem'),
         paddingRight: toPx(style.hPadding, '2rem'),
       }}>
-        <p className="leading-relaxed whitespace-pre-wrap transition-all duration-500" style={{ 
+        <p className="leading-relaxed transition-all duration-500" style={{ 
           color: style.textColor,
           fontSize: toPx(style.fontSize),
-          fontWeight: style.titleBold === false ? 400 : (style.titleBold ? 900 : 400),
+          fontWeight: style.titleBold === false ? 400 : (style.titleBold ? 700 : 400),
           fontStyle: style.titleItalic ? 'italic' : 'normal'
-        }}>
-          {content.text}
-        </p>
+        }}
+          dangerouslySetInnerHTML={{ __html: formatRichText(content.text) }}
+        />
       </div>
     </section>
   );
