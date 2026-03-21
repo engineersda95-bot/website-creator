@@ -94,7 +94,7 @@ export async function deployToCloudflare(projectId: string) {
       console.log(`Generated ${filename}`);
     }
 
-    const command = `npx --yes wrangler@3 pages deploy "${tempDir}" --project-name="${projectName}" --branch="main"`;
+    const command = `npx --yes wrangler@3 pages deploy "${tempDir}" --project-name="${projectName}" --branch="main" --no-update-check`;
     
     const env = { 
       ...process.env, 
@@ -109,7 +109,16 @@ export async function deployToCloudflare(projectId: string) {
       WRANGLER_SKIP_UPDATE_CHECK: '1'
     };
 
-    const output = execSync(command, { env, encoding: 'utf-8' });
+    const output = execSync(command, { 
+      cwd: '/tmp', // Executing from /tmp allows wrangler to ignore the read-only /var/task folder
+      env: {
+        ...env,
+        WRANGLER_SEND_METRICS: 'false',
+        WRANGLER_SEND_TELEMETRY: 'false',
+        WRANGLER_LOG_PATH: '/tmp/wrangler-deploy.log',
+      }, 
+      encoding: 'utf-8' 
+    });
     console.log('Wrangler Output:', output);
 
     const urlMatch = output.match(/https?:\/\/[^\s]+\.pages\.dev/);
