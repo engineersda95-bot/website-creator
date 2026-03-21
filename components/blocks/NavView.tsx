@@ -24,6 +24,7 @@ export interface NavViewProps {
   allPages?: Page[];
   isMenuOpen?: boolean;
   toggleMenu?: () => void;
+  viewport?: string;
 }
 
 export const NavView: React.FC<NavViewProps> = ({ 
@@ -33,7 +34,8 @@ export const NavView: React.FC<NavViewProps> = ({
   project, 
   allPages,
   isMenuOpen = false,
-  toggleMenu
+  toggleMenu,
+  viewport
 }) => {
   const links = (content.links && content.links.length > 0) 
     ? content.links 
@@ -133,10 +135,8 @@ export const NavView: React.FC<NavViewProps> = ({
             {content.showContact && (
               <a 
                 {...formatLink(isEditing ? '#' : (content.ctaUrl || '#'))}
-                className="px-6 py-2 rounded-full font-medium text-sm hover:scale-105 transition-all no-underline text-white"
-                style={{ 
-                  backgroundColor: pColor,
-                }}
+                className="font-bold no-underline transition-all active:scale-95 flex items-center justify-center whitespace-nowrap"
+                style={require('@/lib/utils').getButtonStyle(project, pColor, (viewport as any))}
               >
                 {content.cta || 'Contattaci'}
               </a>
@@ -194,10 +194,8 @@ export const NavView: React.FC<NavViewProps> = ({
           {content.showContact && (
             <a 
               {...formatLink(isEditing ? '#' : (content.ctaUrl || '#'))}
-              className="w-full py-4 text-center rounded-xl font-medium no-underline text-white"
-              style={{ 
-                backgroundColor: pColor,
-              }}
+              className="font-bold no-underline transition-all active:scale-95 flex items-center justify-center"
+              style={require('@/lib/utils').getButtonStyle(project, pColor, (viewport as any) || 'desktop')}
               onClick={toggleMenu}
             >
               {content.cta || 'Contattaci'}

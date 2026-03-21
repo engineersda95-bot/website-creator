@@ -29,13 +29,13 @@ export function EditorClient({
     setUser,
     hydrateEditor,
     initialize, 
-    syncGuestData, 
     project, 
     currentPage, 
     isLoading, 
     isInitialized, 
     user,
-    hasUnsavedChanges
+    hasUnsavedChanges,
+    publishProject
   } = useEditorStore();
   
   const searchParams = useSearchParams();
@@ -85,12 +85,7 @@ export function EditorClient({
     }
   };
 
-  // Sync guest data when user becomes available
-  useEffect(() => {
-    if (user && isInitialized && !isLoading) {
-      syncGuestData();
-    }
-  }, [user, isInitialized, isLoading, syncGuestData]);
+
 
   useEffect(() => {
     const fetchInitialData = async () => {

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
-import { cn, toPx } from '@/lib/utils';
+import { cn, toPx, getButtonStyle } from '@/lib/utils';
 
 interface ServiceItem {
   title: string;
@@ -29,6 +29,7 @@ interface ServicesProps {
     minHeight?: string;
     gap?: string;
     columns?: number;
+    buttonTheme?: 'primary' | 'secondary';
     titleSize?: string;
     titleBold?: boolean;
     titleItalic?: boolean;
@@ -38,9 +39,11 @@ interface ServicesProps {
   };
 }
 
-export const ServicesBlock: React.FC<ServicesProps> = ({ content, style }) => {
+export const ServicesBlock: React.FC<ServicesProps & { viewport?: string }> = ({ content, style, viewport }) => {
   const { project } = useEditorStore();
   const primaryColor = project?.settings?.primaryColor || '#3b82f6';
+  const secondaryColor = project?.settings?.secondaryColor || '#10b981';
+  const activeColor = style.buttonTheme === 'secondary' ? secondaryColor : primaryColor;
   
   const columns = style.columns || 3;
   const gridCols = {
@@ -105,10 +108,14 @@ export const ServicesBlock: React.FC<ServicesProps> = ({ content, style }) => {
                 {item.description}
               </p>
               {item.link && (
-                <div className="pt-4 border-t border-zinc-50">
-                  <span className="text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all" style={{ color: primaryColor }}>
-                    Scopri di più →
-                  </span>
+                <div className="pt-4 mt-auto">
+                  <a 
+                    href={item.link}
+                    className="font-bold no-underline transition-all active:scale-95 flex items-center justify-center"
+                    style={getButtonStyle(project, activeColor, viewport as any)}
+                  >
+                    Scopri di più
+                  </a>
                 </div>
               )}
             </div>

@@ -40,7 +40,7 @@ interface ImageTextProps {
   };
 }
 
-export const ImageText: React.FC<ImageTextProps> = ({ content, style }) => {
+export const ImageText: React.FC<ImageTextProps & { viewport?: string }> = ({ content, style, viewport }) => {
   const { project } = useEditorStore();
   const primaryColor = project?.settings?.primaryColor || '#3b82f6';
   const secondaryColor = project?.settings?.secondaryColor || '#10b981';
@@ -135,8 +135,8 @@ export const ImageText: React.FC<ImageTextProps> = ({ content, style }) => {
           {content.cta && (
             <div className={cn("pt-4 flex w-full", style.align === 'center' ? "justify-center" : style.align === 'right' ? "justify-end" : "justify-start")}>
               <button 
-                className="px-8 py-4 font-bold text-white transition-all hover:brightness-110 active:scale-[0.98] border-0"
-                style={getButtonStyle(project, activeColor)}
+                className="font-bold transition-all hover:brightness-110 active:scale-[0.98] border-0 no-underline flex items-center justify-center"
+                style={getButtonStyle(project, activeColor, viewport as any)}
               >
                 {content.cta}
               </button>

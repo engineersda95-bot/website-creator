@@ -198,6 +198,13 @@ function renderBlock(block: Block, allPages: Page[], project?: Project): string 
              ${s.minHeight !== undefined ? `min-height: ${toPx(s.minHeight)} !important;` : ''}
              ${s.hPadding !== undefined ? `padding-left: ${toPx(s.hPadding)} !important; padding-right: ${toPx(s.hPadding)} !important;` : ''}
              ${s.padding !== undefined ? `padding-top: ${toPx(s.padding)} !important; padding-bottom: ${toPx(s.padding)} !important;` : ''}
+
+             /* Button Overrides from Global Project Settings */
+             ${project?.settings?.responsive?.[view as 'mobile'|'tablet']?.buttonRadius !== undefined ? `--btn-radius: ${toPx(project.settings.responsive[view as 'mobile'|'tablet']?.buttonRadius)} !important;` : ''}
+             ${project?.settings?.responsive?.[view as 'mobile'|'tablet']?.buttonFontSize !== undefined ? `--btn-fs: ${toPx(project.settings.responsive[view as 'mobile'|'tablet']?.buttonFontSize)} !important;` : ''}
+             ${project?.settings?.responsive?.[view as 'mobile'|'tablet']?.buttonPaddingX !== undefined ? `--btn-px: ${toPx(project.settings.responsive[view as 'mobile'|'tablet']?.buttonPaddingX)} !important;` : ''}
+             ${project?.settings?.responsive?.[view as 'mobile'|'tablet']?.buttonPaddingY !== undefined ? `--btn-py: ${toPx(project.settings.responsive[view as 'mobile'|'tablet']?.buttonPaddingY)} !important;` : ''}
+             ${project?.settings?.responsive?.[view as 'mobile'|'tablet']?.buttonUppercase !== undefined ? `--btn-upper: ${project.settings.responsive[view as 'mobile'|'tablet']?.buttonUppercase ? 'uppercase' : 'none'} !important;` : ''}
           }
           #${blockId} section > div:first-child { 
             ${s.blur !== undefined || s.grayscale !== undefined || s.brightness !== undefined ? 

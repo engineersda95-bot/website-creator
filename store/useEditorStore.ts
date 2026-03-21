@@ -13,6 +13,9 @@ interface EditorState {
   isLoading: boolean;
   isInitialized: boolean;
   hasUnsavedChanges: boolean;
+  pageHistories: Record<string, { steps: any[], index: number }>;
+  takeSnapshot: () => void;
+  copiedBlock: Block | null;
   
   // Actions
   setUnsavedChanges: (val: boolean) => void;
@@ -45,39 +48,14 @@ interface EditorState {
   duplicateBlock: (id: string) => void;
   copyBlock: (id: string) => void;
   pasteBlock: (atIndex?: number) => void;
-  syncGuestData: () => Promise<void>;
   hydrateEditor: (project: Project, pages: Page[]) => void;
+  publishProject: () => Promise<{ success: boolean; url?: string; error?: string }>;
 }
 
 const triggerAutoSave = (get: () => EditorState, set?: any) => {
-  const { user, currentPage, project } = get();
-  
-  // Set unsaved changes flag
-  if (set) set({ hasUnsavedChanges: true });
-  
-  if (currentPage) {
-    const guestData = localStorage.getItem('sv_guest_data');
-    let existing = { pages: [], settings: project?.settings };
-    try {
-      if (guestData) existing = JSON.parse(guestData);
-    } catch (e) { console.error('Error parsing guest data', e); }
-    
-    // Merge currentPage and synced projectPages into existing.pages
-    const navBlock = currentPage.blocks.find(b => b.type === 'navigation');
-    const footerBlock = currentPage.blocks.find(b => b.type === 'footer');
-    
-    let pages = existing.pages.map((p: any) => {
-      if (p.id === currentPage.id) return currentPage;
-      let newBlocks = p.blocks.map((b: any) => {
-        if (b.type === 'navigation' && navBlock) return { ...navBlock, id: b.id };
-        if (b.type === 'footer' && footerBlock) return { ...footerBlock, id: b.id };
-        return b;
-      });
-      return { ...p, blocks: newBlocks };
-    });
-    
-    if (!pages.find((p: any) => p.id === currentPage.id)) pages.push(currentPage);
-    localStorage.setItem('sv_guest_data', JSON.stringify({ pages, settings: project?.settings }));
+  if (set) {
+    set({ hasUnsavedChanges: true });
+    get().takeSnapshot();
   }
 };
 
@@ -93,13 +71,40 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setUnsavedChanges: (val) => set({ hasUnsavedChanges: val }),
   viewport: 'desktop',
   setViewport: (v) => set({ viewport: v }),
-  undo: () => {
-    // TODO: Implement undo functionality
-    console.log('Undo not yet implemented');
-  },
-  redo: () => {
-    // TODO: Implement redo functionality
-    console.log('Redo not yet implemented');
+  pageHistories: {},
+  copiedBlock: null,
+
+  takeSnapshot: () => {
+    const { currentPage, project, pageHistories } = get();
+    if (!currentPage || !project) return;
+    
+    const pageId = currentPage.id;
+    const currentHist = pageHistories[pageId] || { steps: [], index: -1 };
+    
+    const snapshot = {
+      pageId: pageId,
+      blocks: JSON.parse(JSON.stringify(currentPage.blocks)),
+      settings: JSON.parse(JSON.stringify(project.settings))
+    };
+
+    const newSteps = currentHist.steps.slice(0, currentHist.index + 1);
+    const last = currentHist.index >= 0 ? newSteps[currentHist.index] : null;
+    
+    if (last) {
+      const sameBlocks = JSON.stringify(last.blocks) === JSON.stringify(snapshot.blocks);
+      const sameSettings = JSON.stringify(last.settings) === JSON.stringify(snapshot.settings);
+      if (sameBlocks && sameSettings) return;
+    }
+
+    newSteps.push(snapshot);
+    if (newSteps.length > 50) newSteps.shift();
+    
+    set({ 
+       pageHistories: {
+         ...pageHistories,
+         [pageId]: { steps: newSteps, index: newSteps.length - 1 }
+       }
+    });
   },
 
   setProject: (project: Project) => set({ project }),
@@ -148,6 +153,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
     if (pageData) {
       set({ currentPage: pageData, isLoading: false, hasUnsavedChanges: false });
+      get().takeSnapshot(); // Snapshot iniziale per la nuova pagina
     } else if (template) {
       const blocks = getBlocksFromTemplate(template as keyof typeof TEMPLATES);
       const newPage = {
@@ -159,6 +165,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         updated_at: new Date().toISOString()
       };
       set({ currentPage: newPage, isLoading: false, hasUnsavedChanges: false });
+      get().takeSnapshot();
       get().saveCurrentPage();
     } else {
       set({ isLoading: false, hasUnsavedChanges: false });
@@ -260,7 +267,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   updateProjectSettings: async (settings) => {
-    const { project } = get();
+    const { project, user } = get();
     if (!project) return;
 
     const { name, ...otherSettings } = settings;
@@ -269,16 +276,15 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     
     set({ project: updatedProject });
 
-    const { user } = get();
     if (user) {
-      const { error } = await supabase.from('projects')
+      supabase.from('projects')
         .update({ name: updatedProject.name, settings: newSettings })
-        .eq('id', project.id);
-
-      if (error) console.error('FAILED to save project settings:', error);
-    } else {
-      triggerAutoSave(get, set);
+        .eq('id', project.id)
+        .then(({ error }) => {
+          if (error) console.error('FAILED to save project settings:', error);
+        });
     }
+    triggerAutoSave(get, set);
   },
 
   initialize: async () => {
@@ -293,13 +299,43 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ user: null, project: null, projectPages: [], currentPage: null });
   },
 
-  addBlock: (type, atIndex) => set((state) => {
-    const { project, currentPage, projectPages } = state;
-    if (!project || !currentPage) return state;
+  copyBlock: (id) => {
+    const { currentPage } = get();
+    if (!currentPage) return;
+    const block = currentPage.blocks.find(b => b.id === id);
+    if (block) {
+      set({ copiedBlock: block });
+    }
+  },
+
+  pasteBlock: (atIndex?: number) => {
+    const { currentPage, projectPages, copiedBlock } = get();
+    if (!currentPage || !copiedBlock) return;
+
+    const blockToPaste: Block = copiedBlock;
+
+    const newBlock = { ...blockToPaste, id: uuidv4() };
+    const newBlocks = [...currentPage.blocks];
+    const insertPos = atIndex !== undefined ? atIndex : newBlocks.length;
+    newBlocks.splice(insertPos, 0, newBlock);
+
+    const newCurrentPage = { ...currentPage, blocks: newBlocks };
+    set({
+      currentPage: newCurrentPage,
+      projectPages: projectPages.map(p => p.id === currentPage.id ? newCurrentPage : p),
+      selectedBlockId: newBlock.id
+    });
+    triggerAutoSave(get, set);
+  },
+
+  addBlock: (type, atIndex) => {
+    const { project, currentPage, projectPages } = get();
+    if (!project || !currentPage) return;
 
     // Check if block type is already present (for global blocks like navigation/footer)
     if (type === 'navigation' || type === 'footer') {
-       const existingBlock = currentPage.blocks.find(b => b.type === type);
+       const existingBlock = currentPage.blocks.find(b => b.id !== 'nav-header' && b.id !== 'footer-main' && b.type === type);
+       // Se è un blocco globale speciale lo cloniamo
        if (existingBlock) {
           const newBlock = { ...existingBlock, id: uuidv4() };
           const newBlocks = [...currentPage.blocks];
@@ -307,12 +343,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           newBlocks.splice(insertPos, 0, newBlock);
           
           const newCurrentPage = { ...currentPage, blocks: newBlocks };
-          triggerAutoSave(() => ({ ...state, currentPage: newCurrentPage }), set);
-          return {
+          set({
              currentPage: newCurrentPage,
              projectPages: projectPages.map(p => p.id === currentPage.id ? newCurrentPage : p),
              selectedBlockId: newBlock.id
-          };
+          });
+          triggerAutoSave(get, set);
+          return;
        }
     }
 
@@ -405,13 +442,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
     const newCurrentPage = { ...currentPage, blocks: newBlocks };
 
-    triggerAutoSave(() => ({ ...state, currentPage: newCurrentPage }), set);
-    return { 
+    set({ 
       currentPage: newCurrentPage,
       projectPages: projectPages.map(p => p.id === currentPage.id ? newCurrentPage : p),
       selectedBlockId: newBlock.id
-    };
-  }),
+    });
+    triggerAutoSave(get, set);
+  },
 
   updateBlock: (id, content, style) => {
     const { currentPage, viewport, projectPages } = get();
@@ -561,12 +598,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   selectBlock: (id) => set({ selectedBlockId: id }),
 
-  duplicateBlock: (id) => set((state) => {
-    const { currentPage, projectPages } = state;
-    if (!currentPage) return state;
+  duplicateBlock: (id) => {
+    const { currentPage, projectPages } = get();
+    if (!currentPage) return;
 
     const block = currentPage.blocks.find(b => b.id === id);
-    if (!block) return state;
+    if (!block) return;
 
     const newBlock = { 
        ...block, 
@@ -578,67 +615,81 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     newBlocks.splice(index + 1, 0, newBlock);
 
     const newCurrentPage = { ...currentPage, blocks: newBlocks };
-    triggerAutoSave(() => ({ ...state, currentPage: newCurrentPage }), set);
     
-    return {
+    set({
       currentPage: newCurrentPage,
       projectPages: projectPages.map(p => p.id === currentPage.id ? newCurrentPage : p),
       selectedBlockId: newBlock.id
-    };
-  }),
+    });
+    triggerAutoSave(get, set);
+  },
 
-  copyBlock: (id) => {
-    const { currentPage } = get();
-    if (!currentPage) return;
-    const block = currentPage.blocks.find(b => b.id === id);
-    if (block) {
-      localStorage.setItem('sv_copied_block', JSON.stringify(block));
+
+  hydrateEditor: (project, pages) => set({ project, projectPages: pages }),
+
+  publishProject: async () => {
+    const { project } = get();
+    if (!project) return { success: false, error: 'No project selected' };
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('deploy-project', {
+        body: { projectId: project.id }
+      });
+      if (error) throw error;
+      return { success: true, url: data.url };
+    } catch (e: any) {
+      console.error('Publish error:', e);
+      return { success: false, error: e.message || 'Unknown error' };
     }
   },
 
-  pasteBlock: (atIndex) => set((state) => {
-    const { currentPage, projectPages } = state;
-    if (!currentPage) return state;
+  undo: () => {
+    const { pageHistories, project, projectPages, currentPage } = get();
+    if (!currentPage || !project) return;
 
-    const copiedData = localStorage.getItem('sv_copied_block');
-    if (!copiedData) return state;
+    const currentHist = pageHistories[currentPage.id];
+    if (!currentHist || currentHist.index <= 0) return;
 
-    try {
-      const block = JSON.parse(copiedData);
-      const newBlock = {
-        ...block,
-        id: uuidv4()
-      };
-
-      const newBlocks = [...currentPage.blocks];
-      const insertPos = atIndex !== undefined ? atIndex : newBlocks.length;
-      newBlocks.splice(insertPos, 0, newBlock);
-
-      const newCurrentPage = { ...currentPage, blocks: newBlocks };
-      triggerAutoSave(() => ({ ...state, currentPage: newCurrentPage }), set);
-
-      return {
-        currentPage: newCurrentPage,
-        projectPages: projectPages.map(p => p.id === currentPage.id ? newCurrentPage : p),
-        selectedBlockId: newBlock.id
-      };
-    } catch (e) {
-      console.error('Failed to paste block', e);
-      return state;
-    }
-  }),
-
-  syncGuestData: async () => {
-    const guestData = localStorage.getItem('sv_guest_data');
-    if (!guestData) return;
-    try {
-      const { pages, settings } = JSON.parse(guestData);
-      if (pages.length > 0) {
-        await supabase.from('pages').upsert(pages);
-      }
-      localStorage.removeItem('sv_guest_data');
-    } catch (e) { console.error('Error syncing guest data', e); }
+    const targetIdx = currentHist.index - 1;
+    const snapshot = currentHist.steps[targetIdx];
+    
+    const updatedPage = { ...currentPage, blocks: snapshot.blocks };
+    const updatedProject = { ...project, settings: snapshot.settings };
+    
+    set({ 
+       currentPage: updatedPage,
+       project: updatedProject,
+       pageHistories: {
+         ...pageHistories,
+         [currentPage.id]: { ...currentHist, index: targetIdx }
+       },
+       projectPages: projectPages.map(p => p.id === updatedPage.id ? updatedPage : p),
+       hasUnsavedChanges: true
+    });
   },
 
-  hydrateEditor: (project, pages) => set({ project, projectPages: pages })
+  redo: () => {
+    const { pageHistories, project, projectPages, currentPage } = get();
+    if (!currentPage || !project) return;
+
+    const currentHist = pageHistories[currentPage.id];
+    if (!currentHist || currentHist.index >= currentHist.steps.length - 1) return;
+
+    const targetIdx = currentHist.index + 1;
+    const snapshot = currentHist.steps[targetIdx];
+    
+    const updatedPage = { ...currentPage, blocks: snapshot.blocks };
+    const updatedProject = { ...project, settings: snapshot.settings };
+    
+    set({ 
+       currentPage: updatedPage,
+       project: updatedProject,
+       pageHistories: {
+         ...pageHistories,
+         [currentPage.id]: { ...currentHist, index: targetIdx }
+       },
+       projectPages: projectPages.map(p => p.id === updatedPage.id ? updatedPage : p),
+       hasUnsavedChanges: true
+    });
+  }
 }));

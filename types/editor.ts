@@ -63,7 +63,13 @@ export interface ProjectSettings {
   buttonBorderWidth?: number;
   buttonPaddingX?: number;
   buttonPaddingY?: number;
+  buttonFontSize?: number;
+  buttonWidth?: number | 'auto' | 'full';
   buttonUppercase: boolean;
+  responsive?: {
+    mobile?: Partial<ProjectSettings>;
+    tablet?: Partial<ProjectSettings>;
+  };
 }
 
 export interface Project {

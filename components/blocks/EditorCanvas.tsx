@@ -1,9 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
+console.log("EditorCanvas v2.0 - Forced Rebuild");
+
+interface EditorCanvasProps {}
 import { useEditorStore } from '@/store/useEditorStore';
 import { getBlockComponent } from './BlockRegistry';
-import { Trash2, ChevronUp, ChevronDown, Monitor, Tablet, Smartphone, Moon, Sun, Plus, Type, Layout, Menu, Square, Copy, Clipboard, Layers, Settings } from 'lucide-react';
+import { Trash2, ChevronUp, ChevronDown, Monitor, Tablet, Smartphone, Moon, Sun, Plus, Type, Layout, Menu, Square, Copy, Clipboard, Layers, Settings, RotateCcw, RotateCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const EditorCanvas: React.FC = () => {
@@ -23,8 +27,15 @@ export const EditorCanvas: React.FC = () => {
     addBlock,
     duplicateBlock,
     copyBlock,
-    pasteBlock
+    pasteBlock,
+    undo,
+    redo,
+    pageHistories
   } = useEditorStore();
+
+  const currentHist = currentPage ? pageHistories[currentPage.id] : null;
+  const historyIndex = currentHist?.index ?? -1;
+  const historyLength = currentHist?.steps.length ?? 0;
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,6 +43,14 @@ export const EditorCanvas: React.FC = () => {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
 
       if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z') {
+           e.preventDefault();
+           undo();
+        }
+        if (e.key === 'y') {
+           e.preventDefault();
+           redo();
+        }
         if (e.key === 'c' && selectedBlockId) {
           e.preventDefault();
           copyBlock(selectedBlockId);
@@ -48,7 +67,7 @@ export const EditorCanvas: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedBlockId, copyBlock, pasteBlock, duplicateBlock]);
+  }, [selectedBlockId, copyBlock, pasteBlock, duplicateBlock, undo, redo]);
 
   const [hasCopiedBlock, setHasCopiedBlock] = React.useState(false);
   
@@ -109,6 +128,25 @@ export const EditorCanvas: React.FC = () => {
             className={cn("p-2 rounded-lg transition-all", viewport === 'mobile' ? "bg-zinc-900 text-white shadow-xl scale-110" : "text-zinc-400 hover:bg-zinc-100")}
           >
             <Smartphone size={18} />
+          </button>
+
+          <div className="h-4 w-px bg-zinc-200 mx-1" />
+
+          <button
+            onClick={() => undo()}
+            disabled={historyIndex <= 0}
+            className={cn("p-2 rounded-lg transition-all", historyIndex > 0 ? "text-zinc-900 hover:bg-zinc-100" : "text-zinc-200 cursor-not-allowed")}
+            title="Annulla (Ctrl+Z)"
+          >
+            <RotateCcw size={18} />
+          </button>
+          <button
+            onClick={() => redo()}
+            disabled={historyIndex >= historyLength - 1}
+            className={cn("p-2 rounded-lg transition-all", historyIndex < historyLength - 1 ? "text-zinc-900 hover:bg-zinc-100" : "text-zinc-200 cursor-not-allowed")}
+            title="Ripristina (Ctrl+Y)"
+          >
+            <RotateCw size={18} />
           </button>
         </div>
 
@@ -274,6 +312,7 @@ export const EditorCanvas: React.FC = () => {
                         isEditing={true}
                         project={project || undefined}
                         allPages={projectPages}
+                        viewport={viewport}
                         onUpdate={(newContent: any) => updateBlock(block.id, newContent)}
                       />
 

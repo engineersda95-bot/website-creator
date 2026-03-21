@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn, toPx, getButtonStyle, formatLink } from '@/lib/utils';
-import { Project } from '@/types/editor';
+import { Project, ProjectSettings } from '@/types/editor';
 
 interface HeroProps {
   content: {
@@ -40,12 +40,14 @@ interface HeroProps {
     subtitleSize?: string;
     subtitleBold?: boolean;
     subtitleItalic?: boolean;
+    buttonFontSize?: string;
   };
   isEditing?: boolean;
   project?: Project;
+  viewport?: string;
 }
 
-export const Hero: React.FC<HeroProps> = ({ content, style, project }) => {
+export const Hero: React.FC<HeroProps> = ({ content, style, project, viewport }) => {
   const primaryColor = project?.settings?.primaryColor || '#3b82f6';
   const secondaryColor = project?.settings?.secondaryColor || '#10b981';
   const activeColor = style.buttonTheme === 'secondary' ? secondaryColor : primaryColor;
@@ -155,8 +157,8 @@ export const Hero: React.FC<HeroProps> = ({ content, style, project }) => {
           {content.cta && (
             <a 
               {...formatLink(content.ctaUrl || '#')}
-              className="px-10 py-5 text-lg font-bold transition-all active:scale-95 border-0 outline-none no-underline inline-flex items-center justify-center min-w-[200px]"
-              style={getButtonStyle(project, activeColor)}
+              className="font-bold transition-all active:scale-95 border-0 outline-none no-underline inline-flex items-center justify-center"
+              style={getButtonStyle(project, activeColor, viewport as any)}
             >
               {content.cta}
             </a>

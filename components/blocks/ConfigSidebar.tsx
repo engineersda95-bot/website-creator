@@ -49,6 +49,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImageUpload } from './ImageUpload';
+import { ProjectSettings } from '@/types/editor';
 
 const ICON_MAP: Record<string, any> = {
    star: Star,
@@ -76,8 +77,17 @@ export const ConfigSidebar: React.FC = () => {
       return (
          <div className="w-80 shrink-0 z-20 bg-white border-l border-zinc-200 flex flex-col h-full shadow-sm animate-in slide-in-from-right duration-500 overflow-y-auto">
             <div className="p-6 border-b border-zinc-200 bg-zinc-50/50 flex flex-col gap-2">
-               <h2 className="text-xl font-black text-zinc-900 tracking-tight">Personalizzazione Sito</h2>
-               <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Impostazioni Globali & Branding</p>
+               <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-black text-zinc-900 tracking-tight">Design Globale</h2>
+                  <div className={cn(
+                     "px-2 py-1 rounded-md flex items-center gap-1.5 border animate-in fade-in zoom-in duration-300",
+                     viewport === 'desktop' ? "bg-zinc-100 border-zinc-200 text-zinc-400" : "bg-indigo-50 border-indigo-100 text-indigo-600"
+                  )}>
+                     {viewport === 'desktop' ? <Monitor size={10} /> : <Smartphone size={10} />}
+                     <span className="text-[9px] font-black uppercase tracking-tight">Stai modificando: {viewport}</span>
+                  </div>
+               </div>
+               <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Personalizza l'estetica del tuo sito</p>
             </div>
 
             <div className="p-6 space-y-10">
@@ -118,7 +128,7 @@ export const ConfigSidebar: React.FC = () => {
                            />
                         </div>
                         <div>
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Colore Secondario</label>
+                           <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Colore Secondario (Tema 2)</label>
                            <input
                               type="color"
                               className="w-full h-10 border border-zinc-200 rounded-lg cursor-pointer bg-transparent"
@@ -198,74 +208,139 @@ export const ConfigSidebar: React.FC = () => {
                      <MousePointer2 size={14} className="text-indigo-500" /> Stile Bottoni
                   </h3>
                   <div className="space-y-6">
-                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Arrotondamento</label>
-                           <input
-                              type="number"
-                              className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
-                              value={project?.settings?.buttonRadius || 0}
-                              onChange={(e) => updateProjectSettings({ buttonRadius: parseInt(e.target.value) || 0 })}
-                           />
-                        </div>
-                        <div>
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Ombra</label>
-                           <select
-                              className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
-                              value={project?.settings?.buttonShadow || 'M'}
-                              onChange={(e) => updateProjectSettings({ buttonShadow: e.target.value as any })}
-                           >
-                              <option value="none">Nessuna</option>
-                              <option value="S">Piccola</option>
-                              <option value="M">Media</option>
-                              <option value="L">Grande</option>
-                           </select>
-                        </div>
-                     </div>
+                     {(() => {
+                        // Desktop è la fonte della verità (base)
+                        const desktopSettings = (project?.settings || {}) as ProjectSettings;
+                        
+                        // Determiniamo quali impostazioni stiamo effettivamente modificando
+                        const isDesktop = viewport === 'desktop';
+                        const isMobile = viewport === 'mobile' || viewport === 'tablet'; // Supporto legacy per il browser
+                        const currentViewport = viewport as 'tablet' | 'mobile';
+                        
+                        // Le impostazioni attive per questo viewport (possono essere undefined se non sovrascritte)
+                        const currentSettings = (isDesktop ? desktopSettings : (project?.settings?.responsive?.[currentViewport] || {})) as Partial<ProjectSettings>;
+                        
+                        const updateGlobal = (newVal: Partial<ProjectSettings>) => {
+                           if (isDesktop) {
+                              updateProjectSettings(newVal);
+                           } else {
+                              updateProjectSettings({ 
+                                 responsive: { 
+                                    ...project?.settings?.responsive,
+                                    [currentViewport]: { ...(project?.settings?.responsive?.[currentViewport] || {}), ...newVal }
+                                 } 
+                              });
+                           }
+                        };
+                        
+                        // Helper per decidere cosa mostrare nell'input
+                        const getValue = (key: keyof ProjectSettings) => {
+                           const val = currentSettings[key];
+                           if (val !== undefined && val !== null && val !== "") return val as any;
+                           return ""; 
+                        };
 
-                     <div className="flex items-center justify-between pt-2">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase cursor-pointer" htmlFor="btn-border">Abilita Bordo</label>
-                        <input id="btn-border" type="checkbox" className="w-5 h-5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900" checked={!!project?.settings?.buttonBorder} onChange={(e) => updateProjectSettings({ buttonBorder: e.target.checked })} />
-                     </div>
+                        const getPlaceholder = (key: keyof ProjectSettings, fallback: any) => {
+                           if (isDesktop) return fallback.toString();
+                           return (desktopSettings[key] ?? fallback).toString();
+                        };
 
-                     {project?.settings?.buttonBorder && (
-                        <div className="grid grid-cols-2 gap-4 pt-2">
-                           <div>
-                              <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Colore Bordo</label>
-                              <input
-                                 type="color"
-                                 className="w-full h-10 border border-zinc-200 rounded-lg cursor-pointer bg-transparent"
-                                 value={project?.settings?.buttonBorderColor || '#ffffff'}
-                                 onChange={(e) => updateProjectSettings({ buttonBorderColor: e.target.value })}
-                              />
+                        return (
+                           <div className="space-y-6">
+                              <div className="grid grid-cols-2 gap-4">
+                                 <div>
+                                    <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Arrotondamento</label>
+                                    <input
+                                       type="number"
+                                       className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
+                                       value={getValue('buttonRadius')}
+                                       placeholder={getPlaceholder('buttonRadius', 0)}
+                                       onChange={(e) => updateGlobal({ buttonRadius: parseInt(e.target.value) || 0 })}
+                                    />
+                                 </div>
+                                 <div>
+                                    <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Ombra</label>
+                                    <select
+                                       className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
+                                       value={getValue('buttonShadow')}
+                                       onChange={(e) => updateGlobal({ buttonShadow: e.target.value as any })}
+                                    >
+                                       {!isDesktop && <option value="">Eredita ({desktopSettings.buttonShadow || 'Nessuna'})</option>}
+                                       <option value="none">Nessuna</option>
+                                       <option value="S">Piccola</option>
+                                       <option value="M">Media</option>
+                                       <option value="L">Grande</option>
+                                    </select>
+                                 </div>
+                              </div>
+
+                              <div className="flex items-center justify-between pt-2">
+                                 <label className="text-[10px] font-bold text-zinc-400 uppercase cursor-pointer" htmlFor="btn-border">Abilita Bordo</label>
+                                 <input 
+                                    id="btn-border" 
+                                    type="checkbox" 
+                                    className="w-5 h-5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900" 
+                                    checked={currentSettings.buttonBorder ?? (isDesktop ? false : desktopSettings.buttonBorder) ?? false} 
+                                    onChange={(e) => updateGlobal({ buttonBorder: e.target.checked })} 
+                                 />
+                              </div>
+
+                              {(currentSettings.buttonBorder ?? (isDesktop ? false : desktopSettings.buttonBorder)) && (
+                                 <div className="grid grid-cols-2 gap-4 pt-2">
+                                    <div>
+                                       <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Colore Bordo</label>
+                                       <input
+                                          type="color"
+                                          className="w-full h-10 border border-zinc-200 rounded-lg cursor-pointer bg-transparent"
+                                          value={getValue('buttonBorderColor') || (isDesktop ? '#ffffff' : desktopSettings.buttonBorderColor || '#ffffff')}
+                                          onChange={(e) => updateGlobal({ buttonBorderColor: e.target.value })}
+                                       />
+                                    </div>
+                                    <div>
+                                       <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Spessore (px)</label>
+                                       <input
+                                          type="number"
+                                          className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
+                                          value={getValue('buttonBorderWidth')}
+                                          placeholder={getPlaceholder('buttonBorderWidth', 1)}
+                                          onChange={(e) => updateGlobal({ buttonBorderWidth: parseInt(e.target.value) || 1 })}
+                                       />
+                                    </div>
+                                 </div>
+                              )}
+
+                              <div className="pt-4 border-t border-zinc-100 space-y-4">
+                                 <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                       <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Padding Oriz (px)</label>
+                                       <input type="number" className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" value={getValue('buttonPaddingX')} placeholder={getPlaceholder('buttonPaddingX', 32)} onChange={(e) => updateGlobal({ buttonPaddingX: parseInt(e.target.value) || 0 })} />
+                                    </div>
+                                    <div>
+                                       <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Padding Vert (px)</label>
+                                       <input type="number" className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" value={getValue('buttonPaddingY')} placeholder={getPlaceholder('buttonPaddingY', 12)} onChange={(e) => updateGlobal({ buttonPaddingY: parseInt(e.target.value) || 0 })} />
+                                    </div>
+                                 </div>
+                                 <div className="grid grid-cols-2 gap-4">
+                                    <div className="col-span-2">
+                                       <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Dimensione Testo (px)</label>
+                                       <input type="number" className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" value={getValue('buttonFontSize')} placeholder={getPlaceholder('buttonFontSize', 16)} onChange={(e) => updateGlobal({ buttonFontSize: parseInt(e.target.value) || 0 })} />
+                                    </div>
+                                 </div>
+                              </div>
+
+                              <div className="flex items-center justify-between pt-2">
+                                 <label className="text-[10px] font-bold text-zinc-400 uppercase cursor-pointer" htmlFor="btn-caps">Tutto Maiuscolo</label>
+                                 <input 
+                                    id="btn-caps" 
+                                    type="checkbox" 
+                                    className="w-5 h-5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900" 
+                                    checked={currentSettings.buttonUppercase ?? (isDesktop ? false : desktopSettings.buttonUppercase) ?? false} 
+                                    onChange={(e) => updateGlobal({ buttonUppercase: e.target.checked })} 
+                                 />
+                              </div>
                            </div>
-                           <div>
-                              <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Spessore (px)</label>
-                              <input
-                                 type="number"
-                                 className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
-                                 value={project?.settings?.buttonBorderWidth || 1}
-                                 onChange={(e) => updateProjectSettings({ buttonBorderWidth: parseInt(e.target.value) || 1 })}
-                              />
-                           </div>
-                        </div>
-                     )}
-
-                     <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
-                        <div>
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Larghezza Bottoni (px)</label>
-                           <input type="number" className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" value={project?.settings?.buttonPaddingX || 32} onChange={(e) => updateProjectSettings({ buttonPaddingX: parseInt(e.target.value) || 0 })} />
-                        </div>
-                        <div>
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Altezza Bottoni (px)</label>
-                           <input type="number" className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" value={project?.settings?.buttonPaddingY || 12} onChange={(e) => updateProjectSettings({ buttonPaddingY: parseInt(e.target.value) || 0 })} />
-                        </div>
-                     </div>
-
-                     <div className="flex items-center justify-between pt-2">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase cursor-pointer" htmlFor="btn-caps">Tutto Maiuscolo</label>
-                        <input id="btn-caps" type="checkbox" className="w-5 h-5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900" checked={!!project?.settings?.buttonUppercase} onChange={(e) => updateProjectSettings({ buttonUppercase: e.target.checked })} />
-                     </div>
+                        );
+                     })()}
                   </div>
                </section>
 
@@ -293,6 +368,13 @@ export const ConfigSidebar: React.FC = () => {
       <div className="w-80 shrink-0 z-20 bg-white border-l border-zinc-200 flex flex-col h-full shadow-sm animate-in slide-in-from-right duration-200">
          <div className="p-4 border-b border-zinc-200 flex items-center justify-between bg-zinc-50/50">
             <div className="flex items-center gap-2">
+               <div className={cn(
+                  "px-2 py-1 rounded-md flex items-center gap-1.5 border animate-in fade-in zoom-in duration-300",
+                  viewport === 'desktop' ? "bg-zinc-100 border-zinc-200 text-zinc-400" : "bg-indigo-50 border-indigo-100 text-indigo-600"
+               )}>
+                  {viewport === 'desktop' ? <Monitor size={10} /> : <Smartphone size={10} />}
+                  <span className="text-[9px] font-black uppercase tracking-tight">Stai modificando: {viewport}</span>
+               </div>
                <div className="truncate max-w-[150px] uppercase text-[10px] font-black text-zinc-400 tracking-wider">
                   Edit: {selectedBlock.type}
                </div>
@@ -393,19 +475,6 @@ export const ConfigSidebar: React.FC = () => {
                               ))}
                               <button onClick={() => updateContent({ links: [...(selectedBlock.content.links || []), { label: 'Nuovo Link', url: '#' }] })} className="w-full p-2 border-2 border-dashed rounded-xl text-xs text-zinc-400 hover:bg-zinc-50 transition-colors font-black">+ AGGIUNGI LINK</button>
                            </div>
-                        </div>
-
-                        <div className="pt-4 border-t space-y-4">
-                           <div className="flex items-center justify-between">
-                              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Mostra Bottone CTA</label>
-                              <input type="checkbox" className="w-5 h-5 rounded border-zinc-300" checked={!!selectedBlock.content.showContact} onChange={(e) => updateContent({ showContact: e.target.checked })} />
-                           </div>
-                           {selectedBlock.content.showContact && (
-                              <>
-                                 <input className="w-full p-2.5 border border-zinc-200 rounded-lg text-sm font-bold" placeholder="Testo Bottone (es: Prenota)" value={selectedBlock.content.cta || ''} onChange={(e) => updateContent({ cta: e.target.value })} />
-                                 <input className="w-full p-2.5 border border-zinc-200 rounded-lg text-[10px]" placeholder="URL Bottone" value={selectedBlock.content.ctaUrl || ''} onChange={(e) => updateContent({ ctaUrl: e.target.value })} />
-                              </>
-                           )}
                         </div>
 
                         <div className="pt-4 border-t">
@@ -946,27 +1015,27 @@ export const ConfigSidebar: React.FC = () => {
                                  <input type="range" min="10" max="120" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('titleSize', 24)} onChange={(e) => updateStyle({ titleSize: parseInt(e.target.value) })} />
                               </div>
                               <div>
-                                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
-                                     <span>Dimensione Link</span>
-                                     <span className="text-zinc-900 font-bold">{getStyleValue('fontSize', 14)}px</span>
-                                  </label>
-                                  <input type="range" min="8" max="40" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('fontSize', 14)} onChange={(e) => updateStyle({ fontSize: parseInt(e.target.value) })} />
-                               </div>
-                               <div>
-                                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
-                                     <span>Dimensione Icone Social</span>
-                                     <span className="text-zinc-900 font-bold">{getStyleValue('socialIconSize', 20)}px</span>
-                                  </label>
-                                  <input type="range" min="12" max="60" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('socialIconSize', 20)} onChange={(e) => updateStyle({ socialIconSize: parseInt(e.target.value) })} />
-                               </div>
-                               <div>
-                                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
-                                     <span>Dimensione Copyright</span>
-                                     <span className="text-zinc-900 font-bold">{getStyleValue('copyrightSize', 12)}px</span>
-                                  </label>
-                                  <input type="range" min="8" max="30" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('copyrightSize', 12)} onChange={(e) => updateStyle({ copyrightSize: parseInt(e.target.value) })} />
-                               </div>
-                            </>
+                                 <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                                    <span>Dimensione Link</span>
+                                    <span className="text-zinc-900 font-bold">{getStyleValue('fontSize', 14)}px</span>
+                                 </label>
+                                 <input type="range" min="8" max="40" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('fontSize', 14)} onChange={(e) => updateStyle({ fontSize: parseInt(e.target.value) })} />
+                              </div>
+                              <div>
+                                 <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                                    <span>Dimensione Icone Social</span>
+                                    <span className="text-zinc-900 font-bold">{getStyleValue('socialIconSize', 20)}px</span>
+                                 </label>
+                                 <input type="range" min="12" max="60" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('socialIconSize', 20)} onChange={(e) => updateStyle({ socialIconSize: parseInt(e.target.value) })} />
+                              </div>
+                              <div>
+                                 <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                                    <span>Dimensione Copyright</span>
+                                    <span className="text-zinc-900 font-bold">{getStyleValue('copyrightSize', 12)}px</span>
+                                 </label>
+                                 <input type="range" min="8" max="30" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900" value={getStyleValue('copyrightSize', 12)} onChange={(e) => updateStyle({ copyrightSize: parseInt(e.target.value) })} />
+                              </div>
+                           </>
                         ) : (
                            <div>
                               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
