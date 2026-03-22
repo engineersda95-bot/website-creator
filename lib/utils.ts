@@ -10,6 +10,7 @@ export const formatRichText = (text: string = '') => {
   return text
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\[youtube:(.*?)\]/g, '<div class="relative pb-[56.25%] h-0 my-8 rounded-3xl overflow-hidden shadow-2xl border-4 border-white"><iframe src="https://www.youtube.com/embed/$1" className="absolute top-0 left-0 w-full h-full" frameborder="0" allowfullscreen></iframe></div>')
     .replace(/\n/g, '<br />');
 };
 
@@ -82,3 +83,20 @@ export function getStyleValue(block: any, viewport: string | undefined, key: str
   if (vp === 'desktop') return block.style?.[key] ?? defaultValue;
   return block.responsiveStyles?.[vp]?.[key] ?? block.style?.[key] ?? defaultValue;
 }
+
+export function normalizeText(text: string): string {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+export function fuzzySearch(query: string, text: string): boolean {
+  const normQuery = normalizeText(query);
+  const normText = normalizeText(text);
+  if (!normQuery) return true;
+  return normText.includes(normQuery);
+}
+

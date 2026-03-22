@@ -9,14 +9,7 @@ import {
 } from 'lucide-react';
 import { cn, getStyleValue as getStyleValueUtil } from '@/lib/utils';
 import { GlobalSettings } from './sidebar/GlobalSettings';
-import { NavigationContent } from './sidebar/block-editors/NavigationContent';
-import { NavigationStyle } from './sidebar/block-editors/NavigationStyle';
-import { HeroContent } from './sidebar/block-editors/HeroContent';
-import { HeroStyle } from './sidebar/block-editors/HeroStyle';
-import { TextContent } from './sidebar/block-editors/TextContent';
-import { TextStyle } from './sidebar/block-editors/TextStyle';
-import { FooterContent } from './sidebar/block-editors/FooterContent';
-import { FooterStyle } from './sidebar/block-editors/FooterStyle';
+import { BLOCK_DEFINITIONS } from '@/lib/block-definitions';
 
 export const ConfigSidebar: React.FC = () => {
    const { 
@@ -54,6 +47,9 @@ export const ConfigSidebar: React.FC = () => {
       );
    }
 
+   // Definition from registry
+   const definition = BLOCK_DEFINITIONS[selectedBlock.type];
+
    // Block Specific Handlers
    const updateContent = (newContent: any) => {
       updateBlock(selectedBlock.id, { ...selectedBlock.content, ...newContent });
@@ -69,34 +65,31 @@ export const ConfigSidebar: React.FC = () => {
 
    // Content Editor Selection
    const renderContentEditor = () => {
-      switch (selectedBlock.type) {
-         case 'navigation':
-            return <NavigationContent selectedBlock={selectedBlock} updateContent={updateContent} updateStyle={updateStyle} getStyleValue={getStyleValue} />;
-         case 'hero':
-            return <HeroContent selectedBlock={selectedBlock} updateContent={updateContent} updateStyle={updateStyle} getStyleValue={getStyleValue} />;
-         case 'text':
-            return <TextContent selectedBlock={selectedBlock} updateContent={updateContent} />;
-         case 'footer':
-            return <FooterContent selectedBlock={selectedBlock} updateContent={updateContent} projectPages={projectPages} />;
-         default:
-            return <div className="p-6 text-zinc-400 text-xs text-center italic">Editor non disponibile.</div>;
+      if (!definition || !definition.contentEditor) {
+         return <div className="p-6 text-zinc-400 text-xs text-center italic">Editor contenuti non disponibile.</div>;
       }
+      const Component = definition.contentEditor;
+      return <Component 
+         selectedBlock={selectedBlock} 
+         updateContent={updateContent} 
+         updateStyle={updateStyle} 
+         getStyleValue={getStyleValue} 
+         projectPages={projectPages}
+      />;
    };
 
    // Style Editor Selection
    const renderStyleEditor = () => {
-      switch (selectedBlock.type) {
-         case 'navigation':
-            return <NavigationStyle selectedBlock={selectedBlock} updateStyle={updateStyle} getStyleValue={getStyleValue} project={project} />;
-         case 'hero':
-            return <HeroStyle selectedBlock={selectedBlock} updateStyle={updateStyle} getStyleValue={getStyleValue} project={project} />;
-         case 'text':
-            return <TextStyle selectedBlock={selectedBlock} updateStyle={updateStyle} getStyleValue={getStyleValue} project={project} />;
-         case 'footer':
-            return <FooterStyle selectedBlock={selectedBlock} updateStyle={updateStyle} getStyleValue={getStyleValue} project={project} />;
-         default:
-            return <div className="p-6 text-zinc-400 text-xs text-center italic">Personalizzazione stile non disponibile.</div>;
+      if (!definition || !definition.styleEditor) {
+         return <div className="p-6 text-zinc-400 text-xs text-center italic">Editor stili non disponibile.</div>;
       }
+      const Component = definition.styleEditor;
+      return <Component 
+         selectedBlock={selectedBlock} 
+         updateStyle={updateStyle} 
+         getStyleValue={getStyleValue} 
+         project={project} 
+      />;
    };
 
    return (

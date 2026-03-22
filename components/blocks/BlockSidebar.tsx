@@ -20,42 +20,34 @@ import {
   Plus,
   Menu,
   FileText,
-  ShoppingBag
+  ShoppingBag,
+  Minus
 } from 'lucide-react';
 import { PageManager } from '../editor/PageManager';
-
-const blockLibrary: { type: BlockType; label: string; icon: any }[] = [
-  { type: 'navigation', label: 'Main Navigation', icon: Menu },
-  { type: 'hero', label: 'Hero Section', icon: Square },
-  { type: 'text', label: 'Simple Text', icon: Type },
-  { type: 'footer', label: 'Footer Section', icon: Layout },
-];
+import { getBlockLibrary } from '@/lib/block-definitions';
 
 export const BlockSidebar: React.FC = () => {
-  const { addBlock } = useEditorStore();
+  const { addBlock, currentPage, selectedBlockId, selectBlock } = useEditorStore();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  
+  const blockLibrary = getBlockLibrary();
 
-  // NOTE: The provided code snippet for "ConfigSidebar theme color picker"
-  // seems to be intended for a different component (ConfigSidebar) and
-  // introduces undefined variables like 'project' and 'updateProjectSettings'
-  // if placed directly into BlockSidebar.
-  //
-  // Assuming the primary instruction for BlockSidebar is to update its
-  // block display to a grid layout with square buttons, and the color picker
-  // part is a separate, possibly mis-placed, instruction for another component.
-  //
-  // To make the file syntactically correct and avoid breaking BlockSidebar,
-  // I will apply the "grid layout with square buttons" change to the existing
-  // block library display in BlockSidebar.
-  //
-  // The provided code snippet for theme colors is not directly applicable
-  // to BlockSidebar without significant context and variable definitions.
-  // If this was intended for a *new* ConfigSidebar component, that would be
-  // a different task.
-  //
-  // For now, I will only adjust the existing block display in BlockSidebar
-  // to match the "grid layout with square buttons" description, which is
-  // already largely in place, but ensure the button styling is "square".
+  const blockIcons: Record<string, any> = {
+    hero: Square,
+    text: Type,
+    navigation: Menu,
+    footer: Layout,
+    image: ImageIcon,
+    'image-text': Grid,
+    gallery: LayoutTemplate,
+    map: MapPin,
+    features: LayoutTemplate,
+    contact: Phone,
+    reviews: FileText,
+    'product-carousel': ShoppingBag,
+    embed: Plus,
+    divider: Minus
+  };
 
   return (
     <aside className={cn(
@@ -81,10 +73,56 @@ export const BlockSidebar: React.FC = () => {
           <div className="p-6 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
             <PageManager />
 
+            {/* PAGE BLOCKS LIST (New) */}
+            {currentPage && currentPage.blocks.length > 0 && (
+              <div className="border-t border-zinc-100 pt-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="px-2 mb-4">
+                  <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Struttura Pagina</h3>
+                  <p className="text-[10px] text-zinc-400 mt-1">Seleziona e modifica i blocchi esistenti</p>
+                </div>
+                <div className="space-y-2">
+                  {currentPage.blocks.map((block, idx) => {
+                    const Icon = blockIcons[block.type] || Square;
+                    const isSelected = selectedBlockId === block.id;
+
+                    return (
+                      <button
+                        key={block.id}
+                        onClick={() => selectBlock(block.id)}
+                        className={cn(
+                          "w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left group",
+                          isSelected
+                            ? "bg-zinc-900 border-zinc-900 shadow-xl text-white scale-[1.02]"
+                            : "bg-zinc-50 border-zinc-100 text-zinc-600 hover:border-zinc-300"
+                        )}
+                      >
+                        <div className={cn(
+                          "p-2 rounded-xl transition-colors",
+                          isSelected ? "bg-white/10" : "bg-white shadow-sm"
+                        )}>
+                          <Icon size={14} className={isSelected ? "text-white" : "text-zinc-400"} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[10px] font-black uppercase tracking-tight truncate">
+                            {idx + 1}. {block.type}
+                          </div>
+                          {(block.content?.title || block.content?.text) && (
+                            <div className={cn("text-[9px] truncate font-medium mt-0.5", isSelected ? "text-white/50" : "text-zinc-400")}>
+                              {block.content.title || block.content.text?.substring(0, 30)}
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="border-t border-zinc-100 pt-8">
               <div className="px-2 mb-4">
                 <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Libreria Blocchi</h3>
-                <p className="text-[10px] text-zinc-400 mt-1">Clicca per aggiungere alla pagina</p>
+                <p className="text-[10px] text-zinc-400 mt-1">Trascina o clicca per aggiungere</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

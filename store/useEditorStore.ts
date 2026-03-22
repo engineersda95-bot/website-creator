@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { Block, Page, Project, ProjectSettings, BlockType } from '@/types/editor';
 import { v4 as uuidv4 } from 'uuid';
 import { TEMPLATES, getBlocksFromTemplate } from '@/lib/templates';
+import { BLOCK_DEFINITIONS } from '@/lib/block-definitions';
 import { getImageHash, getAssetRelativePath } from '@/lib/image-utils';
 
 interface EditorState {
@@ -371,83 +372,26 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const themeBg = appearance === 'dark' ? (project.settings?.themeColors?.dark?.bg || '#09090b') : (project.settings?.themeColors?.light?.bg || '#ffffff');
     const themeText = appearance === 'dark' ? (project.settings?.themeColors?.dark?.text || '#ffffff') : (project.settings?.themeColors?.light?.text || '#000000');
 
-    const DEFAULTS: Record<string, { content: any; style: any }> = {
-      'hero': {
-        content: { 
-          title: 'Benvenuti nel Futuro', 
-          subtitle: 'Un design minimalista ed elegante per la tua brand identity. Ogni dettaglio è curato per massimizzare l\'impatto visivo.', 
-          cta: 'Esplora Ora',
-          logoLinkHome: true
-        },
-        style: { minHeight: 700, padding: 100, align: 'center', backgroundSize: 'cover', overlayOpacity: 40, overlayColor: '#000000' }
-      },
-      'navigation': {
-        content: { logoText: project.name || 'SitiVetrina', logoType: 'text', logoSize: 40, logoTextSize: 24, links: [{ label: 'Home', url: '/' }, { label: 'Chi Siamo', url: '/chi-siamo' }], cta: 'Inizia Ora', showContact: true, logoLinkHome: true },
-        style: { padding: 0, fontSize: 14 }
-      },
-      'text': {
-        content: { text: 'Inserisci qui il tuo contenuto testuale. Puoi formattarlo come preferisci.' },
-        style: { padding: 60, align: 'center', maxWidth: 800 }
-      },
-      'image': {
-        content: { image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085', alt: 'Placeholder' },
-        style: { padding: 40, borderRadius: 32 }
-      },
-      'image-text': {
-        content: { title: 'Distinguiti dalla massa', text: 'Offriamo soluzioni digitali su misura per far crescere il tuo business in modo sostenibile e innovativo.', image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f', imageSide: 'left', cta: 'Scopri di più' },
-        style: { padding: 80 }
-      },
-      'features': {
-        content: { 
-          items: [
-            { title: 'Qualità', description: 'Design curato in ogni minimo dettaglio.', icon: 'award' }, 
-            { title: 'Velocità', description: 'Performance ottimizzate per ogni dispositivo.', icon: 'zap' }, 
-            { title: 'Supporto', description: 'Siamo al tuo fianco per ogni necessità.', icon: 'heart' }
-          ] 
-        },
-        style: { padding: 80, cardStyle: 'elevated' }
-      },
-      'reviews': {
-        content: { 
-          title: 'Cosa dicono di noi', 
-          subtitle: 'Le esperienze dei nostri partner e clienti.',
-          items: [
-            { name: 'Marco Rossi', text: 'Un servizio impeccabile, oltre le aspettative.', role: 'CEO @ TechLog', image: 'https://i.pravatar.cc/150?u=1' },
-            { name: 'Elena Bianchi', text: 'Hanno trasformato la nostra visione in realtà.', role: 'Designer', image: 'https://i.pravatar.cc/150?u=2' }
-          ]
-        },
-        style: { padding: 80, gap: 32 }
-      },
-      'gallery': {
-        content: { 
-          items: [
-            { url: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174', title: 'Modern Office' }, 
-            { url: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0', title: 'Collaborative Workspace' },
-            { url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c', title: 'Creative Team' }
-          ],
-          columns: 3,
-          showTitles: true,
-          aspectRatio: 'square'
-        },
-        style: { padding: 80, borderRadius: 24 }
-      },
-      'contact': {
-        content: { title: 'Lavoriamo Insieme', subtitle: 'Hai un progetto in mente? Parliamone.', email: 'hello@example.com', phone: '+39 02 1234567', address: 'Milano, Italia' },
-        style: { padding: 100, align: 'center' }
-      },
-      'footer': {
-        content: { logoText: project.name || 'SitiVetrina', copyright: `© ${new Date().getFullYear()} ${project.name || 'SitiVetrina'}`, layout: 'simple' },
-        style: { padding: 40 }
-      }
-    };
+    // Get centralized defaults
+    const definition = BLOCK_DEFINITIONS[type];
+    const defaultContent = definition?.defaults?.content ? JSON.parse(JSON.stringify(definition.defaults.content)) : {};
+    const defaultStyle = definition?.defaults?.style ? { ...definition.defaults.style } : { padding: 40, align: 'center' };
 
-    const d = DEFAULTS[type] || { content: {}, style: { padding: 40, align: 'center' } };
+    // Localization/Project dynamic defaults
+    if (type === 'navigation' || type === 'footer') {
+       if (defaultContent.logoText === 'Studio' || defaultContent.logoText === 'SitiVetrina') {
+          defaultContent.logoText = project.name || defaultContent.logoText;
+       }
+       if (type === 'footer') {
+          defaultContent.copyright = `© ${new Date().getFullYear()} ${project.name || 'SitiVetrina'}`;
+       }
+    }
 
     const newBlock: Block = {
       id: uuidv4(),
       type,
-      content: d.content,
-      style: d.style
+      content: defaultContent,
+      style: defaultStyle
     };
 
     const newBlocks = [...currentPage.blocks];

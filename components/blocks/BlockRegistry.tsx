@@ -1,19 +1,22 @@
 'use client';
 
-import React from 'react';
-import { Hero } from './visual/Hero';
-import { TextBlock } from './visual/TextBlock';
-import { Navigation } from './visual/navigation/Navigation';
-import { FooterBlock } from './visual/FooterBlock';
 import { BlockType } from '@/types/editor';
+import { BLOCK_DEFINITIONS } from '@/lib/block-definitions';
+import React from 'react';
 
-const registries: Record<BlockType, React.FC<any>> = {
-  'hero': Hero,
-  'text': TextBlock,
-  'navigation': Navigation,
-  'footer': FooterBlock
-} as any;
-
+/**
+ * Registry of visual components for each block type.
+ * Centralized for easier maintenance and senior-engineer-style code.
+ */
 export const getBlockComponent = (type: BlockType) => {
-  return registries[type] || (() => <div>Unknown Block Type: {type}</div>);
+  const definition = BLOCK_DEFINITIONS[type];
+  if (definition && definition.visual) {
+    return definition.visual;
+  }
+  
+  return () => (
+    <div className="p-20 text-center text-zinc-400 bg-zinc-50 uppercase text-[10px] font-black tracking-widest border-2 border-dashed m-10 rounded-3xl">
+      Componente visivo "{type}" non ancora implementato
+    </div>
+  );
 };

@@ -3,12 +3,15 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
 import { getBlockComponent } from './BlockRegistry';
-import { 
-  Trash2, ChevronUp, ChevronDown, Monitor, Tablet, Smartphone, 
-  Moon, Sun, Plus, Type, Layout, Menu, Square, Copy, 
-  Clipboard as ClipboardIcon, Layers, Settings, RotateCcw, RotateCw 
+import {
+  Trash2, ChevronUp, ChevronDown, Monitor, Tablet, Smartphone,
+  Moon, Sun, Plus, Type, Layout, Menu, Square, Copy,
+  Clipboard as ClipboardIcon, Layers, Settings, RotateCcw, RotateCw, Minus,
+  HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getBlockLibrary } from '@/lib/block-definitions';
+import { HelpCenter } from '../editor/HelpCenter';
 
 import { getBlockCSSVariables } from '@/lib/responsive-utils';
 
@@ -20,12 +23,12 @@ const FontLoader = React.memo(({ font }: { font: string }) => {
 });
 FontLoader.displayName = 'FontLoader';
 
-const MemoizedBlock = React.memo(({ 
-  block, 
-  project, 
-  projectPages, 
-  viewport, 
-  isSelected, 
+const MemoizedBlock = React.memo(({
+  block,
+  project,
+  projectPages,
+  viewport,
+  isSelected,
   index,
   totalBlocks,
   onSelect,
@@ -46,7 +49,7 @@ const MemoizedBlock = React.memo(({
         onSelect(block.id);
       }}
       className={cn(
-        "group relative transition-all cursor-pointer",
+        "group relative transition-all cursor-pointer block-wrapper",
         block.type === 'navigation' ? "z-50" : "z-0",
         isSelected ? "z-[40]" : "z-0",
       )}
@@ -171,7 +174,7 @@ export const EditorCanvas: React.FC = () => {
   }, [selectedBlockId, copyBlock, pasteBlock, duplicateBlock, undo, redo]);
 
   const [hasCopiedBlock, setHasCopiedBlock] = React.useState(false);
-  
+
   React.useEffect(() => {
     const checkCopied = () => setHasCopiedBlock(!!localStorage.getItem('sv_copied_block'));
     checkCopied();
@@ -186,17 +189,19 @@ export const EditorCanvas: React.FC = () => {
   const [hoverIndex, setHoverIndex] = React.useState<number | null>(null);
   const [showMenuAt, setShowMenuAt] = React.useState<number | null>(null);
 
-  const INSERT_OPTIONS = [
-    { label: 'Main Navigation', type: 'navigation', icon: Menu },
-    { label: 'Hero Section', type: 'hero', icon: Square },
-    { label: 'Simple Text', type: 'text', icon: Type },
-    { label: 'Footer Section', type: 'footer', icon: Layout }
-  ];
+  const INSERT_OPTIONS = getBlockLibrary();
 
   const isDark = project?.settings?.appearance === 'dark';
   const font = project?.settings?.fontFamily || 'Outfit';
+  const themeBg = isDark
+    ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e')
+    : (project?.settings?.themeColors?.light?.bg || '#ffffff');
+  const themeText = isDark
+    ? (project?.settings?.themeColors?.dark?.text || '#ffffff')
+    : (project?.settings?.themeColors?.light?.text || '#000000');
 
   const [isMounted, setIsMounted] = React.useState(false);
+  const [isHelpOpen, setIsHelpOpen] = React.useState(false);
   React.useEffect(() => { setIsMounted(true); }, []);
 
   if (!isMounted) return <div className="flex-1 bg-zinc-100" />;
@@ -254,18 +259,28 @@ export const EditorCanvas: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <button 
+
+          <button
+            onClick={() => setIsHelpOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black transition-all border shadow-sm bg-white text-blue-600 border-blue-100 hover:bg-blue-50"
+          >
+            <HelpCircle size={14} />
+            <span className="uppercase tracking-widest text-[10px]">Guida / Aiuto</span>
+          </button>
+
+          <button
             onClick={() => selectBlock(null)}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black transition-all border shadow-sm",
-              selectedBlockId === null 
-                ? "bg-zinc-900 text-white border-zinc-900" 
+              selectedBlockId === null
+                ? "bg-zinc-900 text-white border-zinc-900"
                 : "bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50"
             )}
           >
             <Settings size={14} />
             <span className="uppercase tracking-widest text-[10px]">Stili Globali</span>
           </button>
+
 
           <div className="h-4 w-px bg-zinc-200" />
           <button
@@ -282,8 +297,11 @@ export const EditorCanvas: React.FC = () => {
         <style>{`
           #editor-content { font-family: '${font}', sans-serif !important; }
           #editor-content * { font-family: inherit !important; }
-          .dark#editor-content { background-color: ${project?.settings?.themeColors?.dark?.bg || '#0c0c0e'} !important; }
-          #editor-content { background-color: ${project?.settings?.appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff')} !important; }
+          #editor-content { 
+            background-color: ${themeBg} !important; 
+            color: ${themeText} !important; 
+          }
+          .block-wrapper { background-color: inherit; }
           .canvas-desktop { max-width: 100%; width: 1200px; }
           .canvas-tablet { width: 768px; }
           .canvas-mobile { width: 390px; }
@@ -292,11 +310,15 @@ export const EditorCanvas: React.FC = () => {
         <main
           id="editor-content"
           className={cn(
-            "bg-white shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] min-h-screen relative pb-20 transition-all duration-700 origin-top",
+            "shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] min-h-screen relative pb-20 transition-all duration-700 origin-top",
             isDark ? "dark" : "light",
             viewport === 'desktop' ? "canvas-desktop" :
               viewport === 'tablet' ? "canvas-tablet" : "canvas-mobile"
           )}
+          style={{
+            backgroundColor: themeBg,
+            display: 'flow-root'
+          }}
         >
           {currentPage.blocks.length === 0 ? (
             <div className="p-20 text-center text-zinc-300 border-4 border-dashed m-12 rounded-[3rem] uppercase text-[10px] font-black tracking-widest flex flex-col items-center gap-4">
@@ -304,7 +326,7 @@ export const EditorCanvas: React.FC = () => {
               Trascina o clicca un blocco per iniziare
             </div>
           ) : (
-            <div className="relative">
+            <div className="relative bg-inherit">
               {/* Insertion Point Start */}
               <div
                 className="relative h-0 flex items-center justify-center group/insert z-[60]"
@@ -340,7 +362,7 @@ export const EditorCanvas: React.FC = () => {
                     ))}
                     {hasCopiedBlock && (
                       <button onClick={() => { pasteBlock(0); setShowMenuAt(null); }} className="col-span-2 flex items-center justify-center gap-3 p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100 mt-1">
-                         <ClipboardIcon size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Incolla Blocco Copiato</span>
+                        <ClipboardIcon size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Incolla Blocco Copiato</span>
                       </button>
                     )}
                   </div>
@@ -402,7 +424,7 @@ export const EditorCanvas: React.FC = () => {
                         ))}
                         {hasCopiedBlock && (
                           <button onClick={() => { pasteBlock(index + 1); setShowMenuAt(null); }} className="col-span-2 flex items-center justify-center gap-3 p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100 mt-1">
-                             <ClipboardIcon size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Incolla Blocco Copiato</span>
+                            <ClipboardIcon size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Incolla Blocco Copiato</span>
                           </button>
                         )}
                       </div>
@@ -414,6 +436,11 @@ export const EditorCanvas: React.FC = () => {
           )}
         </main>
       </div>
+      {/* Help Center Modal */}
+      <HelpCenter
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+      />
     </div>
   );
 };

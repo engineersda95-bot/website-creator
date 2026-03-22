@@ -9,7 +9,9 @@ import {
    MousePointer2,
    Monitor,
    Smartphone,
-   Globe
+   Globe,
+   Settings,
+   ChevronUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '../../shared/ImageUpload';
@@ -376,6 +378,69 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
                   </div>
                </div>
             </section>
+            <section className="pt-8 border-t border-zinc-100">
+               <details className="group">
+                  <summary className="flex items-center justify-between cursor-pointer list-none">
+                     <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                        <Settings size={14} className="text-zinc-500" /> Avanzate & Script
+                     </h3>
+                     <div className="text-zinc-300 group-open:rotate-180 transition-transform">
+                        <ChevronUp size={14} />
+                     </div>
+                  </summary>
+                  
+                  <div className="mt-6 space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                     <p className="text-[10px] text-zinc-400 font-medium leading-relaxed bg-zinc-50 p-3 rounded-xl border border-zinc-100 italic">
+                        Questi script verranno inseriti solo nel sito live pubblicato. Non verranno eseguiti nell'editor per evitare conflitti.
+                     </p>
+                     
+                     <div className="space-y-4 pt-2">
+                        <div className="space-y-2">
+                           <div className="flex items-center gap-2 pl-1">
+                              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                              <label className="text-[10px] font-bold text-zinc-900 uppercase tracking-widest">
+                                 Script di Intestazione (HEAD)
+                              </label>
+                           </div>
+                           <p className="text-[9px] text-zinc-400 pl-1 leading-relaxed">
+                              Ideale per codici che devono caricarsi **immediatamente** all'apertura del sito, come il <b>Cookie Banner (es. CookieYes)</b> o <b>Google Analytics</b>.
+                           </p>
+                           <textarea
+                              className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[11px] font-mono focus:ring-0 outline-none resize-none min-h-[100px]"
+                              value={project?.settings?.customScriptsHead || ''}
+                              onChange={(e) => updateProjectSettings({ customScriptsHead: e.target.value })}
+                              placeholder="Incolla qui il codice fornito (es. <script>...)"
+                           />
+                        </div>
+                        
+                        <div className="space-y-2 pt-2 border-t border-zinc-50">
+                           <div className="flex items-center gap-2 pl-1 pt-2">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                              <label className="text-[10px] font-bold text-zinc-900 uppercase tracking-widest">
+                                 Script di Chiusura (BODY)
+                              </label>
+                           </div>
+                           <p className="text-[9px] text-zinc-400 pl-1 leading-relaxed">
+                              Ideale per codici "pesanti" che possono caricarsi **dopo** che il sito è già visibile, come <b>Chat di assistenza</b>, <b>Pixel di Facebook</b> o widget social. Mantiene il sito più veloce.
+                           </p>
+                           <textarea
+                              className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[11px] font-mono focus:ring-0 outline-none resize-none min-h-[100px]"
+                              value={project?.settings?.customScriptsBody || ''}
+                              onChange={(e) => updateProjectSettings({ customScriptsBody: e.target.value })}
+                              placeholder="<!-- Incolla qui codici di tracciamento o chat -->"
+                           />
+                        </div>
+
+                        <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl mt-4">
+                           <p className="text-[9px] text-amber-700 font-bold uppercase tracking-tight mb-1">Nota sulla Sicurezza</p>
+                           <p className="text-[9px] text-amber-600 leading-relaxed font-medium">
+                              Incolla solo codici provenienti da fonti affidabili. Per tua protezione, questi script sono attivi solo sul sito finale e non all'interno di questo editor.
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+               </details>
+               </section>
          </div>
       </div>
    );

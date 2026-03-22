@@ -86,6 +86,11 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       '--nav-link-mobile-fs': toPx(val('fontSize', 18)),
       '--nav-link-mobile-fw': val('titleBold', false) ? '700' : '500',
       '--nav-link-mobile-fs-style': val('titleItalic', false) ? 'italic' : 'normal',
+      
+      // Divider specific
+      '--divider-width': val('dividerWidth', 100) + '%',
+      '--divider-stroke': toPx(val('dividerStroke', 1)),
+      '--divider-color': val('dividerColor', val('textColor', 'currentColor')),
     };
 
     // Content-based layout type resolution

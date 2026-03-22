@@ -1,10 +1,6 @@
 import 'server-only';
 import { Block, Page, Project } from '@/types/editor';
 import React from 'react';
-import { Navigation } from '@/components/blocks/visual/navigation/Navigation';
-import { Hero } from '@/components/blocks/visual/Hero';
-import { TextBlock } from '@/components/blocks/visual/TextBlock';
-import { FooterBlock } from '@/components/blocks/visual/FooterBlock';
 import { toPx } from '@/lib/utils';
 import { generateBlockCSS } from '@/lib/responsive-utils';
 import { resolveImageUrl } from '@/lib/image-utils';
@@ -110,6 +106,7 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
             pointer-events: auto !important;
         }
     </style>
+    ${project?.settings?.customScriptsHead || ''}
 </head>
 <body class="antialiased min-h-screen" style="background-color: ${project?.settings?.appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff')}; color: ${project?.settings?.appearance === 'dark' ? (project?.settings?.themeColors?.dark?.text || '#ffffff') : (project?.settings?.themeColors?.light?.text || '#000000')};">
     <main>
@@ -143,17 +140,20 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
         btn.setAttribute('data-open', nextState);
       });
     </script>
+    ${project?.settings?.customScriptsBody || ''}
 </body>
 </html>
   `.trim();
 }
 
-const StaticRegistry: Record<string, React.FC<any>> = {
-  navigation: Navigation,
-  hero: Hero,
-  text: TextBlock,
-  footer: FooterBlock,
-};
+import { BLOCK_DEFINITIONS } from './block-definitions';
+
+// ... (after generateStaticHtml function)
+
+const StaticRegistry: Record<string, React.FC<any>> = Object.entries(BLOCK_DEFINITIONS).reduce((acc, [type, def]) => {
+  if (def.visual) acc[type] = def.visual;
+  return acc;
+}, {} as Record<string, React.FC<any>>);
 
 function renderBlock(block: Block, allPages: Page[], project: Project | undefined, renderToStaticMarkup: any): string {
   const { type, content } = block;

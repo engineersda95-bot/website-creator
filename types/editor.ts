@@ -11,7 +11,8 @@ export type BlockType =
   'contact' |
   'reviews' |
   'product-carousel' |
-  'embed';
+  'embed' |
+  'divider';
 
 export interface Block {
   id: string;
@@ -69,6 +70,8 @@ export interface ProjectSettings {
   buttonFontSize?: number;
   buttonWidth?: number | 'auto' | 'full';
   buttonUppercase: boolean;
+  customScriptsHead?: string;
+  customScriptsBody?: string;
   responsive?: {
     mobile?: Partial<ProjectSettings>;
     tablet?: Partial<ProjectSettings>;
