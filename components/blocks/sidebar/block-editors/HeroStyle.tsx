@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Layers, Type } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager } from '../SharedSidebarComponents';
 
 interface HeroStyleProps {
    selectedBlock: any;
@@ -38,6 +38,8 @@ export const HeroStyle: React.FC<HeroStyleProps> = ({
          </section>
 
          <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+
+         <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
          <section className="pt-8 border-t border-zinc-100">
             <SectionHeader icon={Type} title="Stile Testi" colorClass="text-indigo-500" />

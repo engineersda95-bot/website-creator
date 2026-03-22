@@ -8,9 +8,11 @@ import {
    Moon,
    MousePointer2,
    Monitor,
-   Smartphone
+   Smartphone,
+   Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ImageUpload } from '../ImageUpload';
 import { ProjectSettings } from '@/types/editor';
 
 interface GlobalSettingsProps {
@@ -42,6 +44,44 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
 
          <div className="p-6 space-y-10">
             <section>
+               <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-6 flex items-center gap-2">
+                  <Globe size={14} className="text-teal-500" /> SEO & Meta Data
+               </h3>
+               <div className="space-y-6">
+                  <ImageUpload 
+                     label="Favicon Sito" 
+                     value={project?.settings?.favicon || ''} 
+                     onChange={(val: string) => updateProjectSettings({ favicon: val })} 
+                  />
+                  <ImageUpload 
+                     label="Meta Image (Social Sharing)" 
+                     value={project?.settings?.metaImage || ''} 
+                     onChange={(val: string) => updateProjectSettings({ metaImage: val })} 
+                  />
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold text-zinc-400 uppercase block pl-1">Meta Title Default</label>
+                     <input
+                        type="text"
+                        className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-xs font-bold focus:ring-0 outline-none"
+                        value={project?.settings?.metaTitle || ''}
+                        onChange={(e) => updateProjectSettings({ metaTitle: e.target.value })}
+                        placeholder="Titolo del sito"
+                     />
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold text-zinc-400 uppercase block pl-1">Meta Description Default</label>
+                     <textarea
+                        className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-xs font-medium focus:ring-0 outline-none resize-none"
+                        rows={3}
+                        value={project?.settings?.metaDescription || ''}
+                        onChange={(e) => updateProjectSettings({ metaDescription: e.target.value })}
+                        placeholder="Descrizione per i motori di ricerca..."
+                     />
+                  </div>
+               </div>
+            </section>
+
+            <section className="pt-8 border-t border-zinc-100">
                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-6 flex items-center gap-2">
                   <Type size={14} className="text-indigo-500" /> Carattere (Font)
                </h3>

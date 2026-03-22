@@ -7,7 +7,7 @@ import {
    Monitor,
    Smartphone
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getStyleValue as getStyleValueUtil } from '@/lib/utils';
 import { GlobalSettings } from './sidebar/GlobalSettings';
 import { NavigationContent } from './sidebar/block-editors/NavigationContent';
 import { NavigationStyle } from './sidebar/block-editors/NavigationStyle';
@@ -17,7 +17,6 @@ import { TextContent } from './sidebar/block-editors/TextContent';
 import { TextStyle } from './sidebar/block-editors/TextStyle';
 import { FooterContent } from './sidebar/block-editors/FooterContent';
 import { FooterStyle } from './sidebar/block-editors/FooterStyle';
-import { LegacyContent } from './sidebar/LegacyContent';
 
 export const ConfigSidebar: React.FC = () => {
    const { 
@@ -65,8 +64,7 @@ export const ConfigSidebar: React.FC = () => {
    };
 
    const getStyleValue = (key: string, defaultValue: any) => {
-      if (viewport === 'desktop') return selectedBlock.style?.[key] ?? defaultValue;
-      return selectedBlock.responsiveStyles?.[viewport]?.[key] ?? selectedBlock.style?.[key] ?? defaultValue;
+      return getStyleValueUtil(selectedBlock, viewport, key, defaultValue);
    };
 
    // Content Editor Selection
@@ -81,7 +79,7 @@ export const ConfigSidebar: React.FC = () => {
          case 'footer':
             return <FooterContent selectedBlock={selectedBlock} updateContent={updateContent} projectPages={projectPages} />;
          default:
-            return <LegacyContent selectedBlock={selectedBlock} updateContent={updateContent} updateStyle={updateStyle} />;
+            return <div className="p-6 text-zinc-400 text-xs text-center italic">Editor non disponibile.</div>;
       }
    };
 
@@ -97,10 +95,7 @@ export const ConfigSidebar: React.FC = () => {
          case 'footer':
             return <FooterStyle selectedBlock={selectedBlock} updateStyle={updateStyle} getStyleValue={getStyleValue} project={project} />;
          default:
-            // For now, non-validated blocks don't have a specific style editor assigned here
-            // but they will use the shared Legacy content if needed.
-            // Actually, I'll just return null or a message for style of non-validated blocks
-            return <div className="p-6 text-zinc-400 text-xs text-center italic">Personalizzazione stile non ancora disponibile per questo modulo.</div>;
+            return <div className="p-6 text-zinc-400 text-xs text-center italic">Personalizzazione stile non disponibile.</div>;
       }
    };
 

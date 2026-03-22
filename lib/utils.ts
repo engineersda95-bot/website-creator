@@ -14,13 +14,13 @@ export const formatRichText = (text: string = '') => {
 };
 
 export const toPx = (value: any, defaultValue: string = ''): string => {
-  if (value === undefined || value === null || value === '') return defaultValue;
+  if (value === undefined || value === null || value === '' || (typeof value === 'number' && isNaN(value))) return defaultValue;
   if (typeof value === 'number') return `${value}px`;
   if (!isNaN(Number(value))) return `${value}px`;
   return value;
 };
 
-export function getButtonStyle(project: any, activeColor: string, viewportOverride?: 'desktop' | 'tablet' | 'mobile', theme: 'primary' | 'secondary' = 'primary') {
+export function getButtonStyle(project: any, activeColor: string, viewportOverride?: 'desktop' | 'tablet' | 'mobile', theme: 'primary' | 'secondary' = 'primary', isStatic: boolean = false) {
   let viewport: 'desktop' | 'tablet' | 'mobile' = viewportOverride || 'desktop';
 
   // Se siamo sul client e non è forzato un viewport, rileviamo quello reale
@@ -41,12 +41,11 @@ export function getButtonStyle(project: any, activeColor: string, viewportOverri
     : (project?.settings?.themeColors?.buttonText || '#ffffff');
   
   // Se non abbiamo un viewport forzato, usiamo le variabili CSS per la reattività dinamica (Live Site)
-  const isStatic = !viewportOverride;
 
   return {
     backgroundColor: activeColor,
     color: buttonTextColor,
-    borderRadius: isStatic ? `var(--btn-radius, ${toPx(settings.buttonRadius, '9999px')})` : toPx(settings.buttonRadius, '9999px'),
+    borderRadius: `var(--btn-radius, ${toPx(settings.buttonRadius, '9999px')})`,
     boxShadow: {
       none: 'none',
       S: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
@@ -54,13 +53,9 @@ export function getButtonStyle(project: any, activeColor: string, viewportOverri
       L: '0 20px 25px -5px rgb(0 0 0 / 0.1)'
     }[settings.buttonShadow as 'none'|'S'|'M'|'L' || 'none'],
     border: settings.buttonBorder ? `${settings.buttonBorderWidth || 1}px solid ${settings.buttonBorderColor || (buttonTextColor + '44')}` : 'none',
-    textTransform: isStatic 
-      ? `var(--btn-upper, ${settings.buttonUppercase ? 'uppercase' : 'none'})` 
-      : (settings.buttonUppercase ? 'uppercase' : 'none'),
-    padding: isStatic 
-      ? `var(--btn-py, ${settings.buttonPaddingY || 12}px) var(--btn-px, ${settings.buttonPaddingX || 32}px)`
-      : `${settings.buttonPaddingY || 12}px ${settings.buttonPaddingX || 32}px`,
-    fontSize: isStatic ? `var(--btn-fs, ${toPx(settings.buttonFontSize, '1rem')})` : toPx(settings.buttonFontSize, '1rem'),
+    textTransform: `var(--btn-upper, ${settings.buttonUppercase ? 'uppercase' : 'none'})` as any,
+    padding: `var(--btn-py, ${settings.buttonPaddingY || 12}px) var(--btn-px, ${settings.buttonPaddingX || 32}px)`,
+    fontSize: `var(--btn-fs, ${toPx(settings.buttonFontSize, '1rem')})`,
     width: settings.buttonWidth === 'full' ? '100%' : settings.buttonWidth === 'auto' ? 'auto' : toPx(settings.buttonWidth),
     fontWeight: '700',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -85,4 +80,10 @@ export function formatLink(url: string | undefined): { href: string; target?: st
   }
   
   return { href: clean };
+}
+export function getStyleValue(block: any, viewport: string | undefined, key: string, defaultValue: any) {
+  if (!block || !block.style) return defaultValue;
+  const vp = viewport || 'desktop';
+  if (vp === 'desktop') return block.style?.[key] ?? defaultValue;
+  return block.responsiveStyles?.[vp]?.[key] ?? block.style?.[key] ?? defaultValue;
 }

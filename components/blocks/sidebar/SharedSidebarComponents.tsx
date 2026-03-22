@@ -16,10 +16,34 @@ import {
    Plus,
    Link as LinkIcon,
    Image as ImageIcon,
-   Layers
+   Layers,
+   HelpCircle,
+   Smile,
+   Shield,
+   Zap,
+   Check,
+   Package,
+   Star,
+   Heart,
+   Award,
+   Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '../ImageUpload';
+
+// --- Icon Registry for Manager ---
+const AVAILABLE_ICONS: Record<string, any> = {
+   'help': HelpCircle,
+   'smile': Smile,
+   'shield': Shield,
+   'zap': Zap,
+   'check': Check,
+   'package': Package,
+   'star': Star,
+   'heart': Heart,
+   'award': Award,
+   'activity': Activity
+};
 
 // --- UI Layout & Containers ---
 
@@ -189,6 +213,16 @@ export const BackgroundManager = ({ selectedBlock, updateContent, updateStyle, g
                </div>
             </div>
 
+            <div>
+               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                  <span>Opacità Immagine</span>
+                  <span className="text-zinc-900 font-bold">{getStyleValue('opacity', 100)}%</span>
+               </label>
+               <input type="range" min="0" max="100" step="1" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
+                  value={getStyleValue('opacity', 100)}
+                  onChange={(e) => updateStyle({ opacity: parseInt(e.target.value) })}
+               />
+            </div>
             <div>
                <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
                   <span>Opacità Overlay</span>
@@ -428,3 +462,93 @@ export const RichTextarea = ({ label = "Contenuto Testuale", value, onChange, pl
       </div>
    );
 };
+
+// --- Advanced Style Managers ---
+
+export const BorderShadowManager = ({ getStyleValue, updateStyle }: any) => (
+   <section className="pt-8 border-t border-zinc-100">
+      <SectionHeader icon={Layers} title="Bordi & Ombre" colorClass="text-zinc-500" />
+      <div className="space-y-6">
+         <div className="grid grid-cols-2 gap-4">
+            <div>
+               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Arrotondamento</label>
+               <input
+                  type="number"
+                  className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
+                  value={getStyleValue('borderRadius', 0)}
+                  onChange={(e) => updateStyle({ borderRadius: parseInt(e.target.value) || 0 })}
+               />
+            </div>
+            <div>
+               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Ombra</label>
+               <select
+                  className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold focus:bg-white transition-all outline-none"
+                  value={getStyleValue('shadow', 'none')}
+                  onChange={(e) => updateStyle({ shadow: e.target.value })}
+               >
+                  <option value="none">Nessuna</option>
+                  <option value="S">Piccola</option>
+                  <option value="M">Media</option>
+                  <option value="L">Grande</option>
+                  <option value="XL">Extra Large</option>
+               </select>
+            </div>
+         </div>
+         <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase cursor-pointer" htmlFor="has-border">Bordo</label>
+            <input
+               id="has-border"
+               type="checkbox"
+               className="w-5 h-5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+               checked={!!getStyleValue('borderWidth', 0)}
+               onChange={(e) => updateStyle({ borderWidth: e.target.checked ? 1 : 0 })}
+            />
+         </div>
+         {getStyleValue('borderWidth', 0) > 0 && (
+            <div className="grid grid-cols-2 gap-4 animate-in fade-in zoom-in-95 duration-200">
+               <div>
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Colore Bordo</label>
+                  <input
+                     type="color"
+                     className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
+                     value={getStyleValue('borderColor', '#e5e7eb')}
+                     onChange={(e) => updateStyle({ borderColor: e.target.value })}
+                  />
+               </div>
+               <div>
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Spessore (px)</label>
+                  <input
+                     type="number"
+                     className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
+                     value={getStyleValue('borderWidth', 1)}
+                     onChange={(e) => updateStyle({ borderWidth: parseInt(e.target.value) || 0 })}
+                  />
+               </div>
+            </div>
+         )}
+      </div>
+   </section>
+);
+
+export const IconManager = ({ value, onChange, label = "Icona" }: any) => (
+   <div className="space-y-4 pt-4 border-t border-zinc-100">
+      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">{label}</label>
+      <div className="grid grid-cols-5 gap-2">
+         {Object.entries(AVAILABLE_ICONS).map(([name, Icon]) => (
+            <button
+               key={name}
+               type="button"
+               onClick={() => onChange(name)}
+               className={cn(
+                  "p-3 flex justify-center border rounded-2xl transition-all",
+                  value === name
+                     ? "bg-zinc-900 text-white shadow-lg scale-110 z-10 border-zinc-900"
+                     : "bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-white hover:border-zinc-200"
+               )}
+            >
+               <Icon size={18} />
+            </button>
+         ))}
+      </div>
+   </div>
+);

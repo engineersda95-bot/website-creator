@@ -2,18 +2,16 @@ export type BlockType =
   'hero' | 
   'text' | 
   'navigation' | 
-  'image' | 
-  'image-text' | 
-  'gallery' | 
-  'features' | 
-  'contact' | 
-  'map' | 
-  'services' | 
-  'reviews' | 
-  'embed' | 
-  'pdf-viewer' | 
+  'footer' |
+  'image' |
+  'image-text' |
+  'gallery' |
+  'map' |
+  'features' |
+  'contact' |
+  'reviews' |
   'product-carousel' |
-  'footer';
+  'embed';
 
 export interface Block {
   id: string;
@@ -44,6 +42,10 @@ export interface ProjectSettings {
   fontFamily: string;
   primaryColor: string;
   secondaryColor: string;
+  favicon?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaImage?: string;
   floatingCTA?: {
     enabled: boolean;
     label: string;
