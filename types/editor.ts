@@ -81,5 +81,7 @@ export interface Project {
   name: string;
   subdomain: string;
   settings: ProjectSettings;
+  live_url?: string;
+  last_published_at?: string;
   created_at: string;
 }

@@ -1,8 +1,9 @@
-import React from 'react';
 import { cn, toPx, formatLink, getButtonStyle } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Page, Block } from '@/types/editor';
 import { MobileMenu } from './MobileMenu';
+import { resolveImageUrl } from '@/lib/image-utils';
+import { SitiImage } from '@/components/shared/SitiImage';
 
 export interface NavigationProps {
   content: {
@@ -25,6 +26,7 @@ export interface NavigationProps {
   allPages?: Page[];
   viewport?: string;
   isStatic?: boolean;
+  imageMemoryCache?: Record<string, string>;
 }
 
 const StaticMenuIcon = () => (
@@ -42,7 +44,8 @@ export const Navigation: React.FC<NavigationProps> = ({
   project, 
   allPages,
   viewport,
-  isStatic
+  isStatic,
+  imageMemoryCache
 }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
 
@@ -64,8 +67,11 @@ export const Navigation: React.FC<NavigationProps> = ({
     return (
       <div className="flex items-center gap-3">
         {(type === 'image' || type === 'both') && content.logoImage && (
-          <img 
+          <SitiImage 
             src={content.logoImage} 
+            project={project}
+            isStatic={isStatic}
+            imageMemoryCache={imageMemoryCache}
             alt="Logo" 
             style={{ height: 'var(--logo-fs)', width: 'auto' }} 
             className="object-contain shrink-0" 

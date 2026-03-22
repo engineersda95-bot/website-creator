@@ -14,6 +14,8 @@ import {
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '../../shared/ImageUpload';
 import { ProjectSettings } from '@/types/editor';
+import { useEditorStore } from '@/store/useEditorStore';
+import { resolveImageUrl } from '@/lib/image-utils';
 
 interface GlobalSettingsProps {
    project: any;
@@ -26,6 +28,7 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
    updateProjectSettings,
    viewport
 }) => {
+   const { isUploading, uploadImage } = useEditorStore();
    return (
       <div className="w-full flex flex-col h-full overflow-y-auto">
          <div className="p-6 border-b border-zinc-200 bg-zinc-50/50 flex flex-col gap-2">
@@ -45,21 +48,45 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
          <div className="p-6 space-y-10">
             <section>
                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-6 flex items-center gap-2">
-                  <Globe size={14} className="text-teal-500" /> SEO & Meta Data
+                  <Globe size={14} className="text-teal-500" /> SEO GLOBALE
                </h3>
                <div className="space-y-6">
+                  <div className="flex items-center justify-between gap-2 px-1">
+                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Favicon & Meta</label>
+                     {isUploading && <span className="text-[10px] font-bold text-blue-500 animate-pulse uppercase">Caricamento...</span>}
+                  </div>
                   <ImageUpload
-                     label="Favicon Sito"
-                     value={project?.settings?.favicon || ''}
-                     onChange={(val: string) => updateProjectSettings({ favicon: val })}
+                     label={
+                        <div className="flex items-center justify-between w-full">
+                           <span>Favicon Sito (immagine quadrata)</span>
+                        </div>
+                     }
+                     value={resolveImageUrl(project?.settings?.favicon, project, useEditorStore.getState().imageMemoryCache)}
+                     onChange={async (val: string, filename?: string) => {
+                        const relativePath = await uploadImage(val, filename);
+                        updateProjectSettings({ favicon: relativePath });
+                     }}
                   />
                   <ImageUpload
-                     label="Meta Image (Social Sharing)"
-                     value={project?.settings?.metaImage || ''}
-                     onChange={(val: string) => updateProjectSettings({ metaImage: val })}
+                     label="Social Meta Image"
+                     showSEOStatus={true}
+                     value={resolveImageUrl(project?.settings?.metaImage, project, useEditorStore.getState().imageMemoryCache)}
+                     onChange={async (val: string, filename?: string) => {
+                        const relativePath = await uploadImage(val, filename as string);
+                        updateProjectSettings({ metaImage: relativePath });
+                     }}
                   />
                   <div className="space-y-2">
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase block pl-1">Meta Title Default</label>
+                     <div className="flex items-center justify-between pl-1">
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase">Meta Title</label>
+                        <span className={cn(
+                           "text-[9px] font-bold",
+                           (project?.settings?.metaTitle?.length || 0) < 40 || (project?.settings?.metaTitle?.length || 0) > 70 ? "text-red-500" :
+                              (project?.settings?.metaTitle?.length || 0) < 50 || (project?.settings?.metaTitle?.length || 0) > 60 ? "text-amber-500" : "text-emerald-500"
+                        )}>
+                           {project?.settings?.metaTitle?.length || 0} / 60
+                        </span>
+                     </div>
                      <input
                         type="text"
                         className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-xs font-bold focus:ring-0 outline-none"
@@ -67,9 +94,19 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
                         onChange={(e) => updateProjectSettings({ metaTitle: e.target.value })}
                         placeholder="Titolo del sito"
                      />
+                     <p className="text-[9px] text-zinc-400 px-1 font-medium">Consigliato: 50-60 caratteri. Attuale: {project?.settings?.metaTitle?.length || 0}</p>
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase block pl-1">Meta Description Default</label>
+                     <div className="flex items-center justify-between pl-1">
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase">Meta Description</label>
+                        <span className={cn(
+                           "text-[9px] font-bold",
+                           (project?.settings?.metaDescription?.length || 0) < 100 || (project?.settings?.metaDescription?.length || 0) > 200 ? "text-red-500" :
+                              (project?.settings?.metaDescription?.length || 0) < 110 || (project?.settings?.metaDescription?.length || 0) > 160 ? "text-amber-500" : "text-emerald-500"
+                        )}>
+                           {project?.settings?.metaDescription?.length || 0} / 160
+                        </span>
+                     </div>
                      <textarea
                         className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-xs font-medium focus:ring-0 outline-none resize-none"
                         rows={3}
@@ -77,6 +114,7 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
                         onChange={(e) => updateProjectSettings({ metaDescription: e.target.value })}
                         placeholder="Descrizione per i motori di ricerca..."
                      />
+                     <p className="text-[9px] text-zinc-400 px-1 font-medium">Consigliato: 110-160 caratteri. Attuale: {project?.settings?.metaDescription?.length || 0}</p>
                   </div>
                </div>
             </section>

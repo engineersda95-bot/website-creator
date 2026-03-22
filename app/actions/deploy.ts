@@ -1,6 +1,9 @@
 'use server';
 
-import { generateStaticHtml } from '@/lib/generate-static';
+import { generateStaticHtml, generateSitemap, generateRobotsTxt } from '@/lib/generate-static';
+import { getProjectDomain } from '@/lib/url-utils';
+import { UserMenu } from '@/components/auth/UserMenu';
+import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/server';
 import { Page } from '@/types/editor';
 import crypto from 'crypto';
@@ -40,13 +43,17 @@ export async function deployToCloudflare(projectId: string) {
     if (projectError || !project) throw new Error('Could not find project to deploy');
 
     const projectName = project.subdomain;
+    const isFirstPublish = !project.live_url;
 
-    // 2. Ensure project exists on Cloudflare
+    // 2. Ensure project exists on Cloudflare and get the actual subdomain
     try {
-      await ensureCloudflareProject(projectName);
+      const cfProject = await ensureCloudflareProject(projectName);
+      if (cfProject && cfProject.subdomain && isFirstPublish) {
+        // Use getProjectDomain logic to predict/set the URL
+        project.live_url = getProjectDomain({ ...project, subdomain: cfProject.subdomain } as any);
+      }
     } catch (e) {
       console.warn('Could not ensure project existence:', e);
-      // Continue anyway, wrangler might handle it
     }
 
     // 3. Deployment via Wrangler CLI
@@ -55,43 +62,56 @@ export async function deployToCloudflare(projectId: string) {
     tempDir = path.join(os.tmpdir(), `siti-vetrina-deploy-${Date.now()}`);
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
     
-    // 3. Generate HTML for each page
+    // 3. Generate HTML for each page and collect assets
     const assetsDir = path.join(tempDir, 'assets');
     if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
 
-    const imageMap = new Map<string, string>(); // base64 -> filename
+    const assetsToDownload = new Set<string>(); // set of filenames (img_hash.ext)
 
+    // First pass: generate HTML and find all relative asset paths
     for (const page of pages) {
-      let htmlContent = generateStaticHtml(page as Page, pages as any as Page[], project);
-
-      // Extract base64 images
-      const base64Regex = /data:image\/([^;]+);base64,([^"]+)/g;
+      const htmlContent = generateStaticHtml(page as Page, pages as any as Page[], project);
+      
+      // Find all /assets/... strings in the HTML (captures the filename)
+      const assetRegex = /\/assets\/([^"\s?]+)/g;
       let match;
-      while ((match = base64Regex.exec(htmlContent)) !== null) {
-        const fullMatch = match[0];
-        const extension = match[1];
-        const base64Data = match[2];
-
-        if (!imageMap.has(fullMatch)) {
-          const hash = crypto.createHash('md5').update(base64Data).digest('hex');
-          const filename = `img_${hash}.${extension}`;
-          const filePath = path.join(assetsDir, filename);
-          
-          if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
-          }
-          imageMap.set(fullMatch, `/assets/${filename}`);
-        }
-      }
-
-      // Replace all occurrences
-      for (const [base64, url] of imageMap.entries()) {
-        htmlContent = htmlContent.split(base64).join(url);
+      while ((match = assetRegex.exec(htmlContent)) !== null) {
+        assetsToDownload.add(match[1]);
       }
 
       const filename = page.slug === 'home' ? 'index.html' : `${page.slug}.html`;
       fs.writeFileSync(path.join(tempDir, filename), htmlContent);
       console.log(`Generated ${filename}`);
+    }
+
+    // 3.1. Generate Sitemap & Robots.txt
+    const sitemapContent = generateSitemap(pages as any as Page[], project);
+    const robotsContent = generateRobotsTxt(project);
+    fs.writeFileSync(path.join(tempDir, 'sitemap.xml'), sitemapContent);
+    fs.writeFileSync(path.join(tempDir, 'robots.txt'), robotsContent);
+    console.log('Generated sitemap.xml and robots.txt');
+
+    // Second pass: download unique assets from Supabase Storage
+    console.log(`Downloading ${assetsToDownload.size} unique assets from Supabase...`);
+    for (const assetFilename of assetsToDownload) {
+      const bucketPath = `${projectId}/${assetFilename}`;
+      const localPath = path.join(assetsDir, assetFilename);
+
+      try {
+        const { data, error: downloadError } = await supabase.storage
+          .from('project-assets')
+          .download(bucketPath);
+
+        if (downloadError) {
+          console.warn(`Could not download asset ${bucketPath}:`, downloadError.message);
+          continue;
+        }
+
+        const buffer = Buffer.from(await data.arrayBuffer());
+        fs.writeFileSync(localPath, buffer);
+      } catch (e: any) {
+        console.error(`Failed to download ${assetFilename}:`, e.message);
+      }
     }
 
     const command = `npx --yes wrangler@3 pages deploy "${tempDir}" --project-name="${projectName}" --branch="main"`;
@@ -121,10 +141,35 @@ export async function deployToCloudflare(projectId: string) {
     });
     console.log('Wrangler Output:', output);
 
-    const urlMatch = output.match(/https?:\/\/[^\s]+\.pages\.dev/);
-    const finalUrl = urlMatch ? urlMatch[0] : `https://${projectName}.pages.dev`;
+    const urlMatch = output.match(/https?:\/\/[^\s]+\.[^\s]+/);
+    let finalUrl = urlMatch ? urlMatch[0] : getProjectDomain(project as any);
 
-    // 4. Cleanup old history silently
+    // Strip the deployment-specific hash if present (e.g., https://hash.project.pages.dev -> https://project.pages.dev)
+    const urlParts = finalUrl.replace('https://', '').split('.');
+    if (urlParts.length > 3) {
+      // It has a deployment hash, remove first part
+      finalUrl = `https://${urlParts.slice(1).join('.')}`;
+    }
+
+    // 4. Update project in Supabase
+    const updateData: any = {
+      last_published_at: new Date().toISOString()
+    };
+    
+    if (isFirstPublish) {
+      updateData.live_url = finalUrl;
+    }
+
+    const { error: updateError } = await supabase
+      .from('projects')
+      .update(updateData)
+      .eq('id', projectId);
+
+    if (updateError) {
+      console.warn('Could not update project with deployment info:', updateError.message);
+    }
+
+    // 5. Cleanup old history silently
     cleanupOldDeployments(projectName).catch(e => console.error('Cleanup failed:', e));
 
     return { success: true, url: finalUrl };
@@ -145,7 +190,7 @@ async function ensureCloudflareProject(name: string) {
   });
 
   if (res.status === 404) {
-    await fetch(`${CLOUDFLARE_API_BASE}/accounts/${ACCOUNT_ID}/pages/projects`, {
+    const createRes = await fetch(`${CLOUDFLARE_API_BASE}/accounts/${ACCOUNT_ID}/pages/projects`, {
       method: 'POST',
       headers: { 
         Authorization: `Bearer ${API_TOKEN}`,
@@ -156,7 +201,15 @@ async function ensureCloudflareProject(name: string) {
         production_branch: 'main'
       })
     });
+    if (createRes.ok) {
+      const { result } = await createRes.json();
+      return result;
+    }
+  } else if (res.ok) {
+    const { result } = await res.json();
+    return result;
   }
+  return null;
 }
 async function cleanupOldDeployments(projectName: string) {
   try {

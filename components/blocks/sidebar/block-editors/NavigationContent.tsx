@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { LinkListManager, CTAManager, SectionHeader } from '../SharedSidebarComponents';
 import { Layout } from 'lucide-react';
+import { useEditorStore } from '@/store/useEditorStore';
+import { resolveImageUrl } from '@/lib/image-utils';
 
 interface NavigationContentProps {
    selectedBlock: any;
@@ -19,6 +21,8 @@ export const NavigationContent: React.FC<NavigationContentProps> = ({
    updateStyle,
    getStyleValue
 }) => {
+   const { uploadImage, isUploading } = useEditorStore();
+
    return (
       <div className="space-y-8">
          <div className="space-y-4">
@@ -30,8 +34,19 @@ export const NavigationContent: React.FC<NavigationContentProps> = ({
             {selectedBlock.content.logoType !== 'image' && (
                <input className="w-full p-3 border border-zinc-200 rounded-xl text-sm font-bold bg-zinc-50 focus:bg-white transition-all outline-none" placeholder="Testo Logo" value={selectedBlock.content.logoText || ''} onChange={(e) => updateContent({ logoText: e.target.value })} />
             )}
+            <div className="flex items-center justify-between gap-2 mb-2">
+               <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Logo</label>
+               {isUploading && <span className="text-[10px] font-bold text-blue-500 animate-pulse uppercase">Caricamento...</span>}
+            </div>
             {selectedBlock.content.logoType !== 'text' && (
-               <ImageUpload label="File Logo" value={selectedBlock.content.logoImage} onChange={(val: string) => updateContent({ logoImage: val })} />
+               <ImageUpload
+                  label="File Logo"
+                  value={resolveImageUrl(selectedBlock.content.logoImage, useEditorStore.getState().project, useEditorStore.getState().imageMemoryCache)}
+                  onChange={async (val: string, filename?: string) => {
+                     const relativePath = await uploadImage(val, filename);
+                     updateContent({ logoImage: relativePath });
+                  }}
+               />
             )}
 
             <div className="space-y-4 p-4 bg-zinc-50 rounded-2xl border border-zinc-100">

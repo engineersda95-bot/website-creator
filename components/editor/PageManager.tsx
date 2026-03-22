@@ -5,9 +5,21 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { FileText, Plus, ChevronRight, Layout, Trash2, Settings as SettingsIcon, Globe, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '../shared/ImageUpload';
+import { resolveImageUrl } from '@/lib/image-utils';
 
 export const PageManager: React.FC = () => {
-  const { project, projectPages, currentPage, loadPage, listProjectPages, addPage, deletePage, updatePageSEO } = useEditorStore();
+  const {
+    project,
+    projectPages,
+    currentPage,
+    loadPage,
+    listProjectPages,
+    addPage,
+    deletePage,
+    updatePageSEO,
+    uploadImage,
+    isUploading
+  } = useEditorStore();
   const [isAdding, setIsAdding] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
   const [newPageSlug, setNewPageSlug] = useState('');
@@ -82,30 +94,59 @@ export const PageManager: React.FC = () => {
             {/* Inline SEO Settings */}
             {showSEOSettings && currentPage?.id === page.id && (
               <div className="mx-2 mt-1 p-3 bg-zinc-50 border border-zinc-200 rounded-lg space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-                <div className="text-[10px] font-bold text-zinc-400 uppercase">SEO Personale</div>
-                <div>
-                  <label className="text-[10px] font-medium text-zinc-500 block mb-1">Meta Title</label>
+                <div className="text-[10px] font-bold text-zinc-400 uppercase">SEO PAGINA</div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-medium text-zinc-500 block uppercase">Meta Title</label>
+                    <span className={cn(
+                      "text-[9px] font-bold",
+                      (currentPage?.seo?.title?.length || 0) < 40 || (currentPage?.seo?.title?.length || 0) > 70 ? "text-red-500" :
+                        (currentPage?.seo?.title?.length || 0) < 50 || (currentPage?.seo?.title?.length || 0) > 60 ? "text-amber-500" : "text-emerald-500"
+                    )}>
+                      {currentPage?.seo?.title?.length || 0} / 60
+                    </span>
+                  </div>
                   <input
                     className="w-full text-xs p-2 border border-zinc-200 rounded bg-white shadow-sm"
                     placeholder="Titolo per i motori di ricerca"
                     value={currentPage?.seo?.title || ''}
                     onChange={(e) => updatePageSEO({ title: e.target.value })}
                   />
+                  <p className="text-[9px] text-zinc-400 px-1 font-medium">Consigliato: 50-60 caratteri. Attuale: {currentPage?.seo?.title?.length || 0}</p>
                 </div>
-                <div>
-                  <label className="text-[10px] font-medium text-zinc-500 block mb-1">Meta Description</label>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-medium text-zinc-500 block uppercase">Meta Description</label>
+                    <span className={cn(
+                      "text-[9px] font-bold",
+                      (currentPage?.seo?.description?.length || 0) < 100 || (currentPage?.seo?.description?.length || 0) > 200 ? "text-red-500" :
+                        (currentPage?.seo?.description?.length || 0) < 110 || (currentPage?.seo?.description?.length || 0) > 160 ? "text-amber-500" : "text-emerald-500"
+                    )}>
+                      {currentPage?.seo?.description?.length || 0} / 160
+                    </span>
+                  </div>
                   <textarea
                     className="w-full text-xs p-2 border border-zinc-200 rounded bg-white shadow-sm h-16 resize-none"
                     placeholder="Breve descrizione del contenuto..."
                     value={currentPage?.seo?.description || ''}
                     onChange={(e) => updatePageSEO({ description: e.target.value })}
                   />
+                  <p className="text-[9px] text-zinc-400 px-1 font-medium">Consigliato: 110-160 caratteri. Attuale: {currentPage?.seo?.description?.length || 0}</p>
                 </div>
                 <div>
                   <ImageUpload
-                    label="SEO Social Image"
-                    value={currentPage?.seo?.image || ''}
-                    onChange={(val) => updatePageSEO({ image: val })}
+                    label={
+                      <div className="flex items-center justify-between w-full">
+                        <span>Social Meta Image</span>
+                        {isUploading && <span className="text-[9px] text-blue-500 animate-pulse font-bold">...</span>}
+                      </div>
+                    }
+                    showSEOStatus={true}
+                    value={resolveImageUrl(currentPage?.seo?.image || '', project, useEditorStore.getState().imageMemoryCache)}
+                    onChange={async (val, filename) => {
+                      const path = await uploadImage(val, filename as string);
+                      updatePageSEO({ image: path });
+                    }}
                   />
                 </div>
               </div>

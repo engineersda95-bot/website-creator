@@ -33,7 +33,8 @@ const MemoizedBlock = React.memo(({
   onDuplicate,
   onMoveUp,
   onMoveDown,
-  onRemove
+  onRemove,
+  imageMemoryCache
 }: any) => {
   const Component = getBlockComponent(block.type);
   const vars = getBlockCSSVariables(block, project, viewport || 'desktop');
@@ -71,6 +72,7 @@ const MemoizedBlock = React.memo(({
         project={project}
         allPages={projectPages}
         viewport={viewport}
+        imageMemoryCache={imageMemoryCache}
       />
 
       {/* Block Controls */}
@@ -144,7 +146,8 @@ export const EditorCanvas: React.FC = () => {
     pasteBlock,
     undo,
     redo,
-    pageHistories
+    pageHistories,
+    imageMemoryCache
   } = useEditorStore();
 
   const currentHist = currentPage ? pageHistories[currentPage.id] : null;
@@ -360,6 +363,7 @@ export const EditorCanvas: React.FC = () => {
                     onMoveUp={moveBlockUp}
                     onMoveDown={moveBlockDown}
                     onRemove={removeBlock}
+                    imageMemoryCache={imageMemoryCache}
                   />
 
                   {/* Insertion Points */}

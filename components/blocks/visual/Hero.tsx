@@ -1,7 +1,9 @@
 import React from 'react';
 import { cn, toPx, getButtonStyle, formatLink, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
-import { Project, Block } from '@/types/editor';
+import { Project, Page, Block } from '@/types/editor';
+import { resolveImageUrl } from '@/lib/image-utils';
+import { SitiImage } from '@/components/shared/SitiImage';
 
 interface HeroProps {
   content: {
@@ -16,14 +18,15 @@ interface HeroProps {
   project?: Project;
   viewport?: string;
   isStatic?: boolean;
+  imageMemoryCache?: Record<string, string>;
 }
 
-export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, isStatic }) => {
+export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache }) => {
   const { style, alignClass } = getBlockStyles(block, project, viewport || 'desktop');
   
-  const primaryColor = project?.settings?.primaryColor || '#3b82f6';
+  const pColor = project?.settings?.primaryColor || '#3b82f6';
   const secondaryColor = project?.settings?.secondaryColor || '#10b981';
-  const activeColor = style.buttonTheme === 'secondary' ? secondaryColor : primaryColor;
+  const activeColor = style.buttonTheme === 'secondary' ? secondaryColor : pColor;
 
   const hasBg = !!content.backgroundImage;
   const overlayOpacity = style.overlayOpacity !== undefined ? style.overlayOpacity / 100 : 0.4;
@@ -44,8 +47,11 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
     >
       {hasBg && (
         <>
-          <img 
+          <SitiImage 
             src={content.backgroundImage}
+            project={project}
+            isStatic={isStatic}
+            imageMemoryCache={imageMemoryCache}
             alt=""
             loading="eager"
             className="absolute inset-0 z-0 w-full h-full pointer-events-none transition-all duration-700 object-cover" 
@@ -59,6 +65,7 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
             className="absolute inset-0 z-[1] transition-all duration-500 pointer-events-none" 
             style={{ 
               backgroundColor: style.overlayColor || '#000000', 
+              backgroundImage: style.backgroundImage ? `url(${resolveImageUrl(style.backgroundImage, project || null, imageMemoryCache, isStatic)})` : 'none',
               opacity: (style.overlayOpacity !== undefined ? style.overlayOpacity : 40) / 100,
             }} 
           />

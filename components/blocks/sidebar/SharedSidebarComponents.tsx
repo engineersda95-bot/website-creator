@@ -4,18 +4,11 @@ import React from 'react';
 import {
    ChevronDown,
    Palette,
-   Type,
    Bold,
    Italic,
    AlignLeft,
    AlignCenter,
    AlignRight,
-   Monitor,
-   Smartphone,
-   Trash2,
-   Plus,
-   Link as LinkIcon,
-   Image as ImageIcon,
    Layers,
    HelpCircle,
    Smile,
@@ -26,12 +19,17 @@ import {
    Star,
    Heart,
    Award,
-   Activity
+   Activity,
+   Plus,
+   Trash2,
+   Link as LinkIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '@/components/shared/ImageUpload';
+import { useEditorStore } from '@/store/useEditorStore';
+import { resolveImageUrl } from '@/lib/image-utils';
 
-// --- Icon Registry for Manager ---
+// --- Icon Registry ---
 const AVAILABLE_ICONS: Record<string, any> = {
    'help': HelpCircle,
    'smile': Smile,
@@ -45,90 +43,92 @@ const AVAILABLE_ICONS: Record<string, any> = {
    'activity': Activity
 };
 
-// --- UI Layout & Containers ---
+export function SectionHeader({ icon: Icon, title, colorClass = "text-zinc-900" }: { icon: any, title: string, colorClass?: string }) {
+   return (
+      <h3 className="text-[10px] font-black text-zinc-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+         <Icon size={14} className={colorClass} /> {title}
+      </h3>
+   );
+}
 
-export const SectionHeader = ({ icon: Icon, title, colorClass = "text-zinc-900" }: { icon: any, title: string, colorClass?: string }) => (
-   <h3 className="text-[10px] font-black text-zinc-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-      <Icon size={14} className={colorClass} /> {title}
-   </h3>
-);
-
-// --- Style Fields ---
-
-export const AdvancedMargins = ({ getStyleValue, updateStyle }: any) => (
-   <div className="pt-4 border-t border-zinc-50">
-      <details className="group">
-         <summary className="flex items-center justify-between cursor-pointer text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-zinc-900 transition-colors">
-            <span>Margini Avanzati</span>
-            <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
-         </summary>
-         <div className="grid grid-cols-2 gap-4 mt-6">
-            {['marginTop', 'marginBottom', 'marginLeft', 'marginRight'].map((key) => (
-               <div key={key}>
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">
-                     {key === 'marginTop' ? 'Sup' : key === 'marginBottom' ? 'Inf' : key === 'marginLeft' ? 'Sx' : 'Dx'} (px)
-                  </label>
-                  <input
-                     type="number"
-                     className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
-                     value={getStyleValue(key, 0)}
-                     onChange={(e) => updateStyle({ [key]: parseInt(e.target.value) || 0 })}
-                  />
-               </div>
-            ))}
-         </div>
-      </details>
-   </div>
-);
-
-export const LayoutFields = ({ getStyleValue, updateStyle, showAlign = true, paddingLabel = "Padding Vert", hPaddingLabel = "Spazio Laterale" }: any) => (
-   <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
-         <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">{paddingLabel} (px)</label>
-            <input
-               type="number"
-               className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
-               value={getStyleValue('padding', 40)}
-               onChange={(e) => updateStyle({ padding: parseInt(e.target.value) || 0 })}
-            />
-         </div>
-         <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">{hPaddingLabel} (px)</label>
-            <input
-               type="number"
-               className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
-               value={getStyleValue('hPadding', 40)}
-               onChange={(e) => updateStyle({ hPadding: parseInt(e.target.value) || 0 })}
-            />
-         </div>
-      </div>
-
-      {showAlign && (
-         <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Allineamento</label>
-            <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
-               {[
-                  { id: 'left', icon: AlignLeft },
-                  { id: 'center', icon: AlignCenter },
-                  { id: 'right', icon: AlignRight }
-               ].map((item) => (
-                  <button
-                     key={item.id}
-                     onClick={() => updateStyle({ align: item.id })}
-                     className={cn("flex-1 p-2.5 flex justify-center transition-all", getStyleValue('align', 'center') === item.id ? "bg-zinc-900 text-white shadow-lg z-10" : "text-zinc-400 hover:text-zinc-600")}
-                  >
-                     <item.icon size={16} />
-                  </button>
+export function AdvancedMargins({ getStyleValue, updateStyle }: any) {
+   return (
+      <div className="pt-4 border-t border-zinc-50">
+         <details className="group">
+            <summary className="flex items-center justify-between cursor-pointer text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-zinc-900 transition-colors">
+               <span>Margini Avanzati</span>
+               <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
+            </summary>
+            <div className="grid grid-cols-2 gap-4 mt-6">
+               {['marginTop', 'marginBottom', 'marginLeft', 'marginRight'].map((key) => (
+                  <div key={key}>
+                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">
+                        {key === 'marginTop' ? 'Sup' : key === 'marginBottom' ? 'Inf' : key === 'marginLeft' ? 'Sx' : 'Dx'} (px)
+                     </label>
+                     <input
+                        type="number"
+                        className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
+                        value={getStyleValue(key, 0)}
+                        onChange={(e) => updateStyle({ [key]: parseInt(e.target.value) || 0 })}
+                     />
+                  </div>
                ))}
             </div>
-         </div>
-      )}
-      <AdvancedMargins getStyleValue={getStyleValue} updateStyle={updateStyle} />
-   </div>
-);
+         </details>
+      </div>
+   );
+}
 
-export const ColorManager = ({ getStyleValue, updateStyle, project }: any) => {
+export function LayoutFields({ getStyleValue, updateStyle, showAlign = true, paddingLabel = "Padding Vert", hPaddingLabel = "Spazio Laterale" }: any) {
+   return (
+      <div className="space-y-6">
+         <div className="grid grid-cols-2 gap-4">
+            <div>
+               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">{paddingLabel} (px)</label>
+               <input
+                  type="number"
+                  className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
+                  value={getStyleValue('padding', 40)}
+                  onChange={(e) => updateStyle({ padding: parseInt(e.target.value) || 0 })}
+               />
+            </div>
+            <div>
+               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">{hPaddingLabel} (px)</label>
+               <input
+                  type="number"
+                  className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
+                  value={getStyleValue('hPadding', 40)}
+                  onChange={(e) => updateStyle({ hPadding: parseInt(e.target.value) || 0 })}
+               />
+            </div>
+         </div>
+
+         {showAlign && (
+            <div>
+               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Allineamento</label>
+               <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
+                  {[
+                     { id: 'left', icon: AlignLeft },
+                     { id: 'center', icon: AlignCenter },
+                     { id: 'right', icon: AlignRight }
+                  ].map((item) => (
+                     <button
+                        key={item.id}
+                        onClick={() => updateStyle({ align: item.id })}
+                        className={cn("flex-1 p-2.5 flex justify-center transition-all", getStyleValue('align', 'center') === item.id ? "bg-zinc-900 text-white shadow-lg z-10" : "text-zinc-400 hover:text-zinc-600")}
+                     >
+                        <item.icon size={16} />
+                     </button>
+                  ))}
+               </div>
+            </div>
+         )}
+         <AdvancedMargins getStyleValue={getStyleValue} updateStyle={updateStyle} />
+      </div>
+   );
+}
+
+export function ColorManager({ getStyleValue, updateStyle, project }: any) {
    const appearance = project?.settings?.appearance || 'light';
    const defaultBg = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff');
    const defaultText = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.text || '#ffffff') : (project?.settings?.themeColors?.light?.text || '#000000');
@@ -166,238 +166,252 @@ export const ColorManager = ({ getStyleValue, updateStyle, project }: any) => {
          </div>
       </section>
    );
-};
+}
 
-export const BackgroundManager = ({ selectedBlock, updateContent, updateStyle, getStyleValue }: any) => (
-   <div className="space-y-6 pt-4 border-t border-zinc-100">
-      <div className="flex items-center justify-between mb-2">
-         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Immagine Sfondo</label>
+export function BackgroundManager({ selectedBlock, updateContent, updateStyle, getStyleValue }: any) {
+   const { uploadImage, isUploading } = useEditorStore();
+
+   return (
+      <div className="space-y-6 pt-4 border-t border-zinc-100">
+         <div className="flex items-center justify-between mb-2">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Immagine Sfondo</label>
+            <div className="flex items-center gap-2">
+               {isUploading && <span className="text-[10px] font-bold text-blue-500 animate-pulse uppercase">Caricamento...</span>}
+               {selectedBlock.content.backgroundImage && (
+                  <button onClick={() => updateContent({ backgroundImage: undefined })} className="text-[10px] font-bold text-red-500 uppercase tracking-tighter">Rimuovi</button>
+               )}
+            </div>
+         </div>
+         <ImageUpload
+            label="Immagine"
+            value={resolveImageUrl(selectedBlock.content.backgroundImage, useEditorStore.getState().project, useEditorStore.getState().imageMemoryCache)}
+            onChange={async (val: string, filename?: string) => {
+               const relativePath = await uploadImage(val, filename);
+               updateContent({ backgroundImage: relativePath });
+            }}
+         />
+
          {selectedBlock.content.backgroundImage && (
-            <button onClick={() => updateContent({ backgroundImage: undefined })} className="text-[10px] font-bold text-red-500 uppercase tracking-tighter">Rimuovi</button>
+            <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+               <div className="grid grid-cols-2 gap-4">
+                  <div>
+                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Dimensione</label>
+                     <select
+                        className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold focus:bg-white transition-all outline-none"
+                        value={getStyleValue('backgroundSize', 'cover')}
+                        onChange={(e) => updateStyle({ backgroundSize: e.target.value })}
+                     >
+                        <option value="cover">Pieno (Cover)</option>
+                        <option value="contain">Contenuto (Contain)</option>
+                        <option value="auto">Originale (Auto)</option>
+                     </select>
+                  </div>
+                  <div>
+                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Posizione</label>
+                     <select
+                        className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold focus:bg-white transition-all outline-none"
+                        value={getStyleValue('backgroundPosition', 'center')}
+                        onChange={(e) => updateStyle({ backgroundPosition: e.target.value })}
+                     >
+                        <option value="center">Centro</option>
+                        <option value="top">In Alto</option>
+                        <option value="bottom">In Basso</option>
+                        <option value="left">A Sinistra</option>
+                        <option value="right">A Destra</option>
+                     </select>
+                  </div>
+               </div>
+
+               <div>
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                     <span>Opacità Immagine</span>
+                     <span className="text-zinc-900 font-bold">{getStyleValue('opacity', 100)}%</span>
+                  </label>
+                  <input type="range" min="0" max="100" step="1" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
+                     value={getStyleValue('opacity', 100)}
+                     onChange={(e) => updateStyle({ opacity: parseInt(e.target.value) })}
+                  />
+               </div>
+               <div>
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                     <span>Opacità Overlay</span>
+                     <span className="text-zinc-900 font-bold">{getStyleValue('overlayOpacity', 40)}%</span>
+                  </label>
+                  <input type="range" min="0" max="100" step="1" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
+                     value={getStyleValue('overlayOpacity', 40)}
+                     onChange={(e) => updateStyle({ overlayOpacity: parseInt(e.target.value) })}
+                  />
+               </div>
+               <div>
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                     <span>Sfocatura (Blur)</span>
+                     <span className="text-zinc-900 font-bold">{getStyleValue('blur', 0)}px</span>
+                  </label>
+                  <input type="range" min="0" max="20" step="1" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
+                     value={getStyleValue('blur', 0)}
+                     onChange={(e) => updateStyle({ blur: parseInt(e.target.value) })}
+                  />
+               </div>
+            </div>
          )}
       </div>
-      <ImageUpload
-         label="Immagine"
-         value={selectedBlock.content.backgroundImage}
-         onChange={(val: string) => updateContent({ backgroundImage: val })}
-      />
+   );
+}
 
-      {selectedBlock.content.backgroundImage && (
-         <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="grid grid-cols-2 gap-4">
-               <div>
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Dimensione</label>
-                  <select
-                     className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold focus:bg-white transition-all outline-none"
-                     value={getStyleValue('backgroundSize', 'cover')}
-                     onChange={(e) => updateStyle({ backgroundSize: e.target.value })}
-                  >
-                     <option value="cover">Pieno (Cover)</option>
-                     <option value="contain">Contenuto (Contain)</option>
-                     <option value="auto">Originale (Auto)</option>
-                  </select>
-               </div>
-               <div>
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Posizione</label>
-                  <select
-                     className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold focus:bg-white transition-all outline-none"
-                     value={getStyleValue('backgroundPosition', 'center')}
-                     onChange={(e) => updateStyle({ backgroundPosition: e.target.value })}
-                  >
-                     <option value="center">Centro</option>
-                     <option value="top">In Alto</option>
-                     <option value="bottom">In Basso</option>
-                     <option value="left">A Sinistra</option>
-                     <option value="right">A Destra</option>
-                  </select>
-               </div>
-            </div>
-
-            <div>
-               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
-                  <span>Opacità Immagine</span>
-                  <span className="text-zinc-900 font-bold">{getStyleValue('opacity', 100)}%</span>
-               </label>
-               <input type="range" min="0" max="100" step="1" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
-                  value={getStyleValue('opacity', 100)}
-                  onChange={(e) => updateStyle({ opacity: parseInt(e.target.value) })}
-               />
-            </div>
-            <div>
-               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
-                  <span>Opacità Overlay</span>
-                  <span className="text-zinc-900 font-bold">{getStyleValue('overlayOpacity', 40)}%</span>
-               </label>
-               <input type="range" min="0" max="100" step="1" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
-                  value={getStyleValue('overlayOpacity', 40)}
-                  onChange={(e) => updateStyle({ overlayOpacity: parseInt(e.target.value) })}
-               />
-            </div>
-            <div>
-               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
-                  <span>Sfocatura (Blur)</span>
-                  <span className="text-zinc-900 font-bold">{getStyleValue('blur', 0)}px</span>
-               </label>
-               <input type="range" min="0" max="20" step="1" className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
-                  value={getStyleValue('blur', 0)}
-                  onChange={(e) => updateStyle({ blur: parseInt(e.target.value) })}
-               />
-            </div>
-         </div>
-      )}
-   </div>
-);
-
-export const TypographyFields = ({ label, sizeKey, boldKey, italicKey, getStyleValue, updateStyle, min = 8, max = 160, defaultValue = 16 }: any) => (
-   <div className="pb-6 border-b border-zinc-50 last:border-0 last:pb-0">
-      <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
-         <span>{label}</span>
-         <span className="text-zinc-900 font-bold">{getStyleValue(sizeKey, defaultValue)}px</span>
-      </label>
-      <div className="flex gap-2">
-         <input
-            type="range" min={min} max={max} step="1"
-            className="flex-1 h-2 mt-2 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
-            value={getStyleValue(sizeKey, defaultValue)}
-            onChange={(e) => updateStyle({ [sizeKey]: parseInt(e.target.value) })}
-         />
-         <div className="flex border rounded-xl overflow-hidden shrink-0">
-            <button
-               onClick={() => updateStyle({ [boldKey]: !getStyleValue(boldKey, true) })}
-               className={cn("p-2 px-3 transition-all", getStyleValue(boldKey, true) !== false ? "bg-zinc-900 text-white" : "bg-white text-zinc-400")}
-            >
-               <Bold size={16} />
-            </button>
-            <button
-               onClick={() => updateStyle({ [italicKey]: !getStyleValue(italicKey, false) })}
-               className={cn("p-2 px-3 transition-all", getStyleValue(italicKey, false) ? "bg-zinc-900 text-white" : "bg-white text-zinc-400")}
-            >
-               <Italic size={16} />
-            </button>
-         </div>
-      </div>
-   </div>
-);
-
-// --- Content Fields ---
-
-export const CTAManager = ({ content, updateContent, style, updateStyle }: any) => (
-   <div className="space-y-4 pt-4 border-t border-zinc-100">
-      <div className="flex items-center justify-between mb-2">
-         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Pulsante (CTA)</label>
-         <div className="flex bg-zinc-100 p-1 rounded-lg">
-            <button
-               onClick={() => updateStyle?.({ buttonTheme: 'primary' })}
-               className={cn("px-3 py-1 text-[9px] font-black uppercase tracking-tight rounded-md transition-all", (style?.buttonTheme || 'primary') === 'primary' ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
-            >
-               Primario
-            </button>
-            <button
-               onClick={() => updateStyle?.({ buttonTheme: 'secondary' })}
-               className={cn("px-3 py-1 text-[9px] font-black uppercase tracking-tight rounded-md transition-all", style?.buttonTheme === 'secondary' ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
-            >
-               Secondario
-            </button>
-         </div>
-      </div>
-      <div className="grid gap-3">
-         <input
-            className="w-full p-3 border border-zinc-200 rounded-xl text-sm font-bold bg-zinc-50 focus:bg-white transition-all outline-none"
-            placeholder="Testo Bottone (es: Inizia Ora)"
-            value={content.cta || ''}
-            onChange={(e) => updateContent({ cta: e.target.value })}
-         />
-         <div className="flex items-center gap-2 p-3 border border-zinc-200 rounded-xl bg-zinc-50">
-            <LinkIcon size={14} className="text-zinc-400" />
+export function TypographyFields({ label, sizeKey, boldKey, italicKey, getStyleValue, updateStyle, min = 8, max = 160, defaultValue = 16 }: any) {
+   return (
+      <div className="pb-6 border-b border-zinc-50 last:border-0 last:pb-0">
+         <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+            <span>{label}</span>
+            <span className="text-zinc-900 font-bold">{getStyleValue(sizeKey, defaultValue)}px</span>
+         </label>
+         <div className="flex gap-2">
             <input
-               className="flex-1 bg-transparent text-xs outline-none"
-               placeholder="Link (es: /contatti o https://...)"
-               value={content.ctaLink || ''}
-               onChange={(e) => updateContent({ ctaLink: e.target.value })}
+               type="range" min={min} max={max} step="1"
+               className="flex-1 h-2 mt-2 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
+               value={getStyleValue(sizeKey, defaultValue)}
+               onChange={(e) => updateStyle({ [sizeKey]: parseInt(e.target.value) })}
             />
+            <div className="flex border rounded-xl overflow-hidden shrink-0">
+               <button
+                  onClick={() => updateStyle({ [boldKey]: !getStyleValue(boldKey, true) })}
+                  className={cn("p-2 px-3 transition-all", getStyleValue(boldKey, true) !== false ? "bg-zinc-900 text-white" : "bg-white text-zinc-400")}
+               >
+                  <Bold size={16} />
+               </button>
+               <button
+                  onClick={() => updateStyle({ [italicKey]: !getStyleValue(italicKey, false) })}
+                  className={cn("p-2 px-3 transition-all", getStyleValue(italicKey, false) ? "bg-zinc-900 text-white" : "bg-white text-zinc-400")}
+               >
+                  <Italic size={16} />
+               </button>
+            </div>
          </div>
       </div>
-   </div>
-);
+   );
+}
 
-// --- Simple Text Input (No formatting) ---
-
-export const SimpleInput = ({ label, value, onChange, placeholder }: { label: string, value: string, onChange: (val: string) => void, placeholder?: string }) => (
-   <div className="space-y-2">
-      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">{label}</label>
-      <input
-         className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none font-bold shadow-inner"
-         placeholder={placeholder}
-         value={value || ''}
-         onChange={(e) => onChange(e.target.value)}
-      />
-   </div>
-);
-
-export const SocialLinksManager = ({ links = [], onChange }: { links: any[], onChange: (links: any[]) => void }) => (
-   <div className="space-y-4 pt-4 border-t border-zinc-100">
-      <div className="flex items-center justify-between">
-         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Link Icone Social</label>
-         <button
-            onClick={() => onChange([...links, { platform: 'instagram', url: 'https://instagram.com' }])}
-            className="px-3 py-1 bg-zinc-900 text-white rounded-lg text-[10px] font-bold"
-         >
-            <Plus size={10} className="inline mr-1" /> AGGIUNGI
-         </button>
-      </div>
-      <div className="space-y-3">
-         {links.map((social: any, i: number) => (
-            <div key={i} className="flex gap-2 group animate-in slide-in-from-right-2 duration-200">
-               <select className="p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" value={social.platform} onChange={(e) => {
-                  const ns = [...links]; ns[i].platform = e.target.value; onChange(ns);
-               }}>
-                  <option value="instagram">Instagram</option>
-                  <option value="facebook">Facebook</option>
-                  <option value="x">X / Twitter</option>
-                  <option value="linkedin">LinkedIn</option>
-                  <option value="mail">Mail</option>
-                  <option value="phone">Telefono</option>
-               </select>
-               <input className="flex-1 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50" placeholder="URL Profilo..." value={social.url} onChange={(e) => {
-                  const ns = [...links]; ns[i].url = e.target.value; onChange(ns);
-               }} />
-               <button onClick={() => onChange(links.filter((_, idx) => idx !== i))} className="p-2 text-zinc-300 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
+export function CTAManager({ content, updateContent, style, updateStyle }: any) {
+   return (
+      <div className="space-y-4 pt-4 border-t border-zinc-100">
+         <div className="flex items-center justify-between mb-2">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Pulsante (CTA)</label>
+            <div className="flex bg-zinc-100 p-1 rounded-lg">
+               <button
+                  onClick={() => updateStyle?.({ buttonTheme: 'primary' })}
+                  className={cn("px-3 py-1 text-[9px] font-black uppercase tracking-tight rounded-md transition-all", (style?.buttonTheme || 'primary') === 'primary' ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
+               >
+                  Primario
+               </button>
+               <button
+                  onClick={() => updateStyle?.({ buttonTheme: 'secondary' })}
+                  className={cn("px-3 py-1 text-[9px] font-black uppercase tracking-tight rounded-md transition-all", style?.buttonTheme === 'secondary' ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
+               >
+                  Secondario
+               </button>
             </div>
-         ))}
-      </div>
-   </div>
-);
-
-export const LinkListManager = ({ links = [], onChange, label = "Link Testuali" }: { links: any[], onChange: (links: any[]) => void, label?: string }) => (
-   <div className="space-y-4 pt-4 border-t border-zinc-100">
-      <div className="flex items-center justify-between">
-         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{label}</label>
-         <button
-            onClick={() => onChange([...links, { label: 'Link', url: '/' }])}
-            className="px-3 py-1 bg-zinc-900 text-white rounded-lg text-[10px] font-bold"
-         >
-            <Plus size={10} className="inline mr-1" /> AGGIUNGI
-         </button>
-      </div>
-      <div className="space-y-3">
-         {links.map((link: any, i: number) => (
-            <div key={i} className="flex gap-2 group animate-in slide-in-from-right-2 duration-200">
-               <input className="w-[100px] shrink-0 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" placeholder="Testo" value={link.label} onChange={(e) => {
-                  const nl = [...links]; nl[i].label = e.target.value; onChange(nl);
-               }} />
-               <input className="flex-1 min-w-0 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50" placeholder="URL..." value={link.url} onChange={(e) => {
-                  const nl = [...links]; nl[i].url = e.target.value; onChange(nl);
-               }} />
-               <button onClick={() => onChange(links.filter((_, idx) => idx !== i))} className="p-2 shrink-0 text-zinc-300 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
+         </div>
+         <div className="grid gap-3">
+            <input
+               className="w-full p-3 border border-zinc-200 rounded-xl text-sm font-bold bg-zinc-50 focus:bg-white transition-all outline-none"
+               placeholder="Testo Bottone (es: Inizia Ora)"
+               value={content.cta || ''}
+               onChange={(e) => updateContent({ cta: e.target.value })}
+            />
+            <div className="flex items-center gap-2 p-3 border border-zinc-200 rounded-xl bg-zinc-50">
+               <LinkIcon size={14} className="text-zinc-400" />
+               <input
+                  className="flex-1 bg-transparent text-xs outline-none"
+                  placeholder="Link (es: /contatti o https://...)"
+                  value={content.ctaLink || ''}
+                  onChange={(e) => updateContent({ ctaLink: e.target.value })}
+               />
             </div>
-         ))}
+         </div>
       </div>
-   </div>
-);
+   );
+}
 
-// --- Advanced Text Editor ---
+export function SimpleInput({ label, value, onChange, placeholder }: { label: string, value: string, onChange: (val: string) => void, placeholder?: string }) {
+   return (
+      <div className="space-y-2">
+         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">{label}</label>
+         <input
+            className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none font-bold shadow-inner"
+            placeholder={placeholder}
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+         />
+      </div>
+   );
+}
 
-export const RichTextarea = ({ label = "Contenuto Testuale", value, onChange, placeholder }: { label?: string, value: string, onChange: (val: string) => void, placeholder?: string }) => {
+export function SocialLinksManager({ links = [], onChange }: { links: any[], onChange: (links: any[]) => void }) {
+   return (
+      <div className="space-y-4 pt-4 border-t border-zinc-100">
+         <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Link Icone Social</label>
+            <button
+               onClick={() => onChange([...links, { platform: 'instagram', url: 'https://instagram.com' }])}
+               className="px-3 py-1 bg-zinc-900 text-white rounded-lg text-[10px] font-bold"
+            >
+               <Plus size={10} className="inline mr-1" /> AGGIUNGI
+            </button>
+         </div>
+         <div className="space-y-3">
+            {links.map((social: any, i: number) => (
+               <div key={i} className="flex gap-2 group animate-in slide-in-from-right-2 duration-200">
+                  <select className="p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" value={social.platform} onChange={(e) => {
+                     const ns = [...links]; ns[i].platform = e.target.value; onChange(ns);
+                  }}>
+                     <option value="instagram">Instagram</option>
+                     <option value="facebook">Facebook</option>
+                     <option value="x">X / Twitter</option>
+                     <option value="linkedin">LinkedIn</option>
+                     <option value="mail">Mail</option>
+                     <option value="phone">Telefono</option>
+                  </select>
+                  <input className="flex-1 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50" placeholder="URL Profilo..." value={social.url} onChange={(e) => {
+                     const ns = [...links]; ns[i].url = e.target.value; onChange(ns);
+                  }} />
+                  <button onClick={() => onChange(links.filter((_, idx) => idx !== i))} className="p-2 text-zinc-300 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
+               </div>
+            ))}
+         </div>
+      </div>
+   );
+}
+
+export function LinkListManager({ links = [], onChange, label = "Link Testuali" }: { links: any[], onChange: (links: any[]) => void, label?: string }) {
+   return (
+      <div className="space-y-4 pt-4 border-t border-zinc-100">
+         <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{label}</label>
+            <button
+               onClick={() => onChange([...links, { label: 'Link', url: '/' }])}
+               className="px-3 py-1 bg-zinc-900 text-white rounded-lg text-[10px] font-bold"
+            >
+               <Plus size={10} className="inline mr-1" /> AGGIUNGI
+            </button>
+         </div>
+         <div className="space-y-3">
+            {links.map((link: any, i: number) => (
+               <div key={i} className="flex gap-2 group animate-in slide-in-from-right-2 duration-200">
+                  <input className="w-[100px] shrink-0 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" placeholder="Testo" value={link.label} onChange={(e) => {
+                     const nl = [...links]; nl[i].label = e.target.value; onChange(nl);
+                  }} />
+                  <input className="flex-1 min-w-0 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50" placeholder="URL..." value={link.url} onChange={(e) => {
+                     const nl = [...links]; nl[i].url = e.target.value; onChange(nl);
+                  }} />
+                  <button onClick={() => onChange(links.filter((_, idx) => idx !== i))} className="p-2 shrink-0 text-zinc-300 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
+               </div>
+            ))}
+         </div>
+      </div>
+   );
+}
+
+export function RichTextarea({ label = "Contenuto Testuale", value, onChange, placeholder }: { label?: string, value: string, onChange: (val: string) => void, placeholder?: string }) {
    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
    const applyFormat = (type: 'bold' | 'italic') => {
@@ -461,78 +475,80 @@ export const RichTextarea = ({ label = "Contenuto Testuale", value, onChange, pl
          </div>
       </div>
    );
-};
+}
 
-// --- Advanced Style Managers ---
-
-export const BorderShadowManager = ({ getStyleValue, updateStyle }: any) => (
-   <section className="pt-8 border-t border-zinc-100">
-      <SectionHeader icon={Layers} title="Bordi" colorClass="text-zinc-500" />
-      <div className="space-y-6">
-         <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Arrotondamento</label>
-            <input
-               type="number"
-               className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
-               value={getStyleValue('borderRadius', 0)}
-               onChange={(e) => updateStyle({ borderRadius: parseInt(e.target.value) || 0 })}
-            />
-         </div>
-         <div className="flex items-center justify-between">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase cursor-pointer" htmlFor="has-border">Bordo</label>
-            <input
-               id="has-border"
-               type="checkbox"
-               className="w-5 h-5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
-               checked={!!getStyleValue('borderWidth', 0)}
-               onChange={(e) => updateStyle({ borderWidth: e.target.checked ? 1 : 0 })}
-            />
-         </div>
-         {getStyleValue('borderWidth', 0) > 0 && (
-            <div className="grid grid-cols-2 gap-4 animate-in fade-in zoom-in-95 duration-200">
-               <div>
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Colore Bordo</label>
-                  <input
-                     type="color"
-                     className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                     value={getStyleValue('borderColor', '#e5e7eb')}
-                     onChange={(e) => updateStyle({ borderColor: e.target.value })}
-                  />
-               </div>
-               <div>
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Spessore (px)</label>
-                  <input
-                     type="number"
-                     className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
-                     value={getStyleValue('borderWidth', 1)}
-                     onChange={(e) => updateStyle({ borderWidth: parseInt(e.target.value) || 0 })}
-                  />
-               </div>
+export function BorderShadowManager({ getStyleValue, updateStyle }: any) {
+   return (
+      <section className="pt-8 border-t border-zinc-100">
+         <SectionHeader icon={Layers} title="Bordi" colorClass="text-zinc-500" />
+         <div className="space-y-6">
+            <div>
+               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Arrotondamento</label>
+               <input
+                  type="number"
+                  className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
+                  value={getStyleValue('borderRadius', 0)}
+                  onChange={(e) => updateStyle({ borderRadius: parseInt(e.target.value) || 0 })}
+               />
             </div>
-         )}
-      </div>
-   </section>
-);
+            <div className="flex items-center justify-between">
+               <label className="text-[10px] font-bold text-zinc-400 uppercase cursor-pointer" htmlFor="has-border">Bordo</label>
+               <input
+                  id="has-border"
+                  type="checkbox"
+                  className="w-5 h-5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                  checked={!!getStyleValue('borderWidth', 0)}
+                  onChange={(e) => updateStyle({ borderWidth: e.target.checked ? 1 : 0 })}
+               />
+            </div>
+            {getStyleValue('borderWidth', 0) > 0 && (
+               <div className="grid grid-cols-2 gap-4 animate-in fade-in zoom-in-95 duration-200">
+                  <div>
+                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Colore Bordo</label>
+                     <input
+                        type="color"
+                        className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
+                        value={getStyleValue('borderColor', '#e5e7eb')}
+                        onChange={(e) => updateStyle({ borderColor: e.target.value })}
+                     />
+                  </div>
+                  <div>
+                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Spessore (px)</label>
+                     <input
+                        type="number"
+                        className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
+                        value={getStyleValue('borderWidth', 1)}
+                        onChange={(e) => updateStyle({ borderWidth: parseInt(e.target.value) || 0 })}
+                     />
+                  </div>
+               </div>
+            )}
+         </div>
+      </section>
+   );
+}
 
-export const IconManager = ({ value, onChange, label = "Icona" }: any) => (
-   <div className="space-y-4 pt-4 border-t border-zinc-100">
-      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">{label}</label>
-      <div className="grid grid-cols-5 gap-2">
-         {Object.entries(AVAILABLE_ICONS).map(([name, Icon]) => (
-            <button
-               key={name}
-               type="button"
-               onClick={() => onChange(name)}
-               className={cn(
-                  "p-3 flex justify-center border rounded-2xl transition-all",
-                  value === name
-                     ? "bg-zinc-900 text-white shadow-lg scale-110 z-10 border-zinc-900"
-                     : "bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-white hover:border-zinc-200"
-               )}
-            >
-               <Icon size={18} />
-            </button>
-         ))}
+export function IconManager({ value, onChange, label = "Icona" }: any) {
+   return (
+      <div className="space-y-4 pt-4 border-t border-zinc-100">
+         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">{label}</label>
+         <div className="grid grid-cols-5 gap-2">
+            {Object.entries(AVAILABLE_ICONS).map(([name, Icon]) => (
+               <button
+                  key={name}
+                  type="button"
+                  onClick={() => onChange(name)}
+                  className={cn(
+                     "p-3 flex justify-center border rounded-2xl transition-all",
+                     value === name
+                        ? "bg-zinc-900 text-white shadow-lg scale-110 z-10 border-zinc-900"
+                        : "bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-white hover:border-zinc-200"
+                  )}
+               >
+                  <Icon size={18} />
+               </button>
+            ))}
+         </div>
       </div>
-   </div>
-);
+   );
+}

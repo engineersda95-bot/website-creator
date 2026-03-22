@@ -1,7 +1,9 @@
 import React from 'react';
-import { cn, toPx, formatLink } from '@/lib/utils';
+import { cn, formatLink } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block, Page } from '@/types/editor';
+import { resolveImageUrl } from '@/lib/image-utils';
+import { SitiImage } from '@/components/shared/SitiImage';
 import {
    Facebook,
    Instagram,
@@ -41,6 +43,7 @@ interface FooterProps {
    allPages?: Page[];
    viewport?: string;
    isStatic?: boolean;
+   imageMemoryCache?: Record<string, string>;
 }
 
 export const FooterBlock: React.FC<FooterProps> = ({ 
@@ -49,7 +52,8 @@ export const FooterBlock: React.FC<FooterProps> = ({
   project, 
   allPages,
   viewport,
-  isStatic
+  isStatic,
+  imageMemoryCache
 }) => {
    const { style } = getBlockStyles(block, project, viewport || 'desktop');
 
@@ -87,7 +91,15 @@ export const FooterBlock: React.FC<FooterProps> = ({
                   {content.showLogo !== false && (
                      <div className="flex flex-col items-center gap-3">
                         {(content.logoType === 'image' || content.logoType === 'both') && displayLogoImage && (
-                           <img src={displayLogoImage} alt="Logo" style={{ height: 'var(--logo-fs)', width: 'auto' }} className="object-contain shrink-0" />
+                           <SitiImage 
+                              src={displayLogoImage} 
+                              project={project}
+                              isStatic={isStatic}
+                              imageMemoryCache={imageMemoryCache}
+                              alt="Logo" 
+                              style={{ height: 'var(--logo-fs)', width: 'auto' }} 
+                              className="object-contain shrink-0" 
+                           />
                         )}
                         {content.logoType !== 'image' && (
                            <div className="font-black tracking-tighter" style={{ fontSize: 'var(--logo-text-fs)', color: 'inherit' }}>
@@ -141,7 +153,15 @@ export const FooterBlock: React.FC<FooterProps> = ({
                      {content.showLogo !== false && (
                         <div className={cn("flex flex-col gap-3", style.align === 'right' ? "items-end" : "items-start")}>
                            {(content.logoType === 'image' || content.logoType === 'both') && displayLogoImage && (
-                              <img src={displayLogoImage} alt="Logo" style={{ height: 'var(--logo-fs)', width: 'auto' }} className="object-contain shrink-0" />
+                              <SitiImage 
+                                 src={displayLogoImage} 
+                                 project={project}
+                                 isStatic={isStatic}
+                                 imageMemoryCache={imageMemoryCache}
+                                 alt="Logo" 
+                                 style={{ height: 'var(--logo-fs)', width: 'auto' }} 
+                                 className="object-contain shrink-0" 
+                              />
                            )}
                            {content.logoType !== 'image' && (
                               <div className="font-black tracking-tighter" style={{ fontSize: 'var(--logo-text-fs)', color: 'inherit' }}>

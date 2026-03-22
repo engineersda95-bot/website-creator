@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { Block, Page, Project, ProjectSettings, BlockType } from '@/types/editor';
 import { v4 as uuidv4 } from 'uuid';
 import { TEMPLATES, getBlocksFromTemplate } from '@/lib/templates';
+import { getImageHash, getAssetRelativePath } from '@/lib/image-utils';
 
 interface EditorState {
   project: Project | null;
@@ -11,11 +12,13 @@ interface EditorState {
   selectedBlockId: string | null;
   user: any | null;
   isLoading: boolean;
+  isUploading: boolean;
   isInitialized: boolean;
   hasUnsavedChanges: boolean;
   pageHistories: Record<string, { steps: any[], index: number }>;
   takeSnapshot: () => void;
   copiedBlock: Block | null;
+  imageMemoryCache: Record<string, string>;
   
   // Actions
   setUnsavedChanges: (val: boolean) => void;
@@ -50,6 +53,7 @@ interface EditorState {
   pasteBlock: (atIndex?: number) => void;
   hydrateEditor: (project: Project, pages: Page[]) => void;
   publishProject: () => Promise<{ success: boolean; url?: string; error?: string }>;
+  uploadImage: (base64: string, filename?: string) => Promise<string>;
 }
 
 const triggerAutoSave = (get: () => EditorState, set?: any) => {
@@ -66,6 +70,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   selectedBlockId: null,
   user: null,
   isLoading: false,
+  isUploading: false,
   isInitialized: false,
   hasUnsavedChanges: false,
   setUnsavedChanges: (val) => set({ hasUnsavedChanges: val }),
@@ -73,6 +78,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setViewport: (v) => set({ viewport: v }),
   pageHistories: {},
   copiedBlock: null,
+  imageMemoryCache: {},
 
   takeSnapshot: () => {
     const { currentPage, project, pageHistories } = get();
@@ -249,11 +255,19 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       }
     }
 
-    const { error } = await supabase.from('pages').upsert(pagesToSave);
+    const { data: savedData, error } = await supabase.from('pages').upsert(pagesToSave).select();
     if (error) {
       console.error('[Store] saveCurrentPage error:', error);
-    } else {
-      set({ hasUnsavedChanges: false });
+    } else if (savedData) {
+      // Sync local state with server-side data (especially updated_at)
+      set(state => ({ 
+        hasUnsavedChanges: false,
+        currentPage: state.currentPage?.id === savedData[0].id ? { ...state.currentPage, ...savedData[0] } : state.currentPage,
+        projectPages: state.projectPages.map(p => {
+          const saved = savedData.find(s => s.id === p.id);
+          return saved ? { ...p, ...saved } : p;
+        })
+      }));
     }
   },
 
@@ -640,6 +654,65 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     } catch (e: any) {
       console.error('Publish error:', e);
       return { success: false, error: e.message || 'Unknown error' };
+    }
+  },
+
+  uploadImage: async (base64: string, filename?: string) => {
+    const { project } = get();
+    if (!project || !base64) return base64;
+
+    // Detect extension from base64
+    const match = base64.match(/data:image\/([^;]+);base64,/);
+    const extension = match ? match[1] : 'png';
+    const cleanBase64 = base64.split(',')[1] || base64;
+
+    try {
+      set({ isUploading: true });
+      const hash = await getImageHash(base64);
+      
+      // Use original filename (sanitized) or fallback to hash-based
+      const cleanFilename = filename 
+        ? filename.replace(/[^a-zA-Z0-9.-]/g, '_')
+        : `img_${hash}.${extension}`;
+        
+      const relativePath = `/assets/${cleanFilename}`;
+      const bucketPath = `${project.id}/${cleanFilename}`;
+
+      // 1. Update memory cache for instant preview
+      set(state => ({
+        imageMemoryCache: {
+          ...state.imageMemoryCache,
+          [relativePath]: base64
+        }
+      }));
+
+      // 2. Upload to Supabase Storage if not exists
+      // Convert base64 to Blob
+      const byteCharacters = atob(cleanBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: `image/${extension}` });
+
+      const { error: uploadError } = await supabase.storage
+        .from('project-assets')
+        .upload(bucketPath, blob, {
+          cacheControl: '3600',
+          upsert: true // Overwrite as requested by user
+        });
+
+      if (uploadError && uploadError.message !== 'The resource already exists') {
+        throw uploadError;
+      }
+
+      set({ isUploading: false });
+      return relativePath;
+    } catch (err) {
+      console.error('[Store] uploadImage error:', err);
+      set({ isUploading: false });
+      return base64; // Fallback to base64 if upload fails
     }
   },
 

@@ -54,7 +54,7 @@ No complex CMS. No manual hosting. No technical setup required.
    - Deploys to Cloudflare Pages
 
 8. Site is live at:
-   - `project-name.pages.dev`
+   - `project-name.pages.dev` (or custom domain)
 
 9. User can edit and re-publish
 
@@ -198,7 +198,7 @@ All content stored as JSON.
 
 ## EDGE CASES
 
-- **Subdomain Collision**: If the requested `project-name` exists on `pages.dev`, the app must suggest a suffix (e.g., `-123`).
+- **Subdomain Collision**: If the requested `project-name` exists on the default domain provider, the app must suggest a suffix (e.g., `-123`).
 - **AI Hallucination**: [REMOVED]
 - **Image Upload Failure**: If Base64 string is too large for Supabase `text` column, truncate or show error.
 - **Disconnected Editing**: Handle loss of internet during editor session (local storage sync).

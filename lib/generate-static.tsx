@@ -7,6 +7,8 @@ import { TextBlock } from '@/components/blocks/visual/TextBlock';
 import { FooterBlock } from '@/components/blocks/visual/FooterBlock';
 import { toPx } from '@/lib/utils';
 import { generateBlockCSS } from '@/lib/responsive-utils';
+import { resolveImageUrl } from '@/lib/image-utils';
+import { getProjectDomain } from '@/lib/url-utils';
 
 export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: Project): string {
   const { renderToStaticMarkup } = require('react-dom/server');
@@ -16,16 +18,49 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
   const sColor = project?.settings?.secondaryColor || '#10b981';
   const floating = project?.settings?.floatingCTA;
 
+  const baseUrl = getProjectDomain(project);
   return `
 <!DOCTYPE html>
 <html lang="it" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${page.seo?.title || page.title}</title>
-    <meta name="description" content="${page.seo?.description || ''}">
-    ${page.seo?.image ? `<meta property="og:image" content="${page.seo.image}">` : ''}
-    <link rel="icon" href="${project?.settings?.favicon || '/favicon.ico'}">
+    <link rel="canonical" href="${baseUrl}${page.slug === 'home' ? '' : '/' + page.slug}">
+    
+    <title>${page.seo?.title || project?.settings?.metaTitle || page.title}</title>
+    <meta name="description" content="${page.seo?.description || project?.settings?.metaDescription || ''}">
+    
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="${project?.settings?.metaTitle || 'Sito Vetrina'}">
+    <meta property="og:title" content="${page.seo?.title || project?.settings?.metaTitle || page.title}">
+    <meta property="og:description" content="${page.seo?.description || project?.settings?.metaDescription || ''}">
+    <meta property="og:url" content="${baseUrl}${page.slug === 'home' ? '' : '/' + page.slug}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="it_IT">
+    ${(() => {
+      const ogImageUrl = resolveImageUrl(page.seo?.image || project?.settings?.metaImage, project || null, {}, true);
+      if (!ogImageUrl) return '';
+      // Cache buster to force social crawlers to refresh
+      const v = project?.last_published_at ? `?v=${new Date(project.last_published_at).getTime()}` : '';
+      const fullOgUrl = `${baseUrl}${ogImageUrl}${v}`;
+      const isPng = fullOgUrl.toLowerCase().includes('.png');
+      const isJpg = fullOgUrl.toLowerCase().includes('.jpg') || fullOgUrl.toLowerCase().includes('.jpeg');
+      const contentType = isPng ? 'image/png' : isJpg ? 'image/jpeg' : 'image/png';
+      
+      return `
+    <meta property="og:image" content="${fullOgUrl}">
+    <meta property="og:image:secure_url" content="${fullOgUrl}">
+    <meta property="og:image:type" content="${contentType}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${page.seo?.title || project?.settings?.metaTitle || page.title}">
+    <meta name="twitter:description" content="${page.seo?.description || project?.settings?.metaDescription || ''}">
+    <meta name="twitter:image" content="${fullOgUrl}">
+      `;
+    })()}
+
+    <link rel="icon" href="${resolveImageUrl(project?.settings?.favicon, project || null, {}, true) || '/favicon.ico'}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -143,6 +178,38 @@ function renderBlock(block: Block, allPages: Page[], project: Project | undefine
       project={project} 
       allPages={allPages}
       isStatic={true}
+      imageMemoryCache={{}}
     />
   ));
+}
+
+export function generateSitemap(pages: Page[], project: Project): string {
+  const baseUrl = getProjectDomain(project);
+  const now = new Date().toISOString().split('T')[0];
+
+  const urls = pages.map(page => {
+    const url = page.slug === 'home' ? baseUrl : `${baseUrl}/${page.slug}`;
+    return `
+  <url>
+    <loc>${url}</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>${page.slug === 'home' ? '1.0' : '0.8'}</priority>
+  </url>`;
+  }).join('');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls}
+</urlset>`.trim();
+}
+
+export function generateRobotsTxt(project: Project): string {
+  const baseUrl = getProjectDomain(project);
+  return `
+User-agent: *
+Allow: /
+
+Sitemap: ${baseUrl}/sitemap.xml
+`.trim();
 }

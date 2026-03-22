@@ -2,16 +2,41 @@
 
 import React, { useRef } from 'react';
 import { ImageIcon, Upload, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ImageUploadProps {
   value?: string;
-  onChange: (base64: string) => void;
-  label?: string;
+  onChange: (base64: string, filename?: string) => void;
+  label?: React.ReactNode;
   hidePreview?: boolean;
+  onImageLoad?: (dimensions: { width: number; height: number }) => void;
+  showSEOStatus?: boolean;
 }
 
-export const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label = "Immagine", hidePreview = false }) => {
+export const ImageUpload: React.FC<ImageUploadProps> = ({ 
+  value, 
+  onChange, 
+  label = "Immagine", 
+  hidePreview = false,
+  onImageLoad,
+  showSEOStatus = false
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dimensions, setDimensions] = React.useState<{width: number, height: number} | null>(null);
+
+  React.useEffect(() => {
+    if (value && typeof value === 'string' && (value.startsWith('http') || value.startsWith('/assets') || value.startsWith('data:'))) {
+      const img = new Image();
+      img.onload = () => {
+        const dims = { width: img.naturalWidth, height: img.naturalHeight };
+        setDimensions(dims);
+        if (onImageLoad) onImageLoad(dims);
+      };
+      img.src = value;
+    } else if (!value) {
+      setDimensions(null);
+    }
+  }, [value, onImageLoad]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -24,17 +49,26 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      onChange(reader.result as string);
+      const base64 = reader.result as string;
+      onChange(base64, file.name);
     };
     reader.readAsDataURL(file);
   };
 
+  const seoStatus = dimensions ? (
+    dimensions.width < 600 || dimensions.height < 315 ? { color: 'text-red-500', bg: 'bg-red-500', label: 'Non verrà visualizzata' } : 
+    dimensions.width < 1200 || dimensions.height < 630 ? { color: 'text-amber-500', bg: 'bg-amber-500', label: 'Non ottimizzata' } : 
+    { color: 'text-emerald-500', bg: 'bg-emerald-500', label: 'Qualità Ottimale (OK)' }
+  ) : null;
+
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-zinc-600 block">{label}</label>
+      <div className="flex items-center justify-between px-1">
+        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">{label}</label>
+      </div>
       
       {!hidePreview && value ? (
-        <div className="relative group rounded-xl overflow-hidden border border-zinc-200 aspect-video bg-zinc-100">
+        <div className="relative group rounded-xl overflow-hidden border border-zinc-200 aspect-video bg-zinc-100 shadow-sm">
           <img src={value} alt="Preview" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
              <button 
@@ -78,6 +112,25 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label
         accept="image/*" 
         className="hidden" 
       />
+
+      {showSEOStatus && seoStatus && dimensions && (
+        <div className="mt-2 p-3 bg-zinc-50 border border-zinc-100 rounded-xl space-y-3 animate-in fade-in slide-in-from-top-1 duration-200 shadow-sm">
+          <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/50">
+             <div className={cn("w-2 h-2 rounded-full", seoStatus.bg)} />
+             <span className={cn("text-[10px] font-bold uppercase tracking-tight", seoStatus.color)}>
+               {dimensions.width} x {dimensions.height} px: {seoStatus.label}
+             </span>
+          </div>
+          <div className="space-y-1.5">
+             <p className="text-[10px] text-zinc-600 leading-tight">
+                <span className="font-bold text-blue-600">GOAL:</span> Target ottimale <span className="font-bold">1200 x 630 px</span>.
+             </p>
+             <p className="text-[9px] text-zinc-400 leading-tight italic">
+                Un titolo chiaro e una CTA (Call to Action) nell'immagine aumentano drasticamente i clic!
+             </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

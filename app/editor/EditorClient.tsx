@@ -9,9 +9,10 @@ import { EditorCanvas } from '@/components/blocks/EditorCanvas';
 import { ConfigSidebar } from '@/components/blocks/ConfigSidebar';
 import { deployToCloudflare } from '@/app/actions/deploy';
 import { v4 as uuidv4 } from 'uuid';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, ExternalLink } from 'lucide-react';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { cn } from '@/lib/utils';
+import { getProjectDomain } from '@/lib/url-utils';
 
 export function EditorClient({ 
   initialUser, 
@@ -31,12 +32,29 @@ export function EditorClient({
     initialize, 
     project, 
     currentPage, 
+    projectPages,
     isLoading, 
     isInitialized, 
     user,
     hasUnsavedChanges,
     publishProject
   } = useEditorStore();
+
+  const targetProject = project || initialProject;
+  const targetPages = (projectPages && projectPages.length > 0) ? projectPages : initialPages;
+
+  const isPublished = !!targetProject?.live_url;
+  const isDraftAtLeastOnePage = targetPages.some(p => {
+    if (!targetProject?.last_published_at) return false;
+    const updatedAt = new Date(p.updated_at).getTime();
+    const publishedAt = new Date(targetProject.last_published_at).getTime();
+    const isDraft = updatedAt > publishedAt;
+    
+    if (hasUnsavedChanges) return true;
+    return isDraft;
+  });
+  
+  const siteStatus = !isPublished ? 'non_pubblicato' : (hasUnsavedChanges || isDraftAtLeastOnePage ? 'bozza' : 'pubblicato');
   
   const searchParams = useSearchParams();
   const templateKey = searchParams.get('template') || undefined;
@@ -79,7 +97,13 @@ export function EditorClient({
     const result = await deployToCloudflare(project.id);
     setIsPublishing(false);
     if (result.success) {
-      window.open(result.url, '_blank');
+      // Refresh project to get new live_url and last_published_at
+      const { data: updatedProject } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', project.id)
+        .single();
+      if (updatedProject) setProject(updatedProject);
     } else {
       alert(`Deployment failed: ${result.error}`);
     }
@@ -171,7 +195,35 @@ export function EditorClient({
           <div className="flex items-center gap-4">
             <h1 className="font-bold text-lg text-zinc-900">SitiVetrina <span className="text-zinc-400 font-normal">Editor</span></h1>
             <div className="h-4 w-px bg-zinc-200" />
-            <span className="text-sm font-medium text-zinc-500">{currentPage?.title || 'Home Page'}</span>
+            <div className="flex flex-col">
+               <span className="text-sm font-bold text-zinc-800 uppercase tracking-tight leading-tight">{currentPage?.title || 'Home Page'}</span>
+               <div className="flex items-center gap-2 mt-0.5">
+                  <div className={cn("w-1.5 h-1.5 rounded-full", 
+                    siteStatus === 'pubblicato' ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : 
+                    siteStatus === 'bozza' ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" : "bg-zinc-300"
+                  )} />
+                  <span className={cn("text-[10px] font-black uppercase tracking-wider", 
+                    siteStatus === 'pubblicato' ? "text-emerald-600" : 
+                    siteStatus === 'bozza' ? "text-amber-600" : "text-zinc-400"
+                  )}>
+                    {siteStatus === 'pubblicato' ? 'Pubblicato' : siteStatus === 'bozza' ? 'Bozza' : 'Non Pubblicato'}
+                  </span>
+                  {project?.live_url && (
+                    <>
+                      <div className="w-1 h-1 rounded-full bg-zinc-200" />
+                      <a 
+                        href={getProjectDomain(project)} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 text-[10px] font-bold text-blue-600 hover:bg-blue-100 transition-colors border border-blue-100/50 group"
+                      >
+                        Visualizza Sito
+                        <ExternalLink size={10} className="text-blue-400 group-hover:text-blue-600 transition-colors" />
+                      </a>
+                    </>
+                  )}
+               </div>
+            </div>
           </div>
           
           <div className="flex items-center gap-3">
