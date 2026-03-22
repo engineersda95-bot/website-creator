@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { ImageUpload } from '../../ImageUpload';
+import { ImageUpload } from '@/components/shared/ImageUpload';
 import { LinkListManager, CTAManager, SectionHeader } from '../SharedSidebarComponents';
 import { Layout } from 'lucide-react';
 

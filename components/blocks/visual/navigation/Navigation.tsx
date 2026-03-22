@@ -189,9 +189,9 @@ export const Navigation: React.FC<NavigationProps> = ({
                     project?.settings?.appearance === 'dark' ? "border-white/10" : "border-black/5"
                   )}
                   style={{ 
-                    fontSize: style.fontSize || 18,
-                    fontWeight: style.titleBold ? 700 : 500,
-                    fontStyle: style.titleItalic ? 'italic' : 'normal'
+                    fontSize: 'var(--nav-link-mobile-fs)',
+                    fontWeight: 'var(--nav-link-mobile-fw)' as any,
+                    fontStyle: 'var(--nav-link-mobile-fs-style)' as any
                   }}
                 >
                   {link.label}

@@ -29,7 +29,7 @@ import {
    Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ImageUpload } from '../ImageUpload';
+import { ImageUpload } from '@/components/shared/ImageUpload';
 
 // --- Icon Registry for Manager ---
 const AVAILABLE_ICONS: Record<string, any> = {
@@ -467,32 +467,16 @@ export const RichTextarea = ({ label = "Contenuto Testuale", value, onChange, pl
 
 export const BorderShadowManager = ({ getStyleValue, updateStyle }: any) => (
    <section className="pt-8 border-t border-zinc-100">
-      <SectionHeader icon={Layers} title="Bordi & Ombre" colorClass="text-zinc-500" />
+      <SectionHeader icon={Layers} title="Bordi" colorClass="text-zinc-500" />
       <div className="space-y-6">
-         <div className="grid grid-cols-2 gap-4">
-            <div>
-               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Arrotondamento</label>
-               <input
-                  type="number"
-                  className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
-                  value={getStyleValue('borderRadius', 0)}
-                  onChange={(e) => updateStyle({ borderRadius: parseInt(e.target.value) || 0 })}
-               />
-            </div>
-            <div>
-               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Ombra</label>
-               <select
-                  className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold focus:bg-white transition-all outline-none"
-                  value={getStyleValue('shadow', 'none')}
-                  onChange={(e) => updateStyle({ shadow: e.target.value })}
-               >
-                  <option value="none">Nessuna</option>
-                  <option value="S">Piccola</option>
-                  <option value="M">Media</option>
-                  <option value="L">Grande</option>
-                  <option value="XL">Extra Large</option>
-               </select>
-            </div>
+         <div>
+            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Arrotondamento</label>
+            <input
+               type="number"
+               className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
+               value={getStyleValue('borderRadius', 0)}
+               onChange={(e) => updateStyle({ borderRadius: parseInt(e.target.value) || 0 })}
+            />
          </div>
          <div className="flex items-center justify-between">
             <label className="text-[10px] font-bold text-zinc-400 uppercase cursor-pointer" htmlFor="has-border">Bordo</label>

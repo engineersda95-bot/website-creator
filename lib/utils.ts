@@ -21,13 +21,8 @@ export const toPx = (value: any, defaultValue: string = ''): string => {
 };
 
 export function getButtonStyle(project: any, activeColor: string, viewportOverride?: 'desktop' | 'tablet' | 'mobile', theme: 'primary' | 'secondary' = 'primary', isStatic: boolean = false) {
+  // Se isStatic è true, usiamo direttamente l'override (solitamente mobile per link hamburger) o desktop
   let viewport: 'desktop' | 'tablet' | 'mobile' = viewportOverride || 'desktop';
-
-  // Se siamo sul client e non è forzato un viewport, rileviamo quello reale
-  if (!viewportOverride && typeof window !== 'undefined' && window.innerWidth) {
-    if (window.innerWidth < 768) viewport = 'mobile';
-    else if (window.innerWidth < 1024) viewport = 'tablet';
-  }
 
   let settings = project?.settings || {};
   

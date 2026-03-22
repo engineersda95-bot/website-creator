@@ -19,18 +19,12 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
 
   return (
     <section 
-      className={cn("w-full transition-all duration-500")}
+      className={cn("w-full transition-all duration-500 overflow-hidden")}
       style={{
         backgroundColor: 'var(--block-bg)',
         color: 'var(--block-color)',
         paddingTop: 'var(--block-pt)',
         paddingBottom: 'var(--block-pb)',
-        marginTop: 'var(--block-mt)',
-        marginBottom: 'var(--block-mb)',
-        marginLeft: 'var(--block-ml)',
-        marginRight: 'var(--block-mr)',
-        borderRadius: 'var(--block-radius)',
-        width: 'var(--block-width)'
       }}
     >
       <div 

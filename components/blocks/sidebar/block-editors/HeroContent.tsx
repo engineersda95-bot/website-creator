@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { ImageUpload } from '@/components/shared/ImageUpload';
 import { BackgroundManager, CTAManager, RichTextarea, SimpleInput } from '../SharedSidebarComponents';
 
 interface HeroContentProps {

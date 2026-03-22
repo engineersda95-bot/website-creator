@@ -3,7 +3,7 @@
 import React from 'react';
 import { Hero } from './visual/Hero';
 import { TextBlock } from './visual/TextBlock';
-import { Navigation } from './visual/Navigation';
+import { Navigation } from './visual/navigation/Navigation';
 import { FooterBlock } from './visual/FooterBlock';
 import { BlockType } from '@/types/editor';
 

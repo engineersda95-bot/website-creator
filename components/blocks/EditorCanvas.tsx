@@ -45,11 +45,20 @@ const MemoizedBlock = React.memo(({
         onSelect(block.id);
       }}
       className={cn(
-        "group relative transition-all cursor-pointer outline outline-0",
+        "group relative transition-all cursor-pointer",
         block.type === 'navigation' ? "z-50" : "z-0",
-        isSelected ? "outline-4 outline-blue-500/30 z-[40]" : "hover:outline-2 hover:outline-zinc-200"
+        isSelected ? "z-[40]" : "z-0",
       )}
-      style={vars as any}
+      style={{
+        ...vars,
+        borderRadius: 'var(--block-radius)',
+        border: 'var(--block-border-w) solid var(--block-border-c)',
+        marginTop: 'var(--block-mt)',
+        marginBottom: 'var(--block-mb)',
+        marginLeft: 'var(--block-ml)',
+        marginRight: 'var(--block-mr)',
+        width: 'var(--block-width)',
+      } as any}
     >
       {isSelected && (
         <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none z-20" />

@@ -1,7 +1,7 @@
 import 'server-only';
 import { Block, Page, Project } from '@/types/editor';
 import React from 'react';
-import { Navigation } from '@/components/blocks/visual/Navigation';
+import { Navigation } from '@/components/blocks/visual/navigation/Navigation';
 import { Hero } from '@/components/blocks/visual/Hero';
 import { TextBlock } from '@/components/blocks/visual/TextBlock';
 import { FooterBlock } from '@/components/blocks/visual/FooterBlock';
@@ -113,6 +113,13 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
   `.trim();
 }
 
+const StaticRegistry: Record<string, React.FC<any>> = {
+  navigation: Navigation,
+  hero: Hero,
+  text: TextBlock,
+  footer: FooterBlock,
+};
+
 function renderBlock(block: Block, allPages: Page[], project: Project | undefined, renderToStaticMarkup: any): string {
   const { type, content } = block;
   const blockId = `block-${block.id.substring(0, 8)}`;
@@ -120,52 +127,22 @@ function renderBlock(block: Block, allPages: Page[], project: Project | undefine
   // Generate responsive CSS using the new unified utility
   const responsiveCss = generateBlockCSS(blockId, block, project);
   const styleWrapper = `<style>${responsiveCss}</style>`;
-  const blockWrapper = (inner: string, isNav: boolean = false) => `${styleWrapper}<div id="${blockId}" class="w-full ${isNav ? '' : 'overflow-hidden'} transition-all duration-500">${inner}</div>`;
+  const isNav = type === 'navigation';
+  const blockWrapper = (inner: string) => `${styleWrapper}<div id="${blockId}" class="w-full transition-all duration-500">${inner}</div>`;
   
-  switch (type) {
-    case 'navigation':
-      return blockWrapper(renderToStaticMarkup(
-        <Navigation 
-          content={content} 
-          block={block} 
-          project={project} 
-          allPages={allPages}
-          isStatic={true}
-        />
-      ), true);
-
-    case 'hero':
-      return blockWrapper(renderToStaticMarkup(
-        <Hero 
-          content={content} 
-          block={block} 
-          project={project}
-          isStatic={true}
-        />
-      ));
-
-    case 'text':
-      return blockWrapper(renderToStaticMarkup(
-        <TextBlock 
-          content={content} 
-          block={block} 
-          project={project}
-          isStatic={true}
-        />
-      ));
-
-    case 'footer':
-      return blockWrapper(renderToStaticMarkup(
-        <FooterBlock 
-          content={content} 
-          block={block} 
-          project={project}
-          allPages={allPages}
-          isStatic={true}
-        />
-      ));
-
-    default:
-      return `<!-- Block type ${type} ignored in static generation -->`;
+  const Component = StaticRegistry[type];
+  
+  if (!Component) {
+    return `<!-- Block type ${type} ignored in static generation -->`;
   }
+
+  return blockWrapper(renderToStaticMarkup(
+    <Component 
+      content={content} 
+      block={block} 
+      project={project} 
+      allPages={allPages}
+      isStatic={true}
+    />
+  ));
 }

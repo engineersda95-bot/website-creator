@@ -48,6 +48,11 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       '--subtitle-upper': val('subtitleUppercase', false) ? 'uppercase' : 'none',
       '--copyright-fs': toPx(val('copyrightSize', '10px')),
       
+      // Borders & Shadows
+      '--block-border-w': toPx(val('borderWidth', 0)),
+      '--block-border-c': val('borderColor', 'transparent'),
+      '--block-shadow': 'none',
+      
       // Global Button Defaults (Overridable below)
       '--btn-radius': toPx(project?.settings?.buttonRadius, '9999px'),
       '--btn-py': `${project?.settings?.buttonPaddingY || 12}px`,
@@ -78,6 +83,9 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       // Navigation specific (defaults)
       '--nav-padding': toPx(val('padding', '16px')),
       '--nav-hpadding': toPx(val('hPadding', '20px')),
+      '--nav-link-mobile-fs': toPx(val('fontSize', 18)),
+      '--nav-link-mobile-fw': val('titleBold', false) ? '700' : '500',
+      '--nav-link-mobile-fs-style': val('titleItalic', false) ? 'italic' : 'normal',
     };
 
     // Content-based layout type resolution
@@ -126,6 +134,14 @@ export function generateBlockCSS(blockId: string, block: Block, project?: Projec
   return `
     #${blockId} {
       ${printVars(desktopVars)}
+      border-radius: var(--block-radius, 0px);
+      border: var(--block-border-w, 0px) solid var(--block-border-c, transparent);
+      margin-top: var(--block-mt, 0px);
+      margin-bottom: var(--block-mb, 0px);
+      margin-left: var(--block-ml, 0px);
+      margin-right: var(--block-mr, 0px);
+      width: var(--block-width, 100%);
+      transition: all 0.5s ease;
     }
     ${urlOverrides}
     @media (max-width: 1024px) {

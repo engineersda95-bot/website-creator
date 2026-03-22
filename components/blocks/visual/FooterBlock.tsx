@@ -67,18 +67,13 @@ export const FooterBlock: React.FC<FooterProps> = ({
 
    return (
       <footer
-         className={cn("w-full transition-all duration-300 mx-auto")}
+         className={cn("w-full transition-all duration-300 mx-auto overflow-hidden")}
          style={{
             backgroundColor: 'var(--block-bg)',
             color: 'var(--block-color)',
             paddingTop: 'var(--block-pt)',
             paddingBottom: 'var(--block-pb)',
-            marginTop: 'var(--block-mt)',
-            marginBottom: 'var(--block-mb)',
-            marginLeft: 'var(--block-ml)',
-            marginRight: 'var(--block-mr)',
-            width: 'var(--block-width)'
-         }}
+          }}
       >
          <div className={cn(
             "w-full max-w-7xl mx-auto px-8 flex flex-col gap-12",

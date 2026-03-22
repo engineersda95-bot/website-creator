@@ -83,9 +83,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               project?.settings?.appearance === 'dark' ? "border-white/10" : "border-black/5"
             )}
             style={{ 
-              fontSize: 'var(--base-fs)',
-              fontWeight: 'var(--title-fw)' as any,
-              fontStyle: 'var(--title-fs-style)' as any
+              fontSize: 'var(--nav-link-mobile-fs)',
+              fontWeight: 'var(--nav-link-mobile-fw)' as any,
+              fontStyle: 'var(--nav-link-mobile-fs-style)' as any
             }}
             onClick={() => setIsMenuOpen(false)}
           >

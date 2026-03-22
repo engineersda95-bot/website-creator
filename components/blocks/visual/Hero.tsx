@@ -37,13 +37,8 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
       style={{
         backgroundColor: 'var(--block-bg)',
         minHeight: 'var(--hero-min-height)',
-        marginTop: 'var(--block-mt)',
-        marginBottom: 'var(--block-mb)',
-        marginLeft: 'var(--block-ml)',
-        marginRight: 'var(--block-mr)',
         paddingTop: 'var(--block-pt)',
         paddingBottom: 'var(--block-pb)',
-        borderRadius: 'var(--block-radius)',
         color: 'var(--block-color)',
       }}
     >
