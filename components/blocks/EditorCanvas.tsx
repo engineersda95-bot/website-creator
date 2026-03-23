@@ -159,18 +159,26 @@ export const EditorCanvas: React.FC = () => {
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
+      const isInput = ['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName) || (e.target as HTMLElement).isContentEditable;
+      if (isInput) return;
 
       if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'z') { e.preventDefault(); undo(); }
-        if (e.key === 'y') { e.preventDefault(); redo(); }
-        if (e.key === 'c' && selectedBlockId) { e.preventDefault(); copyBlock(selectedBlockId); }
-        if (e.key === 'v') { e.preventDefault(); pasteBlock(); }
-        if (e.key === 'd' && selectedBlockId) { e.preventDefault(); duplicateBlock(selectedBlockId); }
+        const key = e.key.toLowerCase();
+        
+        if (key === 'z') {
+           e.preventDefault();
+           if (e.shiftKey) redo();
+           else undo();
+        }
+        else if (key === 'y') { e.preventDefault(); redo(); }
+        else if (key === 'c' && selectedBlockId) { e.preventDefault(); copyBlock(selectedBlockId); }
+        else if (key === 'v') { e.preventDefault(); pasteBlock(); }
+        else if (key === 'd' && selectedBlockId) { e.preventDefault(); duplicateBlock(selectedBlockId); }
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [selectedBlockId, copyBlock, pasteBlock, duplicateBlock, undo, redo]);
 
   const [hasCopiedBlock, setHasCopiedBlock] = React.useState(false);

@@ -108,7 +108,7 @@ export const Navigation: React.FC<NavigationProps> = ({
     <nav 
       className="w-full relative z-[9999] transition-all duration-300 mx-auto"
       style={{ 
-        backgroundColor: 'var(--block-bg)', 
+        background: 'var(--block-bg)', 
         color: 'var(--block-color)',
         paddingTop: 'var(--nav-padding)',
         paddingBottom: 'var(--nav-padding)',

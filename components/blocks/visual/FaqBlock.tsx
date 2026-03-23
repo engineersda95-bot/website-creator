@@ -24,7 +24,7 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
     <section 
       className="relative transition-all duration-500"
       style={{
-        backgroundColor: 'var(--block-bg)',
+        background: 'var(--block-bg)',
         paddingTop: 'var(--block-pt)',
         paddingBottom: 'var(--block-pb)',
         paddingLeft: 'var(--block-px)',

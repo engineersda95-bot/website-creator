@@ -77,7 +77,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
     <section 
       className={cn("w-full transition-all duration-500 overflow-hidden relative flex flex-col justify-center")}
       style={{
-        backgroundColor: 'var(--block-bg)',
+        background: 'var(--block-bg)',
         color: 'var(--block-color)',
         paddingTop: 'var(--block-pt)',
         paddingBottom: 'var(--block-pb)',

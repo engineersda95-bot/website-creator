@@ -35,13 +35,14 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
   return (
     <section 
       className={cn(
-        "relative flex flex-col justify-center overflow-hidden transition-all duration-500",
+        "relative flex flex-col overflow-hidden transition-all duration-500",
       )}
       style={{
-        backgroundColor: 'var(--block-bg)',
+        background: 'var(--block-bg)',
         minHeight: 'var(--hero-min-height)',
         paddingTop: 'var(--block-pt)',
         paddingBottom: 'var(--block-pb)',
+        justifyContent: 'var(--text-v-align)' as any,
         color: 'var(--block-color)',
       }}
     >
@@ -64,8 +65,10 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
           <div 
             className="absolute inset-0 z-[1] transition-all duration-500 pointer-events-none" 
             style={{ 
-              backgroundColor: style.overlayColor || '#000000', 
-              backgroundImage: style.backgroundImage ? `url(${resolveImageUrl(style.backgroundImage, project || null, imageMemoryCache, isStatic)})` : 'none',
+              backgroundColor: style.overlayType === 'gradient' ? 'transparent' : (style.overlayColor || '#000000'), 
+              backgroundImage: style.overlayType === 'gradient' 
+                ? `linear-gradient(${style.overlayDirection || 'to bottom'}, ${style.overlayColor || '#000000'}, ${style.overlayColor2 || '#111111'})`
+                : (style.backgroundImage ? `url(${resolveImageUrl(style.backgroundImage, project || null, imageMemoryCache, isStatic)})` : 'none'),
               opacity: (style.overlayOpacity !== undefined ? style.overlayOpacity : 40) / 100,
             }} 
           />

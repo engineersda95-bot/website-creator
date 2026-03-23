@@ -78,7 +78,9 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
 
       // Theme & UI
       '--block-radius': toPx(val('borderRadius', '0px')),
-      '--block-bg': val('backgroundColor', 'transparent'),
+      '--block-bg': val('bgType', 'solid') === 'gradient' 
+        ? `linear-gradient(${val('bgDirection', 'to bottom')}, ${val('backgroundColor', 'transparent')}, ${val('backgroundColor2', 'transparent')})`
+        : val('backgroundColor', 'transparent'),
       '--block-color': val('textColor', 'inherit'),
       
       // Navigation specific (defaults)

@@ -73,7 +73,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
       <footer
          className={cn("w-full transition-all duration-300 mx-auto overflow-hidden")}
          style={{
-            backgroundColor: 'var(--block-bg)',
+            background: 'var(--block-bg)',
             color: 'var(--block-color)',
             paddingTop: 'var(--block-pt)',
             paddingBottom: 'var(--block-pb)',
