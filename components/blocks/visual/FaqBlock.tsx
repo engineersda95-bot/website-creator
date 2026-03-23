@@ -66,7 +66,6 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
             <details 
               key={index}
               className="group transition-all duration-300"
-              open={index === 0}
             >
               <summary
                 className="list-none cursor-pointer w-full flex items-center justify-between py-8 px-8 group transition-all"

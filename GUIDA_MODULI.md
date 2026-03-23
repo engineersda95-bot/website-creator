@@ -132,6 +132,7 @@ Se hai bisogno di una logica React complessa per l'Editor ma non per il sito sta
 
 1.  **Niente `"use client"` nel Visual**: Mantieni il componente visuale del blocco come **Server Component** (o senza direttiva) per garantire la generazione statica.
 2.  **Modularità Totale**: Un blocco deve essere auto-sufficiente. Evita di aggiungere script globali in `generate-static.tsx` se puoi risolvere con HTML nativo o script auto-contenuti.
-3.  **Defaults Solidi**: Definisci sempre degli stati iniziali (`defaults`) ricchi in `block-definitions.ts`. Un blocco appena aggiunto deve sembrare già "finito".
-4.  **Astrazione Sidebar**: Se crei un nuovo controllo nella sidebar che potrebbe servire ad altri blocchi, crealo come "Shard" in `SharedSidebarComponents.tsx`.
-5.  **Variabili CSS**: Evita stili inline complessi. Usa le variabili CSS responsive (es. `var(--block-bg)`).
+3.  **Spaziature Gestite (NO Hardcoding)**: **MAI** inserire margini o padding fissi (es. `px-8`, `mb-12`) nel codice del componente visuale. Ogni spazio deve essere controllabile dall'utente tramite la tab **Stile** (utilizzando le variabili CSS come `var(--block-pt)` o `var(--block-px)`).
+4.  **Defaults Solidi**: Definisci sempre degli stati iniziali (`defaults`) ricchi in `block-definitions.ts`. Un blocco appena aggiunto deve sembrare già "finito".
+5.  **Astrazione Sidebar**: Se crei un nuovo controllo nella sidebar che potrebbe servire ad altri blocchi, crealo come "Shard" in `SharedSidebarComponents.tsx`.
+6.  **Variabili CSS**: Evita stili inline complessi. Usa le variabili CSS responsive (es. `var(--block-bg)`).

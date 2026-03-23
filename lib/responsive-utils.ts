@@ -26,6 +26,7 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       '--block-max-width': val('maxWidth', '') ? (typeof val('maxWidth', '') === 'number' && val('maxWidth', '') <= 100 ? `${val('maxWidth', '')}%` : toPx(val('maxWidth', ''))) : '1200px',
       '--block-width': (val('marginLeft', 0) || val('marginRight', 0)) ? `calc(100% - ${toPx(val('marginLeft', 0))} - ${toPx(val('marginRight', 0))})` : '100%',
       '--block-gap': toPx(val('gap', '2rem')),
+      '--block-min-height': val('minHeight', '') ? toPx(val('minHeight', '')) : 'auto',
       
       // Alignment
       '--block-align': val('align', 'center'),

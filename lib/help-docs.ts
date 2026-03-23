@@ -90,6 +90,20 @@ export const HELP_DOCS: HelpDoc[] = [
       - Molti parametri (come margini e dimensioni testo) possono essere diversi per ogni dispositivo.
       - Verifica sempre che le immagini siano ben leggibili anche su schermi piccoli.
     `
+  },
+  {
+    id: 'social-embed',
+    category: 'basi',
+    icon: Layout,
+    title: 'Utilizzo del Blocco Social Embed',
+    description: 'Integra video, mappe e post social in pochi secondi.',
+    content: `
+      Il blocco **Social Embed** è perfetto per rendere il sito vivo e multimediale:
+      - **Youtube**: Inserisci l'ID o l'URL del video per mostrarlo a tutto schermo.
+      - **Google Maps**: Inserisci semplicemente l'**indirizzo** (es: Via Roma 1, Milano) e la mappa verrà generata automaticamente. È completamente gratuito!
+      - **Instagram**: Copia l'URL del post pubblico per embeddarlo con un layout ottimizzato.
+      - **Custom**: Usa "Codice Iframe" per inserire widget di terze parti (es: Calendly).
+    `
   }
 ];
 

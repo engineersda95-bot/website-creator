@@ -1,6 +1,6 @@
 import { BlockType } from '@/types/editor';
 import {
-  Square, Type, Layout, Menu, Minus, HelpCircle
+  Square, Type, Layout, Menu, Minus, HelpCircle, Share2
 } from 'lucide-react';
 
 // Visual Components
@@ -10,6 +10,7 @@ import { Navigation } from '@/components/blocks/visual/navigation/Navigation';
 import { FooterBlock } from '@/components/blocks/visual/FooterBlock';
 import { DividerBlock } from '@/components/blocks/visual/DividerBlock';
 import { FAQBlock } from '@/components/blocks/visual/FaqBlock';
+import { EmbedBlock } from '@/components/blocks/visual/EmbedBlock';
 
 // Editor Components
 import { HeroContent } from '@/components/blocks/sidebar/block-editors/HeroContent';
@@ -24,6 +25,8 @@ import { DividerContent } from '@/components/blocks/sidebar/block-editors/Divide
 import { DividerStyle } from '@/components/blocks/sidebar/block-editors/DividerStyle';
 import { FAQContent } from '@/components/blocks/sidebar/block-editors/FaqContent';
 import { FAQStyle } from '@/components/blocks/sidebar/block-editors/FaqStyle';
+import { EmbedContent } from '@/components/blocks/sidebar/block-editors/EmbedContent';
+import { EmbedStyle } from '@/components/blocks/sidebar/block-editors/EmbedStyle';
 
 export interface BlockDefinition {
   type: BlockType;
@@ -106,7 +109,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   },
   'faq': {
     type: 'faq',
-    label: 'Domande Frequenti (FAQ)',
+    label: 'FAQ',
     icon: HelpCircle,
     visual: FAQBlock,
     contentEditor: FAQContent,
@@ -122,6 +125,31 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
       style: { padding: 80, questionSize: 18, answerSize: 16, questionBold: true }
     }
   },
+  'embed': {
+    type: 'embed',
+    label: 'Social Embed (Youtube, Instagram)',
+    icon: Share2,
+    visual: EmbedBlock,
+    contentEditor: EmbedContent,
+    styleEditor: EmbedStyle,
+    defaults: {
+      content: {
+        type: 'youtube',
+        url: '',
+        title: ''
+      },
+      style: {
+        padding: 40,
+        hPadding: 0,
+        align: 'center',
+        maxWidth: 1200,
+        minHeight: 450,
+        borderRadius: 24,
+        borderWidth: 0,
+        borderColor: '#e5e7eb'
+      }
+    }
+  },
 };
 
 export const getBlockDefinition = (type: string) => {
@@ -134,6 +162,7 @@ export const getBlockLibrary = () => {
     BLOCK_DEFINITIONS.hero,
     BLOCK_DEFINITIONS.text,
     BLOCK_DEFINITIONS.faq,
+    BLOCK_DEFINITIONS.embed,
     BLOCK_DEFINITIONS.divider,
     BLOCK_DEFINITIONS.footer,
   ];
