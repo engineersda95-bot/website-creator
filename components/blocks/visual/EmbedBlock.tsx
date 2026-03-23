@@ -38,13 +38,13 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
         let url = content.url.split('?')[0];
         if (!url.endsWith('/')) url += '/';
         if (!url.includes('/embed')) {
-            url += 'embed';
+          url += 'embed';
         }
         return url;
       }
       case 'x': {
         if (!content.url) return null;
-        
+
         // Detect if it's a single Tweet
         const tweetMatch = content.url.match(/status\/(\d+)/);
         if (tweetMatch && tweetMatch[1]) {
@@ -58,7 +58,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
       case 'map': {
         // Iframe code or simple address
         if (content.url.trim().startsWith('<iframe') || content.url.includes('google.com/maps/embed')) {
-            return content.url;
+          return content.url;
         }
         // Simple search address
         return `https://www.google.com/maps?q=${encodeURIComponent(content.url)}&output=embed`;
@@ -74,7 +74,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
   const alignment = style?.align || 'center';
 
   return (
-    <section 
+    <section
       className={cn("w-full transition-all duration-500 overflow-hidden relative flex flex-col justify-center")}
       style={{
         background: 'var(--block-bg)',
@@ -86,34 +86,34 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
         minHeight: 'var(--block-min-height, auto)',
       }}
     >
-      <div 
+      <div
         className={cn(
           "w-full flex flex-col transition-all duration-500",
           alignment === 'center' ? "mx-auto" : alignment === 'right' ? "ml-auto mr-0" : "mr-0 ml-0"
         )}
-        style={{ 
+        style={{
           maxWidth: 'var(--block-max-width)',
           alignItems: (alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start') as any,
         }}
       >
         {content.title && (
-          <h2 
+          <h2
             className="w-full transition-all duration-500"
-            style={{ 
-                fontSize: 'var(--title-fs, 2rem)',
-                fontWeight: 'var(--title-fw)' as any,
-                fontStyle: 'var(--title-fs-style)' as any,
-                textTransform: 'var(--title-upper)' as any,
-                textAlign: 'var(--block-align)' as any,
-                color: 'inherit',
-                marginBottom: 'var(--block-gap, 2rem)'
+            style={{
+              fontSize: 'var(--title-fs, 2rem)',
+              fontWeight: 'var(--title-fw)' as any,
+              fontStyle: 'var(--title-fs-style)' as any,
+              textTransform: 'var(--title-upper)' as any,
+              textAlign: 'var(--block-align)' as any,
+              color: 'inherit',
+              marginBottom: 'var(--block-gap, 2rem)'
             }}
           >
             {content.title}
           </h2>
         )}
 
-        <div 
+        <div
           className={cn(
             "overflow-hidden relative transition-all duration-500",
             (content.type === 'map' || content.type === 'custom') && "flex-grow",
@@ -123,30 +123,24 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
             borderRadius: 'var(--block-border-radius)',
             border: 'var(--block-border-width) solid var(--block-border-color)',
             aspectRatio: content.type === 'youtube' ? '16/9' : (content.type === 'map' ? '16/9' : (content.type === 'instagram' ? '1 / 1.4' : 'auto')),
-            minHeight: content.type === 'custom' ? 'auto' : 
-                       content.type === 'youtube' ? 'auto' : 
-                       content.type === 'instagram' ? (style?.minHeight ? 'auto' : 'initial') : 
-                       'var(--block-min-height, 450px)',
+            minHeight: content.type === 'custom' ? 'auto' :
+              content.type === 'youtube' ? 'auto' :
+                content.type === 'instagram' ? (style?.minHeight ? 'auto' : (viewport === 'mobile' ? '550px' : '750px')) :
+                  'var(--block-min-height, 450px)',
             maxWidth: style?.contentWidth ? `${style.contentWidth}px` : (content.type === 'instagram' ? '540px' : '100%'),
             width: content.type === 'custom' && isIframeCode ? 'auto' : '100%',
             height: (content.type === 'map' || (content.type === 'custom' && !isIframeCode)) ? '100%' : 'auto'
           }}
         >
           {isIframeCode || (content.type === 'map' && content.url.trim().startsWith('<iframe')) ? (
-            <div 
-                className={cn(
-                  "max-w-full overflow-auto",
-                  content.type === 'instagram' && !style?.minHeight && "min-h-[500px] md:min-h-[750px]"
-                )}
-                dangerouslySetInnerHTML={{ __html: content.url }} 
+            <div
+              className="max-w-full overflow-auto"
+              dangerouslySetInnerHTML={{ __html: content.url }}
             />
           ) : embedUrl ? (
             <iframe
               src={embedUrl}
-              className={cn(
-                "w-full h-full border-0 absolute inset-0",
-                content.type === 'instagram' && !style?.minHeight && "min-h-[500px] md:min-h-[750px]"
-              )}
+              className="w-full h-full border-0 absolute inset-0"
               style={{ minHeight: 'inherit' }}
               scrolling={content.type === 'custom' ? 'yes' : 'no'}
               allowFullScreen
@@ -156,7 +150,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
             />
           ) : (
             <div className="w-full h-[450px] bg-zinc-100 flex items-center justify-center text-zinc-400 font-medium border-2 border-dashed border-zinc-200">
-               Configura l'Embed nella sidebar
+              Configura l'Embed nella sidebar
             </div>
           )}
         </div>
