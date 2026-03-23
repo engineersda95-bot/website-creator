@@ -236,11 +236,7 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
       style: { padding: 20 }
     }
   },
-  cta: { type: 'cta', label: 'CTA', icon: MousePointer2, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
   map: { type: 'map', label: 'Mappa', icon: MapPin, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
-  testimonials: { type: 'testimonials', label: 'Testimonianze', icon: FileText, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
-  pricing: { type: 'pricing', label: 'Prezzi', icon: ShoppingBag, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
-  video: { type: 'video', label: 'Video', icon: ImageIcon, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
   features: { type: 'features', label: 'Caratteristiche', icon: LayoutTemplate, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
   gallery: { type: 'gallery', label: 'Galleria', icon: LayoutTemplate, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
   image: { type: 'image', label: 'Immagine', icon: ImageIcon, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
