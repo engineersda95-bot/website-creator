@@ -79,9 +79,15 @@ export const TEMPLATES = {
       content: { 
         title: 'Sempre al Tuo Fianco', 
         subtitle: 'Hai una domanda o vuoi iniziare a collaborare? Il nostro team è pronto ad ascoltarti.',
-        email: 'hello@proximatica.it'
+        method: 'webhook',
+        receiverEmail: 'hello@proximatica.it',
+        subjectType: 'fixed',
+        fixedSubject: 'Contatto da Landing Page',
+        showPrivacy: true,
+        successTitle: 'Messaggio Inviato!',
+        successMessage: 'Grazie per averci contattato. Abbiamo ricevuto la tua richiesta.'
       },
-      style: { padding: '10rem', backgroundColor: '#ffffff' }
+      style: { padding: '10rem', backgroundColor: '#ffffff', borderRadius: '4rem' }
     },
     {
       type: 'footer' as BlockType,
@@ -112,6 +118,52 @@ export const TEMPLATES = {
     {
       type: 'footer' as BlockType,
       content: { copyright: '© Minimalist' },
+      style: { padding: '4rem', align: 'center' as const }
+    }
+  ],
+  privacy: [
+    {
+      type: 'navigation' as BlockType,
+      content: { logoText: 'Studio', links: [{ label: 'Home', url: '/' }], showContact: true },
+      style: { padding: '2rem', align: 'right' as const }
+    },
+    {
+      type: 'text' as BlockType,
+      content: { 
+        text: '# Privacy Policy\r\n\r\nQuesta pagina descrive come vengono gestiti i tuoi dati personali.\r\n\r\n### 1. Titolare del Trattamento\r\nIl titolare del trattamento è **[NOME AZIENDA]**, con sede in [INDIRIZZO].\r\n\r\n### 2. Dati Raccolti\r\nAttraverso il modulo di contatto raccogliamo:\r\n- Nome e Cognome\r\n- Indirizzo Email\r\n- Messaggio testuale\r\n\r\n### 3. Finalità\r\nI dati vengono utilizzati esclusivamente per rispondere alle tue richieste. Nessun dato viene ceduto a terzi per scopi di marketing.\r\n\r\n### 4. Servizi Terzi\r\nUtilizziamo **FormSubmit.co** per l\'invio tecnico delle comunicazioni.\r\n\r\n> [!IMPORTANT]\r\n> Questo è un testo placeholder. Ricordati di generare una Privacy Policy completa e legale utilizzando servizi come **Iubenda** o **CookieYes**.'
+      },
+      style: { padding: '8rem', align: 'left' as const, maxWidth: 900 }
+    },
+    {
+      type: 'footer' as BlockType,
+      content: { copyright: '© Privacy' },
+      style: { padding: '4rem', align: 'center' as const }
+    }
+  ],
+  contact: [
+    {
+      type: 'navigation' as BlockType,
+      content: { logoText: 'Studio', links: [{ label: 'Home', url: '/' }], showContact: false },
+      style: { padding: '2rem', align: 'right' as const }
+    },
+    {
+      type: 'contact' as BlockType,
+      content: { 
+        title: 'Mettiamoci in Contatto', 
+        subtitle: 'Hai un progetto in mente? Parliamone. Compila il modulo qui sotto e ti risponderemo il prima possibile.',
+        method: 'webhook',
+        receiverEmail: '',
+        subjectType: 'dropdown',
+        subjectOptions: ['Nuovo Progetto', 'Collaborazione', 'Supporto Tecnico'],
+        showPrivacy: true,
+        successTitle: 'Grazie!',
+        successMessage: 'Il tuo messaggio è stato inviato correttamente. A presto!'
+      },
+      style: { padding: '8rem', align: 'center' as const, maxWidth: 800 }
+    },
+    {
+      type: 'footer' as BlockType,
+      content: { copyright: '© Contatti' },
       style: { padding: '4rem', align: 'center' as const }
     }
   ]

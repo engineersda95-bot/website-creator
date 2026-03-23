@@ -98,6 +98,8 @@ Usa sempre i componenti in `SharedSidebarComponents.tsx` per un design premium:
 | `BackgroundManager` | Immagini di sfondo, opacità, blur e overlay colorati. |
 | `BorderShadowManager` | Bordi, arrotondamento (border-radius) e ombre. |
 | `RichTextarea` | Area di testo con formattazione rapida. |
+| `SimpleSlider` | Slider numerico uniforme per Gap, Dimensioni, etc. |
+| `SimpleInput` | Campo testo con supporto icona nativa. |
 
 ---
 
@@ -128,11 +130,27 @@ Se hai bisogno di una logica React complessa per l'Editor ma non per il sito sta
 
 ---
 
-## 💡 Best Practices per Senior Engineer
+## 💡 Best Practices per Senior Engineer (Responsività & LIVE)
 
-1.  **Niente `"use client"` nel Visual**: Mantieni il componente visuale del blocco come **Server Component** (o senza direttiva) per garantire la generazione statica.
-2.  **Modularità Totale**: Un blocco deve essere auto-sufficiente. Evita di aggiungere script globali in `generate-static.tsx` se puoi risolvere con HTML nativo o script auto-contenuti.
-3.  **Spaziature Gestite (NO Hardcoding)**: **MAI** inserire margini o padding fissi (es. `px-8`, `mb-12`) nel codice del componente visuale. Ogni spazio deve essere controllabile dall'utente tramite la tab **Stile** (utilizzando le variabili CSS come `var(--block-pt)` o `var(--block-px)`).
-4.  **Defaults Solidi**: Definisci sempre degli stati iniziali (`defaults`) ricchi in `block-definitions.ts`. Un blocco appena aggiunto deve sembrare già "finito".
-5.  **Astrazione Sidebar**: Se crei un nuovo controllo nella sidebar che potrebbe servire ad altri blocchi, crealo come "Shard" in `SharedSidebarComponents.tsx`.
-6.  **Variabili CSS**: Evita stili inline complessi. Usa le variabili CSS responsive (es. `var(--block-bg)`).
+Per garantire che un modulo funzioni perfettamente sia nell'editor che nel sito **LIVE**, segui queste regole ferree:
+
+### 1. Usa SEMPRE le Variabili CSS per la Responsività
+Non applicare mai valori fissi (es. `100px`) direttamente nello `style` se quel valore deve cambiare su mobile. Usa le variabili standard gestite dal sistema:
+- Spaziature: `var(--block-pt)`, `var(--block-px)`, `var(--block-gap)`
+- Allineamento: `var(--block-items)`, `var(--block-align)`, `var(--block-ml-auto)`
+- Tipografia: `var(--title-fs)`, `var(--subtitle-fs)`, `var(--label-fs)`
+
+### 2. Evita Sovrascritture Inline in Modalità Statica
+In `generate-static.tsx`, le media query iniettano i valori corretti per le variabili CSS. Se il tuo componente definisce lo stesso valore `inline` (nell'oggetto `style` di React), questo vincerà sulle media query, rompendo la responsività nel sito Live.
+**Esempio Corretto (ContactBlock):**
+```tsx
+const contactStyles = !isStatic ? {
+  '--map-width': `${style.mapWidth}%`,
+} : {}; // Lascia che il CSS statico faccia il suo lavoro nel live
+```
+
+### 3. Gestione Mappa & Iframe
+Per i moduli con WebVitals o Embed (Google Maps), assicurati di usare `aspect-video` e limitare la larghezza con `maxWidth: var(--map-width)`. Centra sempre con `marginLeft: var(--block-ml-auto)`.
+
+### 4. Niente Hardcoding di Margini
+**MAI** inserire margini o padding fissi (es. `px-8`, `mb-12`) nel codice del componente visuale. Ogni spazio deve essere controllabile dall'utente tramite le variabili CSS standard.

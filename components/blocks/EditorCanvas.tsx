@@ -309,6 +309,9 @@ export const EditorCanvas: React.FC = () => {
             background-color: ${themeBg} !important; 
             color: ${themeText} !important; 
           }
+          #editor-content .insert-menu * { color: #18181b !important; }
+          #editor-content .insert-menu button:hover * { color: #ffffff !important; }
+          #editor-content .block-wrapper:hover { outline: 2px solid #3b82f6; }
           .block-wrapper { background-color: inherit; }
           .canvas-desktop { width: 100%; }
           .canvas-tablet { width: 768px; }
@@ -350,7 +353,7 @@ export const EditorCanvas: React.FC = () => {
                 </button>
 
                 {showMenuAt === 0 && (
-                  <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.2)] rounded-3xl p-3 grid grid-cols-2 gap-2 min-w-[320px] animate-in zoom-in-95 fade-in duration-200 z-[80]">
+                  <div className="insert-menu absolute top-10 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.2)] rounded-3xl p-3 grid grid-cols-2 gap-2 min-w-[320px] animate-in zoom-in-95 fade-in duration-200 z-[80]">
                     <div className="col-span-2 px-3 py-1 mb-1 border-b border-zinc-100">
                       <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Inserisci Blocco Inizio</span>
                     </div>
@@ -358,7 +361,7 @@ export const EditorCanvas: React.FC = () => {
                       <button
                         key={opt.type}
                         onClick={() => { addBlock(opt.type as any, 0); setShowMenuAt(null); }}
-                        className="flex items-center gap-3 p-3 rounded-2xl hover:bg-zinc-900 hover:text-white transition-all group text-left border border-zinc-100"
+                        className="flex items-center gap-3 p-3 rounded-2xl hover:bg-zinc-900 hover:text-white transition-all group text-left border border-zinc-100 text-zinc-900"
                       >
                         <div className="p-2 bg-zinc-50 rounded-xl group-hover:bg-white/10 transition-colors">
                           <opt.icon size={16} />
@@ -411,7 +414,7 @@ export const EditorCanvas: React.FC = () => {
                     </button>
 
                     {showMenuAt === index + 1 && (
-                      <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-2xl border border-zinc-200 shadow-[0_30px_70px_rgba(0,0,0,0.25)] rounded-[2rem] p-3 grid grid-cols-2 gap-2 min-w-[340px] animate-in zoom-in-90 fade-in slide-in-from-top-4 duration-300 z-[90]">
+                      <div className="insert-menu absolute top-10 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-2xl border border-zinc-200 shadow-[0_30px_70px_rgba(0,0,0,0.25)] rounded-[2rem] p-3 grid grid-cols-2 gap-2 min-w-[340px] animate-in zoom-in-90 fade-in slide-in-from-top-4 duration-300 z-[90]">
                         <div className="col-span-2 px-3 py-1 mb-1 border-b border-zinc-100 flex justify-between items-center">
                           <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Aggiungi Sezione</span>
                           <button onClick={() => setShowMenuAt(null)} className="text-zinc-400 hover:text-zinc-900 transition-colors"><Trash2 size={12} /></button>
@@ -420,7 +423,7 @@ export const EditorCanvas: React.FC = () => {
                           <button
                             key={opt.type}
                             onClick={() => { addBlock(opt.type as any, index + 1); setShowMenuAt(null); }}
-                            className="flex items-center gap-3 p-3 rounded-2xl hover:bg-zinc-900 hover:text-white transition-all group text-left border border-zinc-100 hover:border-zinc-900"
+                            className="flex items-center gap-3 p-3 rounded-2xl hover:bg-zinc-900 hover:text-white transition-all group text-left border border-zinc-100 hover:border-zinc-900 text-zinc-900"
                           >
                             <div className="p-2 bg-zinc-50 rounded-xl group-hover:bg-white/10 transition-colors">
                               <opt.icon size={16} />
@@ -440,6 +443,19 @@ export const EditorCanvas: React.FC = () => {
                   </div>
                 </React.Fragment>
               ))}
+
+              {/* Final Paste Option */}
+              {hasCopiedBlock && (
+                <div className="p-12 border-2 border-dashed border-zinc-200 m-8 rounded-[3rem] flex flex-col items-center gap-4 group/paste">
+                   <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest opacity-50">Hai un blocco copiato negli appunti</p>
+                   <button 
+                    onClick={() => pasteBlock()} 
+                    className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-blue-600 text-white font-black uppercase tracking-widest text-xs hover:scale-105 active:scale-95 transition-all shadow-xl shadow-blue-500/20"
+                   >
+                    <ClipboardIcon size={18} /> Incolla Blocco a Fine Pagina
+                   </button>
+                </div>
+              )}
             </div>
           )}
         </main>

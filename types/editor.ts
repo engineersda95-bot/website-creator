@@ -14,7 +14,8 @@ export type BlockType =
   'embed' | 
   'faq' |
   'quote' |
-  'divider';
+  'divider' |
+  'cards';
 
 export interface Block {
   id: string;

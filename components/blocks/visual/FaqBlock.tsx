@@ -22,6 +22,7 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
 
   return (
     <section 
+      id={block.id}
       className="relative transition-all duration-500"
       style={{
         background: 'var(--block-bg)',
@@ -50,7 +51,8 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
               letterSpacing: 'var(--title-ls)',
               lineHeight: 'var(--title-lh)',
               textTransform: 'var(--title-upper)' as any,
-              marginBottom: 'calc(var(--block-gap) * 1.5)'
+              // Usiamo il gap del container per la distanza, azzeriamo il margin
+              marginBottom: '0'
             }}
             dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
           />

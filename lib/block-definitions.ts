@@ -1,242 +1,293 @@
+import React from 'react';
 import { BlockType } from '@/types/editor';
 import {
-  Square, Type, Layout, Menu, Minus, HelpCircle, Share2, Quote
+  Square, Type, Menu, Layout, ImageIcon, Grid,
+  LayoutTemplate, MapPin, FileText, ShoppingBag, Plus, Minus,
+  Phone, MousePointer2
 } from 'lucide-react';
 
-// Visual Components
 import { Hero } from '@/components/blocks/visual/Hero';
-import { TextBlock } from '@/components/blocks/visual/TextBlock';
-import { Navigation } from '@/components/blocks/visual/navigation/Navigation';
-import { FooterBlock } from '@/components/blocks/visual/FooterBlock';
-import { DividerBlock } from '@/components/blocks/visual/DividerBlock';
-import { FAQBlock } from '@/components/blocks/visual/FaqBlock';
-import { EmbedBlock } from '@/components/blocks/visual/EmbedBlock';
-import { QuoteBlock } from '@/components/blocks/visual/QuoteBlock';
-import { ImageTextBlock } from '@/components/blocks/visual/ImageTextBlock';
-
-// Editor Components
 import { HeroContent } from '@/components/blocks/sidebar/block-editors/HeroContent';
 import { HeroStyle } from '@/components/blocks/sidebar/block-editors/HeroStyle';
+
+import { TextBlock } from '@/components/blocks/visual/TextBlock';
 import { TextContent } from '@/components/blocks/sidebar/block-editors/TextContent';
 import { TextStyle } from '@/components/blocks/sidebar/block-editors/TextStyle';
-import { NavigationContent } from '@/components/blocks/sidebar/block-editors/NavigationContent';
-import { NavigationStyle } from '@/components/blocks/sidebar/block-editors/NavigationStyle';
-import { FooterContent } from '@/components/blocks/sidebar/block-editors/FooterContent';
-import { FooterStyle } from '@/components/blocks/sidebar/block-editors/FooterStyle';
-import { DividerContent } from '@/components/blocks/sidebar/block-editors/DividerContent';
-import { DividerStyle } from '@/components/blocks/sidebar/block-editors/DividerStyle';
-import { FAQContent } from '@/components/blocks/sidebar/block-editors/FaqContent';
-import { FAQStyle } from '@/components/blocks/sidebar/block-editors/FaqStyle';
-import { EmbedContent } from '@/components/blocks/sidebar/block-editors/EmbedContent';
-import { EmbedStyle } from '@/components/blocks/sidebar/block-editors/EmbedStyle';
-import { QuoteContent } from '@/components/blocks/sidebar/block-editors/QuoteContent';
-import { QuoteStyle } from '@/components/blocks/sidebar/block-editors/QuoteStyle';
+
+import { ImageTextBlock } from '@/components/blocks/visual/ImageTextBlock';
 import { ImageTextContent } from '@/components/blocks/sidebar/block-editors/ImageTextContent';
 import { ImageTextStyle } from '@/components/blocks/sidebar/block-editors/ImageTextStyle';
+
+import { FAQBlock } from '@/components/blocks/visual/FaqBlock';
+import { FAQContent } from '@/components/blocks/sidebar/block-editors/FaqContent';
+import { FAQStyle } from '@/components/blocks/sidebar/block-editors/FaqStyle';
+
+import { EmbedBlock } from '@/components/blocks/visual/EmbedBlock';
+import { EmbedContent } from '@/components/blocks/sidebar/block-editors/EmbedContent';
+import { EmbedStyle } from '@/components/blocks/sidebar/block-editors/EmbedStyle';
+
+import { ContactBlock } from '@/components/blocks/visual/ContactBlock';
+import { ContactContent } from '@/components/blocks/sidebar/block-editors/ContactContent';
+import { ContactStyle } from '@/components/blocks/sidebar/block-editors/ContactStyle';
+
+import { DividerBlock } from '@/components/blocks/visual/DividerBlock';
+import { DividerContent } from '@/components/blocks/sidebar/block-editors/DividerContent';
+import { DividerStyle } from '@/components/blocks/sidebar/block-editors/DividerStyle';
+
+import { QuoteBlock } from '@/components/blocks/visual/QuoteBlock';
+import { QuoteContent } from '@/components/blocks/sidebar/block-editors/QuoteContent';
+import { QuoteStyle } from '@/components/blocks/sidebar/block-editors/QuoteStyle';
+
+import { FooterBlock } from '@/components/blocks/visual/FooterBlock';
+import { FooterContent } from '@/components/blocks/sidebar/block-editors/FooterContent';
+import { FooterStyle } from '@/components/blocks/sidebar/block-editors/FooterStyle';
+
+import { Navigation } from '@/components/blocks/visual/navigation/Navigation';
+import { NavigationContent } from '@/components/blocks/sidebar/block-editors/NavigationContent';
+import { NavigationStyle } from '@/components/blocks/sidebar/block-editors/NavigationStyle';
+
+import { CardsBlock } from '@/components/blocks/visual/CardsBlock';
+import { CardsContent } from '@/components/blocks/sidebar/block-editors/CardsContent';
+import { CardsStyle } from '@/components/blocks/sidebar/block-editors/CardsStyle';
 
 export interface BlockDefinition {
   type: BlockType;
   label: string;
   icon: any;
-  visual?: React.FC<any>;
-  contentEditor?: React.FC<any>;
-  styleEditor?: React.FC<any>;
+  visual: React.FC<any> | null;
+  contentEditor: React.FC<any> | null;
+  styleEditor: React.FC<any> | null;
   defaults: {
     content: any;
     style: any;
   };
 }
 
-export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
-  'hero': {
+export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
+  hero: {
     type: 'hero',
-    label: 'Hero Section',
+    label: 'Hero',
     icon: Square,
     visual: Hero,
     contentEditor: HeroContent,
     styleEditor: HeroStyle,
     defaults: {
       content: {
-        title: 'Benvenuti nel Futuro',
-        subtitle: 'Un design minimalista ed elegante per la tua brand identity. Ogni dettaglio è curato per massimizzare l\'impatto visivo.',
-        cta: 'Esplora Ora',
-        logoLinkHome: true
+        title: 'La tua Visione, Reale',
+        subtitle: 'Costruiamo esperienze digitali che lasciano il segno.',
+        cta: 'Inizia Ora',
+        ctaUrl: '#'
       },
-      style: { minHeight: 700, padding: 100, align: 'center', backgroundSize: 'cover', overlayOpacity: 40, overlayColor: '#000000' }
+      style: {
+        padding: 120,
+        align: 'center',
+        buttonTheme: 'primary'
+      }
     }
   },
-  'navigation': {
-    type: 'navigation',
-    label: 'Main Navigation',
-    icon: Menu,
-    visual: Navigation,
-    contentEditor: NavigationContent,
-    styleEditor: NavigationStyle as any,
-    defaults: {
-      content: { logoText: 'Studio', logoType: 'text', logoSize: 40, logoTextSize: 24, links: [{ label: 'Home', url: '/' }, { label: 'Chi Siamo', url: '/chi-siamo' }], cta: 'Inizia Ora', showContact: true, logoLinkHome: true },
-      style: { padding: 0, fontSize: 14 }
-    }
-  },
-  'text': {
+  text: {
     type: 'text',
-    label: 'Simple Text',
+    label: 'Testo',
     icon: Type,
     visual: TextBlock,
     contentEditor: TextContent,
     styleEditor: TextStyle,
     defaults: {
-      content: { text: 'Inserisci qui il tuo contenuto testuale. Puoi formattarlo come preferisci.' },
-      style: { padding: 60, align: 'center', maxWidth: 800 }
+      content: {
+        text: 'Il tuo contenuto va qui. Usa questo blocco per descrivere la tua attività, i tuoi valori o qualsiasi altra informazione importante.'
+      },
+      style: {
+        padding: 80,
+        align: 'left'
+      }
     }
   },
-  'divider': {
-    type: 'divider',
-    label: 'Divider Line',
-    icon: Minus,
-    visual: DividerBlock,
-    contentEditor: DividerContent,
-    styleEditor: DividerStyle,
+  'image-text': {
+    type: 'image-text',
+    label: 'Immagine e Testo',
+    icon: Grid,
+    visual: ImageTextBlock,
+    contentEditor: ImageTextContent,
+    styleEditor: ImageTextStyle,
     defaults: {
-      content: {},
-      style: { padding: 40, align: 'center', dividerStroke: 1, dividerWidth: 100 }
+      content: {
+        title: 'Innovazione in ogni dettaglio',
+        text: 'Ogni progetto è un viaggio unico verso l\'eccellenza digitale.',
+        imageSide: 'right',
+        cta: 'Scopri di più'
+      },
+      style: {
+        padding: 80,
+        align: 'left',
+        gap: 60,
+        buttonTheme: 'secondary'
+      }
     }
   },
-  'footer': {
-    type: 'footer',
-    label: 'Footer Section',
-    icon: Layout,
-    visual: FooterBlock,
-    contentEditor: FooterContent,
-    styleEditor: FooterStyle,
-    defaults: {
-      content: { logoText: 'SitiVetrina', copyright: `© ${new Date().getFullYear()} SitiVetrina`, layout: 'simple' },
-      style: { padding: 40 }
-    }
-  },
-  'faq': {
+  faq: {
     type: 'faq',
     label: 'FAQ',
-    icon: HelpCircle,
+    icon: FileText,
     visual: FAQBlock,
     contentEditor: FAQContent,
     styleEditor: FAQStyle,
     defaults: {
       content: {
-        title: 'FAQ',
         items: [
-          { question: 'Come posso contattarvi?', answer: 'Puoi contattarci tramite il modulo contatti o via email.' },
-          { question: 'Quali sono i tempi di consegna?', answer: 'I tempi variano in base al progetto, solitamente tra 2 e 4 settimane.' }
+          { question: 'Come posso iniziare?', answer: 'Basta contattarci tramite il modulo sottostante.' },
+          { question: 'Quali sono i tempi di consegna?', answer: 'In genere variano tra 2 e 4 settimane.' }
         ]
       },
-      style: { padding: 80, questionSize: 18, answerSize: 16, questionBold: true }
+      style: {
+        padding: 80,
+        align: 'left'
+      }
     }
   },
-  'embed': {
+  embed: {
     type: 'embed',
-    label: 'Social Embed (Youtube, Instagram)',
-    icon: Share2,
+    label: 'Embed (Video/Code)',
+    icon: Plus,
     visual: EmbedBlock,
     contentEditor: EmbedContent,
     styleEditor: EmbedStyle,
     defaults: {
       content: {
         type: 'youtube',
-        url: '',
-        title: ''
+        code: ''
       },
       style: {
-        padding: 40,
-        hPadding: 0,
-        align: 'center',
-        maxWidth: 1200,
-        minHeight: 450,
-        borderRadius: 24,
-        borderWidth: 0,
-        borderColor: '#e5e7eb'
+        padding: 60
       }
     }
   },
-  'quote': {
+  contact: {
+    type: 'contact',
+    label: 'Contatti',
+    icon: Phone,
+    visual: ContactBlock,
+    contentEditor: ContactContent,
+    styleEditor: ContactStyle,
+    defaults: {
+      content: {
+        title: 'Mettiamoci in Contatto',
+        subtitle: 'Siamo qui per rispondere a ogni tua domanda. Scrivici e ti ricontatteremo entro 24 ore.',
+        layout: 'stacked',
+        email: 'info@tuosocial.it',
+        phone: '+39 02 1234567',
+        address: 'Via Roma 1, Milano',
+        showMap: true
+      },
+      style: {
+        padding: 100,
+        hPadding: 40,
+        gap: 64,
+        align: 'center',
+        borderRadius: 32,
+        mapWidth: 100
+      }
+    }
+  },
+  divider: {
+    type: 'divider',
+    label: 'Separatore',
+    icon: Minus,
+    visual: DividerBlock,
+    contentEditor: DividerContent,
+    styleEditor: DividerStyle,
+    defaults: {
+      content: { type: 'line' },
+      style: { padding: 40 }
+    }
+  },
+  quote: {
     type: 'quote',
-    label: 'Recensioni / Quote',
-    icon: Quote,
+    label: 'Citazioni',
+    icon: FileText,
     visual: QuoteBlock,
     contentEditor: QuoteContent,
     styleEditor: QuoteStyle,
     defaults: {
+      content: { items: [], layout: 'grid' },
+      style: { padding: 80 }
+    }
+  },
+  footer: {
+    type: 'footer',
+    label: 'Footer',
+    icon: Layout,
+    visual: FooterBlock,
+    contentEditor: FooterContent,
+    styleEditor: FooterStyle,
+    defaults: {
+      content: { copyright: '© 2024 Tutti i diritti riservati' },
+      style: { padding: 40 }
+    }
+  },
+  navigation: {
+    type: 'navigation',
+    label: 'Navigazione',
+    icon: Menu,
+    visual: Navigation,
+    contentEditor: NavigationContent,
+    styleEditor: NavigationStyle as any,
+    defaults: {
+      content: { logoText: 'Studio', links: [], showContact: true },
+      style: { padding: 20 }
+    }
+  },
+  cta: { type: 'cta', label: 'CTA', icon: MousePointer2, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
+  map: { type: 'map', label: 'Mappa', icon: MapPin, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
+  testimonials: { type: 'testimonials', label: 'Testimonianze', icon: FileText, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
+  pricing: { type: 'pricing', label: 'Prezzi', icon: ShoppingBag, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
+  video: { type: 'video', label: 'Video', icon: ImageIcon, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
+  features: { type: 'features', label: 'Caratteristiche', icon: LayoutTemplate, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
+  gallery: { type: 'gallery', label: 'Galleria', icon: LayoutTemplate, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
+  image: { type: 'image', label: 'Immagine', icon: ImageIcon, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
+  reviews: { type: 'reviews', label: 'Recensioni', icon: FileText, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
+  'product-carousel': { type: 'product-carousel', label: 'Prodotti', icon: ShoppingBag, visual: null as any, contentEditor: null as any, styleEditor: null as any, defaults: { content: {}, style: {} } },
+  cards: {
+    type: 'cards',
+    label: 'Carosello / Cards',
+    icon: Grid,
+    visual: CardsBlock,
+    contentEditor: CardsContent,
+    styleEditor: CardsStyle,
+    defaults: {
       content: {
-        title: 'Dicono di noi',
+        title: 'Le Nostre Eccellenze',
         layout: 'grid',
-        visualType: 'quotes',
-        avatarShape: 'circle',
-        avatarSize: 60,
-        avatarAspectRatio: '1/1',
         items: [
-          { text: 'Il miglior servizio che abbia mai provato. Professionalità e velocità ai massimi livelli.', name: 'Marco Rossi', role: 'CEO @ TechFlow', stars: 5 },
-          { text: 'Esperienza fantastica! Il team ha capito perfettamente le mie esigenze fin dal primo giorno.', name: 'Laura Bianchi', role: 'Founder @ CreativeLab', stars: 5 },
-          { text: 'Consiglio vivamente questo studio a chiunque cerchi qualità e innovazione.', name: 'Alessandro Neri', role: 'Owner @ Neri Design', stars: 5 }
+          { image: '', title: 'Servizio Premium', subtitle: 'Descrizione del servizio offerto' },
+          { image: '', title: 'Ingegneria Avanzata', subtitle: 'Descrizione del servizio offerto' },
+          { image: '', title: 'Design Moderno', subtitle: 'Descrizione del servizio offerto' }
         ]
       },
       style: {
-        padding: 100,
+        padding: 80,
         align: 'center',
+        gap: 48,
         titleSize: 48,
-        titleBold: true,
-        reviewSize: 18,
-        reviewBold: false,
-        nameSize: 14,
-        nameBold: false,
-        roleSize: 12,
-        roleBold: false
-      }
-    }
-  },
-  'image-text': {
-    type: 'image-text',
-    label: 'Immagine con Testo',
-    icon: Layout,
-    visual: ImageTextBlock,
-    contentEditor: ImageTextContent as any,
-    styleEditor: ImageTextStyle as any,
-    defaults: {
-      content: {
-        title: 'Il Problema che Risolviamo',
-        text: 'Spiega qui perché il tuo cliente dovrebbe sceglierti. Usa una struttura chiara e un linguaggio diretto per massimizzare la conversione.',
-        cta: 'Scopri di Più',
-        ctaLink: '#',
-        image: '',
-        alt: 'Descrizione Immagine',
-        imageAspectRatio: '16/9'
-      },
-      style: {
-        padding: 100,
-        gap: 60,
-        maxWidth: 100,
-        imagePosition: 'left',
-        verticalAlign: 'center',
-        titleSize: 48,
-        titleBold: true,
-        subtitleSize: 18,
-        align: 'left'
+        titleBold: false,
+        imageAspectRatio: '16/9',
+        imageBorderRadius: 24,
+        imageShadow: true,
+        imageHover: true,
+        cardTitleBold: false,
+        cardTitleSize: 28,
+        cardSubtitleBold: false,
+        cardSubtitleSize: 16
       }
     }
   },
 };
 
-export const getBlockDefinition = (type: string) => {
-  return BLOCK_DEFINITIONS[type];
+export const getBlockDefinition = (type: string): BlockDefinition => {
+  return BLOCK_DEFINITIONS[type as BlockType] || BLOCK_DEFINITIONS.text;
 };
 
-export const getBlockLibrary = () => {
-  return [
-    BLOCK_DEFINITIONS.navigation,
-    BLOCK_DEFINITIONS.hero,
-    BLOCK_DEFINITIONS.text,
-    BLOCK_DEFINITIONS.faq,
-    BLOCK_DEFINITIONS.quote,
-    BLOCK_DEFINITIONS['image-text'],
-    BLOCK_DEFINITIONS.embed,
-    BLOCK_DEFINITIONS.divider,
-    BLOCK_DEFINITIONS.footer,
-  ];
+export const getBlockLibrary = (): BlockDefinition[] => {
+  return Object.values(BLOCK_DEFINITIONS).filter(def =>
+    !['navigation', 'footer'].includes(def.type) && def.visual !== null && typeof def.visual === 'function'
+  );
 };

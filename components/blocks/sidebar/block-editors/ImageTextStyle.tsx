@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Layers, Type, MoreVertical, MoveHorizontal } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager } from '../SharedSidebarComponents';
+import { Layers, Type, MoreVertical, MoveHorizontal, ImageIcon } from 'lucide-react';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, ImageStyleFields } from '../SharedSidebarComponents';
 import { cn } from '@/lib/utils';
 
 interface ImageTextStyleProps {
@@ -19,7 +19,9 @@ export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
   project
 }) => {
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500 pb-20">
+      
+      {/* 1. Layout & Spaziatura */}
       <section>
         <SectionHeader icon={Layers} title="Layout & Spaziatura" colorClass="text-blue-500" />
         <LayoutFields
@@ -27,25 +29,10 @@ export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
           updateStyle={updateStyle}
         />
 
-        {/* <div className="mt-6 flex items-center justify-between p-3 bg-zinc-50 rounded-xl border border-zinc-100">
-          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Larghezza Piena (Full Width)</label>
-          <button
-            onClick={() => updateStyle({ maxWidth: Number(getStyleValue('maxWidth', '')) === 100 ? '' : 100 })}
-            className={cn(
-              "px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all",
-              Number(getStyleValue('maxWidth', '')) === 100
-                ? "bg-zinc-900 text-white"
-                : "bg-zinc-200 text-zinc-500 hover:bg-zinc-300"
-            )}
-          >
-            {Number(getStyleValue('maxWidth', '')) === 100 ? 'ON' : 'OFF'}
-          </button>
-        </div> */}
-
-        <div className="space-y-6 mt-8 pt-8 border-t border-zinc-50">
+        <div className="space-y-8 mt-8 pt-8 border-t border-zinc-50">
           {/* Posizione Immagine */}
           <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
               <MoveHorizontal size={12} /> Posizione Immagine
             </label>
             <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
@@ -71,7 +58,7 @@ export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
 
           {/* Allineamento Verticale */}
           <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
               <MoreVertical size={12} /> Allineamento Verticale
             </label>
             <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
@@ -96,23 +83,28 @@ export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
             </div>
           </div>
 
-          <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block tracking-widest">Gap Colonne (px)</label>
-            <input
-              type="number"
-              className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
-              value={getStyleValue('gap', 60)}
-              onChange={(e) => updateStyle({ gap: parseInt(e.target.value) || 0 })}
-            />
-            <p className="text-[9px] text-zinc-400 mt-2 italic px-1">Lo spazio orizzontale tra immagine e testo.</p>
-          </div>
+          <SimpleSlider 
+            label="Gap Colonne" 
+            value={getStyleValue('gap', 60)} 
+            onChange={(val: number) => updateStyle({ gap: val })} 
+            max={200} step={4}
+          />
         </div>
       </section>
 
+      {/* 2. Stile Immagine (Standardizzato) */}
+      <section className="pt-8 border-t border-zinc-100">
+        <SectionHeader icon={ImageIcon} title="Stile Immagine" colorClass="text-emerald-500" />
+        <ImageStyleFields getStyleValue={getStyleValue} updateStyle={updateStyle} />
+      </section>
+
+      {/* 3. Colori & Sfondo */}
       <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
 
+      {/* 4. Bordi e Ombre (Blocco) */}
       <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
+      {/* 5. Stile Testi */}
       <section className="pt-8 border-t border-zinc-100">
         <SectionHeader icon={Type} title="Stile Testi" colorClass="text-indigo-500" />
         <div className="space-y-8">

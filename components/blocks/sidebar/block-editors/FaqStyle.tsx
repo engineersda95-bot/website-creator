@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Type, Palette, AlignLeft, Layers } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager } from '../SharedSidebarComponents';
+import { Type, Palette, AlignLeft, Layers, ArrowDown } from 'lucide-react';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider } from '../SharedSidebarComponents';
 
 interface FAQStyleProps {
   selectedBlock: any;
@@ -18,7 +18,9 @@ export const FAQStyle: React.FC<FAQStyleProps> = ({
   project
 }) => {
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500 pb-20">
+      
+      {/* 1. Layout & Spaziatura */}
       <section>
         <SectionHeader icon={Layers} title="Layout & Spaziatura" colorClass="text-blue-500" />
         <LayoutFields 
@@ -27,20 +29,25 @@ export const FAQStyle: React.FC<FAQStyleProps> = ({
           paddingLabel="Padding Sezione"
         />
         
-        <div className="mt-8 pt-8 border-t border-zinc-50 space-y-6">
-          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block flex justify-between">
-            <span>Larghezza Massima Sezione</span>
-            <span className="text-zinc-900 font-bold">{getStyleValue('maxWidth', 800)}px</span>
-          </label>
-          <input 
-            type="range" min="400" max="1400" step="50" 
-            className="w-full h-2 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
-            value={getStyleValue('maxWidth', 800)}
-            onChange={(e) => updateStyle({ maxWidth: parseInt(e.target.value) })}
+        <div className="mt-8 pt-8 border-t border-zinc-50 space-y-10">
+          <SimpleSlider 
+            label="Distanza Titolo-FAQ (Gap)" 
+            icon={ArrowDown}
+            value={getStyleValue('gap', 64)} 
+            onChange={(val: number) => updateStyle({ gap: val })} 
+            max={200} step={4}
+          />
+
+          <SimpleSlider 
+            label="Larghezza Massima Sezione" 
+            value={getStyleValue('maxWidth', 800)} 
+            onChange={(val: number) => updateStyle({ maxWidth: val })} 
+            min={400} max={1400} step={50}
           />
         </div>
       </section>
 
+      {/* 2. Stile Testi */}
       <section className="pt-8 border-t border-zinc-100">
         <SectionHeader icon={Type} title="Stile Testi" colorClass="text-indigo-500" />
         
@@ -81,8 +88,10 @@ export const FAQStyle: React.FC<FAQStyleProps> = ({
         </div>
       </section>
 
+      {/* 3. Colori & Sfondo */}
       <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
 
+      {/* 4. Bordi & Ombre */}
       <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
     </div>
   );

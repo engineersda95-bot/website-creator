@@ -101,17 +101,38 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       '--faq-q-fw': val('questionBold', true) ? '700' : '500',
       '--faq-a-fw': val('answerBold', false) ? '600' : '400',
       
-      // Image-Text specific
       '--image-order': val('imagePosition', 'left') === 'left' ? '0' : '1',
       '--text-order': val('imagePosition', 'left') === 'left' ? '1' : '0',
       '--image-aspect': block.content?.imageAspectRatio || val('imageAspectRatio', '16/9'),
       '--text-v-align': viewport === 'mobile' ? 'flex-start' : (val('verticalAlign', 'center') === 'top' ? 'flex-start' : val('verticalAlign', 'center') === 'bottom' ? 'flex-end' : 'center'),
+
+      // Contact specific
+      '--icon-size': toPx(val('iconSize', 20)),
+      '--label-fs': toPx(val('contactLabelSize', 9)),
+      '--label-fw': val('contactLabelBold', true) ? '900' : '400',
+      '--value-fs': toPx(val('contactValueSize', 18)),
+      '--value-fw': val('contactValueBold', true) ? '700' : '400',
+      '--map-width': val('mapWidth', 100) + '%',
+      
+      // Cards specific
+      '--card-bg': val('cardBgColor', 'transparent'),
+      '--card-color': val('cardTextColor', 'inherit'),
+      '--card-radius': toPx(val('cardBorderRadius', 32)),
+      '--card-padding': toPx(val('cardPadding', 32)),
+      '--card-title-fs': toPx(val('cardTitleSize', 24)),
+      '--card-subtitle-fs': toPx(val('cardSubtitleSize', 16)),
+      
+      // Shared Image Styles
+      '--img-radius': toPx(val('imageBorderRadius', 24)),
+      '--img-aspect': block.content?.imageAspectRatio || val('imageAspectRatio', '16/9'),
     };
 
-    // Responsive Gap Tuning
-    if (viewport === 'mobile') {
-      const desktopGap = num('gap', 64);
-      vars['--block-gap'] = toPx(val('gap', Math.min(desktopGap, 32))); // Limit gap on mobile
+    // Responsive Gap Tuning: Limit gap on mobile only if it's using the default desktop value
+    if (viewport === 'mobile' && (!block.responsiveStyles?.mobile || block.responsiveStyles.mobile.gap === undefined)) {
+      const currentGap = num('gap', 64);
+      if (currentGap > 32) {
+        vars['--block-gap'] = toPx(32);
+      }
     }
 
     // Content-based layout type resolution

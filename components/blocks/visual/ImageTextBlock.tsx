@@ -36,8 +36,14 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
   const secondaryColor = project?.settings?.secondaryColor || '#10b981';
   const activeColor = style.buttonTheme === 'secondary' ? secondaryColor : pColor;
 
+  // Variabili immagine premium
+  const imageRadius = style.imageBorderRadius !== undefined ? `${style.imageBorderRadius}px` : '24px';
+  const hasImageShadow = style.imageShadow !== false;
+  const hasImageHover = style.imageHover !== false;
+
   return (
     <section 
+      id={block.id}
       className={cn(
         "relative overflow-hidden transition-all duration-500",
       )}
@@ -47,6 +53,10 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
         paddingBottom: 'var(--block-pb)',
         paddingLeft: 'var(--block-px)',
         paddingRight: 'var(--block-px)',
+        marginTop: 'var(--block-mt)',
+        marginBottom: 'var(--block-mb)',
+        marginLeft: 'var(--block-ml)',
+        marginRight: 'var(--block-mr)',
         color: 'var(--block-color)',
       }}
     >
@@ -66,12 +76,22 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
         >
           {/* Immagine */}
           <div 
-            className="w-full h-full order-[var(--image-order)]"
+            className={cn(
+                "w-full h-full order-[var(--image-order)]"
+            )}
             style={{ 
               order: 'var(--image-order)' as any,
             }}
           >
-            <div className="relative w-full h-full overflow-hidden rounded-[var(--block-radius,1.5rem)] shadow-lg transition-all duration-500">
+            <div 
+              className={cn(
+                "relative w-full h-full overflow-hidden transition-all duration-700",
+                hasImageShadow && "shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]"
+              )}
+              style={{
+                borderRadius: imageRadius,
+              }}
+            >
               {content.image ? (
                 <SitiImage 
                   src={content.image}
@@ -79,7 +99,10 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   isStatic={isStatic}
                   imageMemoryCache={imageMemoryCache}
                   alt={content.alt || ''}
-                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                  className={cn(
+                    "w-full h-full object-cover transition-transform duration-1000 ease-out",
+                    hasImageHover && "hover:scale-110"
+                  )}
                   style={{
                     aspectRatio: 'var(--image-aspect)'
                   }}
@@ -87,13 +110,15 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
               ) : (
                 <div 
                   className="w-full h-full bg-zinc-100 flex flex-col items-center justify-center text-zinc-400 p-8 border-2 border-dashed border-zinc-200"
-                  style={{ aspectRatio: 'var(--image-aspect)' }}
+                  style={{ 
+                    aspectRatio: 'var(--image-aspect)',
+                    borderRadius: imageRadius
+                  }}
                 >
                   <div className="p-4 bg-white rounded-full shadow-sm mb-4">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Nessuna Immagine</span>
-                  <span className="text-[9px] opacity-70 mt-1">Caricala dalla sidebar</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Nessuna Immagine</span>
                 </div>
               )}
             </div>
@@ -108,17 +133,18 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                 alignItems: 'var(--block-items)' as any,
             }}
           >
-            <div className="space-y-4">
+            <div className="space-y-4 w-full" style={{ alignItems: 'inherit' }}>
               {content.title && (
                 <h2 
-                  className="tracking-tight transition-all duration-500"
+                  className="tracking-tighter transition-all duration-500 leading-[1.1]"
                   style={{ 
                     fontSize: 'var(--title-fs)',
                     fontWeight: 'var(--title-fw)' as any,
                     fontStyle: 'var(--title-fs-style)' as any,
                     letterSpacing: 'var(--title-ls)',
                     lineHeight: 'var(--title-lh)',
-                    textTransform: 'var(--title-upper)' as any
+                    textTransform: 'var(--title-upper)' as any,
+                    textAlign: 'inherit'
                   }}
                   dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
                 />
@@ -131,7 +157,10 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                     fontWeight: 'var(--subtitle-fw)' as any,
                     fontStyle: 'var(--subtitle-fs-style)' as any,
                     lineHeight: '1.6',
-                    opacity: 0.9
+                    opacity: 0.9,
+                    textAlign: 'inherit',
+                    marginLeft: 'var(--block-ml-auto)',
+                    marginRight: 'var(--block-mr-auto)',
                   }}
                   dangerouslySetInnerHTML={{ __html: formatRichText(content.text) }}
                 />
@@ -140,15 +169,14 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
 
             {content.cta && (
               <div 
-                className="pt-4 flex"
+                className="pt-4 flex w-full"
                 style={{ 
                     justifyContent: 'var(--block-justify)',
-                    width: '100%'
                 }}
               >
                 <a 
                   {...formatLink(content.ctaUrl || '#')}
-                  className="font-bold transition-all active:scale-95 border-0 outline-none no-underline inline-flex items-center justify-center"
+                  className="font-bold transition-all active:scale-95 border-0 outline-none no-underline inline-flex items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5"
                   style={getButtonStyle(project, activeColor, (viewport as any) || 'desktop', style.buttonTheme, !!(isStatic || !viewport))}
                 >
                   {content.cta}

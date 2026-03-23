@@ -125,7 +125,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
             aspectRatio: content.type === 'youtube' ? '16/9' : (content.type === 'map' ? '16/9' : (content.type === 'instagram' ? '1 / 1.4' : 'auto')),
             minHeight: content.type === 'custom' ? 'auto' : 
                        content.type === 'youtube' ? 'auto' : 
-                       content.type === 'instagram' ? (style?.minHeight ? 'auto' : '750px') : 
+                       content.type === 'instagram' ? (style?.minHeight ? 'auto' : 'initial') : 
                        'var(--block-min-height, 450px)',
             maxWidth: style?.contentWidth ? `${style.contentWidth}px` : (content.type === 'instagram' ? '540px' : '100%'),
             width: content.type === 'custom' && isIframeCode ? 'auto' : '100%',
@@ -134,13 +134,19 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
         >
           {isIframeCode || (content.type === 'map' && content.url.trim().startsWith('<iframe')) ? (
             <div 
-                className="max-w-full overflow-auto"
+                className={cn(
+                  "max-w-full overflow-auto",
+                  content.type === 'instagram' && !style?.minHeight && "min-h-[500px] md:min-h-[750px]"
+                )}
                 dangerouslySetInnerHTML={{ __html: content.url }} 
             />
           ) : embedUrl ? (
             <iframe
               src={embedUrl}
-              className="w-full h-full border-0 absolute inset-0"
+              className={cn(
+                "w-full h-full border-0 absolute inset-0",
+                content.type === 'instagram' && !style?.minHeight && "min-h-[500px] md:min-h-[750px]"
+              )}
               style={{ minHeight: 'inherit' }}
               scrolling={content.type === 'custom' ? 'yes' : 'no'}
               allowFullScreen

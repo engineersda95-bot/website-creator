@@ -135,7 +135,7 @@ export const BlockSidebar: React.FC = () => {
                     <div className="p-2 text-zinc-400 group-hover:text-zinc-900 transition-colors">
                       <block.icon size={22} />
                     </div>
-                    <div className="text-[10px] font-black text-zinc-500 uppercase tracking-tight group-hover:text-zinc-900">{block.label.split(' ')[0]}</div>
+                    <div className="text-[10px] font-black text-zinc-500 uppercase tracking-tight group-hover:text-zinc-900 leading-tight mt-1 px-1">{block.label}</div>
                   </button>
                 ))}
               </div>

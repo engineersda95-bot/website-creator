@@ -304,7 +304,15 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   initialize: async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    set({ user, isInitialized: true });
+    
+    // Load copied block from localStorage
+    const saved = localStorage.getItem('sv_copied_block');
+    let copiedBlock = null;
+    if (saved) {
+      try { copiedBlock = JSON.parse(saved); } catch(e) {}
+    }
+    
+    set({ user, isInitialized: true, copiedBlock });
   },
 
   setUser: (user) => set({ user }),
@@ -320,6 +328,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const block = currentPage.blocks.find(b => b.id === id);
     if (block) {
       set({ copiedBlock: block });
+      localStorage.setItem('sv_copied_block', JSON.stringify(block));
     }
   },
 

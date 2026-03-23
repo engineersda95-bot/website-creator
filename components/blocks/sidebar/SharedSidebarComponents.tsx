@@ -23,7 +23,8 @@ import {
    Plus,
    Trash2,
    Link as LinkIcon,
-   Type
+   Type,
+   Image as ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '@/components/shared/ImageUpload';
@@ -402,8 +403,8 @@ export function TypographyFields({ label, sizeKey, boldKey, italicKey, getStyleV
             />
             <div className="flex border rounded-xl overflow-hidden shrink-0">
                <button
-                  onClick={() => updateStyle({ [boldKey]: !getStyleValue(boldKey, true) })}
-                  className={cn("p-2 px-3 transition-all", getStyleValue(boldKey, true) !== false ? "bg-zinc-900 text-white" : "bg-white text-zinc-400")}
+                  onClick={() => updateStyle({ [boldKey]: !getStyleValue(boldKey, false) })}
+                  className={cn("p-2 px-3 transition-all", getStyleValue(boldKey, false) ? "bg-zinc-900 text-white" : "bg-white text-zinc-400")}
                >
                   <Bold size={16} />
                </button>
@@ -415,6 +416,23 @@ export function TypographyFields({ label, sizeKey, boldKey, italicKey, getStyleV
                </button>
             </div>
          </div>
+      </div>
+   );
+}
+
+export function SimpleSlider({ label, value, onChange, min = 0, max = 100, step = 1, suffix = "px" }: any) {
+   return (
+      <div className="pb-6 border-b border-zinc-50 last:border-0 last:pb-0">
+         <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+            <span>{label}</span>
+            <span className="text-zinc-900 font-bold">{value}{suffix}</span>
+         </label>
+         <input
+            type="range" min={min} max={max} step={step}
+            className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900 mt-2"
+            value={value}
+            onChange={(e) => onChange(parseInt(e.target.value))}
+         />
       </div>
    );
 }
@@ -441,7 +459,7 @@ export function CTAManager({ content, updateContent, style, updateStyle }: any) 
          </div>
          <div className="grid gap-3">
             <input
-               className="w-full p-3 border border-zinc-200 rounded-xl text-sm font-bold bg-zinc-50 focus:bg-white transition-all outline-none"
+               className="w-full p-3 border border-zinc-200 rounded-xl text-sm bg-zinc-50 focus:bg-white transition-all outline-none"
                placeholder="Testo Bottone (es: Inizia Ora)"
                value={content.cta || ''}
                onChange={(e) => updateContent({ cta: e.target.value })}
@@ -460,16 +478,26 @@ export function CTAManager({ content, updateContent, style, updateStyle }: any) 
    );
 }
 
-export function SimpleInput({ label, value, onChange, placeholder }: { label: string, value: string, onChange: (val: string) => void, placeholder?: string }) {
+export function SimpleInput({ label, value, onChange, placeholder, icon: Icon }: { label: string, value: string, onChange: (val: string) => void, placeholder?: string, icon?: any }) {
    return (
       <div className="space-y-2">
-         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">{label}</label>
-         <input
-            className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none font-bold shadow-inner"
-            placeholder={placeholder}
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
-         />
+         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block pl-1">{label}</label>
+         <div className="relative group">
+            {Icon && (
+               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 transition-colors pointer-events-none z-10">
+                  <Icon size={16} />
+               </div>
+            )}
+            <input
+               className={cn(
+                  "w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none shadow-inner relative z-0",
+                  Icon && "pl-12"
+               )}
+               placeholder={placeholder}
+               value={value || ''}
+               onChange={(e) => onChange(e.target.value)}
+            />
+         </div>
       </div>
    );
 }
@@ -525,7 +553,7 @@ export function LinkListManager({ links = [], onChange, label = "Link Testuali" 
          <div className="space-y-3">
             {links.map((link: any, i: number) => (
                <div key={i} className="flex gap-2 group animate-in slide-in-from-right-2 duration-200">
-                  <input className="w-[100px] shrink-0 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" placeholder="Testo" value={link.label} onChange={(e) => {
+                  <input className="w-[100px] shrink-0 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50" placeholder="Testo" value={link.label} onChange={(e) => {
                      const nl = [...links]; nl[i].label = e.target.value; onChange(nl);
                   }} />
                   <input className="flex-1 min-w-0 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50" placeholder="URL..." value={link.url} onChange={(e) => {
@@ -676,6 +704,40 @@ export function IconManager({ value, onChange, label = "Icona" }: any) {
                   <Icon size={18} />
                </button>
             ))}
+         </div>
+      </div>
+   );
+}
+
+export function ImageStyleFields({ getStyleValue, updateStyle }: any) {
+   return (
+      <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+         <SimpleSlider 
+            label="Arrotondamento Immagine" 
+            value={getStyleValue('imageBorderRadius', 24)} 
+            onChange={(val: number) => updateStyle({ imageBorderRadius: val })} 
+            max={100}
+         />
+
+         <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100 transition-all hover:bg-white hover:shadow-sm">
+               <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest leading-none">Ombra</span>
+               <input 
+                  type="checkbox" 
+                  className="w-5 h-5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
+                  checked={!!getStyleValue('imageShadow', true)}
+                  onChange={(e) => updateStyle({ imageShadow: e.target.checked })}
+               />
+            </div>
+            <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100 transition-all hover:bg-white hover:shadow-sm">
+               <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest leading-none">Zoom Hover</span>
+               <input 
+                  type="checkbox" 
+                  className="w-5 h-5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
+                  checked={!!getStyleValue('imageHover', true)}
+                  onChange={(e) => updateStyle({ imageHover: e.target.checked })}
+               />
+            </div>
          </div>
       </div>
    );
