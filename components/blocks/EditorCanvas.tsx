@@ -302,7 +302,7 @@ export const EditorCanvas: React.FC = () => {
             color: ${themeText} !important; 
           }
           .block-wrapper { background-color: inherit; }
-          .canvas-desktop { max-width: 100%; width: 1200px; }
+          .canvas-desktop { width: 100%; }
           .canvas-tablet { width: 768px; }
           .canvas-mobile { width: 390px; }
         `}</style>

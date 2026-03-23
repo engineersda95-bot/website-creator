@@ -98,7 +98,19 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       '--faq-a-fs': toPx(val('answerSize', '1rem')),
       '--faq-q-fw': val('questionBold', true) ? '700' : '500',
       '--faq-a-fw': val('answerBold', false) ? '600' : '400',
+      
+      // Image-Text specific
+      '--image-order': val('imagePosition', 'left') === 'left' ? '0' : '1',
+      '--text-order': val('imagePosition', 'left') === 'left' ? '1' : '0',
+      '--image-aspect': block.content?.imageAspectRatio || val('imageAspectRatio', '16/9'),
+      '--text-v-align': viewport === 'mobile' ? 'flex-start' : (val('verticalAlign', 'center') === 'top' ? 'flex-start' : val('verticalAlign', 'center') === 'bottom' ? 'flex-end' : 'center'),
     };
+
+    // Responsive Gap Tuning
+    if (viewport === 'mobile') {
+      const desktopGap = num('gap', 64);
+      vars['--block-gap'] = toPx(val('gap', Math.min(desktopGap, 32))); // Limit gap on mobile
+    }
 
     // Content-based layout type resolution
     const layoutType = block.content?.layoutType || val('layoutType', 'standard');

@@ -12,6 +12,7 @@ import { DividerBlock } from '@/components/blocks/visual/DividerBlock';
 import { FAQBlock } from '@/components/blocks/visual/FaqBlock';
 import { EmbedBlock } from '@/components/blocks/visual/EmbedBlock';
 import { QuoteBlock } from '@/components/blocks/visual/QuoteBlock';
+import { ImageTextBlock } from '@/components/blocks/visual/ImageTextBlock';
 
 // Editor Components
 import { HeroContent } from '@/components/blocks/sidebar/block-editors/HeroContent';
@@ -30,6 +31,8 @@ import { EmbedContent } from '@/components/blocks/sidebar/block-editors/EmbedCon
 import { EmbedStyle } from '@/components/blocks/sidebar/block-editors/EmbedStyle';
 import { QuoteContent } from '@/components/blocks/sidebar/block-editors/QuoteContent';
 import { QuoteStyle } from '@/components/blocks/sidebar/block-editors/QuoteStyle';
+import { ImageTextContent } from '@/components/blocks/sidebar/block-editors/ImageTextContent';
+import { ImageTextStyle } from '@/components/blocks/sidebar/block-editors/ImageTextStyle';
 
 export interface BlockDefinition {
   type: BlockType;
@@ -174,8 +177,8 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
           { text: 'Consiglio vivamente questo studio a chiunque cerchi qualità e innovazione.', name: 'Alessandro Neri', role: 'Owner @ Neri Design', stars: 5 }
         ]
       },
-      style: { 
-        padding: 100, 
+      style: {
+        padding: 100,
         align: 'center',
         titleSize: 48,
         titleBold: true,
@@ -185,6 +188,36 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
         nameBold: false,
         roleSize: 12,
         roleBold: false
+      }
+    }
+  },
+  'image-text': {
+    type: 'image-text',
+    label: 'Immagine con Testo',
+    icon: Layout,
+    visual: ImageTextBlock,
+    contentEditor: ImageTextContent as any,
+    styleEditor: ImageTextStyle as any,
+    defaults: {
+      content: {
+        title: 'Il Problema che Risolviamo',
+        text: 'Spiega qui perché il tuo cliente dovrebbe sceglierti. Usa una struttura chiara e un linguaggio diretto per massimizzare la conversione.',
+        cta: 'Scopri di Più',
+        ctaLink: '#',
+        image: '',
+        alt: 'Descrizione Immagine',
+        imageAspectRatio: '16/9'
+      },
+      style: {
+        padding: 100,
+        gap: 60,
+        maxWidth: 100,
+        imagePosition: 'left',
+        verticalAlign: 'center',
+        titleSize: 48,
+        titleBold: true,
+        subtitleSize: 18,
+        align: 'left'
       }
     }
   },
@@ -201,6 +234,7 @@ export const getBlockLibrary = () => {
     BLOCK_DEFINITIONS.text,
     BLOCK_DEFINITIONS.faq,
     BLOCK_DEFINITIONS.quote,
+    BLOCK_DEFINITIONS['image-text'],
     BLOCK_DEFINITIONS.embed,
     BLOCK_DEFINITIONS.divider,
     BLOCK_DEFINITIONS.footer,
