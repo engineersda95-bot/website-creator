@@ -1,6 +1,6 @@
 import { BlockType } from '@/types/editor';
 import {
-  Square, Type, Layout, Menu, Minus, HelpCircle, Share2
+  Square, Type, Layout, Menu, Minus, HelpCircle, Share2, Quote
 } from 'lucide-react';
 
 // Visual Components
@@ -11,6 +11,7 @@ import { FooterBlock } from '@/components/blocks/visual/FooterBlock';
 import { DividerBlock } from '@/components/blocks/visual/DividerBlock';
 import { FAQBlock } from '@/components/blocks/visual/FaqBlock';
 import { EmbedBlock } from '@/components/blocks/visual/EmbedBlock';
+import { QuoteBlock } from '@/components/blocks/visual/QuoteBlock';
 
 // Editor Components
 import { HeroContent } from '@/components/blocks/sidebar/block-editors/HeroContent';
@@ -27,6 +28,8 @@ import { FAQContent } from '@/components/blocks/sidebar/block-editors/FaqContent
 import { FAQStyle } from '@/components/blocks/sidebar/block-editors/FaqStyle';
 import { EmbedContent } from '@/components/blocks/sidebar/block-editors/EmbedContent';
 import { EmbedStyle } from '@/components/blocks/sidebar/block-editors/EmbedStyle';
+import { QuoteContent } from '@/components/blocks/sidebar/block-editors/QuoteContent';
+import { QuoteStyle } from '@/components/blocks/sidebar/block-editors/QuoteStyle';
 
 export interface BlockDefinition {
   type: BlockType;
@@ -150,6 +153,41 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
       }
     }
   },
+  'quote': {
+    type: 'quote',
+    label: 'Recensioni / Quote',
+    icon: Quote,
+    visual: QuoteBlock,
+    contentEditor: QuoteContent,
+    styleEditor: QuoteStyle,
+    defaults: {
+      content: {
+        title: 'Dicono di noi',
+        layout: 'grid',
+        visualType: 'quotes',
+        avatarShape: 'circle',
+        avatarSize: 60,
+        avatarAspectRatio: '1/1',
+        items: [
+          { text: 'Il miglior servizio che abbia mai provato. Professionalità e velocità ai massimi livelli.', name: 'Marco Rossi', role: 'CEO @ TechFlow', stars: 5 },
+          { text: 'Esperienza fantastica! Il team ha capito perfettamente le mie esigenze fin dal primo giorno.', name: 'Laura Bianchi', role: 'Founder @ CreativeLab', stars: 5 },
+          { text: 'Consiglio vivamente questo studio a chiunque cerchi qualità e innovazione.', name: 'Alessandro Neri', role: 'Owner @ Neri Design', stars: 5 }
+        ]
+      },
+      style: { 
+        padding: 100, 
+        align: 'center',
+        titleSize: 48,
+        titleBold: true,
+        reviewSize: 18,
+        reviewBold: false,
+        nameSize: 14,
+        nameBold: false,
+        roleSize: 12,
+        roleBold: false
+      }
+    }
+  },
 };
 
 export const getBlockDefinition = (type: string) => {
@@ -162,6 +200,7 @@ export const getBlockLibrary = () => {
     BLOCK_DEFINITIONS.hero,
     BLOCK_DEFINITIONS.text,
     BLOCK_DEFINITIONS.faq,
+    BLOCK_DEFINITIONS.quote,
     BLOCK_DEFINITIONS.embed,
     BLOCK_DEFINITIONS.divider,
     BLOCK_DEFINITIONS.footer,

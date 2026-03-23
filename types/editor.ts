@@ -13,6 +13,7 @@ export type BlockType =
   'product-carousel' |
   'embed' | 
   'faq' |
+  'quote' |
   'divider';
 
 export interface Block {

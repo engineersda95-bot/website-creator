@@ -128,14 +128,24 @@ export function LayoutFields({ getStyleValue, updateStyle, showAlign = true, pad
    );
 }
 
-export function ColorManager({ getStyleValue, updateStyle, project }: any) {
+export function ColorManager({ 
+   getStyleValue, 
+   updateStyle, 
+   project, 
+   bgKey = 'backgroundColor', 
+   textKey = 'textColor', 
+   title = "Colori & Sfondo", 
+   icon = Palette, 
+   colorClass = "text-pink-500",
+   showReset = true
+}: any) {
    const appearance = project?.settings?.appearance || 'light';
    const defaultBg = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff');
    const defaultText = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.text || '#ffffff') : (project?.settings?.themeColors?.light?.text || '#000000');
 
    return (
       <section className="pt-8 border-t border-zinc-100">
-         <SectionHeader icon={Palette} title="Colori & Sfondo" colorClass="text-pink-500" />
+         <SectionHeader icon={icon} title={title} colorClass={colorClass} />
          <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
                <div>
@@ -143,8 +153,8 @@ export function ColorManager({ getStyleValue, updateStyle, project }: any) {
                   <input
                      type="color"
                      className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                     value={getStyleValue('backgroundColor', defaultBg)}
-                     onChange={(e) => updateStyle({ backgroundColor: e.target.value })}
+                     value={getStyleValue(bgKey, defaultBg)}
+                     onChange={(e) => updateStyle({ [bgKey]: e.target.value })}
                   />
                </div>
                <div>
@@ -152,17 +162,19 @@ export function ColorManager({ getStyleValue, updateStyle, project }: any) {
                   <input
                      type="color"
                      className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                     value={getStyleValue('textColor', defaultText)}
-                     onChange={(e) => updateStyle({ textColor: e.target.value })}
+                     value={getStyleValue(textKey, defaultText)}
+                     onChange={(e) => updateStyle({ [textKey]: e.target.value })}
                   />
                </div>
             </div>
-            <button
-               onClick={() => updateStyle({ backgroundColor: undefined, textColor: undefined })}
-               className="w-full p-2.5 text-[10px] font-bold text-zinc-400 border border-dashed rounded-xl hover:text-zinc-900 transition-all uppercase tracking-widest"
-            >
-               Resetta a Tema Globale
-            </button>
+            {showReset && (
+               <button
+                  onClick={() => updateStyle({ [bgKey]: undefined, [textKey]: undefined })}
+                  className="w-full p-2.5 text-[10px] font-bold text-zinc-400 border border-dashed rounded-xl hover:text-zinc-900 transition-all uppercase tracking-widest"
+               >
+                  Resetta a Tema Globale
+               </button>
+            )}
          </div>
       </section>
    );
