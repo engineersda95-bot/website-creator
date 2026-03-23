@@ -101,9 +101,37 @@ Usa sempre i componenti in `SharedSidebarComponents.tsx` per un design premium:
 
 ---
 
+## ⚡️ Interattività e Generazione Statica
+
+I blocchi visuali devono essere compatibili con la **generazione statica (pure HTML)**. Poiché il sito finale pubblicato non carica la libreria React nel browser (per massimizzare la velocità), la gestione dell'interattività segue regole precise:
+
+### 1. Evitare `"use client"` nei Blocchi Visuali
+**NON** contrassegnare il file del blocco visuale (`components/blocks/visual/[NomeBlocco].tsx`) come `"use client"`. L'uso di hook di React (`useState`, `useEffect`) durante la generazione statica tramite `renderToStaticMarkup` causerebbe un errore di deployment.
+
+### 2. Metodi per l'Interattività (Accordion, Menu, Toggle)
+
+*   **Approccio Preferito: HTML Nativo 🥇**
+    Usa elementi HTML5 nativi come `<details>` e `<summary>` (per FAQ/Accordion). Sono **100% modulari**, funzionano senza script sia nell'Editor che nel sito statico e garantiscono coerenza totale tra Preview e Live.
+*   **Approccio Secondario: Vanilla JavaScript & Data Attributes**
+    Usa attributi `data-*` (es. `data-menu-toggle`) e gestisci la logica con JavaScript standard all'interno di un componente Script centralizzato o tramite iniezione controllata.
+
+### 3. Differenziazione Editor vs Statico
+Se hai bisogno di una logica React complessa per l'Editor ma non per il sito statico, usa la prop `isStatic` per separare i comportamenti:
+
+```tsx
+{isStatic ? (
+  <button data-toggle>Clicca (Statico)</button>
+) : (
+  <ClientInteractiveComponent /> // Componente separato con "use client"
+)}
+```
+
+---
+
 ## 💡 Best Practices per Senior Engineer
 
-1.  **Defaults Solidi**: Definisci sempre degli stati iniziali (`defaults`) ricchi in `block-definitions.ts`. Un blocco appena aggiunto deve sembrare già "finito".
-2.  **Astrazione**: Se crei un nuovo controllo nella sidebar che potrebbe servire ad altri blocchi, crealo come "Shard" in `SharedSidebarComponents.tsx`.
-3.  **Niente Stili Inline**: Evita `style={{...}}` nei componenti visual per proprietà responsive. Usa le variabili CSS (es. `width: var(--mio-parametro)`).
-4.  **Pulizia**: Se rimuovi un blocco, ricordati di pulire la sua definizione in `lib/block-definitions.ts` per mantenere il bundle leggero.
+1.  **Niente `"use client"` nel Visual**: Mantieni il componente visuale del blocco come **Server Component** (o senza direttiva) per garantire la generazione statica.
+2.  **Modularità Totale**: Un blocco deve essere auto-sufficiente. Evita di aggiungere script globali in `generate-static.tsx` se puoi risolvere con HTML nativo o script auto-contenuti.
+3.  **Defaults Solidi**: Definisci sempre degli stati iniziali (`defaults`) ricchi in `block-definitions.ts`. Un blocco appena aggiunto deve sembrare già "finito".
+4.  **Astrazione Sidebar**: Se crei un nuovo controllo nella sidebar che potrebbe servire ad altri blocchi, crealo come "Shard" in `SharedSidebarComponents.tsx`.
+5.  **Variabili CSS**: Evita stili inline complessi. Usa le variabili CSS responsive (es. `var(--block-bg)`).

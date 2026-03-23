@@ -91,6 +91,12 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       '--divider-width': val('dividerWidth', 100) + '%',
       '--divider-stroke': toPx(val('dividerStroke', 1)),
       '--divider-color': val('dividerColor', val('textColor', 'currentColor')),
+
+      // FAQ specific
+      '--faq-q-fs': toPx(val('questionSize', '1.125rem')),
+      '--faq-a-fs': toPx(val('answerSize', '1rem')),
+      '--faq-q-fw': val('questionBold', true) ? '700' : '500',
+      '--faq-a-fw': val('answerBold', false) ? '600' : '400',
     };
 
     // Content-based layout type resolution

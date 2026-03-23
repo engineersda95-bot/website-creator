@@ -1,6 +1,6 @@
 import { BlockType } from '@/types/editor';
-import { 
-  Square, Type, Layout, Menu, Minus
+import {
+  Square, Type, Layout, Menu, Minus, HelpCircle
 } from 'lucide-react';
 
 // Visual Components
@@ -9,6 +9,7 @@ import { TextBlock } from '@/components/blocks/visual/TextBlock';
 import { Navigation } from '@/components/blocks/visual/navigation/Navigation';
 import { FooterBlock } from '@/components/blocks/visual/FooterBlock';
 import { DividerBlock } from '@/components/blocks/visual/DividerBlock';
+import { FAQBlock } from '@/components/blocks/visual/FaqBlock';
 
 // Editor Components
 import { HeroContent } from '@/components/blocks/sidebar/block-editors/HeroContent';
@@ -21,6 +22,8 @@ import { FooterContent } from '@/components/blocks/sidebar/block-editors/FooterC
 import { FooterStyle } from '@/components/blocks/sidebar/block-editors/FooterStyle';
 import { DividerContent } from '@/components/blocks/sidebar/block-editors/DividerContent';
 import { DividerStyle } from '@/components/blocks/sidebar/block-editors/DividerStyle';
+import { FAQContent } from '@/components/blocks/sidebar/block-editors/FaqContent';
+import { FAQStyle } from '@/components/blocks/sidebar/block-editors/FaqStyle';
 
 export interface BlockDefinition {
   type: BlockType;
@@ -44,9 +47,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     contentEditor: HeroContent,
     styleEditor: HeroStyle,
     defaults: {
-      content: { 
-        title: 'Benvenuti nel Futuro', 
-        subtitle: 'Un design minimalista ed elegante per la tua brand identity. Ogni dettaglio è curato per massimizzare l\'impatto visivo.', 
+      content: {
+        title: 'Benvenuti nel Futuro',
+        subtitle: 'Un design minimalista ed elegante per la tua brand identity. Ogni dettaglio è curato per massimizzare l\'impatto visivo.',
         cta: 'Esplora Ora',
         logoLinkHome: true
       },
@@ -101,6 +104,24 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
       style: { padding: 40 }
     }
   },
+  'faq': {
+    type: 'faq',
+    label: 'Domande Frequenti (FAQ)',
+    icon: HelpCircle,
+    visual: FAQBlock,
+    contentEditor: FAQContent,
+    styleEditor: FAQStyle,
+    defaults: {
+      content: {
+        title: 'FAQ',
+        items: [
+          { question: 'Come posso contattarvi?', answer: 'Puoi contattarci tramite il modulo contatti o via email.' },
+          { question: 'Quali sono i tempi di consegna?', answer: 'I tempi variano in base al progetto, solitamente tra 2 e 4 settimane.' }
+        ]
+      },
+      style: { padding: 80, questionSize: 18, answerSize: 16, questionBold: true }
+    }
+  },
 };
 
 export const getBlockDefinition = (type: string) => {
@@ -112,6 +133,7 @@ export const getBlockLibrary = () => {
     BLOCK_DEFINITIONS.navigation,
     BLOCK_DEFINITIONS.hero,
     BLOCK_DEFINITIONS.text,
+    BLOCK_DEFINITIONS.faq,
     BLOCK_DEFINITIONS.divider,
     BLOCK_DEFINITIONS.footer,
   ];

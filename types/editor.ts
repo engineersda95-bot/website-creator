@@ -11,7 +11,8 @@ export type BlockType =
   'contact' |
   'reviews' |
   'product-carousel' |
-  'embed' |
+  'embed' | 
+  'faq' |
   'divider';
 
 export interface Block {
