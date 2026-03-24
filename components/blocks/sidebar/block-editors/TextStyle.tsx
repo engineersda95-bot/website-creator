@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { Layers, Type } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, BackgroundManager } from '../SharedSidebarComponents';
 
 interface TextStyleProps {
    selectedBlock: any;
+   updateContent: (content: any) => void;
    updateStyle: (style: any) => void;
    getStyleValue: (key: string, defaultValue: any) => any;
    project: any;
@@ -13,6 +14,7 @@ interface TextStyleProps {
 
 export const TextStyle: React.FC<TextStyleProps> = ({
    selectedBlock,
+   updateContent,
    updateStyle,
    getStyleValue,
    project
@@ -25,6 +27,13 @@ export const TextStyle: React.FC<TextStyleProps> = ({
          </section>
 
          <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+
+         <BackgroundManager 
+            selectedBlock={selectedBlock} 
+            updateContent={updateContent} 
+            updateStyle={updateStyle} 
+            getStyleValue={getStyleValue} 
+         />
 
          <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 

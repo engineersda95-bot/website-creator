@@ -4,14 +4,17 @@ import { cn } from '@/lib/utils';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { Star, Quote as QuoteIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
+import { BlockBackground } from '@/components/shared/BlockBackground';
 
 interface QuoteBlockProps {
   block: Block;
   project: Project;
   viewport?: 'desktop' | 'tablet' | 'mobile';
+  isStatic?: boolean;
+  imageMemoryCache?: Record<string, string>;
 }
 
-export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport }) => {
+export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport, isStatic, imageMemoryCache }) => {
   const { content } = block;
   const { style, viewport: currentVp } = getBlockStyles(block, project, viewport);
   
@@ -35,13 +38,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
 
 
   const blockStyles = {
-    backgroundColor: style.bgType === 'solid' ? (style.backgroundColor || 'transparent') : undefined,
-    backgroundImage: style.bgType === 'gradient' 
-      ? `linear-gradient(${style.bgDirection || 'to bottom'}, ${style.backgroundColor || 'transparent'}, ${style.backgroundColor2 || 'transparent'})`
-      : (content.backgroundImage ? `url(${resolveImageUrl(content.backgroundImage, project)})` : 'none'),
-    backgroundSize: style.backgroundSize || 'cover',
-    backgroundPosition: style.backgroundPosition || 'center',
-    backgroundRepeat: 'no-repeat',
+    background: 'var(--block-bg)',
     paddingTop: `${style.paddingTop ?? style.padding ?? 20}px`,
     paddingBottom: `${style.paddingBottom ?? style.padding ?? 20}px`,
     paddingLeft: `${style.paddingLeft ?? style.hPadding ?? 20}px`,
@@ -184,7 +181,14 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
 
   return (
     <section id={blockId} style={blockStyles} className="relative overflow-hidden quote-block">
-      <div className="relative text-left">
+      <BlockBackground 
+        backgroundImage={content.backgroundImage} 
+        style={style} 
+        project={project} 
+        isStatic={isStatic} 
+        imageMemoryCache={imageMemoryCache}
+      />
+      <div className="relative z-10 text-left">
         {content.title && (
           <h2 
             style={{ 

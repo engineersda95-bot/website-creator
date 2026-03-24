@@ -80,4 +80,5 @@ export interface CTAManagerProps {
 export interface LayoutGridSliderProps extends StyleEditorProps {
    content: Record<string, any>;
    updateContent: (content: Record<string, any>) => void;
+   viewport?: 'desktop' | 'tablet' | 'mobile';
 }

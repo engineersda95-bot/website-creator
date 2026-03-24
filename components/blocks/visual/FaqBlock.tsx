@@ -5,11 +5,13 @@ import { cn, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
 import { ChevronDown } from 'lucide-react';
+import { BlockBackground } from '@/components/shared/BlockBackground';
 
 interface FAQBlockProps {
   content: {
     title?: string;
     items: Array<{ question: string; answer: string }>;
+    backgroundImage?: string;
   };
   block: Block;
   project?: Project;
@@ -25,7 +27,7 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
   return (
     <section 
       id={block.id}
-      className="relative transition-all duration-500"
+      className="relative transition-all duration-500 overflow-hidden"
       style={{
         background: 'var(--block-bg)',
         paddingTop: 'var(--block-pt)',
@@ -35,8 +37,14 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
         color: 'var(--block-color)',
       }}
     >
+      <BlockBackground 
+        backgroundImage={content.backgroundImage} 
+        style={style} 
+        project={project} 
+        isStatic={isStatic} 
+      />
       <div 
-        className="mx-auto flex flex-col transition-all duration-500"
+        className="mx-auto flex flex-col transition-all duration-500 relative z-10"
         style={{ 
           gap: 'var(--block-gap)',
           alignItems: 'var(--block-items)' as any,

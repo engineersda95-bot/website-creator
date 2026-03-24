@@ -1,10 +1,12 @@
 
 
 import React from 'react';
-import { cn, getButtonStyle, formatLink, formatRichText } from '@/lib/utils';
+import { cn, formatLink, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
 import { SitiImage } from '@/components/shared/SitiImage';
+import { CTA } from '@/components/shared/CTA';
+import { BlockBackground } from '@/components/shared/BlockBackground';
 
 interface ImageTextBlockProps {
   content: {
@@ -15,6 +17,7 @@ interface ImageTextBlockProps {
     image?: string;
     alt?: string;
     imageAspectRatio?: string;
+    backgroundImage?: string;
   };
   block: Block;
   isEditing?: boolean;
@@ -62,8 +65,15 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
         color: 'var(--block-color)',
       }}
     >
+      <BlockBackground 
+        backgroundImage={content.backgroundImage} 
+        style={style} 
+        project={project} 
+        isStatic={isStatic} 
+        imageMemoryCache={imageMemoryCache}
+      />
       <div 
-        className="mx-auto"
+        className="mx-auto relative z-10"
         style={{ maxWidth: 'var(--block-max-width)' }}
       >
         <div 
@@ -172,13 +182,14 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                     justifyContent: 'var(--block-justify)',
                 }}
               >
-                <a 
-                  {...formatLink(content.ctaUrl || '#')}
-                  className="font-bold transition-all active:scale-95 border-0 outline-none no-underline inline-flex items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5"
-                  style={getButtonStyle(project, activeColor, (viewport as any) || 'desktop', style.buttonTheme, !!(isStatic || !viewport))}
-                >
-                  {content.cta}
-                </a>
+                <CTA 
+                  label={content.cta} 
+                  url={content.ctaUrl} 
+                  project={project} 
+                  viewport={viewport as any} 
+                  theme={style.buttonTheme} 
+                  isStatic={isStatic} 
+                />
               </div>
             )}
           </div>

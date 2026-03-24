@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { Layers, Type, ImageIcon, Palette } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, ImageStyleFields } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, ImageStyleFields, BackgroundManager } from '../SharedSidebarComponents';
 import { cn } from '@/lib/utils';
 
 interface CardsStyleProps {
   selectedBlock: any;
+  updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
   getStyleValue: (key: string, defaultValue: any) => any;
   project: any;
@@ -14,6 +15,7 @@ interface CardsStyleProps {
 
 export const CardsStyle: React.FC<CardsStyleProps> = ({
   selectedBlock,
+  updateContent,
   updateStyle,
   getStyleValue,
   project
@@ -67,6 +69,13 @@ export const CardsStyle: React.FC<CardsStyleProps> = ({
 
       {/* 3. Colori & Sfondo (Blocco) */}
       <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+
+      <BackgroundManager 
+        selectedBlock={selectedBlock} 
+        updateContent={updateContent} 
+        updateStyle={updateStyle} 
+        getStyleValue={getStyleValue} 
+      />
 
       {/* 4. Bordi e Ombre (Blocco) */}
       <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />

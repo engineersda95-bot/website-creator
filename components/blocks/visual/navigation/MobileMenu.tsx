@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
-import { cn, formatLink, getButtonStyle } from '@/lib/utils';
+import { cn, formatLink } from '@/lib/utils';
 import { Project } from '@/types/editor';
+import { CTA } from '@/components/shared/CTA';
 
 interface MobileMenuProps {
   links: Array<{ label: string; url: string }>;
@@ -69,11 +70,11 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       <button 
         data-menu-toggle
         className={cn(
-          "p-2 rounded-lg relative z-[10001] flex items-center justify-center transition-all active:scale-95 outline-none"
+          "p-2 rounded-lg relative z-[10005] flex items-center justify-center transition-all active:scale-95 outline-none"
         )}
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         style={{ 
-          color: isMenuOpen ? (project?.settings?.appearance === 'dark' ? "#ffffff" : "#0a0a0c") : color,
+          color: isMenuOpen ? menuTextColor : color,
           display: 'var(--nav-hamburger-display)' as any 
         }}
       >
@@ -103,15 +104,19 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           maxWidth: isMobileViewport ? '100vw' : '85vw'
         }}
       >
-        {/* Sidebar Header */}
-        <div className="flex items-center justify-end p-10 md:p-14">
-           <button 
-             onClick={() => setIsMenuOpen(false)}
-             className="w-16 h-16 flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-all text-inherit group active:scale-90"
-           >
-             <X size={40} strokeWidth={1.5} className="transition-transform duration-500 group-hover:rotate-90" />
-           </button>
-        </div>
+        {/* Espaziatore per compensare l'altezza della navbar */}
+        <div 
+          className="w-full shrink-0" 
+          style={{ height: 'var(--nav-padding, 20px)' }}
+        />
+
+        {/* Espaziatore superiore per compensare l'altezza della navbar */}
+        <div 
+          className="w-full shrink-0 h-4 md:h-8" 
+        />
+
+        {/* Sidebar Header Padding - Ridotto per avvicinare il primo link */}
+        <div className="h-10 md:h-12 shrink-0" />
 
         {/* Sidebar Links Area */}
         <div className="flex-1 overflow-y-auto px-12 md:px-20 custom-scrollbar">
@@ -129,14 +134,15 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               ))}
               {cta && (
                 <div className="py-12 flex justify-center">
-                  <a 
-                    {...formatLink(isEditing ? '#' : (ctaUrl || '#'))}
-                    className="no-underline transition-all active:scale-95 inline-flex items-center justify-center hover:brightness-110 shadow-lg"
-                    style={getButtonStyle(project, pColor, isMobileViewport ? 'mobile' : 'desktop', buttonTheme || 'primary', isStatic)}
+                  <CTA 
+                    label={cta} 
+                    url={ctaUrl} 
+                    project={project} 
+                    viewport={isMobileViewport ? 'mobile' : 'desktop'} 
+                    theme={buttonTheme || 'primary'} 
+                    isStatic={isStatic} 
                     onClick={() => setIsMenuOpen(false)}
-                  >
-                    {cta}
-                  </a>
+                  />
                 </div>
               )}
            </div>

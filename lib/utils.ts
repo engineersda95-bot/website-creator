@@ -62,6 +62,23 @@ export function getButtonStyle(project: any, activeColor: string, viewportOverri
   };
 }
 
+export function getButtonClass(project: any) {
+  const settings = project?.settings || {};
+  const animation = settings.buttonAnimation || 'none';
+  
+  let animClass = '';
+  if (animation === 'move-up') {
+    animClass = 'hover:-translate-y-1 hover:shadow-md';
+  } else if (animation === 'scale') {
+    animClass = 'hover:scale-105 hover:shadow-md';
+  }
+  
+  return cn(
+    "font-bold transition-all active:scale-95 border-0 outline-none no-underline inline-flex items-center justify-center shadow-sm",
+    animClass
+  );
+}
+
 export function formatLink(url: string | undefined): { href: string; target?: string; rel?: string } {
   if (!url || url === '#' || url === '') return { href: '#' };
   

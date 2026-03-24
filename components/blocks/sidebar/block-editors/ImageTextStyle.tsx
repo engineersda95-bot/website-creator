@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { Layers, Type, MoreVertical, MoveHorizontal, ImageIcon } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, ImageStyleFields } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, ImageStyleFields, BackgroundManager } from '../SharedSidebarComponents';
 import { cn } from '@/lib/utils';
 
 interface ImageTextStyleProps {
   selectedBlock: any;
+  updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
   getStyleValue: (key: string, defaultValue: any) => any;
   project: any;
@@ -14,6 +15,7 @@ interface ImageTextStyleProps {
 
 export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
   selectedBlock,
+  updateContent,
   updateStyle,
   getStyleValue,
   project
@@ -100,6 +102,13 @@ export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
 
       {/* 3. Colori & Sfondo */}
       <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+
+      <BackgroundManager 
+        selectedBlock={selectedBlock} 
+        updateContent={updateContent} 
+        updateStyle={updateStyle} 
+        getStyleValue={getStyleValue} 
+      />
 
       {/* 4. Bordi e Ombre (Blocco) */}
       <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />

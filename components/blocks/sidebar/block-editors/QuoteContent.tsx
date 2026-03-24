@@ -158,6 +158,7 @@ export const QuoteContent: React.FC<any> = ({
   updateStyle,
   getStyleValue
 }) => {
+  const viewport = useEditorStore(state => state.viewport);
   const content = selectedBlock.content;
 
   const updateSetting = (key: string, value: any) => {
@@ -181,6 +182,7 @@ export const QuoteContent: React.FC<any> = ({
           updateContent={updateContent}
           updateStyle={updateStyle}
           getStyleValue={getStyleValue}
+          viewport={viewport}
         />
 
         <div className="pt-4 border-t border-zinc-100">

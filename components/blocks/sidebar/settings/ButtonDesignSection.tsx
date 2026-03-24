@@ -93,6 +93,19 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
                   <input type="number" className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none" value={getValue('buttonFontSize')} placeholder={getPlaceholder('buttonFontSize', 16)} onChange={(e) => updateGlobal({ buttonFontSize: parseInt(e.target.value) || 0 })} />
                </div>
 
+               <div className="space-y-4">
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Animazione Hover</label>
+                  <select
+                     className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none"
+                     value={getValue('buttonAnimation') || 'none'}
+                     onChange={(e) => updateGlobal({ buttonAnimation: e.target.value as any })}
+                  >
+                     <option value="none">Nessuna</option>
+                     <option value="move-up">Spostamento in su</option>
+                     <option value="scale">Ingrandimento</option>
+                  </select>
+               </div>
+
                <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
                   <label className="text-[10px] font-bold text-zinc-900 uppercase tracking-widest cursor-pointer" htmlFor="btn-caps">Tutto Maiuscolo</label>
                   <input

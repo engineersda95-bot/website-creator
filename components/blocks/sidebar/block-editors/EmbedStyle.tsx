@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { Type } from 'lucide-react';
-import { LayoutFields, ColorManager, BorderShadowManager, TypographyFields, SectionHeader } from '@/components/blocks/sidebar/SharedSidebarComponents';
+import { LayoutFields, ColorManager, BorderShadowManager, TypographyFields, SectionHeader, BackgroundManager } from '@/components/blocks/sidebar/SharedSidebarComponents';
 
-export function EmbedStyle({ getStyleValue, updateStyle, project }: any) {
+export function EmbedStyle({ selectedBlock, updateContent, getStyleValue, updateStyle, project }: any) {
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
       <section>
@@ -51,6 +51,12 @@ export function EmbedStyle({ getStyleValue, updateStyle, project }: any) {
 
       <section>
         <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+        <BackgroundManager 
+          selectedBlock={selectedBlock} 
+          updateContent={updateContent} 
+          updateStyle={updateStyle} 
+          getStyleValue={getStyleValue} 
+        />
       </section>
     </div>
   );

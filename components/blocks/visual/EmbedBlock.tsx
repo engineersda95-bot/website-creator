@@ -4,21 +4,24 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
+import { BlockBackground } from '@/components/shared/BlockBackground';
 
 interface EmbedBlockProps {
   content: {
     type: 'youtube' | 'map' | 'instagram' | 'x' | 'custom';
     url: string;
     title?: string;
+    backgroundImage?: string;
   };
   block: Block;
   isEditing?: boolean;
   project?: Project;
   viewport?: string;
   isStatic?: boolean;
+  imageMemoryCache?: Record<string, string>;
 }
 
-export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project, viewport, isStatic }) => {
+export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
 
   const getEmbedUrl = () => {
@@ -88,9 +91,16 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
         minHeight: 'var(--block-min-height, auto)',
       }}
     >
+      <BlockBackground 
+        backgroundImage={content.backgroundImage} 
+        style={style} 
+        project={project} 
+        isStatic={isStatic} 
+        imageMemoryCache={imageMemoryCache}
+      />
       <div
         className={cn(
-          "w-full flex flex-col transition-all duration-500",
+          "w-full flex flex-col transition-all duration-500 relative z-10",
           alignment === 'center' ? "mx-auto" : alignment === 'right' ? "ml-auto mr-0" : "mr-0 ml-0"
         )}
         style={{

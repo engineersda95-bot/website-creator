@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { Layout, Palette, Type, Map } from 'lucide-react';
-import { LayoutFields, ColorManager, BorderShadowManager, SectionHeader, TypographyFields, SimpleSlider } from '@/components/blocks/sidebar/SharedSidebarComponents';
+import { LayoutFields, ColorManager, BorderShadowManager, SectionHeader, TypographyFields, SimpleSlider, BackgroundManager } from '@/components/blocks/sidebar/SharedSidebarComponents';
 
-export function ContactStyle({ selectedBlock, updateStyle, getStyleValue, project }: any) {
+export function ContactStyle({ selectedBlock, updateContent, updateStyle, getStyleValue, project }: any) {
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500 pb-20">
 
@@ -82,6 +82,12 @@ export function ContactStyle({ selectedBlock, updateStyle, getStyleValue, projec
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
           project={project}
+        />
+        <BackgroundManager 
+          selectedBlock={selectedBlock} 
+          updateContent={updateContent} 
+          updateStyle={updateStyle} 
+          getStyleValue={getStyleValue} 
         />
       </section>
 

@@ -5,6 +5,7 @@ import { Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SitiImage } from '@/components/shared/SitiImage';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { resolveImageUrl } from '@/lib/image-utils';
+import { BlockBackground } from '@/components/shared/BlockBackground';
 
 
 interface CardsBlockProps {
@@ -162,10 +163,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
   };
 
   const blockStyles = {
-    backgroundColor: 'var(--block-bg-color)',
-    backgroundImage: 'var(--block-bg-image)',
-    backgroundSize: 'var(--block-bg-size)',
-    backgroundPosition: 'var(--block-bg-pos)',
+    background: 'var(--block-bg)',
     paddingTop: 'var(--block-pt)',
     paddingBottom: 'var(--block-pb)',
     paddingLeft: 'var(--block-px)',
@@ -180,7 +178,14 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
 
   return (
     <section id={blockId} className="relative overflow-hidden cards-block" style={blockStyles}>
-      <div className="relative">
+      <BlockBackground 
+        backgroundImage={content.backgroundImage} 
+        style={style} 
+        project={project} 
+        isStatic={isStatic} 
+        imageMemoryCache={imageMemoryCache}
+      />
+      <div className="relative z-10">
         {content.title && (
           <h2 
             className="mb-16 tracking-tighter transition-all duration-500 leading-tight"

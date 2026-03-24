@@ -4,6 +4,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
+import { BlockBackground } from '@/components/shared/BlockBackground';
 
 interface DividerBlockProps {
   content: any;
@@ -12,14 +13,16 @@ interface DividerBlockProps {
   project?: Project;
   viewport?: string;
   isStatic?: boolean;
+  imageMemoryCache?: Record<string, string>;
 }
 
-export const DividerBlock: React.FC<DividerBlockProps> = ({ block, project, viewport }) => {
-  const { alignClass } = getBlockStyles(block, project, viewport || 'desktop');
+export const DividerBlock: React.FC<DividerBlockProps> = ({ block, project, viewport, isStatic, imageMemoryCache }) => {
+  const { style, alignClass } = getBlockStyles(block, project, viewport || 'desktop');
+  const { content } = block;
 
   return (
     <section 
-      className={cn("w-full flex transition-all duration-500", alignClass)}
+      className={cn("w-full flex transition-all duration-500 relative overflow-hidden", alignClass)}
       style={{
         background: 'var(--block-bg)',
         paddingTop: 'var(--block-pt)',
@@ -28,8 +31,15 @@ export const DividerBlock: React.FC<DividerBlockProps> = ({ block, project, view
         paddingRight: 'var(--block-px)',
       }}
     >
+      <BlockBackground 
+        backgroundImage={content.backgroundImage} 
+        style={style} 
+        project={project} 
+        isStatic={isStatic} 
+        imageMemoryCache={imageMemoryCache}
+      />
       <div 
-        className={cn("w-full flex transition-all duration-300", alignClass)}
+        className={cn("w-full flex transition-all duration-300 relative z-10", alignClass)}
       >
         <div 
           className="transition-all duration-300"

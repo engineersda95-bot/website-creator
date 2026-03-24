@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { Layers, Palette } from 'lucide-react';
-import { LayoutFields, SectionHeader } from '../SharedSidebarComponents';
+import { LayoutFields, SectionHeader, ColorManager, BackgroundManager } from '../SharedSidebarComponents';
 
 interface DividerStyleProps {
    selectedBlock: any;
+   updateContent: (content: any) => void;
    updateStyle: (style: any) => void;
    getStyleValue: (key: string, defaultValue: any) => any;
    project: any;
@@ -13,6 +14,7 @@ interface DividerStyleProps {
 
 export const DividerStyle: React.FC<DividerStyleProps> = ({
    selectedBlock,
+   updateContent,
    updateStyle,
    getStyleValue,
    project
@@ -56,6 +58,15 @@ export const DividerStyle: React.FC<DividerStyleProps> = ({
                </div>
             </div>
          </section>
+         
+         <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+
+         <BackgroundManager 
+            selectedBlock={selectedBlock} 
+            updateContent={updateContent} 
+            updateStyle={updateStyle} 
+            getStyleValue={getStyleValue} 
+         />
 
          <section className="pt-8 border-t border-zinc-100">
             {/* Standard "Colore" section for elements with a single primary color */}

@@ -3,23 +3,17 @@
 import React from 'react';
 import { Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEditorStore } from '@/store/useEditorStore';
 
 import { LayoutGridSliderProps } from '@/types/sidebar';
 
-export function LayoutGridSlider({ content, updateContent, updateStyle, getStyleValue }: LayoutGridSliderProps) {
-   const { viewport } = useEditorStore();
+export function LayoutGridSlider({ content, updateContent, updateStyle, getStyleValue, viewport = 'desktop' }: LayoutGridSliderProps) {
    const layout = content?.layout || 'grid';
    
    // Default columns based on viewport
    const defaultCols = viewport === 'desktop' ? 3 : viewport === 'tablet' ? 2 : 1;
    
-   // Use raw values to avoid desktop fallback for defaults
-   const { selectedBlockId, currentPage } = useEditorStore.getState();
-   const selectedBlock = currentPage?.blocks.find(b => b.id === selectedBlockId);
-   const columns = viewport === 'desktop' 
-      ? (selectedBlock?.style?.columns ?? 3)
-      : (selectedBlock?.responsiveStyles?.[viewport]?.columns ?? defaultCols);
+   // Use getStyleValue if possible? No, we need precisely the responsive columns.
+   const columns = getStyleValue('columns', defaultCols);
 
    return (
       <section className="pt-8 border-t border-zinc-100 space-y-8">

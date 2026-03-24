@@ -73,6 +73,7 @@ export interface ProjectSettings {
   buttonFontSize?: number;
   buttonWidth?: number | 'auto' | 'full';
   buttonUppercase: boolean;
+  buttonAnimation?: 'none' | 'move-up' | 'scale';
   customScriptsHead?: string;
   customScriptsBody?: string;
   responsive?: {

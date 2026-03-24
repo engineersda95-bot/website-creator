@@ -86,6 +86,7 @@ export const ConfigSidebar: React.FC = () => {
       const Component = definition.styleEditor;
       return <Component 
          selectedBlock={selectedBlock} 
+         updateContent={updateContent}
          updateStyle={updateStyle} 
          getStyleValue={getStyleValue} 
          project={project} 

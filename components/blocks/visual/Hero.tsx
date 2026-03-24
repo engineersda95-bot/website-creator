@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { cn, toPx, getButtonStyle, formatLink, formatRichText } from '@/lib/utils';
+import { cn, toPx, formatLink, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Page, Block } from '@/types/editor';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { SitiImage } from '@/components/shared/SitiImage';
+import { CTA } from '@/components/shared/CTA';
 
 interface HeroProps {
   content: {
@@ -129,13 +130,14 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
           }}
         >
           {content.cta && (
-            <a 
-              {...formatLink(content.ctaUrl || '#')}
-              className="font-bold transition-all active:scale-95 border-0 outline-none no-underline inline-flex items-center justify-center"
-              style={getButtonStyle(project, activeColor, (viewport as any) || 'desktop', style.buttonTheme, !!(isStatic || !viewport))}
-            >
-              {content.cta}
-            </a>
+            <CTA 
+              label={content.cta} 
+              url={content.ctaUrl} 
+              project={project} 
+              viewport={viewport as any} 
+              theme={style.buttonTheme} 
+              isStatic={isStatic} 
+            />
           )}
         </div>
       </div>

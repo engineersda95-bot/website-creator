@@ -5,6 +5,7 @@ import { cn, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
 import { Mail, Phone, MapPin } from 'lucide-react';
+import { BlockBackground } from '@/components/shared/BlockBackground';
 
 interface ContactBlockProps {
   content: {
@@ -14,6 +15,7 @@ interface ContactBlockProps {
     phone?: string;
     address?: string;
     showMap?: boolean;
+    backgroundImage?: string;
   };
   block: Block;
   project?: Project;
@@ -47,7 +49,7 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
   return (
     <section 
       id={block.id}
-      className={cn("w-full transition-all duration-500 overflow-hidden flex flex-col")}
+      className={cn("w-full transition-all duration-500 overflow-hidden flex flex-col relative")}
       style={{
         ...contactStyles,
         background: 'var(--block-bg)',
@@ -64,8 +66,14 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
         textAlign: 'var(--block-align)' as any,
       }}
     >
+      <BlockBackground 
+        backgroundImage={content.backgroundImage} 
+        style={style} 
+        project={project} 
+        isStatic={isStatic} 
+      />
       <div 
-        className={cn("w-full flex flex-col")}
+        className={cn("w-full flex flex-col relative z-10")}
         style={{ 
             gap: 'var(--block-gap)',
             alignItems: 'var(--block-items)' as any,

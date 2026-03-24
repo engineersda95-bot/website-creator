@@ -3,24 +3,27 @@ import React from 'react';
 import { cn, toPx, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
+import { BlockBackground } from '@/components/shared/BlockBackground';
 
 interface TextBlockProps {
   content: {
     text: string;
+    backgroundImage?: string;
   };
   block: Block;
   isEditing?: boolean;
   project?: Project;
   viewport?: string;
   isStatic?: boolean;
+  imageMemoryCache?: Record<string, string>;
 }
 
-export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, viewport, isStatic }) => {
+export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache }) => {
   const { style, alignClass } = getBlockStyles(block, project, viewport || 'desktop');
 
   return (
     <section 
-      className={cn("w-full transition-all duration-500 overflow-hidden")}
+      className={cn("w-full transition-all duration-500 overflow-hidden relative")}
       style={{
         background: 'var(--block-bg)',
         color: 'var(--block-color)',
@@ -28,8 +31,15 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
         paddingBottom: 'var(--block-pb)',
       }}
     >
+      <BlockBackground 
+        backgroundImage={content.backgroundImage} 
+        style={style} 
+        project={project} 
+        isStatic={isStatic} 
+        imageMemoryCache={imageMemoryCache}
+      />
       <div 
-        className={cn("w-full flex flex-col transition-all duration-500")}
+        className={cn("w-full flex flex-col transition-all duration-500 relative z-10")}
         style={{ 
           paddingLeft: 'var(--block-px)',
           paddingRight: 'var(--block-px)',

@@ -1,10 +1,11 @@
 import React from 'react';
-import { cn, toPx, formatLink, getButtonStyle } from '@/lib/utils';
+import { cn, toPx, formatLink } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Page, Block } from '@/types/editor';
 import { MobileMenu } from './MobileMenu';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { SitiImage } from '@/components/shared/SitiImage';
+import { CTA } from '@/components/shared/CTA';
 
 export interface NavigationProps {
   content: {
@@ -162,13 +163,14 @@ export const Navigation: React.FC<NavigationProps> = ({
             </a>
           ))}
           {content.cta && (
-            <a 
-              {...formatLink(isEditing ? '#' : ctaUrl)}
-              className="font-bold transition-all active:scale-95 border-0 outline-none no-underline inline-flex items-center justify-center whitespace-nowrap"
-              style={getButtonStyle(project, activeColor, (viewport as any) || 'desktop', style.buttonTheme || 'primary', !!(isStatic || !viewport))}
-            >
-              {content.cta}
-            </a>
+            <CTA 
+              label={content.cta} 
+              url={ctaUrl} 
+              project={project} 
+              viewport={(viewport as any) || 'desktop'} 
+              theme={style.buttonTheme || 'primary'} 
+              isStatic={!!(isStatic || !viewport)} 
+            />
           )}
         </div>
 
@@ -178,10 +180,13 @@ export const Navigation: React.FC<NavigationProps> = ({
             {/* Hamburger Button (Static) */}
             <button 
               data-menu-toggle
-              className="p-2 rounded-lg relative z-[10001] flex items-center justify-center transition-all active:scale-95 text-inherit outline-none"
+              className="p-2 rounded-lg relative z-[10005] flex items-center justify-center transition-all active:scale-95 text-inherit outline-none"
               style={{ display: 'var(--nav-hamburger-display)' as any }}
             >
               <StaticMenuIcon />
+              <div data-menu-x className="hidden">
+                 <StaticXIcon />
+              </div>
             </button>
 
             {/* Sidebar (Static) */}
@@ -203,15 +208,9 @@ export const Navigation: React.FC<NavigationProps> = ({
                  }
                ` }} />
 
-               {/* Sidebar Header (Static) */}
-               <div className="flex items-center justify-end p-10 md:p-14">
-                  <button 
-                    data-menu-close
-                    className="w-16 h-16 flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-all text-inherit group active:scale-90"
-                  >
-                    <StaticXIcon />
-                  </button>
-               </div>
+               {/* Espaziatore superiore statico */}
+               <div className="w-full shrink-0 h-4 md:h-8" />
+               <div className="h-10 md:h-12 shrink-0" />
 
                {/* Sidebar Links (Static) */}
                <div className="flex-1 overflow-y-auto px-12 md:px-20">
@@ -236,13 +235,14 @@ export const Navigation: React.FC<NavigationProps> = ({
                     ))}
                     {content.cta && (
                       <div className="py-12 flex justify-center">
-                        <a 
-                          {...formatLink(ctaUrl)}
-                          className="no-underline transition-all active:scale-95 inline-flex items-center justify-center shadow-lg"
-                          style={getButtonStyle(project, activeColor, 'desktop', style.buttonTheme || 'primary', true)}
-                        >
-                          {content.cta}
-                        </a>
+                        <CTA 
+                          label={content.cta} 
+                          url={ctaUrl} 
+                          project={project} 
+                          viewport="desktop"
+                          theme={style.buttonTheme || 'primary'} 
+                          isStatic={true} 
+                        />
                       </div>
                     )}
                   </div>
@@ -340,6 +340,18 @@ export const Navigation: React.FC<NavigationProps> = ({
             const overlay = nav.querySelector('[data-menu-overlay]');
 
             if (toggle && menu) {
+              const xIcon = toggle.querySelector('[data-menu-x]');
+              const updateIcon = (isOpen) => {
+                 if (xIcon) {
+                   xIcon.classList.toggle('hidden', !isOpen);
+                   xIcon.classList.toggle('block', isOpen);
+                 }
+                 const svgs = toggle.querySelectorAll('svg');
+                 svgs.forEach(s => {
+                   if (s.parentElement.hasAttribute('data-menu-x')) return;
+                   s.style.display = isOpen ? 'none' : 'block';
+                 });
+              };
               const openMenu = () => {
                 menu.classList.remove('translate-x-full', 'opacity-0');
                 if (overlay) {
@@ -347,6 +359,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                   overlay.classList.add('opacity-100', 'pointer-events-auto');
                 }
                 document.body.style.overflow = 'hidden';
+                updateIcon(true);
               };
               const closeMenu = () => {
                 menu.classList.add('translate-x-full', 'opacity-0');
@@ -355,10 +368,14 @@ export const Navigation: React.FC<NavigationProps> = ({
                   overlay.classList.remove('opacity-100', 'pointer-events-auto');
                 }
                 document.body.style.overflow = '';
+                updateIcon(false);
               };
 
-              toggle.addEventListener('click', (e) => { e.stopPropagation(); openMenu(); });
-              if (close) close.addEventListener('click', closeMenu);
+              toggle.addEventListener('click', (e) => { 
+                e.stopPropagation(); 
+                const isOpen = !menu.classList.contains('translate-x-full');
+                if (isOpen) closeMenu(); else openMenu(); 
+              });
               if (overlay) overlay.addEventListener('click', closeMenu);
             }
           })();

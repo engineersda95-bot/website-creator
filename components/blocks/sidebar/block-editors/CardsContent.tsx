@@ -21,7 +21,7 @@ export const CardsContent: React.FC<CardsContentProps> = ({
   updateStyle,
   getStyleValue
 }) => {
-  const { uploadImage, project, imageMemoryCache } = useEditorStore();
+  const { uploadImage, project, imageMemoryCache, viewport } = useEditorStore();
   const items = selectedBlock.content.items || [];
 
   const updateItem = (index: number, updates: any) => {
@@ -77,6 +77,7 @@ export const CardsContent: React.FC<CardsContentProps> = ({
             updateContent={updateContent}
             updateStyle={updateStyle}
             getStyleValue={getStyleValue}
+            viewport={viewport}
           />
         </div>
       </section>
