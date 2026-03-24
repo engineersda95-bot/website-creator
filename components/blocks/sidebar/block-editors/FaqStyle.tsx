@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Type, Palette, AlignLeft, Layers, ArrowDown } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, BackgroundManager } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, BackgroundManager, PatternManager } from '../SharedSidebarComponents';
 
 interface FAQStyleProps {
   selectedBlock: any;
@@ -91,6 +91,7 @@ export const FAQStyle: React.FC<FAQStyleProps> = ({
 
       {/* 3. Colori & Sfondo */}
       <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+      <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
       
       <BackgroundManager 
         selectedBlock={selectedBlock} 

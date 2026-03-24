@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Type } from 'lucide-react';
-import { LayoutFields, ColorManager, BorderShadowManager, TypographyFields, SectionHeader, BackgroundManager } from '@/components/blocks/sidebar/SharedSidebarComponents';
+import { LayoutFields, ColorManager, BorderShadowManager, TypographyFields, SectionHeader, BackgroundManager, PatternManager } from '@/components/blocks/sidebar/SharedSidebarComponents';
 
 export function EmbedStyle({ selectedBlock, updateContent, getStyleValue, updateStyle, project }: any) {
   return (
@@ -51,6 +51,7 @@ export function EmbedStyle({ selectedBlock, updateContent, getStyleValue, update
 
       <section>
         <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+        <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
         <BackgroundManager 
           selectedBlock={selectedBlock} 
           updateContent={updateContent} 

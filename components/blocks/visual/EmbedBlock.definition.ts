@@ -18,7 +18,11 @@ export const embedDefinition: BlockDefinition = {
       code: ''
     },
     style: {
-      padding: 60
+      padding: 60,
+      patternType: 'none',
+      patternColor: '#ffffff',
+      patternOpacity: 10,
+      patternScale: 40
     }
   },
   styleMapper: (style, block, project, viewport) => {

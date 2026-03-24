@@ -3,7 +3,7 @@
 import React from 'react';
 import { Layers, Type } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, PatternManager } from '../SharedSidebarComponents';
 
 interface NavigationStyleProps {
    selectedBlock: any;
@@ -92,6 +92,7 @@ export const NavigationStyle: React.FC<NavigationStyleProps> = ({
          </section>
 
          <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+        <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
          <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 

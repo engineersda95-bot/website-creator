@@ -26,7 +26,7 @@ export function generateBlockCSS(blockId: string, block: Block, project?: Projec
   const printVars = (v: Record<string, string>) => Object.entries(v).map(([k, val]) => `${k}: ${val};`).join(' ');
 
   const urlOverrides = `
-    #${blockId} [style*="url"] {
+    #${blockId} [style*="url"]:not(.background-pattern) {
       background-size: var(--bg-size, cover) !important;
       background-position: var(--bg-pos, center) !important;
       background-repeat: no-repeat !important;

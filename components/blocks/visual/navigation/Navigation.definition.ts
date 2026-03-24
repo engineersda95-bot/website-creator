@@ -15,7 +15,14 @@ export const navigationDefinition: BlockDefinition = {
   styleEditor: NavigationStyle as any,
   defaults: {
     content: { logoText: 'Studio', links: [], showContact: true },
-    style: { padding: 20, hamburgerWidth: 450 }
+    style: { 
+      padding: 20, 
+      hamburgerWidth: 450,
+      patternType: 'none',
+      patternColor: '#ffffff',
+      patternOpacity: 10,
+      patternScale: 40
+    }
   },
   styleMapper: (style, block, project, viewport) => {
     const { vars, style: s } = getBaseStyleVars(style, block, project, viewport);

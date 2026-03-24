@@ -24,7 +24,11 @@ export const imageTextDefinition: BlockDefinition = {
       padding: 80,
       align: 'left',
       gap: 60,
-      buttonTheme: 'secondary'
+      buttonTheme: 'secondary',
+      patternType: 'none',
+      patternColor: '#ffffff',
+      patternOpacity: 10,
+      patternScale: 40
     }
   },
   styleMapper: (style, block, project, viewport) => {

@@ -15,7 +15,13 @@ export const footerDefinition: BlockDefinition = {
   styleEditor: FooterStyle,
   defaults: {
     content: { copyright: '© 2024 Tutti i diritti riservati' },
-    style: { padding: 40 }
+    style: { 
+      padding: 40,
+      patternType: 'none',
+      patternColor: '#ffffff',
+      patternOpacity: 10,
+      patternScale: 40
+    }
   },
   styleMapper: (style, block, project, viewport) => {
     const { vars, style: s } = getBaseStyleVars(style, block, project, viewport);

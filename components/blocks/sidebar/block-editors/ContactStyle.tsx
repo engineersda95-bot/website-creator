@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Layout, Palette, Type, Map } from 'lucide-react';
-import { LayoutFields, ColorManager, BorderShadowManager, SectionHeader, TypographyFields, SimpleSlider, BackgroundManager } from '@/components/blocks/sidebar/SharedSidebarComponents';
+import { LayoutFields, ColorManager, BorderShadowManager, SectionHeader, TypographyFields, SimpleSlider, BackgroundManager, PatternManager } from '@/components/blocks/sidebar/SharedSidebarComponents';
 
 export function ContactStyle({ selectedBlock, updateContent, updateStyle, getStyleValue, project }: any) {
   return (
@@ -83,6 +83,7 @@ export function ContactStyle({ selectedBlock, updateContent, updateStyle, getSty
           updateStyle={updateStyle}
           project={project}
         />
+        <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
         <BackgroundManager 
           selectedBlock={selectedBlock} 
           updateContent={updateContent} 

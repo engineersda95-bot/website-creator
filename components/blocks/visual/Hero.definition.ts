@@ -23,7 +23,11 @@ export const heroDefinition: BlockDefinition = {
     style: {
       padding: 120,
       align: 'center',
-      buttonTheme: 'primary'
+      buttonTheme: 'primary',
+      patternType: 'none',
+      patternColor: '#ffffff',
+      patternOpacity: 10,
+      patternScale: 40
     }
   },
   styleMapper: (style, block, project, viewport) => {

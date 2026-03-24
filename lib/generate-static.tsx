@@ -98,6 +98,9 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
         }
         * { scrollbar-width: thin; scrollbar-color: ${project?.settings?.appearance === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'} transparent; }
 
+        .no-scrollbar::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+        .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+
         /* Mobile Menu Visibility */
         [data-menu][data-open="true"] {
             opacity: 1 !important;

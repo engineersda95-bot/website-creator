@@ -15,7 +15,13 @@ export const dividerDefinition: BlockDefinition = {
   styleEditor: DividerStyle,
   defaults: {
     content: { type: 'line' },
-    style: { padding: 40 }
+    style: { 
+      padding: 40,
+      patternType: 'none',
+      patternColor: '#ffffff',
+      patternOpacity: 10,
+      patternScale: 40
+    }
   },
   styleMapper: (style, block, project, viewport) => {
     const { vars, style: s } = getBaseStyleVars(style, block, project, viewport);

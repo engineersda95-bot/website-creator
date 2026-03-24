@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Layers, Palette } from 'lucide-react';
-import { LayoutFields, SectionHeader, ColorManager, BackgroundManager } from '../SharedSidebarComponents';
+import { LayoutFields, SectionHeader, ColorManager, BackgroundManager, PatternManager } from '../SharedSidebarComponents';
 
 interface DividerStyleProps {
    selectedBlock: any;
@@ -60,6 +60,7 @@ export const DividerStyle: React.FC<DividerStyleProps> = ({
          </section>
          
          <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+         <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
          <BackgroundManager 
             selectedBlock={selectedBlock} 

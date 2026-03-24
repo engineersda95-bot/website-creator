@@ -4,7 +4,7 @@ import { Block, Page, Project, ProjectSettings, BlockType } from '@/types/editor
 import { v4 as uuidv4 } from 'uuid';
 import { TEMPLATES, getBlocksFromTemplate } from '@/lib/templates';
 import { BLOCK_DEFINITIONS } from '@/lib/block-definitions';
-import { getImageHash, getAssetRelativePath } from '@/lib/image-utils';
+import { getImageHash, getAssetRelativePath, optimizeImageToWebP } from '@/lib/image-utils';
 
 interface EditorState {
   project: Project | null;
@@ -618,46 +618,68 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const { project } = get();
     if (!project || !base64) return base64;
 
-    // Detect extension from base64
-    const match = base64.match(/data:image\/([^;]+);base64,/);
-    const extension = match ? match[1] : 'png';
-    const cleanBase64 = base64.split(',')[1] || base64;
-
     try {
       set({ isUploading: true });
+      
+      let finalBlob: Blob;
+      let finalExtension = 'webp';
+      let finalBase64 = base64;
+
+      try {
+        // Optimize to WebP with 80% quality
+        const optimized = await optimizeImageToWebP(base64, 0.8);
+        finalBlob = optimized.blob;
+        finalExtension = optimized.extension;
+        
+        // Convert Blob back to base64 for memory cache
+        const reader = new FileReader();
+        finalBase64 = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(finalBlob);
+        });
+      } catch (e) {
+        console.warn('[Store] Optimization failed, using original image:', e);
+        const match = base64.match(/data:image\/([^;]+);base64,/);
+        finalExtension = match ? match[1] : 'png';
+        const cleanBase64 = base64.split(',')[1] || base64;
+        const byteCharacters = atob(cleanBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        finalBlob = new Blob([byteArray], { type: `image/${finalExtension}` });
+      }
+
       const hash = await getImageHash(base64);
       
-      // Use original filename (sanitized) or fallback to hash-based
-      const cleanFilename = filename 
+      // Update filename with .webp if it was optimized
+      let cleanFilename = filename 
         ? filename.replace(/[^a-zA-Z0-9.-]/g, '_')
-        : `img_${hash}.${extension}`;
+        : `img_${hash}.${finalExtension}`;
+      
+      // Force change extension only if it was indeed optimized
+      if (finalExtension === 'webp' && !cleanFilename.endsWith('.webp')) {
+         cleanFilename = cleanFilename.replace(/\.[^/.]+$/, "") + ".webp";
+      }
         
       const relativePath = `/assets/${cleanFilename}`;
       const bucketPath = `${project.id}/${cleanFilename}`;
 
-      // 1. Update memory cache for instant preview
+      // 1. Update memory cache for instant preview with optimized version
       set(state => ({
         imageMemoryCache: {
           ...state.imageMemoryCache,
-          [relativePath]: base64
+          [relativePath]: finalBase64
         }
       }));
 
       // 2. Upload to Supabase Storage if not exists
-      // Convert base64 to Blob
-      const byteCharacters = atob(cleanBase64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: `image/${extension}` });
-
       const { error: uploadError } = await supabase.storage
         .from('project-assets')
-        .upload(bucketPath, blob, {
+        .upload(bucketPath, finalBlob, {
           cacheControl: '3600',
-          upsert: true // Overwrite as requested by user
+          upsert: true
         });
 
       if (uploadError && uploadError.message !== 'The resource already exists') {

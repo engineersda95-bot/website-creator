@@ -5,6 +5,7 @@ import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block, Page } from '@/types/editor';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { SitiImage } from '@/components/shared/SitiImage';
+import { BACKGROUND_PATTERNS } from '@/lib/background-patterns';
 import {
    Facebook,
    Instagram,
@@ -72,7 +73,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
 
    return (
       <footer
-         className={cn("w-full transition-all duration-300 mx-auto overflow-hidden")}
+         className={cn("w-full transition-all duration-300 mx-auto overflow-hidden relative")}
          style={{
             background: 'var(--block-bg)',
             color: 'var(--block-color)',
@@ -80,6 +81,17 @@ export const FooterBlock: React.FC<FooterProps> = ({
             paddingBottom: 'var(--block-pb)',
           }}
       >
+         {/* Pattern Layer */}
+         {style.patternType && style.patternType !== 'none' && (
+           <div 
+             className="absolute inset-0 pointer-events-none z-0 background-pattern"
+             style={BACKGROUND_PATTERNS.find(p => p.id === style.patternType)?.getStyle(
+               style.patternColor || '#ffffff',
+               style.patternOpacity || 10,
+               style.patternScale || 40
+             )}
+           />
+         )}
          <div className={cn(
             "w-full mx-auto flex flex-col gap-12",
          )} style={{

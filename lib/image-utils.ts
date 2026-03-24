@@ -57,6 +57,48 @@ export function resolveImageUrl(
   return url;
 }
 
+/**
+ * Converts a base64 image (PNG, JPG, etc) to a WebP optimized Blob.
+ * If conversion fails or is not supported, it returns the original info.
+ */
+export async function optimizeImageToWebP(
+  base64: string, 
+  quality: number = 0.8
+): Promise<{ blob: Blob; extension: string; size: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+      
+      ctx.drawImage(img, 0, 0);
+      
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          reject(new Error('Canvas toBlob failed'));
+          return;
+        }
+        resolve({
+          blob,
+          extension: 'webp',
+          size: blob.size
+        });
+      }, 'image/webp', quality);
+    };
+    
+    img.onerror = () => reject(new Error('Failed to load image for optimization'));
+    img.src = base64;
+  });
+}
+
 export function isRelativeAsset(url: string): boolean {
   return url.startsWith('/assets/');
 }

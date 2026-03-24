@@ -6,6 +6,7 @@ import { MobileMenu } from './MobileMenu';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { SitiImage } from '@/components/shared/SitiImage';
 import { CTA } from '@/components/shared/CTA';
+import { BACKGROUND_PATTERNS } from '@/lib/background-patterns';
 
 export interface NavigationProps {
   content: {
@@ -131,6 +132,17 @@ export const Navigation: React.FC<NavigationProps> = ({
         width: 'var(--block-width)'
       }}
     >
+      {/* Pattern Layer */}
+      {style.patternType && style.patternType !== 'none' && (
+        <div 
+          className="absolute inset-0 pointer-events-none z-0 background-pattern"
+          style={BACKGROUND_PATTERNS.find(p => p.id === style.patternType)?.getStyle(
+            style.patternColor || '#ffffff',
+            style.patternOpacity || 10,
+            style.patternScale || 40
+          )}
+        />
+      )}
       <div 
         className="mx-auto flex items-center justify-between transition-all duration-300 w-full"
         style={{ 

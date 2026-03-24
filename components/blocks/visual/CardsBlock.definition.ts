@@ -37,7 +37,11 @@ export const cardsDefinition: BlockDefinition = {
       cardTitleBold: false,
       cardTitleSize: 28,
       cardSubtitleBold: false,
-      cardSubtitleSize: 16
+      cardSubtitleSize: 16,
+      patternType: 'none',
+      patternColor: '#ffffff',
+      patternOpacity: 10,
+      patternScale: 40
     },
     responsiveStyles: {
       tablet: { columns: 2 },

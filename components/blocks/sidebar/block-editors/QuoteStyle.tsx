@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { LayoutFields, ColorManager, SectionHeader, BorderShadowManager, TypographyFields, BackgroundManager } from '../SharedSidebarComponents';
+import { LayoutFields, ColorManager, SectionHeader, BorderShadowManager, TypographyFields, BackgroundManager, PatternManager } from '../SharedSidebarComponents';
 import { Palette, Type } from 'lucide-react';
 
 export const QuoteStyle: React.FC<any> = ({
@@ -62,6 +62,7 @@ export const QuoteStyle: React.FC<any> = ({
         updateStyle={updateStyle} 
         project={project} 
       />
+      <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
       <BackgroundManager 
         selectedBlock={selectedBlock} 

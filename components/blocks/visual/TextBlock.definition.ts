@@ -18,7 +18,11 @@ export const textDefinition: BlockDefinition = {
     },
     style: {
       padding: 80,
-      align: 'left'
+      align: 'left',
+      patternType: 'none',
+      patternColor: '#ffffff',
+      patternOpacity: 10,
+      patternScale: 40
     }
   },
   styleMapper: (style, block, project, viewport) => {

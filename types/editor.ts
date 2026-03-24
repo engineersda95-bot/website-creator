@@ -15,6 +15,7 @@ export type BlockType =
   'faq' |
   'quote' |
   'divider' |
+  'logos' |
   'cards';
 
 export interface Block {

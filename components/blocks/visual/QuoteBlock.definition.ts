@@ -14,7 +14,14 @@ export const quoteDefinition: BlockDefinition = {
   styleEditor: QuoteStyle,
   defaults: {
     content: { items: [], layout: 'grid' },
-    style: { padding: 80, columns: 3 },
+    style: { 
+      padding: 80, 
+      columns: 3,
+      patternType: 'none',
+      patternColor: '#ffffff',
+      patternOpacity: 10,
+      patternScale: 40
+    },
     responsiveStyles: {
       tablet: { columns: 2 },
       mobile: { columns: 1 }

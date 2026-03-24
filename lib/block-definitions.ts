@@ -13,6 +13,7 @@ import { quoteDefinition } from '@/components/blocks/visual/QuoteBlock.definitio
 import { footerDefinition } from '@/components/blocks/visual/FooterBlock.definition';
 import { navigationDefinition } from '@/components/blocks/visual/navigation/Navigation.definition';
 import { cardsDefinition } from '@/components/blocks/visual/CardsBlock.definition';
+import { logosDefinition } from '@/components/blocks/visual/Logos.definition';
 
 export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   hero: heroDefinition,
@@ -25,6 +26,7 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   quote: quoteDefinition,
   footer: footerDefinition,
   navigation: navigationDefinition,
+  logos: logosDefinition,
   cards: cardsDefinition,
   
   // Placeholders for unimplemented/transitioning blocks

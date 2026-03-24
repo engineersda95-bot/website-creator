@@ -29,7 +29,11 @@ export const contactDefinition: BlockDefinition = {
       gap: 64,
       align: 'center',
       borderRadius: 32,
-      mapWidth: 100
+      mapWidth: 100,
+      patternType: 'none',
+      patternColor: '#ffffff',
+      patternOpacity: 10,
+      patternScale: 40
     }
   },
   styleMapper: (style, block, project, viewport) => {

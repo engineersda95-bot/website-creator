@@ -12,6 +12,8 @@ interface BlockBackgroundProps {
   imageMemoryCache?: Record<string, string>;
 }
 
+import { BACKGROUND_PATTERNS } from '@/lib/background-patterns';
+
 /**
  * BlockBackground: A standard component for rendering block background images with overlays.
  * Used across multiple blocks to ensure visual consistency and code reusability.
@@ -23,10 +25,20 @@ export const BlockBackground: React.FC<BlockBackgroundProps> = ({
   isStatic, 
   imageMemoryCache 
 }) => {
-  if (!backgroundImage) return null;
+  const pattern = BACKGROUND_PATTERNS.find(p => p.id === style.patternType);
 
   return (
     <>
+      {pattern && pattern.id !== 'none' && (
+        <div 
+          className="absolute inset-0 z-[0] pointer-events-none transition-all duration-500 background-pattern"
+          style={pattern.getStyle(
+            style.patternColor || '#ffffff', 
+            style.patternOpacity || 10, 
+            style.patternScale || 40
+          )}
+        />
+      )}
       <SitiImage 
         src={backgroundImage}
         project={project}

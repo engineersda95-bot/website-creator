@@ -6,6 +6,7 @@ import { Project, Page, Block } from '@/types/editor';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { SitiImage } from '@/components/shared/SitiImage';
 import { CTA } from '@/components/shared/CTA';
+import { BACKGROUND_PATTERNS } from '@/lib/background-patterns';
 
 interface HeroProps {
   content: {
@@ -48,6 +49,22 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
         color: 'var(--block-color)',
       }}
     >
+      {/* Pattern Layer */}
+      {(() => {
+        const pattern = BACKGROUND_PATTERNS.find(p => p.id === style.patternType);
+        if (!pattern || pattern.id === 'none') return null;
+        return (
+          <div 
+            className="absolute inset-0 z-0 pointer-events-none transition-all duration-500 background-pattern"
+            style={pattern.getStyle(
+              style.patternColor || '#ffffff', 
+              style.patternOpacity || 10, 
+              style.patternScale || 40
+            )}
+          />
+        );
+      })()}
+
       {hasBg && (
         <>
           <SitiImage 

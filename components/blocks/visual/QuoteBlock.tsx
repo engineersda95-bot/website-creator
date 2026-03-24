@@ -16,7 +16,7 @@ interface QuoteBlockProps {
 
 export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport, isStatic, imageMemoryCache }) => {
   const { content } = block;
-  const { style, viewport: currentVp } = getBlockStyles(block, project, viewport);
+  const { style, viewport: currentVp, isDark, theme } = getBlockStyles(block, project, viewport);
   
   const items = content.items || [];
   
@@ -52,12 +52,14 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
     borderStyle: (style.borderWidth || 0) > 0 ? 'solid' : 'none',
   };
 
+  const defaultBg = isDark ? (theme?.dark?.bg || '#161618') : (theme?.light?.bg || '#ffffff');
+  const defaultText = isDark ? (theme?.dark?.text || '#ffffff') : (theme?.light?.text || '#000000');
   const cardStyles = {
-    backgroundColor: style.cardBgType === 'gradient' ? 'transparent' : (style.cardBgColor || 'transparent'),
+    backgroundColor: style.cardBgType === 'gradient' ? 'transparent' : (style.cardBgColor || defaultBg),
     backgroundImage: style.cardBgType === 'gradient'
       ? `linear-gradient(${style.cardBgDirection || 'to bottom'}, ${style.cardBgColor || 'transparent'}, ${style.cardBgColor2 || 'transparent'})`
       : 'none',
-    color: style.cardTextColor || undefined,
+    color: style.cardTextColor || defaultText,
     padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
   };
 
@@ -229,7 +231,6 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
                   style={cardStyles}
                   className={cn(
                     "p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm shrink-0 min-w-0 snap-center",
-                    (cardStyles.backgroundColor === 'transparent' && cardStyles.backgroundImage === 'none') && "bg-zinc-900/5 dark:bg-white/5",
                     sliderWidth,
                     colsD === 1 && "lg:max-w-4xl lg:mx-auto"
                   )}
@@ -247,7 +248,6 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
                 style={cardStyles}
                 className={cn(
                   "w-full p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm min-w-0",
-                  (cardStyles.backgroundColor === 'transparent' && cardStyles.backgroundImage === 'none') && "bg-zinc-900/5 dark:bg-white/5",
                   colsD === 1 && "lg:max-w-4xl lg:mx-auto"
                 )}
               >
