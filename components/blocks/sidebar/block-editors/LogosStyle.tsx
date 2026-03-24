@@ -141,7 +141,6 @@ export const LogosStyle: React.FC<LogosStyleProps> = ({
             sizeKey="titleSize" 
             boldKey="titleBold" 
             italicKey="titleItalic" 
-            uppercaseKey="titleUppercase"
             getStyleValue={getStyleValue} 
             updateStyle={updateStyle} 
             defaultValue={32} 
