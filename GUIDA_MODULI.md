@@ -39,25 +39,35 @@ Crea i due componenti per la gestione nella sidebar in `components/blocks/sideba
 > - **Types**: `types/sidebar.ts`
 
 ### 4. Registrazione Centrale (Il Cuore del Sistema) 🚀
-Tutta la logica di integrazione è ora centralizzata in `lib/block-definitions.ts`. **Non è più necessario** modificare manualmente `BlockRegistry`, `ConfigSidebar`, `BlockSidebar` o `generate-static`.
+Tutta la logica di integrazione è ora decentralizzata. **Non è più necessario** modificare manualmente `responsive-utils.ts` o aggiungere grossi oggetti a `block-definitions.ts`.
 
-Aggiungi la definizione del tuo blocco nell'oggetto `BLOCK_DEFINITIONS`:
+Crea un file `components/blocks/visual/[NomeBlocco].definition.ts` che esporta la configurazione:
 
 ```typescript
-// lib/block-definitions.ts
-'nuovo-blocco': {
+// components/blocks/visual/[NomeBlocco].definition.ts
+export const ilMioBloccoDefinition: BlockDefinition = {
   type: 'nuovo-blocco',
   label: 'Etichetta Visibile',
-  icon: IconaLucide, // Importata da lucide-react
-  visual: ComponenteVisual, // Il file creato al punto 2
-  contentEditor: ComponenteContent, // Il file creato al punto 3
+  icon: IconaLucide,
+  visual: ComponenteVisual,
+  contentEditor: ComponenteContent,
   styleEditor: ComponenteStyle,
   defaults: {
     content: { /* Dati iniziali */ },
     style: { padding: 80, align: 'center' }
+  },
+  // Mappa le proprietà di stile alle variabili CSS (Responsive!)
+  styleMapper: (style, block, project, viewport) => {
+    const vars = getBaseStyleVars(style, block, project, viewport);
+    return {
+      ...vars,
+      '--mia-variabile': toPx(style.miaPropSemplice, '20px'),
+    };
   }
-},
+};
 ```
+
+Poi aggiungi solo l'import e la riga di registrazione in `lib/block-definitions.ts`.
 
 ### 5. Inserimento nella Libreria
 Per far apparire il blocco nella "Libreria Blocchi" (sidebar sinistra) e tra le opzioni del tasto "+" (canvas), aggiungilo alla funzione `getBlockLibrary()` nello stesso file:
@@ -83,7 +93,7 @@ Il sistema gestisce automaticamente la differenziazione degli stili per viewport
 
 1.  **Recupero Valori**: Nei componenti Style della sidebar, usa sempre la prop `getStyleValue(key, defaultValue)`. Questa funzione recupera automaticamente il valore specifico per il viewport attivo o fa il fallback su Desktop.
 2.  **Salvataggio**: `updateStyle({ key: value })` salva i dati in `block.style` (Desktop) o `block.responsiveStyles[viewport]` (Mobile/Tablet).
-3.  **Variabili CSS**: Se aggiungi nuove proprietà di stile (es. `dividerStroke`), ricordati di registrarle in `lib/responsive-utils.ts` nella funzione `getBlockCSSVariables` per renderle disponibili come variabili CSS responsive.
+3.  **Variabili CSS**: Se aggiungi nuove proprietà di stile, registrale nello `styleMapper` del file `.definition.ts` del blocco (usando `getBaseStyleVars` per quelle predefinite).
 
 ---
 

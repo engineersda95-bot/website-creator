@@ -101,7 +101,7 @@ export const TEMPLATES = {
           { platform: 'twitter', url: '#' }
         ]
       },
-      style: { padding: '6rem', backgroundColor: '#f9fafb' }
+      style: { padding: 60, hPadding: 80, maxWidth: 1200, backgroundColor: '#f9fafb' }
     }
   ],
   minimal: [
@@ -118,7 +118,7 @@ export const TEMPLATES = {
     {
       type: 'footer' as BlockType,
       content: { copyright: '© Minimalist' },
-      style: { padding: '4rem', align: 'center' as const }
+      style: { padding: 40, hPadding: 40, align: 'center' as const }
     }
   ],
   privacy: [
@@ -137,7 +137,7 @@ export const TEMPLATES = {
     {
       type: 'footer' as BlockType,
       content: { copyright: '© Privacy' },
-      style: { padding: '4rem', align: 'center' as const }
+      style: { padding: 40, hPadding: 40, align: 'center' as const }
     }
   ],
   contact: [
@@ -164,7 +164,7 @@ export const TEMPLATES = {
     {
       type: 'footer' as BlockType,
       content: { copyright: '© Contatti' },
-      style: { padding: '4rem', align: 'center' as const }
+      style: { padding: 40, hPadding: 40, align: 'center' as const }
     }
   ]
 };

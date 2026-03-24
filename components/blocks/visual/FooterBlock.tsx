@@ -81,8 +81,11 @@ export const FooterBlock: React.FC<FooterProps> = ({
           }}
       >
          <div className={cn(
-            "w-full max-w-7xl mx-auto px-8 flex flex-col gap-12",
+            "w-full mx-auto flex flex-col gap-12",
          )} style={{
+            maxWidth: 'var(--block-max-width)',
+            paddingLeft: 'var(--block-px)',
+            paddingRight: 'var(--block-px)',
             alignItems: 'var(--block-items)' as any,
             textAlign: 'var(--block-align)' as any
          }}>

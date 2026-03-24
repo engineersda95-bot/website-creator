@@ -105,7 +105,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
           )}
           style={{
             borderRadius: style.imageBorderRadius !== undefined ? `${style.imageBorderRadius}px` : '24px',
-            aspectRatio: style.imageAspectRatio || '16/9'
+            aspectRatio: 'var(--image-aspect)'
           }}
         >
           {item.image ? (

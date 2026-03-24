@@ -89,7 +89,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                 hasImageShadow && "shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]"
               )}
               style={{
-                borderRadius: imageRadius,
+                borderRadius: 'var(--image-radius)',
                 aspectRatio: 'var(--image-aspect)'
               }}
             >

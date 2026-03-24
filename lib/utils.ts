@@ -50,7 +50,7 @@ export function getButtonStyle(project: any, activeColor: string, viewportOverri
     }[settings.buttonShadow as 'none'|'S'|'M'|'L' || 'none'],
     border: settings.buttonBorder ? `${settings.buttonBorderWidth || 1}px solid ${settings.buttonBorderColor || (buttonTextColor + '44')}` : 'none',
     textTransform: `var(--btn-upper, ${settings.buttonUppercase ? 'uppercase' : 'none'})` as any,
-    padding: `var(--btn-py, ${settings.buttonPaddingY || 12}px) var(--btn-px, ${settings.buttonPaddingX || 32}px)`,
+    padding: `var(--btn-py, ${toPx(settings.buttonPaddingY, '12px')}) var(--btn-px, ${toPx(settings.buttonPaddingX, '32px')})`,
     fontSize: `var(--btn-fs, ${toPx(settings.buttonFontSize, '1rem')})`,
     width: settings.buttonWidth === 'full' ? '100%' : settings.buttonWidth === 'auto' ? 'auto' : toPx(settings.buttonWidth),
     fontWeight: '700',
