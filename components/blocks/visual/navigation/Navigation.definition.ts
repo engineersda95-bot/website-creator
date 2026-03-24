@@ -15,7 +15,7 @@ export const navigationDefinition: BlockDefinition = {
   styleEditor: NavigationStyle as any,
   defaults: {
     content: { logoText: 'Studio', links: [], showContact: true },
-    style: { padding: 20 }
+    style: { padding: 20, hamburgerWidth: 450 }
   },
   styleMapper: (style, block, project, viewport) => {
     const { vars, style: s } = getBaseStyleVars(style, block, project, viewport);
@@ -23,6 +23,9 @@ export const navigationDefinition: BlockDefinition = {
     
     // Content-based layout type resolution
     const layoutType = block.content?.layoutType || val('layoutType', 'standard');
+    
+    // Always use hamburger on mobile if specified or by default for small screens
+    const isHamburger = viewport === 'mobile' || layoutType === 'hamburger';
 
     return {
       ...vars,
@@ -34,8 +37,12 @@ export const navigationDefinition: BlockDefinition = {
       '--logo-fs': toPx(val('logoSize', '40px')),
       '--logo-text-fs': toPx(val('logoTextSize', '24px')),
       '--logo-color': val('logoColor', val('textColor', project?.settings?.primaryColor || '#0c0c0e')),
-      '--nav-hamburger-display': (layoutType === 'hamburger' ? 'flex' : 'none'),
-      '--nav-links-display': (layoutType === 'hamburger' ? 'none' : 'flex'),
+      '--nav-hamburger-display': (isHamburger ? 'flex' : 'none'),
+      '--nav-links-display': (isHamburger ? 'none' : 'flex'),
+      '--nav-sticky': val('isSticky', false) ? 'sticky' : 'relative',
+      '--nav-transparent': val('isTransparent', false) ? 'transparent' : 'var(--block-bg)',
+      '--scrolled-opacity': ((val('scrolledOpacity', 0) / 100)).toString(),
+      '--hamburger-width': toPx(val('hamburgerWidth', 450)),
     };
   }
 };

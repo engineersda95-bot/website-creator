@@ -84,19 +84,27 @@ export const NavigationContent: React.FC<NavigationContentProps> = ({
             label="Link Navigazione"
             links={selectedBlock.content.links || []}
             onChange={(links) => updateContent({ links })}
-         />
+          />
 
-         <div className="space-y-4 pt-4 border-t border-zinc-100">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Configurazione Header</label>
-            <div className="grid grid-cols-2 gap-2">
-               <button onClick={() => updateContent({ layoutType: 'standard' })} className={cn("py-2.5 text-[10px] font-black border-2 rounded-xl transition-all", (selectedBlock.content.layoutType || 'standard') === 'standard' ? "bg-zinc-900 text-white border-zinc-900 shadow-lg" : "text-zinc-400 border-zinc-100 hover:border-zinc-200")}>LISTA</button>
-               <button onClick={() => updateContent({ layoutType: 'hamburger' })} className={cn("py-2.5 text-[10px] font-black border-2 rounded-xl transition-all", selectedBlock.content.layoutType === 'hamburger' ? "bg-zinc-900 text-white border-zinc-900 shadow-lg" : "text-zinc-400 border-zinc-100 hover:border-zinc-200")}>HAMBURGER</button>
+          <section className="pt-8 border-t border-zinc-100">
+            <SectionHeader icon={Layout} title="Configurazione" />
+            <div className="space-y-4">
+              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Layout Default</label>
+              <div className="grid grid-cols-2 gap-2">
+                 <button onClick={() => updateContent({ layoutType: 'standard' })} className={cn("py-2.5 text-[10px] font-black border-2 rounded-xl transition-all", (selectedBlock.content.layoutType || 'standard') === 'standard' ? "bg-zinc-900 text-white border-zinc-900 shadow-lg" : "text-zinc-400 border-zinc-100 hover:border-zinc-200")}>LISTA</button>
+                 <button onClick={() => updateContent({ layoutType: 'hamburger' })} className={cn("py-2.5 text-[10px] font-black border-2 rounded-xl transition-all", selectedBlock.content.layoutType === 'hamburger' ? "bg-zinc-900 text-white border-zinc-900 shadow-lg" : "text-zinc-400 border-zinc-100 hover:border-zinc-200")}>HAMBURGER</button>
+              </div>
             </div>
+          </section>
 
-
-         </div>
-
-
+          <section className="pt-4 border-t border-zinc-100">
+            <CTAManager
+                content={selectedBlock.content}
+                updateContent={updateContent}
+                style={selectedBlock.style}
+                updateStyle={updateStyle}
+            />
+          </section>
       </div>
    );
 };

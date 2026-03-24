@@ -19,6 +19,7 @@ interface MobileMenuProps {
   isEditing?: boolean;
   isStatic?: boolean;
   layoutType?: string;
+  buttonTheme?: 'primary' | 'secondary';
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({
@@ -34,75 +35,124 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   viewport,
   isEditing,
   isStatic,
-  layoutType
+  layoutType,
+  buttonTheme
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // NEVER use 'transparent' for the sidebar background.
+  const menuBgColor = (bg && bg !== 'transparent') 
+    ? bg 
+    : (project?.settings?.appearance === 'dark' ? "#0a0a0c" : "#ffffff");
+    
+  const menuTextColor = (color && color !== 'transparent')
+    ? color
+    : (project?.settings?.appearance === 'dark' ? "#ffffff" : "#0a0a0c");
+
+  const borderColor = project?.settings?.appearance === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)";
+
+  const isMobileViewport = viewport === 'mobile' || viewport === 'tablet';
+
+  // Dynamic Typography from global settings (using CSS variables set in body/base-style-mapper)
+  const linkStyle = {
+    fontFamily: 'var(--title-ff)',
+    fontWeight: 'var(--title-fw)' as any,
+    fontStyle: 'var(--title-fs-style)' as any,
+    textTransform: 'var(--title-upper)' as any,
+    fontSize: 'var(--base-fs)',
+    lineHeight: '1.2'
+  };
 
   return (
     <>
+      {/* Hamburger Toggle Button */}
       <button 
         data-menu-toggle
         className={cn(
-          "p-2 rounded-lg relative z-[1000] items-center justify-center transition-all active:scale-95"
+          "p-2 rounded-lg relative z-[10001] flex items-center justify-center transition-all active:scale-95 outline-none"
         )}
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         style={{ 
-          color: 'inherit',
+          color: isMenuOpen ? (project?.settings?.appearance === 'dark' ? "#ffffff" : "#0a0a0c") : color,
           display: 'var(--nav-hamburger-display)' as any 
         }}
       >
-        <div className="relative w-6 h-6 pointer-events-none">
-           <div className={cn("absolute inset-0 transition-all duration-300 opacity-0 scale-50 rotate-90", isMenuOpen && "opacity-100 scale-100 rotate-0")}>
-              <X />
+        <div className="relative w-6 h-6 pointer-events-none text-current">
+           <div className={cn("absolute inset-0 transition-all duration-500 opacity-0 scale-50 rotate-90", isMenuOpen && "opacity-100 scale-100 rotate-0" )}>
+              <X strokeWidth={2.5} />
            </div>
            <div className={cn("absolute inset-0 transition-all duration-300 opacity-100 scale-100 rotate-0", isMenuOpen && "opacity-0 scale-50 -rotate-90")}>
-              <Menu />
+              <Menu strokeWidth={2.5} />
            </div>
         </div>
       </button>
 
-      {/* MOBILE MENU / HAMBURGER OVERLAY */}
+      {/* SIDEBAR (SLIDE FROM RIGHT) */}
       <div 
-        data-menu
-        data-open={isMenuOpen}
         className={cn(
-          "absolute top-full left-0 w-full shadow-2xl p-8 flex flex-col gap-6 z-[9999] transition-all duration-500 origin-top opacity-0 -translate-y-4 pointer-events-none",
-          isMenuOpen && "opacity-100 translate-y-0 pointer-events-auto",
-          bg === 'transparent' ? (project?.settings?.appearance === 'dark' ? "bg-[#0c0c0e]" : "bg-white") : "bg-inherit"
+          "z-[10002] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[-40px_0_80px_rgba(0,0,0,0.35)] flex flex-col translate-x-full opacity-0 overflow-hidden",
+          isEditing ? "absolute top-0 right-0 h-screen" : "fixed top-0 right-0 h-full",
+          isMenuOpen && "translate-x-0 opacity-100 pointer-events-auto",
+          !isMenuOpen && "pointer-events-none",
+          isMobileViewport ? "flex" : "hidden md:flex"
         )}
         style={{ 
-          backgroundColor: bg !== 'transparent' ? bg : (project?.settings?.appearance === 'dark' ? "#0c0c0e" : "#ffffff"),
+          backgroundColor: menuBgColor,
+          color: menuTextColor,
+          width: isMobileViewport ? '100%' : 'var(--hamburger-width, 450px)',
+          maxWidth: isMobileViewport ? '100vw' : '85vw'
         }}
       >
-        {links.map((link, i) => (
-          <a 
-            key={i} 
-            {...formatLink(isEditing ? '#' : link.url)}
-            className={cn(
-              "text-lg border-b py-2 no-underline block hover:translate-x-2 transition-all text-inherit",
-              project?.settings?.appearance === 'dark' ? "border-white/10" : "border-black/5"
-            )}
-            style={{ 
-              fontSize: 'var(--nav-link-mobile-fs)',
-              fontWeight: 'var(--nav-link-mobile-fw)' as any,
-              fontStyle: 'var(--nav-link-mobile-fs-style)' as any
-            }}
-            onClick={() => setIsMenuOpen(false)}
-          >
-            {link.label}
-          </a>
-        ))}
-        {showContact && (
-          <a 
-            {...formatLink(isEditing ? '#' : (ctaUrl || '#'))}
-            className="font-bold no-underline transition-all active:scale-95 flex items-center justify-center"
-            style={getButtonStyle(project, pColor, (viewport as any) || 'desktop', 'primary', isStatic)}
-            onClick={() => setIsMenuOpen(false)}
-          >
-            {cta || 'Contattaci'}
-          </a>
-        )}
+        {/* Sidebar Header */}
+        <div className="flex items-center justify-end p-10 md:p-14">
+           <button 
+             onClick={() => setIsMenuOpen(false)}
+             className="w-16 h-16 flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-all text-inherit group active:scale-90"
+           >
+             <X size={40} strokeWidth={1.5} className="transition-transform duration-500 group-hover:rotate-90" />
+           </button>
+        </div>
+
+        {/* Sidebar Links Area */}
+        <div className="flex-1 overflow-y-auto px-12 md:px-20 custom-scrollbar">
+           <div className="flex flex-col space-y-0">
+              {links.map((link, i) => (
+                <a 
+                  key={i} 
+                  {...formatLink(isEditing ? '#' : link.url)}
+                  className="group flex items-center justify-between py-8 no-underline border-b text-inherit hover:opacity-70 transition-all duration-500"
+                  style={{ borderColor, ...linkStyle }}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {link.label}
+                </a>
+              ))}
+              {cta && (
+                <div className="py-12 flex justify-center">
+                  <a 
+                    {...formatLink(isEditing ? '#' : (ctaUrl || '#'))}
+                    className="no-underline transition-all active:scale-95 inline-flex items-center justify-center hover:brightness-110 shadow-lg"
+                    style={getButtonStyle(project, pColor, isMobileViewport ? 'mobile' : 'desktop', buttonTheme || 'primary', isStatic)}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {cta}
+                  </a>
+                </div>
+              )}
+           </div>
+        </div>
       </div>
+
+      {/* Dimmer Overlay (Scurisce il resto della pagina) */}
+      <div 
+        className={cn(
+          "bg-black/85 z-[10001] transition-opacity duration-700 opacity-0 pointer-events-none backdrop-blur-sm",
+          isEditing ? "absolute top-[-5000px] left-[-5000px] w-[10000px] h-[10000px]" : "fixed inset-0",
+          !isMobileViewport && "hidden md:block",
+          isMenuOpen && "opacity-100 pointer-events-auto"
+        )}
+        onClick={() => setIsMenuOpen(false)}
+      />
     </>
   );
 };

@@ -50,8 +50,8 @@ const MemoizedBlock = React.memo(({
       }}
       className={cn(
         "group relative transition-all cursor-pointer block-wrapper",
-        block.type === 'navigation' ? "z-50" : "z-0",
-        isSelected ? "z-[40]" : "z-0",
+        block.type === 'navigation' ? "z-[500]" : "z-0",
+        isSelected ? (block.type === 'navigation' ? "z-[501]" : "z-[40]") : "",
       )}
       style={{
         ...vars,

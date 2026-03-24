@@ -34,19 +34,14 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
   const colsM = block.responsiveStyles?.mobile?.columns || 1;
 
 
-  const cardStyles = {
-    backgroundColor: style.cardBgColor || undefined,
-    color: style.cardTextColor || undefined,
-    padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
-  };
-
   const blockStyles = {
-    backgroundColor: (style.bgType === 'solid' || !style.bgType) ? (style.backgroundColor || 'transparent') : 'transparent',
+    backgroundColor: style.bgType === 'solid' ? (style.backgroundColor || 'transparent') : undefined,
     backgroundImage: style.bgType === 'gradient' 
       ? `linear-gradient(${style.bgDirection || 'to bottom'}, ${style.backgroundColor || 'transparent'}, ${style.backgroundColor2 || 'transparent'})`
       : (content.backgroundImage ? `url(${resolveImageUrl(content.backgroundImage, project)})` : 'none'),
     backgroundSize: style.backgroundSize || 'cover',
     backgroundPosition: style.backgroundPosition || 'center',
+    backgroundRepeat: 'no-repeat',
     paddingTop: `${style.paddingTop ?? style.padding ?? 20}px`,
     paddingBottom: `${style.paddingBottom ?? style.padding ?? 20}px`,
     paddingLeft: `${style.paddingLeft ?? style.hPadding ?? 20}px`,
@@ -58,6 +53,15 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
     borderWidth: `${style.borderWidth || 0}px`,
     borderColor: style.borderColor || 'transparent',
     borderStyle: (style.borderWidth || 0) > 0 ? 'solid' : 'none',
+  };
+
+  const cardStyles = {
+    backgroundColor: style.cardBgType === 'gradient' ? 'transparent' : (style.cardBgColor || 'transparent'),
+    backgroundImage: style.cardBgType === 'gradient'
+      ? `linear-gradient(${style.cardBgDirection || 'to bottom'}, ${style.cardBgColor || 'transparent'}, ${style.cardBgColor2 || 'transparent'})`
+      : 'none',
+    color: style.cardTextColor || undefined,
+    padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
   };
 
   // Grid Maps specifically for Tailwind 4 JIT
@@ -197,25 +201,23 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
 
         {isSlider ? (
           <div className="relative group/quote">
-            <div className="hidden md:block">
-              <div className="absolute top-[35%] -left-6 -translate-y-1/2 z-20 opacity-0 group-hover/quote:opacity-100 transition-all duration-300 translate-x-4 group-hover/quote:translate-x-0">
-                <button data-arrow="left" className="p-3 bg-zinc-900/10 dark:bg-white/10 hover:bg-zinc-900/20 dark:hover:bg-white/20 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 cursor-pointer">
-                  <ChevronLeft size={24} />
-                </button>
-              </div>
-              <div className="absolute top-[35%] -right-6 -translate-y-1/2 z-20 opacity-0 group-hover/quote:opacity-100 transition-all duration-300 -translate-x-4 group-hover/quote:translate-x-0">
-                <button data-arrow="right" className="p-3 bg-zinc-900/10 dark:bg-white/10 hover:bg-zinc-900/20 dark:hover:bg-white/20 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 cursor-pointer">
-                  <ChevronRight size={24} />
-                </button>
-              </div>
+            {/* Slider Navigation Arrows */}
+            <div className="absolute top-1/2 left-2 md:-left-6 -translate-y-1/2 z-30 transition-all duration-300">
+              <button data-arrow="left" className="p-4 bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow">
+                <ChevronLeft size={24} style={{ color: style.textColor }} />
+              </button>
+            </div>
+            <div className="absolute top-1/2 right-2 md:-right-6 -translate-y-1/2 z-30 transition-all duration-300">
+              <button data-arrow="right" className="p-4 bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow">
+                <ChevronRight size={24} style={{ color: style.textColor }} />
+              </button>
             </div>
 
             <div 
               className={cn(
-                "flex gap-8 pb-12 no-scrollbar scroll-smooth scroll-container items-stretch",
-                "flex-row overflow-x-auto snap-x snap-mandatory"
+                "flex gap-8 pb-4 items-stretch overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all",
+                "flex-row"
               )} 
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {items.map((item: any, i: number) => (
                 <div 
@@ -223,7 +225,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
                   style={cardStyles}
                   className={cn(
                     "p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm shrink-0 min-w-0 snap-center",
-                    !cardStyles.backgroundColor && "bg-zinc-900/5 dark:bg-white/5",
+                    (cardStyles.backgroundColor === 'transparent' && cardStyles.backgroundImage === 'none') && "bg-zinc-900/5 dark:bg-white/5",
                     sliderWidth,
                     colsD === 1 && "lg:max-w-4xl lg:mx-auto"
                   )}
@@ -241,7 +243,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
                 style={cardStyles}
                 className={cn(
                   "w-full p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm min-w-0",
-                  !cardStyles.backgroundColor && "bg-zinc-900/5 dark:bg-white/5",
+                  (cardStyles.backgroundColor === 'transparent' && cardStyles.backgroundImage === 'none') && "bg-zinc-900/5 dark:bg-white/5",
                   colsD === 1 && "lg:max-w-4xl lg:mx-auto"
                 )}
               >

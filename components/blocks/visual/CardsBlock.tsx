@@ -162,13 +162,21 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
   };
 
   const blockStyles = {
-    background: 'var(--block-bg)',
+    backgroundColor: 'var(--block-bg-color)',
+    backgroundImage: 'var(--block-bg-image)',
+    backgroundSize: 'var(--block-bg-size)',
+    backgroundPosition: 'var(--block-bg-pos)',
     paddingTop: 'var(--block-pt)',
     paddingBottom: 'var(--block-pb)',
     paddingLeft: 'var(--block-px)',
     paddingRight: 'var(--block-px)',
     color: 'var(--block-color)',
   };
+
+  const isGradient = style.cardBgType === 'gradient';
+  const cardBgStyle = isGradient 
+    ? { background: `linear-gradient(${style.cardBgDirection || 'to bottom'}, ${style.cardBgColor || 'transparent'}, ${style.cardBgColor2 || 'transparent'})` }
+    : { backgroundColor: style.cardBgColor || 'transparent' };
 
   return (
     <section id={blockId} className="relative overflow-hidden cards-block" style={blockStyles}>
@@ -188,24 +196,22 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
 
         {isSlider ? (
           <div className="relative group/slider">
-            <div className="hidden md:block">
-              <div className="absolute top-[35%] -left-6 -translate-y-1/2 z-20 opacity-0 group-hover/slider:opacity-100 transition-all duration-300 translate-x-4 group-hover/slider:translate-x-0">
-                <button data-arrow="left" className="p-3 bg-zinc-900/10 dark:bg-white/10 hover:bg-zinc-900/20 dark:hover:bg-white/20 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 cursor-pointer">
-                  <ChevronLeft size={24} />
-                </button>
-              </div>
-              <div className="absolute top-[35%] -right-6 -translate-y-1/2 z-20 opacity-0 group-hover/slider:opacity-100 transition-all duration-300 -translate-x-4 group-hover/slider:translate-x-0">
-                <button data-arrow="right" className="p-3 bg-zinc-900/10 dark:bg-white/10 hover:bg-zinc-900/20 dark:hover:bg-white/20 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 cursor-pointer">
-                  <ChevronRight size={24} />
-                </button>
-              </div>
+            {/* Slider Navigation Arrows */}
+            <div className="absolute top-1/2 left-2 md:left-4 lg:-left-6 -translate-y-1/2 z-30 transition-all duration-300">
+              <button data-arrow="left" className="p-4 bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow">
+                <ChevronLeft size={24} style={{ color: style.textColor }} />
+              </button>
+            </div>
+            <div className="absolute top-1/2 right-2 md:right-4 lg:-right-6 -translate-y-1/2 z-30 transition-all duration-300">
+              <button data-arrow="right" className="p-4 bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow">
+                <ChevronRight size={24} style={{ color: style.textColor }} />
+              </button>
             </div>
 
             <div 
               className={cn(
-                "flex gap-6 md:gap-8 pb-12 no-scrollbar scroll-smooth scroll-container items-stretch flex-row overflow-x-auto snap-x snap-mandatory"
+                "flex gap-6 md:gap-8 pb-4 items-stretch flex-row overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all"
               )} 
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {items.map((item: any, i: number) => (
                 <div 
@@ -214,13 +220,13 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
                     "flex flex-col transition-all duration-500 min-w-0 shrink-0 snap-center",
                     sliderWidth,
                     colsD === 1 && "lg:max-w-4xl lg:mx-auto",
-                    style.cardBgColor && "rounded-[var(--card-radius)] border border-black/5 dark:border-white/5",
-                    style.cardBgColor && (colsD > 4 ? "p-4 md:p-6" : "p-6 md:p-8")
+                    (style.cardBgColor || isGradient) && "rounded-[var(--card-radius),_2rem] border border-black/5 dark:border-white/5",
+                    (style.cardBgColor || isGradient) && (colsD > 4 ? "p-4 md:p-6" : "p-6 md:p-8")
                   )}
                   style={{
-                    backgroundColor: style.cardBgColor || undefined,
                     color: style.cardTextColor || undefined,
                     padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
+                    ...cardBgStyle
                   }}
                 >
                   <CardItem item={item} />
@@ -248,7 +254,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
         ) : (
           <div 
             className={cn(
-              "grid gap-6 md:gap-12 pb-8 md:pb-0 no-scrollbar scroll-smooth",
+              "grid gap-6 md:gap-12 pb-8 md:pb-0",
               gridClass
             )}
 
@@ -259,13 +265,13 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
                 className={cn(
                   "flex flex-col transition-all duration-500 min-w-0 w-full",
                   colsD === 1 && "lg:max-w-4xl lg:mx-auto",
-                  style.cardBgColor && "rounded-[var(--card-radius)] border border-black/5 dark:border-white/5",
-                  style.cardBgColor && (colsD > 4 ? "p-4 md:p-6" : "p-6 md:p-8")
+                  (style.cardBgColor || isGradient) && "rounded-[var(--card-radius),_2rem] border border-black/5 dark:border-white/5",
+                  (style.cardBgColor || isGradient) && (colsD > 4 ? "p-4 md:p-6" : "p-6 md:p-8")
                 )}
                 style={{
-                  backgroundColor: style.cardBgColor || undefined,
                   color: style.cardTextColor || undefined,
                   padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
+                  ...cardBgStyle
                 }}
               >
                 <CardItem item={item} />

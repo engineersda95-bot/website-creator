@@ -124,6 +124,30 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     ` : ''}
 
     <script>
+      // Navigation Scroll Behavior (Sticky & Transparent)
+      const handleScroll = () => {
+        const navs = document.querySelectorAll('nav.fixed');
+        const scrolled = window.scrollY > 20;
+        navs.forEach(nav => {
+          if (scrolled) {
+            nav.style.background = 'var(--block-bg)';
+            nav.style.boxShadow = '0 10px 30px -10px rgba(0,0,0,0.1)';
+            nav.style.backdropFilter = 'blur(10px)';
+            nav.style.paddingTop = '12px';
+            nav.style.paddingBottom = '12px';
+          } else {
+            const isTransparent = nav.getAttribute('data-transparent') === 'true';
+            nav.style.background = isTransparent ? 'transparent' : 'var(--block-bg)';
+            nav.style.boxShadow = 'none';
+            nav.style.backdropFilter = 'none';
+            nav.style.paddingTop = 'var(--nav-padding)';
+            nav.style.paddingBottom = 'var(--nav-padding)';
+          }
+        });
+      };
+      window.addEventListener('scroll', handleScroll);
+      handleScroll();
+
       // Navigation Mobile Menu Toggle
       document.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-menu-toggle]');
