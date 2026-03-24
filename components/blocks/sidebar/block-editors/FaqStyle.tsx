@@ -32,7 +32,6 @@ export const FAQStyle: React.FC<FAQStyleProps> = ({
         <div className="mt-8 pt-8 border-t border-zinc-50 space-y-10">
           <SimpleSlider 
             label="Distanza Titolo-FAQ (Gap)" 
-            icon={ArrowDown}
             value={getStyleValue('gap', 64)} 
             onChange={(val: number) => updateStyle({ gap: val })} 
             max={200} step={4}
