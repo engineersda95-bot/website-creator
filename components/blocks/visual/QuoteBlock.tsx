@@ -3,6 +3,7 @@ import { Block, Project } from '@/types/editor';
 import { cn } from '@/lib/utils';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { Star, Quote as QuoteIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 
 interface QuoteBlockProps {
   block: Block;
@@ -10,8 +11,10 @@ interface QuoteBlockProps {
   viewport?: 'desktop' | 'tablet' | 'mobile';
 }
 
-export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport = 'desktop' }) => {
-  const { content, style } = block;
+export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport }) => {
+  const { content } = block;
+  const { style, viewport: currentVp } = getBlockStyles(block, project, viewport);
+  
   const items = content.items || [];
   
   if (items.length === 0 && !content.title) return null;
@@ -24,34 +27,84 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
   const align = style.align || 'center';
   const blockId = `quote-${block.id.replace(/[^a-zA-Z0-9]/g, '')}`;
 
+  const isSlider = layout === 'slider';
+  
+  const colsD = block.style?.columns || 3;
+  const colsT = block.responsiveStyles?.tablet?.columns || 2;
+  const colsM = block.responsiveStyles?.mobile?.columns || 1;
+
+
   const cardStyles = {
-    backgroundColor: style.cardBgColor || undefined, // undefined will fallback to className
+    backgroundColor: style.cardBgColor || undefined,
     color: style.cardTextColor || undefined,
   };
 
   const blockStyles = {
-    paddingTop: `var(--block-pt, ${style.padding || 80}px)`,
-    paddingBottom: `var(--block-pb, ${style.padding || 80}px)`,
-    paddingLeft: `var(--block-px, ${style.hPadding || 40}px)`,
-    paddingRight: `var(--block-px, ${style.hPadding || 40}px)`,
+    backgroundColor: style.backgroundColor || 'transparent',
+    backgroundImage: content.backgroundImage ? `url(${resolveImageUrl(content.backgroundImage, project)})` : undefined,
+    backgroundSize: style.backgroundSize || 'cover',
+    backgroundPosition: style.backgroundPosition || 'center',
+    paddingTop: `${style.paddingTop ?? style.padding ?? 20}px`,
+    paddingBottom: `${style.paddingBottom ?? style.padding ?? 20}px`,
+    paddingLeft: `${style.paddingLeft ?? style.hPadding ?? 20}px`,
+    paddingRight: `${style.paddingRight ?? style.hPadding ?? 20}px`,
     marginTop: `${style.marginTop || 0}px`,
     marginBottom: `${style.marginBottom || 0}px`,
-    backgroundColor: style.backgroundColor || 'transparent',
     color: style.textColor || 'inherit',
     borderRadius: `${style.borderRadius || 0}px`,
     borderWidth: `${style.borderWidth || 0}px`,
     borderColor: style.borderColor || 'transparent',
-    borderStyle: style.borderWidth > 0 ? 'solid' : 'none',
+    borderStyle: (style.borderWidth || 0) > 0 ? 'solid' : 'none',
   };
 
-  const isSlider = layout === 'slider';
-  const isMobile = viewport === 'mobile';
-  const isTablet = viewport === 'tablet';
+  // Grid Maps specifically for Tailwind 4 JIT
+  const gridLg = {
+    1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 
+    4: 'lg:grid-cols-4', 5: 'lg:grid-cols-5', 6: 'lg:grid-cols-6'
+  }[colsD as 1|2|3|4|5|6] || 'lg:grid-cols-3';
 
-  // Responsive logic based on viewport prop + Tailwind fallbacks
-  const gridCols = isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
-  const flexDir = (isSlider && !isMobile) ? 'flex-row' : 'flex-col';
-  const cardWidth = isMobile ? 'w-full' : isTablet ? 'w-[calc((100%-2rem)/2)]' : 'w-full md:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]';
+  const gridMd = {
+    1: 'md:grid-cols-1', 2: 'md:grid-cols-2', 3: 'md:grid-cols-3', 
+    4: 'md:grid-cols-4', 5: 'md:grid-cols-5', 6: 'md:grid-cols-6'
+  }[colsT as 1|2|3|4|5|6] || 'md:grid-cols-2';
+
+  const gridSm = {
+    1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 
+    4: 'grid-cols-4', 5: 'grid-cols-5', 6: 'grid-cols-6'
+  }[colsM as 1|2|3|4|5|6] || 'grid-cols-1';
+
+  // For Slider Widths
+  const slSm = {
+    1: 'w-full', 2: 'w-[calc((100%-2rem)/2)]', 3: 'w-[calc((100%-4rem)/3)]',
+    4: 'w-[calc((100%-6rem)/4)]', 5: 'w-[calc((100%-8rem)/5)]', 6: 'w-[calc((100%-10rem)/6)]',
+  }[colsM as 1|2|3|4|5|6] || 'w-full';
+
+  const slMd = {
+    1: 'md:w-full', 2: 'md:w-[calc((100%-2rem)/2)]', 3: 'md:w-[calc((100%-4rem)/3)]',
+    4: 'md:w-[calc((100%-6rem)/4)]', 5: 'md:w-[calc((100%-8rem)/5)]', 6: 'md:w-[calc((100%-10rem)/6)]',
+  }[colsT as 1|2|3|4|5|6] || 'md:w-[calc((100%-2rem)/2)]';
+
+  const slLg = {
+    1: 'lg:w-full', 2: 'lg:w-[calc((100%-2rem)/2)]', 3: 'lg:w-[calc((100%-4rem)/3)]',
+    4: 'lg:w-[calc((100%-6rem)/4)]', 5: 'lg:w-[calc((100%-8rem)/5)]', 6: 'lg:w-[calc((100%-10rem)/6)]',
+  }[colsD as 1|2|3|4|5|6] || 'lg:w-[calc((100%-4rem)/3)]';
+
+  // Resolve grid and slider classes based on whether we are in editor or live
+  const gridClass = viewport 
+    ? ({
+        1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 
+        4: 'grid-cols-4', 5: 'grid-cols-5', 6: 'grid-cols-6'
+      }[ (viewport === 'desktop' ? colsD : viewport === 'tablet' ? colsT : colsM) as 1|2|3|4|5|6] || 'grid-cols-1')
+    : cn(gridSm, gridMd, gridLg);
+
+  const sliderWidth = viewport
+    ? ({
+        1: 'w-full', 2: 'w-[calc((100%-2rem)/2)]', 3: 'w-[calc((100%-4rem)/3)]',
+        4: 'w-[calc((100%-6rem)/4)]', 5: 'w-[calc((100%-8rem)/5)]', 6: 'w-[calc((100%-10rem)/6)]',
+      }[ (viewport === 'desktop' ? colsD : viewport === 'tablet' ? colsT : colsM) as 1|2|3|4|5|6] || 'w-[calc((100%-4rem)/3)]')
+    : cn(slSm, slMd, slLg);
+
+
 
   const CardContent = ({ item }: { item: any }) => (
     <>
@@ -124,7 +177,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
 
   return (
     <section id={blockId} style={blockStyles} className="relative overflow-hidden quote-block">
-      <div className="max-w-[1400px] mx-auto relative px-4 text-left">
+      <div className="relative text-left">
         {content.title && (
           <h2 
             style={{ 
@@ -141,38 +194,35 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
 
         {isSlider ? (
           <div className="relative group/quote">
-            {!isMobile && (
-              <div className="hidden md:block">
-                <div className="absolute top-[55%] -left-6 -translate-y-1/2 z-20 opacity-0 group-hover/quote:opacity-100 transition-all duration-300 translate-x-4 group-hover/quote:translate-x-0">
-                  <button data-arrow="left" className="p-3 bg-zinc-900/10 dark:bg-white/10 hover:bg-zinc-900/20 dark:hover:hover:bg-white/20 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 cursor-pointer">
-                    <ChevronLeft size={24} />
-                  </button>
-                </div>
-                <div className="absolute top-[55%] -right-6 -translate-y-1/2 z-20 opacity-0 group-hover/quote:opacity-100 transition-all duration-300 -translate-x-4 group-hover/quote:translate-x-0">
-                  <button data-arrow="right" className="p-3 bg-zinc-900/10 dark:bg-white/10 hover:bg-zinc-900/20 dark:hover:hover:bg-white/20 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 cursor-pointer">
-                    <ChevronRight size={24} />
-                  </button>
-                </div>
+            <div className="hidden md:block">
+              <div className="absolute top-[35%] -left-6 -translate-y-1/2 z-20 opacity-0 group-hover/quote:opacity-100 transition-all duration-300 translate-x-4 group-hover/quote:translate-x-0">
+                <button data-arrow="left" className="p-3 bg-zinc-900/10 dark:bg-white/10 hover:bg-zinc-900/20 dark:hover:bg-white/20 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 cursor-pointer">
+                  <ChevronLeft size={24} />
+                </button>
               </div>
-            )}
+              <div className="absolute top-[35%] -right-6 -translate-y-1/2 z-20 opacity-0 group-hover/quote:opacity-100 transition-all duration-300 -translate-x-4 group-hover/quote:translate-x-0">
+                <button data-arrow="right" className="p-3 bg-zinc-900/10 dark:bg-white/10 hover:bg-zinc-900/20 dark:hover:bg-white/20 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 cursor-pointer">
+                  <ChevronRight size={24} />
+                </button>
+              </div>
+            </div>
 
             <div 
               className={cn(
                 "flex gap-8 pb-12 no-scrollbar scroll-smooth scroll-container items-stretch",
-                flexDir,
-                !isMobile && "md:overflow-x-auto md:snap-x md:snap-mandatory"
+                "flex-row overflow-x-auto snap-x snap-mandatory"
               )} 
-              style={isSlider && !isMobile ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : undefined}
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {items.map((item: any, i: number) => (
                 <div 
                   key={i} 
                   style={cardStyles}
                   className={cn(
-                    "p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm shrink-0 min-w-0",
+                    "p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm shrink-0 min-w-0 snap-center",
                     !cardStyles.backgroundColor && "bg-zinc-900/5 dark:bg-white/5",
-                    cardWidth,
-                    !isMobile && "md:snap-center"
+                    sliderWidth,
+                    colsD === 1 && "lg:max-w-4xl lg:mx-auto"
                   )}
                 >
                   <CardContent item={item} />
@@ -181,14 +231,15 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
             </div>
           </div>
         ) : (
-          <div className={cn("grid gap-8", gridCols)}>
+          <div className={cn("grid gap-8", gridClass)}>
             {items.map((item: any, i: number) => (
               <div 
                 key={i} 
                 style={cardStyles}
                 className={cn(
                   "w-full p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm min-w-0",
-                  !cardStyles.backgroundColor && "bg-zinc-900/5 dark:bg-white/5"
+                  !cardStyles.backgroundColor && "bg-zinc-900/5 dark:bg-white/5",
+                  colsD === 1 && "lg:max-w-4xl lg:mx-auto"
                 )}
               >
                 <CardContent item={item} />
@@ -197,25 +248,24 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
           </div>
         )}
 
-        {isSlider && !isMobile && (
-          <script key={Math.random()} dangerouslySetInnerHTML={{ __html: `
-            (function() {
-              const b = document.getElementById('${blockId}');
-              if (!b) return;
-              const c = b.querySelector('.scroll-container');
-              const l = b.querySelector('[data-arrow="left"]');
-              const r = b.querySelector('[data-arrow="right"]');
-              if (c) {
-                const card = c.querySelector('div');
-                if (!card) return;
-                const getS = () => card.offsetWidth + 32;
-                if (l) l.onclick = () => c.scrollBy({ left: -getS(), behavior: 'smooth' });
-                if (r) r.onclick = () => c.scrollBy({ left: getS(), behavior: 'smooth' });
-              }
-            })();
-          `}} />
-        )}
+        <script key={Math.random()} dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            const b = document.getElementById('${blockId}');
+            if (!b) return;
+            const c = b.querySelector('.scroll-container');
+            const l = b.querySelector('[data-arrow="left"]');
+            const r = b.querySelector('[data-arrow="right"]');
+            if (c) {
+              const card = c.querySelector('div');
+              if (!card) return;
+              const getS = () => card.offsetWidth + 32;
+              if (l) l.onclick = () => c.scrollBy({ left: -getS(), behavior: 'smooth' });
+              if (r) r.onclick = () => c.scrollBy({ left: getS(), behavior: 'smooth' });
+            }
+          })();
+        `}} />
       </div>
     </section>
   );
 };
+

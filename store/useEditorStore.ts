@@ -385,6 +385,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const definition = BLOCK_DEFINITIONS[type];
     const defaultContent = definition?.defaults?.content ? JSON.parse(JSON.stringify(definition.defaults.content)) : {};
     const defaultStyle = definition?.defaults?.style ? { ...definition.defaults.style } : { padding: 40, align: 'center' };
+    const defaultResponsiveStyles = definition?.defaults?.responsiveStyles ? JSON.parse(JSON.stringify(definition.defaults.responsiveStyles)) : {};
+
 
     // Localization/Project dynamic defaults
     if (type === 'navigation' || type === 'footer') {
@@ -400,8 +402,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       id: uuidv4(),
       type,
       content: defaultContent,
-      style: defaultStyle
+      style: defaultStyle,
+      responsiveStyles: defaultResponsiveStyles || {}
     };
+
 
     const newBlocks = [...currentPage.blocks];
     const insertPos = atIndex !== undefined ? atIndex : newBlocks.length;

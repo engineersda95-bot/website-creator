@@ -76,20 +76,19 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
         >
           {/* Immagine */}
           <div 
-            className={cn(
-                "w-full h-full order-[var(--image-order)]"
-            )}
+            className="w-full shrink-0 order-[var(--image-order)]"
             style={{ 
               order: 'var(--image-order)' as any,
             }}
           >
             <div 
               className={cn(
-                "relative w-full h-full overflow-hidden transition-all duration-700",
+                "relative w-full overflow-hidden transition-all duration-700 h-auto",
                 hasImageShadow && "shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]"
               )}
               style={{
                 borderRadius: imageRadius,
+                aspectRatio: 'var(--image-aspect)'
               }}
             >
               {content.image ? (
@@ -103,15 +102,11 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                     "w-full h-full object-cover transition-transform duration-1000 ease-out",
                     hasImageHover && "hover:scale-110"
                   )}
-                  style={{
-                    aspectRatio: 'var(--image-aspect)'
-                  }}
                 />
               ) : (
                 <div 
-                  className="w-full h-full bg-zinc-100 flex flex-col items-center justify-center text-zinc-400 p-8 border-2 border-dashed border-zinc-200"
+                  className="w-full bg-zinc-100 flex flex-col items-center justify-center text-zinc-400 p-8 border-2 border-dashed border-zinc-200 h-full"
                   style={{ 
-                    aspectRatio: 'var(--image-aspect)',
                     borderRadius: imageRadius
                   }}
                 >
@@ -123,6 +118,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
               )}
             </div>
           </div>
+
 
           {/* Testo */}
           <div 

@@ -1,9 +1,11 @@
 import React from 'react';
 import { Block, Project } from '@/types/editor';
 import { cn, formatRichText, formatLink } from '@/lib/utils';
-import { Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SitiImage } from '@/components/shared/SitiImage';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
+import { resolveImageUrl } from '@/lib/image-utils';
+
 
 interface CardsBlockProps {
   block: Block;
@@ -16,10 +18,11 @@ interface CardsBlockProps {
 export const CardsBlock: React.FC<CardsBlockProps> = ({ 
   block, 
   project, 
-  viewport = 'desktop', 
+  viewport, 
   isStatic,
   imageMemoryCache
 }) => {
+
   const { content } = block;
   const { style } = getBlockStyles(block, project, viewport);
   
@@ -29,17 +32,63 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
 
   const isMobile = viewport === 'mobile';
   const isTablet = viewport === 'tablet';
+  const isSlider = content.layout === 'slider';
+
+  const colsD = block.style?.columns || 3;
+  const colsT = block.responsiveStyles?.tablet?.columns || 2;
+  const colsM = block.responsiveStyles?.mobile?.columns || 1;
+
 
   const hasImageShadow = style.imageShadow !== false;
   const hasImageHover = style.imageHover !== false;
   
-  // Responsive Columns (Max 4)
-  const count = items.length;
-  const gridCols = isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 
-                   count === 1 ? 'grid-cols-1' :
-                   count === 2 ? 'grid-cols-2' : 
-                   count === 3 ? 'grid-cols-3' : 
-                   'md:grid-cols-2 lg:grid-cols-4';
+  // 1. Define Tailwind Breakpoint Maps (MUST BE LITERAL FOR JIT)
+  const gridLg = {
+    1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 
+    4: 'lg:grid-cols-4', 5: 'lg:grid-cols-5', 6: 'lg:grid-cols-6'
+  }[colsD as 1|2|3|4|5|6] || 'lg:grid-cols-3';
+
+  const gridMd = {
+    1: 'md:grid-cols-1', 2: 'md:grid-cols-2', 3: 'md:grid-cols-3', 
+    4: 'md:grid-cols-4', 5: 'md:grid-cols-5', 6: 'md:grid-cols-6'
+  }[colsT as 1|2|3|4|5|6] || 'md:grid-cols-2';
+
+  const gridSm = {
+    1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 
+    4: 'grid-cols-4', 5: 'grid-cols-5', 6: 'grid-cols-6'
+  }[colsM as 1|2|3|4|5|6] || 'grid-cols-1';
+
+  const slSm = {
+    1: 'w-full', 2: 'w-[calc((100%-2rem)/2)]', 3: 'w-[calc((100%-4rem)/3)]',
+    4: 'w-[calc((100%-6rem)/4)]', 5: 'w-[calc((100%-8rem)/5)]', 6: 'w-[calc((100%-10rem)/6)]',
+  }[colsM as 1|2|3|4|5|6] || 'w-full';
+
+  const slMd = {
+    1: 'md:w-full', 2: 'md:w-[calc((100%-2rem)/2)]', 3: 'md:w-[calc((100%-4rem)/3)]',
+    4: 'md:w-[calc((100%-6rem)/4)]', 5: 'md:w-[calc((100%-8rem)/5)]', 6: 'md:w-[calc((100%-10rem)/6)]',
+  }[colsT as 1|2|3|4|5|6] || 'md:w-[calc((100%-2rem)/2)]';
+
+  const slLg = {
+    1: 'lg:w-full', 2: 'lg:w-[calc((100%-2rem)/2)]', 3: 'lg:w-[calc((100%-4rem)/3)]',
+    4: 'lg:w-[calc((100%-6rem)/4)]', 5: 'lg:w-[calc((100%-8rem)/5)]', 6: 'lg:w-[calc((100%-10rem)/6)]',
+  }[colsD as 1|2|3|4|5|6] || 'lg:w-[calc((100%-4rem)/3)]';
+
+  // 2. Resolve final classes based on Environment (Editor vs Live)
+  const gridClass = viewport 
+    ? ({
+        1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 
+        4: 'grid-cols-4', 5: 'grid-cols-5', 6: 'grid-cols-6'
+      }[ (viewport === 'desktop' ? colsD : viewport === 'tablet' ? colsT : colsM) as 1|2|3|4|5|6] || 'grid-cols-1')
+    : cn(gridSm, gridMd, gridLg);
+
+  const sliderWidth = viewport
+    ? ({
+        1: 'w-full', 2: 'w-[calc((100%-2rem)/2)]', 3: 'w-[calc((100%-4rem)/3)]',
+        4: 'w-[calc((100%-6rem)/4)]', 5: 'w-[calc((100%-8rem)/5)]', 6: 'w-[calc((100%-10rem)/6)]',
+      }[ (viewport === 'desktop' ? colsD : viewport === 'tablet' ? colsT : colsM) as 1|2|3|4|5|6] || 'w-[calc((100%-4rem)/3)]')
+    : cn(slSm, slMd, slLg);
+
+
 
   const CardItem = ({ item }: { item: any }) => {
     const cardContent = (
@@ -55,8 +104,8 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
             hasImageShadow && "shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]"
           )}
           style={{
-            borderRadius: 'var(--img-radius, 24px)',
-            aspectRatio: 'var(--img-aspect, 16/9)'
+            borderRadius: style.imageBorderRadius !== undefined ? `${style.imageBorderRadius}px` : '24px',
+            aspectRatio: style.imageAspectRatio || '16/9'
           }}
         >
           {item.image ? (
@@ -83,7 +132,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
           <h3 
             className="mb-2 tracking-tight transition-all duration-500 leading-tight"
             style={{ 
-              fontSize: 'var(--card-title-fs)',
+              fontSize: style.cardTitleSize ? `${style.cardTitleSize}px` : undefined,
               fontWeight: style.cardTitleBold ? '700' : '400',
               fontStyle: style.cardTitleItalic ? 'italic' : 'normal',
             }}
@@ -92,7 +141,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
           <p 
             className="opacity-70 leading-relaxed transition-all duration-500"
             style={{ 
-              fontSize: 'var(--card-subtitle-fs)',
+              fontSize: style.cardSubtitleSize ? `${style.cardSubtitleSize}px` : undefined,
               fontWeight: style.cardSubtitleBold ? '700' : '400',
               fontStyle: style.cardSubtitleItalic ? 'italic' : 'normal',
             }}
@@ -112,62 +161,129 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
     return cardContent;
   };
 
+  const blockStyles = {
+    backgroundColor: style.backgroundColor || 'transparent',
+    backgroundImage: content.backgroundImage ? `url(${resolveImageUrl(content.backgroundImage, project)})` : undefined,
+    backgroundSize: style.backgroundSize || 'cover',
+    backgroundPosition: style.backgroundPosition || 'center',
+    paddingTop: `${style.paddingTop ?? style.padding ?? 20}px`,
+    paddingBottom: `${style.paddingBottom ?? style.padding ?? 20}px`,
+    paddingLeft: `${style.paddingLeft ?? style.hPadding ?? 20}px`,
+    paddingRight: `${style.paddingRight ?? style.hPadding ?? 20}px`,
+    marginTop: `${style.marginTop || 0}px`,
+    marginBottom: `${style.marginBottom || 0}px`,
+    color: style.textColor || 'inherit',
+    borderRadius: `${style.borderRadius || 0}px`,
+    borderWidth: `${style.borderWidth || 0}px`,
+    borderColor: style.borderColor || 'transparent',
+    borderStyle: (style.borderWidth || 0) > 0 ? 'solid' : 'none',
+  };
+
   return (
-    <section 
-      id={blockId} 
-      className="relative overflow-hidden cards-block"
-      style={{
-        background: 'var(--block-bg)',
-        paddingTop: 'var(--block-pt)',
-        paddingBottom: 'var(--block-pb)',
-        paddingLeft: 'var(--block-px)',
-        paddingRight: 'var(--block-px)',
-        marginTop: 'var(--block-mt)',
-        marginBottom: 'var(--block-mb)',
-        color: 'var(--block-color)',
-        borderRadius: 'var(--block-radius)',
-        border: 'var(--block-border-w) solid var(--block-border-c)',
-      }}
-    >
-      <div className="max-w-[1400px] mx-auto relative px-4">
+    <section id={blockId} className="relative overflow-hidden cards-block" style={blockStyles}>
+      <div className="relative">
         {content.title && (
           <h2 
             className="mb-16 tracking-tighter transition-all duration-500 leading-tight"
             style={{ 
-              fontSize: 'var(--title-fs)',
-              fontWeight: 'var(--title-fw)' as any,
-              fontStyle: 'var(--title-fs-style)' as any,
+              fontSize: style.titleSize ? `${style.titleSize}px` : (isMobile ? '2.5rem' : '4rem'),
+              fontWeight: style.titleBold ? '700' : '400',
+              fontStyle: style.titleItalic ? 'italic' : 'normal',
               textAlign: align as any
             }}
             dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
           />
         )}
 
-        <div 
-          className={cn(
-            "flex md:grid overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none gap-6 md:gap-12 pb-8 md:pb-0 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth",
-            gridCols
-          )}
-        >
-          {items.map((item: any, i: number) => (
-            <div 
-              key={i} 
-              className={cn(
-                "flex flex-col transition-all duration-500 min-w-0",
-                "w-[85%] md:w-full snap-center shrink-0 md:shrink md:snap-align-none",
-                style.cardBgColor && "p-8 rounded-[var(--card-radius)] border border-black/5 dark:border-white/5"
-              )}
-              style={{
-                backgroundColor: 'var(--card-bg)',
-                color: 'var(--card-color)',
-                padding: (style.cardBgColor && !isMobile) ? 'var(--card-padding)' : (style.cardBgColor && isMobile) ? '24px' : undefined,
-              }}
-            >
-              <CardItem item={item} />
+        {isSlider ? (
+          <div className="relative group/slider">
+            <div className="hidden md:block">
+              <div className="absolute top-[35%] -left-6 -translate-y-1/2 z-20 opacity-0 group-hover/slider:opacity-100 transition-all duration-300 translate-x-4 group-hover/slider:translate-x-0">
+                <button data-arrow="left" className="p-3 bg-zinc-900/10 dark:bg-white/10 hover:bg-zinc-900/20 dark:hover:bg-white/20 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 cursor-pointer">
+                  <ChevronLeft size={24} />
+                </button>
+              </div>
+              <div className="absolute top-[35%] -right-6 -translate-y-1/2 z-20 opacity-0 group-hover/slider:opacity-100 transition-all duration-300 -translate-x-4 group-hover/slider:translate-x-0">
+                <button data-arrow="right" className="p-3 bg-zinc-900/10 dark:bg-white/10 hover:bg-zinc-900/20 dark:hover:bg-white/20 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 cursor-pointer">
+                  <ChevronRight size={24} />
+                </button>
+              </div>
             </div>
-          ))}
-        </div>
+
+            <div 
+              className={cn(
+                "flex gap-6 md:gap-8 pb-12 no-scrollbar scroll-smooth scroll-container items-stretch flex-row overflow-x-auto snap-x snap-mandatory"
+              )} 
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {items.map((item: any, i: number) => (
+                <div 
+                  key={i} 
+                  className={cn(
+                    "flex flex-col transition-all duration-500 min-w-0 shrink-0 snap-center",
+                    sliderWidth,
+                    colsD === 1 && "lg:max-w-4xl lg:mx-auto",
+                    style.cardBgColor && "rounded-[var(--card-radius)] border border-black/5 dark:border-white/5",
+                    style.cardBgColor && (colsD > 4 ? "p-4 md:p-6" : "p-6 md:p-8")
+                  )}
+                  style={{
+                    backgroundColor: style.cardBgColor || undefined,
+                    color: style.cardTextColor || undefined,
+                  }}
+                >
+                  <CardItem item={item} />
+                </div>
+              ))}
+            </div>
+
+            <script key={Math.random()} dangerouslySetInnerHTML={{ __html: `
+              (function() {
+                const b = document.getElementById('${blockId}');
+                if (!b) return;
+                const c = b.querySelector('.scroll-container');
+                const l = b.querySelector('[data-arrow="left"]');
+                const r = b.querySelector('[data-arrow="right"]');
+                if (c) {
+                  const card = c.querySelector('div');
+                  if (!card) return;
+                  const getS = () => card.offsetWidth + 32;
+                  if (l) l.onclick = () => c.scrollBy({ left: -getS(), behavior: 'smooth' });
+                  if (r) r.onclick = () => c.scrollBy({ left: getS(), behavior: 'smooth' });
+                }
+              })();
+            `}} />
+          </div>
+        ) : (
+          <div 
+            className={cn(
+              "grid gap-6 md:gap-12 pb-8 md:pb-0 no-scrollbar scroll-smooth",
+              gridClass
+            )}
+
+          >
+            {items.map((item: any, i: number) => (
+              <div 
+                key={i} 
+                className={cn(
+                  "flex flex-col transition-all duration-500 min-w-0 w-full",
+                  colsD === 1 && "lg:max-w-4xl lg:mx-auto",
+                  style.cardBgColor && "rounded-[var(--card-radius)] border border-black/5 dark:border-white/5",
+                  style.cardBgColor && (colsD > 4 ? "p-4 md:p-6" : "p-6 md:p-8")
+                )}
+                style={{
+                  backgroundColor: style.cardBgColor || undefined,
+                  color: style.cardTextColor || undefined,
+                }}
+              >
+                <CardItem item={item} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
 };
+
+
+

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Layout, Image as ImageIcon, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
-import { SectionHeader, SimpleInput, RichTextarea } from '../SharedSidebarComponents';
+import { SectionHeader, SimpleInput, RichTextarea, LayoutGridSlider } from '../SharedSidebarComponents';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { useEditorStore } from '@/store/useEditorStore';
 import { resolveImageUrl } from '@/lib/image-utils';
@@ -11,15 +11,17 @@ import { cn } from '@/lib/utils';
 interface CardsContentProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
-  project: any;
+  updateStyle: (style: any) => void;
+  getStyleValue: (key: string, defaultValue?: any) => any;
 }
 
 export const CardsContent: React.FC<CardsContentProps> = ({
   selectedBlock,
   updateContent,
-  project
+  updateStyle,
+  getStyleValue
 }) => {
-  const { uploadImage } = useEditorStore();
+  const { uploadImage, project, imageMemoryCache } = useEditorStore();
   const items = selectedBlock.content.items || [];
 
   const updateItem = (index: number, updates: any) => {
@@ -69,6 +71,13 @@ export const CardsContent: React.FC<CardsContentProps> = ({
             onChange={(val) => updateContent({ title: val })}
             placeholder="Le nostre eccellenze..."
           />
+
+          <LayoutGridSlider 
+            content={selectedBlock.content}
+            updateContent={updateContent}
+            updateStyle={updateStyle}
+            getStyleValue={getStyleValue}
+          />
         </div>
       </section>
 
@@ -112,7 +121,7 @@ export const CardsContent: React.FC<CardsContentProps> = ({
                 <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Immagine Card</label>
                 <ImageUpload
                   label="Copertina"
-                  value={resolveImageUrl(item.image, project, useEditorStore.getState().imageMemoryCache)}
+                  value={resolveImageUrl(item.image, project, imageMemoryCache)}
                   onChange={async (val: string, filename?: string) => {
                     const relativePath = await uploadImage(val, filename);
                     updateItem(index, { image: relativePath });

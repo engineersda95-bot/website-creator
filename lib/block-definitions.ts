@@ -60,7 +60,9 @@ export interface BlockDefinition {
   defaults: {
     content: any;
     style: any;
+    responsiveStyles?: any;
   };
+
 }
 
 export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
@@ -209,7 +211,11 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
     styleEditor: QuoteStyle,
     defaults: {
       content: { items: [], layout: 'grid' },
-      style: { padding: 80 }
+      style: { padding: 80, columns: 3 },
+      responsiveStyles: {
+        tablet: { columns: 2 },
+        mobile: { columns: 1 }
+      }
     }
   },
   footer: {
@@ -263,6 +269,7 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
         padding: 80,
         align: 'center',
         gap: 48,
+        columns: 3,
         titleSize: 48,
         titleBold: false,
         imageAspectRatio: '16/9',
@@ -273,9 +280,14 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
         cardTitleSize: 28,
         cardSubtitleBold: false,
         cardSubtitleSize: 16
+      },
+      responsiveStyles: {
+        tablet: { columns: 2 },
+        mobile: { columns: 1 }
       }
     }
   },
+
 };
 
 export const getBlockDefinition = (type: string): BlockDefinition => {

@@ -106,6 +106,7 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       '--image-aspect': block.content?.imageAspectRatio || val('imageAspectRatio', '16/9'),
       '--text-v-align': viewport === 'mobile' ? 'flex-start' : (val('verticalAlign', 'center') === 'top' ? 'flex-start' : val('verticalAlign', 'center') === 'bottom' ? 'flex-end' : 'center'),
 
+
       // Contact specific
       '--icon-size': toPx(val('iconSize', 20)),
       '--label-fs': toPx(val('contactLabelSize', 9)),
@@ -125,6 +126,7 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       // Shared Image Styles
       '--img-radius': toPx(val('imageBorderRadius', 24)),
       '--img-aspect': block.content?.imageAspectRatio || val('imageAspectRatio', '16/9'),
+
     };
 
     // Responsive Gap Tuning: Limit gap on mobile only if it's using the default desktop value

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SimpleInput, SectionHeader } from '../SharedSidebarComponents';
+import { SectionHeader, SimpleInput, LayoutGridSlider } from '../SharedSidebarComponents';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { Quote, Plus, Trash2, ChevronDown, ChevronUp, Star, Circle, Square, Layout, Palette, Type } from 'lucide-react';
 import { useEditorStore } from '@/store/useEditorStore';
@@ -155,6 +155,8 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
 export const QuoteContent: React.FC<any> = ({
   selectedBlock,
   updateContent,
+  updateStyle,
+  getStyleValue
 }) => {
   const content = selectedBlock.content;
 
@@ -174,49 +176,33 @@ export const QuoteContent: React.FC<any> = ({
           onChange={(val) => updateSetting('title', val)} 
         />
 
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
-           <div>
-              <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block tracking-widest text-center">Layout</label>
-              <div className="flex p-1.5 bg-zinc-100 rounded-[1.25rem] gap-1.5 shadow-inner">
-                 {[
-                   { id: 'grid', icon: Layout, label: 'Griglia' },
-                   { id: 'slider', icon: Layout, label: 'Slider' }
-                 ].map(l => (
-                    <button
-                      key={l.id}
-                      onClick={() => updateSetting('layout', l.id)}
-                      className={cn(
-                        "flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all",
-                        (content.layout || 'grid') === l.id ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600"
-                      )}
-                    >
-                       <l.icon size={14} />
-                       <span className="text-[8px] font-black uppercase tracking-tighter">{l.label}</span>
-                    </button>
-                 ))}
-              </div>
-           </div>
-           <div>
-              <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block tracking-widest text-center">Visual</label>
-              <div className="flex p-1.5 bg-zinc-100 rounded-[1.25rem] gap-1.5 shadow-inner">
-                 {[
-                   { id: 'quotes', icon: Quote, label: 'Quote' },
-                   { id: 'stars', icon: Star, label: 'Stelle' }
-                 ].map(t => (
-                    <button
-                      key={t.id}
-                      onClick={() => updateSetting('visualType', t.id)}
-                      className={cn(
-                        "flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all",
-                        (content.visualType || 'quotes') === t.id ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600"
-                      )}
-                    >
-                       <t.icon size={14} />
-                       <span className="text-[8px] font-black uppercase tracking-tighter">{t.label}</span>
-                    </button>
-                 ))}
-              </div>
-           </div>
+        <LayoutGridSlider 
+          content={content}
+          updateContent={updateContent}
+          updateStyle={updateStyle}
+          getStyleValue={getStyleValue}
+        />
+
+        <div className="pt-4 border-t border-zinc-100">
+          <label className="text-[10px] font-bold text-zinc-400 uppercase mb-4 block tracking-widest">Icona / Stile</label>
+          <div className="flex p-1.5 bg-zinc-100 rounded-[1.25rem] gap-1.5 shadow-inner">
+              {[
+                { id: 'quotes', icon: Quote, label: 'Quote' },
+                { id: 'stars', icon: Star, label: 'Stelle' }
+              ].map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => updateSetting('visualType', t.id)}
+                  className={cn(
+                    "flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all",
+                    (content.visualType || 'quotes') === t.id ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600"
+                  )}
+                >
+                    <t.icon size={14} />
+                    <span className="text-[8px] font-black uppercase tracking-tighter">{t.label}</span>
+                </button>
+              ))}
+          </div>
         </div>
 
         <section className="pt-8 border-t border-zinc-100 space-y-6">
