@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { cn, toPx, getButtonStyle, formatLink, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
@@ -55,23 +56,26 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
             imageMemoryCache={imageMemoryCache}
             alt=""
             loading="eager"
-            className="absolute inset-0 z-0 w-full h-full pointer-events-none transition-all duration-700 object-cover" 
+            className="absolute inset-0 z-0 w-full h-full pointer-events-none transition-all duration-700" 
             style={{ 
+              objectFit: (style.backgroundSize === 'auto' ? 'none' : style.backgroundSize) || 'cover',
               objectPosition: style.backgroundPosition || 'center',
               opacity: (style.opacity !== undefined ? style.opacity : 100) / 100,
               filter: `brightness(${style.brightness !== undefined ? style.brightness : 100}%) blur(${style.blur || 0}px)`
             } as any} 
           />
-          <div 
-            className="absolute inset-0 z-[1] transition-all duration-500 pointer-events-none" 
-            style={{ 
-              backgroundColor: style.overlayType === 'gradient' ? 'transparent' : (style.overlayColor || '#000000'), 
-              backgroundImage: style.overlayType === 'gradient' 
-                ? `linear-gradient(${style.overlayDirection || 'to bottom'}, ${style.overlayColor || '#000000'}, ${style.overlayColor2 || '#111111'})`
-                : (style.backgroundImage ? `url(${resolveImageUrl(style.backgroundImage, project || null, imageMemoryCache, isStatic)})` : 'none'),
-              opacity: (style.overlayOpacity !== undefined ? style.overlayOpacity : 40) / 100,
-            }} 
-          />
+          {!style.overlayDisabled && (
+            <div 
+              className="absolute inset-0 z-[1] transition-all duration-500 pointer-events-none" 
+              style={{ 
+                backgroundColor: style.overlayType === 'gradient' ? 'transparent' : (style.overlayColor || '#000000'), 
+                backgroundImage: style.overlayType === 'gradient' 
+                  ? `linear-gradient(${style.overlayDirection || 'to bottom'}, ${style.overlayColor || '#000000'}, ${style.overlayColor2 || '#111111'})`
+                  : 'none',
+                opacity: (style.overlayOpacity !== undefined ? style.overlayOpacity : 40) / 100,
+              }} 
+            />
+          )}
         </>
       )}
       

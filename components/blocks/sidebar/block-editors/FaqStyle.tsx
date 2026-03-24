@@ -22,7 +22,7 @@ export const FAQStyle: React.FC<FAQStyleProps> = ({
       
       {/* 1. Layout & Spaziatura */}
       <section>
-        <SectionHeader icon={Layers} title="Layout & Spaziatura" colorClass="text-blue-500" />
+        <SectionHeader icon={Layers} title="Layout & Spaziatura" />
         <LayoutFields 
           getStyleValue={getStyleValue} 
           updateStyle={updateStyle} 
@@ -49,7 +49,7 @@ export const FAQStyle: React.FC<FAQStyleProps> = ({
 
       {/* 2. Stile Testi */}
       <section className="pt-8 border-t border-zinc-100">
-        <SectionHeader icon={Type} title="Stile Testi" colorClass="text-indigo-500" />
+        <SectionHeader icon={Type} title="Stile Testi" />
         
         <div className="space-y-8">
           <TypographyFields 

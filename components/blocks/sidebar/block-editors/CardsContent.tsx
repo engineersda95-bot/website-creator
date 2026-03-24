@@ -63,7 +63,7 @@ export const CardsContent: React.FC<CardsContentProps> = ({
       
       {/* Intestazione e Layout */}
       <section>
-        <SectionHeader icon={Layout} title="Configurazione" colorClass="text-blue-500" />
+        <SectionHeader icon={Layout} title="Configurazione" />
         <div className="space-y-6">
           <SimpleInput
             label="Titolo Sezione (Opzionale)"
@@ -84,7 +84,7 @@ export const CardsContent: React.FC<CardsContentProps> = ({
       {/* Elementi (Cards) */}
       <section className="pt-8 border-t border-zinc-100">
         <div className="flex items-center justify-between mb-8">
-          <SectionHeader icon={Plus} title="Elementi" colorClass="text-emerald-500" />
+          <SectionHeader icon={Plus} title="Elementi" />
           <button
             onClick={addItem}
             className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-md active:scale-95"

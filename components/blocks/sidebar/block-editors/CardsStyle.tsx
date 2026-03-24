@@ -23,7 +23,7 @@ export const CardsStyle: React.FC<CardsStyleProps> = ({
       
       {/* 1. Layout & Spaziatura (Blocco) */}
       <section>
-        <SectionHeader icon={Layers} title="Layout & Spaziatura" colorClass="text-blue-500" />
+        <SectionHeader icon={Layers} title="Layout & Spaziatura" />
         <LayoutFields
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
@@ -61,7 +61,7 @@ export const CardsStyle: React.FC<CardsStyleProps> = ({
 
       {/* 2. Stile Immagine (Standardizzato) */}
       <section className="pt-8 border-t border-zinc-100">
-        <SectionHeader icon={ImageIcon} title="Stile Immagine" colorClass="text-emerald-500" />
+        <SectionHeader icon={ImageIcon} title="Stile Immagine" />
         <ImageStyleFields getStyleValue={getStyleValue} updateStyle={updateStyle} />
       </section>
 
@@ -73,7 +73,7 @@ export const CardsStyle: React.FC<CardsStyleProps> = ({
 
       {/* 5. Stile Card (Contenitore Interno) */}
       <section className="pt-8 border-t border-zinc-100">
-        <SectionHeader icon={Palette} title="Stile Card" colorClass="text-pink-500" />
+        <SectionHeader icon={Palette} title="Stile Card" />
         <div className="space-y-10">
            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-3">
@@ -121,7 +121,7 @@ export const CardsStyle: React.FC<CardsStyleProps> = ({
 
       {/* 6. Stile Testi */}
       <section className="pt-8 border-t border-zinc-100">
-        <SectionHeader icon={Type} title="Stile Testi" colorClass="text-indigo-500" />
+        <SectionHeader icon={Type} title="Stile Testi" />
         <div className="space-y-8">
           <TypographyFields
             label="Dimensione Titolo (In alto)"

@@ -163,7 +163,9 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
 
   const blockStyles = {
     backgroundColor: style.backgroundColor || 'transparent',
-    backgroundImage: content.backgroundImage ? `url(${resolveImageUrl(content.backgroundImage, project)})` : undefined,
+    backgroundImage: style.bgType === 'gradient' 
+      ? `linear-gradient(${style.bgDirection || 'to bottom'}, ${style.backgroundColor || 'transparent'}, ${style.backgroundColor2 || 'transparent'})`
+      : (content.backgroundImage ? `url(${resolveImageUrl(content.backgroundImage, project)})` : 'none'),
     backgroundSize: style.backgroundSize || 'cover',
     backgroundPosition: style.backgroundPosition || 'center',
     paddingTop: `${style.paddingTop ?? style.padding ?? 20}px`,
@@ -229,6 +231,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
                   style={{
                     backgroundColor: style.cardBgColor || undefined,
                     color: style.cardTextColor || undefined,
+                    padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
                   }}
                 >
                   <CardItem item={item} />
@@ -236,7 +239,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
               ))}
             </div>
 
-            <script key={Math.random()} dangerouslySetInnerHTML={{ __html: `
+            <div dangerouslySetInnerHTML={{ __html: `<script>
               (function() {
                 const b = document.getElementById('${blockId}');
                 if (!b) return;
@@ -251,7 +254,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
                   if (r) r.onclick = () => c.scrollBy({ left: getS(), behavior: 'smooth' });
                 }
               })();
-            `}} />
+            </script>`}} />
           </div>
         ) : (
           <div 
@@ -273,6 +276,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
                 style={{
                   backgroundColor: style.cardBgColor || undefined,
                   color: style.cardTextColor || undefined,
+                  padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
                 }}
               >
                 <CardItem item={item} />

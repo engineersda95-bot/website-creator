@@ -20,7 +20,7 @@ export const NavigationStyle: React.FC<NavigationStyleProps> = ({
    return (
       <div className="space-y-10">
          <section>
-            <SectionHeader icon={Layers} title="Layout & Spaziatura" colorClass="text-blue-500" />
+            <SectionHeader icon={Layers} title="Layout & Spaziatura" />
             <LayoutFields
                getStyleValue={getStyleValue}
                updateStyle={updateStyle}
@@ -35,7 +35,7 @@ export const NavigationStyle: React.FC<NavigationStyleProps> = ({
          <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
          <section className="pt-8 border-t border-zinc-100">
-            <SectionHeader icon={Type} title="Stile Testi" colorClass="text-indigo-500" />
+            <SectionHeader icon={Type} title="Stile Font" />
             <TypographyFields
                label="Dimensione Link"
                sizeKey="fontSize"

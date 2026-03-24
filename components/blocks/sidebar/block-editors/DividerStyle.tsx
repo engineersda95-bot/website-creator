@@ -26,7 +26,7 @@ export const DividerStyle: React.FC<DividerStyleProps> = ({
    return (
       <div className="space-y-10">
          <section>
-            <SectionHeader icon={Layers} title="Layout & Spaziatura" colorClass="text-blue-500" />
+            <SectionHeader icon={Layers} title="Layout & Spaziatura" />
             <LayoutFields 
                getStyleValue={getStyleValue} 
                updateStyle={updateStyle} 
@@ -59,7 +59,7 @@ export const DividerStyle: React.FC<DividerStyleProps> = ({
 
          <section className="pt-8 border-t border-zinc-100">
             {/* Standard "Colore" section for elements with a single primary color */}
-            <SectionHeader icon={Palette} title="Elemento Visivo" colorClass="text-pink-500" />
+            <SectionHeader icon={Palette} title="Elemento Visivo" />
             <div className="space-y-6">
                <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Colore Linea</label>

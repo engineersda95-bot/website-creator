@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { Layers, Type } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, BackgroundManager } from '../SharedSidebarComponents';
+import { useEditorStore } from '@/store/useEditorStore';
 import { cn } from '@/lib/utils';
 
 interface HeroStyleProps {
@@ -21,7 +22,7 @@ export const HeroStyle: React.FC<HeroStyleProps> = ({
    return (
       <div className="space-y-10">
          <section>
-            <SectionHeader icon={Layers} title="Layout & Spaziatura" colorClass="text-blue-500" />
+            <SectionHeader icon={Layers} title="Layout & Spaziatura" />
             <LayoutFields 
                getStyleValue={getStyleValue} 
                updateStyle={updateStyle} 
@@ -72,7 +73,7 @@ export const HeroStyle: React.FC<HeroStyleProps> = ({
          <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
          <section className="pt-8 border-t border-zinc-100">
-            <SectionHeader icon={Type} title="Stile Testi" colorClass="text-indigo-500" />
+            <SectionHeader icon={Type} title="Stile Testi" />
             <div className="space-y-8">
                <TypographyFields 
                   label="Dimensione Titolo" 

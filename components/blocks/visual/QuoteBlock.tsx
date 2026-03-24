@@ -37,11 +37,14 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
   const cardStyles = {
     backgroundColor: style.cardBgColor || undefined,
     color: style.cardTextColor || undefined,
+    padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
   };
 
   const blockStyles = {
-    backgroundColor: style.backgroundColor || 'transparent',
-    backgroundImage: content.backgroundImage ? `url(${resolveImageUrl(content.backgroundImage, project)})` : undefined,
+    backgroundColor: (style.bgType === 'solid' || !style.bgType) ? (style.backgroundColor || 'transparent') : 'transparent',
+    backgroundImage: style.bgType === 'gradient' 
+      ? `linear-gradient(${style.bgDirection || 'to bottom'}, ${style.backgroundColor || 'transparent'}, ${style.backgroundColor2 || 'transparent'})`
+      : (content.backgroundImage ? `url(${resolveImageUrl(content.backgroundImage, project)})` : 'none'),
     backgroundSize: style.backgroundSize || 'cover',
     backgroundPosition: style.backgroundPosition || 'center',
     paddingTop: `${style.paddingTop ?? style.padding ?? 20}px`,
@@ -248,7 +251,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
           </div>
         )}
 
-        <script key={Math.random()} dangerouslySetInnerHTML={{ __html: `
+        <div dangerouslySetInnerHTML={{ __html: `<script>
           (function() {
             const b = document.getElementById('${blockId}');
             if (!b) return;
@@ -263,7 +266,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
               if (r) r.onclick = () => c.scrollBy({ left: getS(), behavior: 'smooth' });
             }
           })();
-        `}} />
+        </script>`}} />
       </div>
     </section>
   );

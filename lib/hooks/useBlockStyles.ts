@@ -32,7 +32,16 @@ export const getBlockStyles = (block: Block | undefined, project: Project | null
   const backgroundColor = merged.backgroundColor || defaultBg;
   const textColor = merged.textColor || defaultText;
 
-  // 4. Alignment Mapping
+  // 4. Background Construction
+  let background = backgroundColor;
+  if (merged.bgType === 'gradient') {
+    const color1 = backgroundColor;
+    const color2 = merged.backgroundColor2 || '#f3f4f6';
+    const direction = merged.bgDirection || 'to bottom';
+    background = `linear-gradient(${direction}, ${color1}, ${color2})`;
+  }
+
+  // 5. Alignment Mapping
   const alignMap = {
     left: 'text-left items-start justify-start',
     center: 'text-center items-center justify-center',
@@ -44,6 +53,7 @@ export const getBlockStyles = (block: Block | undefined, project: Project | null
       ...merged,
       backgroundColor,
       textColor,
+      background,
     },
     isDark,
     theme,

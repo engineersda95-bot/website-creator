@@ -8,7 +8,7 @@ export function EmbedStyle({ getStyleValue, updateStyle, project }: any) {
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
       <section>
-        <SectionHeader icon={Type} title="Titolo Sezione" colorClass="text-indigo-500" />
+        <SectionHeader icon={Type} title="Titolo Sezione" />
         <TypographyFields 
           label="Grandezza Titolo" 
           sizeKey="titleSize" 

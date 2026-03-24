@@ -20,7 +20,7 @@ export const FooterStyle: React.FC<FooterStyleProps> = ({
    return (
       <div className="space-y-10">
          <section>
-            <SectionHeader icon={Layers} title="Layout & Spaziatura" colorClass="text-blue-500" />
+            <SectionHeader icon={Layers} title="Layout & Spaziatura" />
             <LayoutFields getStyleValue={getStyleValue} updateStyle={updateStyle} />
          </section>
 
@@ -29,7 +29,7 @@ export const FooterStyle: React.FC<FooterStyleProps> = ({
          <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
          <section className="pt-8 border-t border-zinc-100">
-            <SectionHeader icon={Type} title="Stile Testi" colorClass="text-indigo-500" />
+            <SectionHeader icon={Type} title="Stile Testi" />
             <div className="space-y-8">
                <TypographyFields 
                   label="Dimensione Logo" 

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { cn, toPx, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
@@ -28,9 +29,12 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
       }}
     >
       <div 
-        className={cn("mx-auto w-full flex flex-col px-8")}
+        className={cn("w-full flex flex-col transition-all duration-500")}
         style={{ 
-          maxWidth: 'var(--block-max-width)',
+          paddingLeft: 'var(--block-px)',
+          paddingRight: 'var(--block-px)',
+          marginLeft: 'var(--block-ml-auto)',
+          marginRight: 'var(--block-mr-auto)',
           gap: 'var(--block-gap)',
           alignItems: 'var(--block-items)' as any,
         }}
