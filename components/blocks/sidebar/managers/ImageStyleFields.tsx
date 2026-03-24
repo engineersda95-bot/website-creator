@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { SimpleSlider } from '../ui/SimpleSlider';
+import { StyleEditorProps } from '@/types/sidebar';
 
-export function ImageStyleFields({ getStyleValue, updateStyle }: any) {
+export function ImageStyleFields({ getStyleValue, updateStyle }: StyleEditorProps) {
    return (
       <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
          <SimpleSlider 

@@ -4,7 +4,9 @@ import React from 'react';
 import { Layers } from 'lucide-react';
 import { SectionHeader } from '../ui/SectionHeader';
 
-export function BorderShadowManager({ getStyleValue, updateStyle }: any) {
+import { BorderShadowManagerProps } from '@/types/sidebar';
+
+export function BorderShadowManager({ getStyleValue, updateStyle }: BorderShadowManagerProps) {
    return (
       <section className="pt-8 border-t border-zinc-100">
          <SectionHeader icon={Layers} title="Bordi" colorClass="text-zinc-500" />

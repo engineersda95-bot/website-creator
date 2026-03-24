@@ -5,7 +5,9 @@ import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AdvancedMargins } from './AdvancedMargins';
 
-export function LayoutFields({ getStyleValue, updateStyle, showAlign = true, paddingLabel = "Padding Vert", hPaddingLabel = "Spazio Laterale" }: any) {
+import { LayoutFieldsProps } from '@/types/sidebar';
+
+export function LayoutFields({ getStyleValue, updateStyle, showAlign = true, paddingLabel = "Padding Vert", hPaddingLabel = "Spazio Laterale" }: LayoutFieldsProps) {
    return (
       <div className="space-y-6">
          <div className="grid grid-cols-2 gap-4">

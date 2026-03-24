@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { Bold, Italic } from 'lucide-react';
+import { RichTextareaProps } from '@/types/sidebar';
 
-export function RichTextarea({ label = "Contenuto Testuale", value, onChange, placeholder }: { label?: string, value: string, onChange: (val: string) => void, placeholder?: string }) {
+export function RichTextarea({ label = "Contenuto Testuale", value, onChange, placeholder }: RichTextareaProps) {
    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
    const applyFormat = (type: 'bold' | 'italic') => {

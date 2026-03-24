@@ -3,7 +3,13 @@
 import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 
-export function LinkListManager({ links = [], onChange, label = "Link Testuali" }: { links: any[], onChange: (links: any[]) => void, label?: string }) {
+interface LinkListManagerProps {
+   links: any[];
+   onChange: (links: any[]) => void;
+   label?: string;
+}
+
+export function LinkListManager({ links = [], onChange, label = "Link Testuali" }: LinkListManagerProps) {
    return (
       <div className="space-y-4 pt-4 border-t border-zinc-100">
          <div className="flex items-center justify-between">

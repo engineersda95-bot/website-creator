@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { SimpleInputProps } from '@/types/sidebar';
 
-export function SimpleInput({ label, value, onChange, placeholder, icon: Icon }: { label: string, value: string, onChange: (val: string) => void, placeholder?: string, icon?: any }) {
+export function SimpleInput({ label, value, onChange, placeholder, icon: Icon }: SimpleInputProps) {
    return (
       <div className="space-y-2">
          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block pl-1">{label}</label>

@@ -28,7 +28,13 @@ const AVAILABLE_ICONS: Record<string, any> = {
    'activity': Activity
 };
 
-export function IconManager({ value, onChange, label = "Icona" }: any) {
+interface IconManagerProps {
+   value: string;
+   onChange: (val: string) => void;
+   label?: string;
+}
+
+export function IconManager({ value, onChange, label = "Icona" }: IconManagerProps) {
    return (
       <div className="space-y-4 pt-4 border-t border-zinc-100">
          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">{label}</label>

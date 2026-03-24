@@ -33,7 +33,10 @@ Crea i due componenti per la gestione nella sidebar in `components/blocks/sideba
 - `[NomeBlocco]Style.tsx`: Controlli estetici (usa `LayoutFields`, `ColorManager`, etc.).
 
 > [!TIP]
-> Utilizza i componenti pronti in `components/blocks/sidebar/SharedSidebarComponents.tsx`.
+> Utilizza i componenti pronti in `components/blocks/sidebar/SharedSidebarComponents.tsx`. Tutti i componenti sono ora modularizzati e tipizzati rigorosamente:
+> - **UI (Stateless)**: `components/blocks/sidebar/ui/`
+> - **Managers (Stateful)**: `components/blocks/sidebar/managers/`
+> - **Types**: `types/sidebar.ts`
 
 ### 4. Registrazione Centrale (Il Cuore del Sistema) 🚀
 Tutta la logica di integrazione è ora centralizzata in `lib/block-definitions.ts`. **Non è più necessario** modificare manualmente `BlockRegistry`, `ConfigSidebar`, `BlockSidebar` o `generate-static`.
@@ -86,20 +89,21 @@ Il sistema gestisce automaticamente la differenziazione degli stili per viewport
 
 ## 🎨 Componenti Sidebar Standardizzati (Shards)
 
-Usa sempre i componenti in `SharedSidebarComponents.tsx` per un design premium:
+Usa sempre i componenti re-esportati da `SharedSidebarComponents.tsx` per un design premium e coerenza. Ogni componente deve implementare le interfacce definite in `types/sidebar.ts` (es: `StyleEditorProps`, `ContentEditorProps`).
 
-| Componente | Scopo |
-| :--- | :--- |
-| `TypographyFields` | Font-size, grassetto, corsivo, trasformazione testo. |
-| `ColorManager` | Selettore colore sfondo e testo (con reset intelligente). |
-| `LayoutFields` | Padding, Allineamento, Margini, Max-Width. |
-| `CTAManager` | Configurazione pulsanti (Testo, Link, Tema). |
-| `ImageUpload` | Caricamento immagini con preview e status SEO. |
-| `BackgroundManager` | Immagini di sfondo, opacità, blur e overlay colorati. |
-| `BorderShadowManager` | Bordi, arrotondamento (border-radius) e ombre. |
-| `RichTextarea` | Area di testo con formattazione rapida. |
-| `SimpleSlider` | Slider numerico uniforme per Gap, Dimensioni, etc. |
-| `SimpleInput` | Campo testo con supporto icona nativa. |
+| Componente | Categoria | Scopo |
+| :--- | :--- | :--- |
+| `TypographyFields` | UI | Font-size, grassetto, corsivo, trasformazione testo. |
+| `ColorManager` | Manager | Selettore colore sfondo e testo (con reset intelligente). |
+| `LayoutFields` | Manager | Padding, Allineamento, Margini, Max-Width. |
+| `CTAManager` | Manager | Configurazione pulsanti (Testo, Link, Tema). |
+| `ImageUpload` | Shared | Caricamento immagini con preview e status SEO. |
+| `BackgroundManager` | Manager | Immagini di sfondo, opacità, blur e overlay colorati. |
+| `BorderShadowManager` | Manager | Bordi, arrotondamento (border-radius) e ombre. |
+| `RichTextarea` | UI | Area di testo con formattazione rapida. |
+| `SimpleSlider` | UI | Slider numerico uniforme per Gap, Dimensioni, etc. |
+| `SimpleInput` | UI | Campo testo con supporto icona nativa. |
+| `IconManager` | UI | Selettore di icone Lucide integrato. |
 
 ---
 

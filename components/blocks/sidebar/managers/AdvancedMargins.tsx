@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
+import { StyleEditorProps } from '@/types/sidebar';
 
-export function AdvancedMargins({ getStyleValue, updateStyle }: any) {
+export function AdvancedMargins({ getStyleValue, updateStyle }: StyleEditorProps) {
    return (
       <div className="pt-4 border-t border-zinc-50">
          <details className="group">

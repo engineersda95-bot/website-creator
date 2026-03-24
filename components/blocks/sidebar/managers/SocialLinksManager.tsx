@@ -3,7 +3,12 @@
 import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 
-export function SocialLinksManager({ links = [], onChange }: { links: any[], onChange: (links: any[]) => void }) {
+interface SocialLinksManagerProps {
+   links: any[];
+   onChange: (links: any[]) => void;
+}
+
+export function SocialLinksManager({ links = [], onChange }: SocialLinksManagerProps) {
    return (
       <div className="space-y-4 pt-4 border-t border-zinc-100">
          <div className="flex items-center justify-between">

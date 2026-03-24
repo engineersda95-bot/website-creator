@@ -162,23 +162,12 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
   };
 
   const blockStyles = {
-    backgroundColor: style.backgroundColor || 'transparent',
-    backgroundImage: style.bgType === 'gradient' 
-      ? `linear-gradient(${style.bgDirection || 'to bottom'}, ${style.backgroundColor || 'transparent'}, ${style.backgroundColor2 || 'transparent'})`
-      : (content.backgroundImage ? `url(${resolveImageUrl(content.backgroundImage, project)})` : 'none'),
-    backgroundSize: style.backgroundSize || 'cover',
-    backgroundPosition: style.backgroundPosition || 'center',
-    paddingTop: `${style.paddingTop ?? style.padding ?? 20}px`,
-    paddingBottom: `${style.paddingBottom ?? style.padding ?? 20}px`,
-    paddingLeft: `${style.paddingLeft ?? style.hPadding ?? 20}px`,
-    paddingRight: `${style.paddingRight ?? style.hPadding ?? 20}px`,
-    marginTop: `${style.marginTop || 0}px`,
-    marginBottom: `${style.marginBottom || 0}px`,
-    color: style.textColor || 'inherit',
-    borderRadius: `${style.borderRadius || 0}px`,
-    borderWidth: `${style.borderWidth || 0}px`,
-    borderColor: style.borderColor || 'transparent',
-    borderStyle: (style.borderWidth || 0) > 0 ? 'solid' : 'none',
+    background: 'var(--block-bg)',
+    paddingTop: 'var(--block-pt)',
+    paddingBottom: 'var(--block-pb)',
+    paddingLeft: 'var(--block-px)',
+    paddingRight: 'var(--block-px)',
+    color: 'var(--block-color)',
   };
 
   return (

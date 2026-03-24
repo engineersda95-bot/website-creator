@@ -4,6 +4,8 @@ import React from 'react';
 import { Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+import { ColorManagerProps } from '@/types/sidebar';
+
 export function ColorManager({ 
    getStyleValue, 
    updateStyle, 
@@ -14,7 +16,7 @@ export function ColorManager({
    icon = Palette, 
    colorClass = "text-pink-500",
    showReset = true
-}: any) {
+}: ColorManagerProps) {
    const appearance = project?.settings?.appearance || 'light';
    const defaultBg = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff');
    const defaultText = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.text || '#ffffff') : (project?.settings?.themeColors?.light?.text || '#000000');

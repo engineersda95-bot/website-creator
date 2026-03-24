@@ -7,7 +7,9 @@ import { ImageUpload } from '@/components/shared/ImageUpload';
 import { cn } from '@/lib/utils';
 import { Eye, EyeOff } from 'lucide-react';
 
-export function BackgroundManager({ selectedBlock, updateContent, updateStyle, getStyleValue }: any) {
+import { BackgroundManagerProps } from '@/types/sidebar';
+
+export function BackgroundManager({ selectedBlock, updateContent, updateStyle, getStyleValue }: BackgroundManagerProps) {
    const { uploadImage, isUploading } = useEditorStore();
 
    return (
@@ -24,7 +26,7 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
             onChange={async (val: string, filename?: string) => {
                const relativePath = await uploadImage(val, filename);
                updateContent({ backgroundImage: relativePath });
-               if (getStyleValue('overlayOpacity') === undefined) updateStyle({ overlayOpacity: 40 });
+               if (getStyleValue('overlayOpacity', undefined) === undefined) updateStyle({ overlayOpacity: 40 });
             }}
          />
 

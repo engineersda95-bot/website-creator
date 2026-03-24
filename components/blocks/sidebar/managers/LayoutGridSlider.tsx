@@ -5,7 +5,9 @@ import { Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEditorStore } from '@/store/useEditorStore';
 
-export function LayoutGridSlider({ content, updateContent, updateStyle, getStyleValue }: any) {
+import { LayoutGridSliderProps } from '@/types/sidebar';
+
+export function LayoutGridSlider({ content, updateContent, updateStyle, getStyleValue }: LayoutGridSliderProps) {
    const { viewport } = useEditorStore();
    const layout = content?.layout || 'grid';
    

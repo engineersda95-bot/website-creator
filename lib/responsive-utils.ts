@@ -60,7 +60,7 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       '--btn-px': `${project?.settings?.buttonPaddingX || 32}px`,
       '--btn-fs': toPx(project?.settings?.buttonFontSize, '1rem'),
       '--btn-upper': project?.settings?.buttonUppercase ? 'uppercase' : 'none',
-
+      
       // Images/Backgrounds
       '--img-opacity': (num('opacity', 100) / 100).toString(),
       '--img-fit': val('objectFit', 'cover'),
@@ -69,13 +69,13 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       '--block-filter': `${val('grayscale', false) ? 'grayscale(100%)' : ''} ${num('brightness', 100) !== 100 ? `brightness(${num('brightness', 100)}%)` : ''} ${num('blur', 0) > 0 ? `blur(${num('blur', 0)}px)` : ''}`.trim() || 'none',
       '--overlay-bg': val('overlayColor', 'rgba(0,0,0,0.5)'),
       '--overlay-opacity': (num('overlayOpacity', 50) / 100).toString(),
-
+      
       // Branding (Using both style & content fallback)
       '--logo-fs': toPx(val('logoSize', block.type === 'footer' ? val('titleSize', '40px') : '40px')),
       '--logo-text-fs': toPx(val('logoTextSize', '24px')),
       '--logo-color': val('logoColor', val('textColor', project?.settings?.primaryColor || '#0c0c0e')),
       '--social-icon-size': toPx(val('socialIconSize', 24)),
-
+      
       // Theme & UI
       '--block-radius': toPx(val('borderRadius', '0px')),
       '--block-bg': val('bgType', 'solid') === 'gradient' 
@@ -94,7 +94,7 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       '--divider-width': val('dividerWidth', 100) + '%',
       '--divider-stroke': toPx(val('dividerStroke', 1)),
       '--divider-color': val('dividerColor', val('textColor', 'currentColor')),
-
+      
       // FAQ specific
       '--faq-q-fs': toPx(val('questionSize', '1.125rem')),
       '--faq-a-fs': toPx(val('answerSize', '1rem')),
@@ -105,8 +105,7 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       '--text-order': val('imagePosition', 'left') === 'left' ? '1' : '0',
       '--image-aspect': block.content?.imageAspectRatio || val('imageAspectRatio', '16/9'),
       '--text-v-align': viewport === 'mobile' ? 'flex-start' : (val('verticalAlign', 'center') === 'top' ? 'flex-start' : val('verticalAlign', 'center') === 'bottom' ? 'flex-end' : 'center'),
-
-
+      
       // Contact specific
       '--icon-size': toPx(val('iconSize', 20)),
       '--label-fs': toPx(val('contactLabelSize', 9)),
@@ -126,7 +125,6 @@ export function getBlockCSSVariables(block: Block, project?: Project, viewport: 
       // Shared Image Styles
       '--img-radius': toPx(val('imageBorderRadius', 24)),
       '--img-aspect': block.content?.imageAspectRatio || val('imageAspectRatio', '16/9'),
-
     };
 
     // Responsive Gap Tuning: Limit gap on mobile only if it's using the default desktop value
@@ -180,11 +178,13 @@ export function generateBlockCSS(blockId: string, block: Block, project?: Projec
     }
   `;
 
+  const hasBorder = (block.style?.borderWidth || 0) > 0;
+
   return `
     #${blockId} {
       ${printVars(desktopVars)}
       border-radius: var(--block-radius, 0px);
-      border: var(--block-border-w, 0px) solid var(--block-border-c, transparent);
+      border: var(--block-border-w, 0px) ${hasBorder ? 'solid' : 'none'} var(--block-border-c, transparent);
       margin-top: var(--block-mt, 0px);
       margin-bottom: var(--block-mb, 0px);
       margin-left: var(--block-ml, 0px);

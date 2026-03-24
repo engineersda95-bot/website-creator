@@ -4,7 +4,9 @@ import React from 'react';
 import { Link as LinkIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function CTAManager({ content, updateContent, style, updateStyle }: any) {
+import { CTAManagerProps } from '@/types/sidebar';
+
+export function CTAManager({ content, updateContent, style, updateStyle }: CTAManagerProps) {
    return (
       <div className="space-y-4 pt-4 border-t border-zinc-100">
          <div className="flex items-center justify-between mb-2">
