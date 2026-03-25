@@ -7,7 +7,7 @@ import {
   Trash2, ChevronUp, ChevronDown, Monitor, Tablet, Smartphone,
   Moon, Sun, Plus, Type, Layout, Menu, Square, Copy,
   Clipboard as ClipboardIcon, Layers, Settings, RotateCcw, RotateCw, Minus,
-  HelpCircle
+  HelpCircle, ZoomIn, ZoomOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getBlockLibrary } from '@/lib/block-definitions';
@@ -41,6 +41,13 @@ const MemoizedBlock = React.memo(({
 }: any) => {
   const Component = getBlockComponent(block.type);
   const vars = getBlockCSSVariables(block, project, viewport || 'desktop');
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!confirmDelete) return;
+    const timer = setTimeout(() => setConfirmDelete(false), 2500);
+    return () => clearTimeout(timer);
+  }, [confirmDelete]);
 
   return (
     <div
@@ -117,13 +124,24 @@ const MemoizedBlock = React.memo(({
         >
           <ChevronDown size={18} />
         </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); onRemove(block.id); }}
-          className="p-2 hover:bg-red-500 text-white rounded-xl transition-colors ml-1"
-          title="Elimina"
-        >
-          <Trash2 size={18} />
-        </button>
+        {confirmDelete ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); onRemove(block.id); setConfirmDelete(false); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white rounded-xl transition-all ml-1 text-[11px] font-semibold animate-in fade-in zoom-in-95 duration-150"
+            title="Conferma eliminazione"
+          >
+            <Trash2 size={14} />
+            Elimina?
+          </button>
+        ) : (
+          <button
+            onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
+            className="p-2 hover:bg-red-500 text-white rounded-xl transition-colors ml-1"
+            title="Elimina"
+          >
+            <Trash2 size={18} />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -210,6 +228,10 @@ export const EditorCanvas: React.FC = () => {
 
   const [isMounted, setIsMounted] = React.useState(false);
   const [isHelpOpen, setIsHelpOpen] = React.useState(false);
+  const [zoom, setZoom] = React.useState(100);
+  const ZOOM_STEPS = [50, 67, 75, 80, 90, 100, 110, 125, 150];
+  const zoomIn = () => setZoom(prev => ZOOM_STEPS.find(z => z > prev) || prev);
+  const zoomOut = () => setZoom(prev => [...ZOOM_STEPS].reverse().find(z => z < prev) || prev);
   React.useEffect(() => { setIsMounted(true); }, []);
 
   if (!isMounted) return <div className="flex-1 bg-zinc-100" />;
@@ -221,82 +243,121 @@ export const EditorCanvas: React.FC = () => {
   );
 
   return (
-    <div className={cn("flex-1 overflow-hidden flex flex-col bg-zinc-200 transition-colors duration-500")}>
+    <div data-tour="canvas" className={cn("flex-1 overflow-hidden flex flex-col bg-zinc-200 transition-colors duration-500")}>
       <FontLoader font={font} />
 
       {/* TOOLBAR TOP */}
-      <div className="h-14 bg-white border-b border-zinc-200 flex items-center justify-between px-6 shrink-0 z-20">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setViewport('desktop')}
-            className={cn("p-2 rounded-lg transition-all", viewport === 'desktop' ? "bg-zinc-900 text-white shadow-xl scale-110" : "text-zinc-400 hover:bg-zinc-100")}
-          >
-            <Monitor size={18} />
-          </button>
-          <button
-            onClick={() => setViewport('tablet')}
-            className={cn("p-2 rounded-lg transition-all", viewport === 'tablet' ? "bg-zinc-900 text-white shadow-xl scale-110" : "text-zinc-400 hover:bg-zinc-100")}
-          >
-            <Tablet size={18} />
-          </button>
-          <button
-            onClick={() => setViewport('mobile')}
-            className={cn("p-2 rounded-lg transition-all", viewport === 'mobile' ? "bg-zinc-900 text-white shadow-xl scale-110" : "text-zinc-400 hover:bg-zinc-100")}
-          >
-            <Smartphone size={18} />
-          </button>
+      <div className="h-11 bg-white border-b border-zinc-200/80 flex items-center justify-between px-4 shrink-0 z-20">
+        {/* Left: viewport + undo/redo */}
+        <div className="flex items-center gap-3">
+          {/* Segmented viewport control */}
+          <div data-tour="viewport-switcher" className="flex items-center bg-zinc-100 rounded-lg p-0.5">
+            {([
+              { key: 'desktop' as const, icon: Monitor, label: 'Desktop' },
+              { key: 'tablet' as const, icon: Tablet, label: 'Tablet' },
+              { key: 'mobile' as const, icon: Smartphone, label: 'Mobile' },
+            ]).map(({ key, icon: Icon, label }) => (
+              <button
+                key={key}
+                onClick={() => setViewport(key)}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all",
+                  viewport === key
+                    ? "bg-white text-zinc-900 shadow-sm"
+                    : "text-zinc-400 hover:text-zinc-600"
+                )}
+                title={label}
+              >
+                <Icon size={14} />
+                <span className="hidden lg:inline text-[11px]">{label}</span>
+              </button>
+            ))}
+          </div>
 
-          <div className="h-4 w-px bg-zinc-200 mx-1" />
+          <div className="h-5 w-px bg-zinc-200" />
 
-          <button
-            onClick={() => undo()}
-            disabled={historyIndex <= 0}
-            className={cn("p-2 rounded-lg transition-all", historyIndex > 0 ? "text-zinc-900 hover:bg-zinc-100" : "text-zinc-200 cursor-not-allowed")}
-            title="Annulla (Ctrl+Z)"
-          >
-            <RotateCcw size={18} />
-          </button>
-          <button
-            onClick={() => redo()}
-            disabled={historyIndex >= historyLength - 1}
-            className={cn("p-2 rounded-lg transition-all", historyIndex < historyLength - 1 ? "text-zinc-900 hover:bg-zinc-100" : "text-zinc-200 cursor-not-allowed")}
-            title="Ripristina (Ctrl+Y)"
-          >
-            <RotateCw size={18} />
-          </button>
+          {/* Undo/Redo */}
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={() => undo()}
+              disabled={historyIndex <= 0}
+              className={cn("p-1.5 rounded-md transition-all", historyIndex > 0 ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" : "text-zinc-200 cursor-not-allowed")}
+              title="Annulla (Ctrl+Z)"
+            >
+              <RotateCcw size={15} />
+            </button>
+            <button
+              onClick={() => redo()}
+              disabled={historyIndex >= historyLength - 1}
+              className={cn("p-1.5 rounded-md transition-all", historyIndex < historyLength - 1 ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" : "text-zinc-200 cursor-not-allowed")}
+              title="Ripristina (Ctrl+Y)"
+            >
+              <RotateCw size={15} />
+            </button>
+          </div>
+
+          <div className="h-5 w-px bg-zinc-200" />
+
+          {/* Zoom */}
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={zoomOut}
+              disabled={zoom <= ZOOM_STEPS[0]}
+              className={cn("p-1.5 rounded-md transition-all", zoom > ZOOM_STEPS[0] ? "text-zinc-600 hover:bg-zinc-100" : "text-zinc-200 cursor-not-allowed")}
+              title="Zoom out"
+            >
+              <ZoomOut size={15} />
+            </button>
+            <button
+              onClick={() => setZoom(100)}
+              className="px-1.5 py-0.5 rounded text-[11px] font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 transition-all min-w-[3rem] text-center tabular-nums"
+              title="Reset zoom"
+            >
+              {zoom}%
+            </button>
+            <button
+              onClick={zoomIn}
+              disabled={zoom >= ZOOM_STEPS[ZOOM_STEPS.length - 1]}
+              className={cn("p-1.5 rounded-md transition-all", zoom < ZOOM_STEPS[ZOOM_STEPS.length - 1] ? "text-zinc-600 hover:bg-zinc-100" : "text-zinc-200 cursor-not-allowed")}
+              title="Zoom in"
+            >
+              <ZoomIn size={15} />
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
-
+        {/* Right: tools */}
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => setIsHelpOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black transition-all border shadow-sm bg-white text-blue-600 border-blue-100 hover:bg-blue-50"
+            className="p-1.5 rounded-md text-zinc-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
+            title="Guida / Aiuto"
           >
-            <HelpCircle size={14} />
-            <span className="uppercase tracking-widest text-[10px]">Guida / Aiuto</span>
+            <HelpCircle size={16} />
           </button>
 
-          <button
-            onClick={() => selectBlock(null)}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black transition-all border shadow-sm",
-              selectedBlockId === null
-                ? "bg-zinc-900 text-white border-zinc-900"
-                : "bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50"
-            )}
-          >
-            <Settings size={14} />
-            <span className="uppercase tracking-widest text-[10px]">Stili Globali</span>
-          </button>
+          {selectedBlockId !== null && (
+            <button
+              onClick={() => selectBlock(null)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium transition-all text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+              title="Torna agli stili globali"
+            >
+              <Settings size={14} />
+              <span className="hidden lg:inline">Stili globali</span>
+            </button>
+          )}
 
+          <div className="h-5 w-px bg-zinc-200" />
 
-          <div className="h-4 w-px bg-zinc-200" />
           <button
             onClick={() => updateProjectSettings({ appearance: isDark ? 'light' : 'dark' })}
-            className={cn("flex items-center gap-3 px-4 py-2 rounded-full text-xs font-black transition-all border shadow-sm", isDark ? "bg-zinc-900 text-amber-400 border-zinc-800 hover:bg-zinc-800" : "bg-white text-zinc-900 border-zinc-200 hover:bg-zinc-50")}
+            className={cn(
+              "p-1.5 rounded-md transition-all",
+              isDark ? "text-amber-500 hover:bg-amber-50" : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+            )}
+            title={isDark ? 'Passa a tema chiaro' : 'Passa a tema scuro'}
           >
-            {isDark ? <Moon size={14} /> : <Sun size={14} />}
-            <span className="uppercase tracking-widest text-[10px]">{isDark ? 'Tema Dark' : 'Tema Light'}</span>
+            {isDark ? <Moon size={16} /> : <Sun size={16} />}
           </button>
         </div>
       </div>
@@ -321,20 +382,48 @@ export const EditorCanvas: React.FC = () => {
         <main
           id="editor-content"
           className={cn(
-            "shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] min-h-screen relative pb-20 transition-all duration-700 origin-top",
+            "shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] min-h-screen relative pb-20 transition-all duration-500 origin-top",
             isDark ? "dark" : "light",
             viewport === 'desktop' ? "canvas-desktop" :
               viewport === 'tablet' ? "canvas-tablet" : "canvas-mobile"
           )}
           style={{
             backgroundColor: themeBg,
-            display: 'flow-root'
+            display: 'flow-root',
+            transform: zoom !== 100 ? `scale(${zoom / 100})` : undefined,
+            transformOrigin: 'top center',
           }}
         >
           {currentPage.blocks.length === 0 ? (
-            <div className="p-20 text-center text-zinc-300 border-4 border-dashed m-12 rounded-[3rem] uppercase text-[10px] font-black tracking-widest flex flex-col items-center gap-4">
-              <Plus className="opacity-20" size={48} />
-              Trascina o clicca un blocco per iniziare
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="text-center max-w-md mx-auto px-8">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-100 flex items-center justify-center mb-6">
+                  <Layout size={28} className="text-zinc-300" />
+                </div>
+                <h3 className="text-lg font-semibold text-zinc-800 mb-2" style={{ color: '#18181b' }}>Pagina vuota</h3>
+                <p className="text-sm text-zinc-500 mb-8" style={{ color: '#71717a' }}>Inizia aggiungendo i blocchi per costruire la tua pagina.</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { type: 'navigation' as const, label: 'Navigazione', icon: Menu },
+                    { type: 'hero' as const, label: 'Hero', icon: Square },
+                    { type: 'text' as const, label: 'Testo', icon: Type },
+                    { type: 'contact' as const, label: 'Contatti', icon: Layout },
+                  ].map(({ type, label, icon: Icon }) => (
+                    <button
+                      key={type}
+                      onClick={() => addBlock(type)}
+                      className="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-zinc-200 bg-white hover:border-blue-300 hover:bg-blue-50 transition-all text-left group"
+                      style={{ color: '#18181b', borderColor: '#e4e4e7', backgroundColor: '#ffffff' }}
+                    >
+                      <Icon size={16} className="text-zinc-400 group-hover:text-blue-600 shrink-0" />
+                      <span className="text-sm font-medium" style={{ color: '#3f3f46' }}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-zinc-400 mt-6" style={{ color: '#a1a1aa' }}>
+                  Oppure scegli dalla libreria blocchi nella sidebar sinistra
+                </p>
+              </div>
             </div>
           ) : (
             <div className="relative bg-inherit">

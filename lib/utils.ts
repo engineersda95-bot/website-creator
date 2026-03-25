@@ -7,11 +7,54 @@ export function cn(...inputs: ClassValue[]) {
 
 export const formatRichText = (text: string = '') => {
   if (!text) return '';
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/\[youtube:(.*?)\]/g, '<div class="relative pb-[56.25%] h-0 my-8 rounded-3xl overflow-hidden shadow-2xl border-4 border-white"><iframe src="https://www.youtube.com/embed/$1" className="absolute top-0 left-0 w-full h-full" frameborder="0" allowfullscreen></iframe></div>')
-    .replace(/\n/g, '<br />');
+
+  const lines = text.split('\n');
+  const html: string[] = [];
+  let inUl = false;
+  let inOl = false;
+
+  const closeLists = () => {
+    if (inUl) { html.push('</ul>'); inUl = false; }
+    if (inOl) { html.push('</ol>'); inOl = false; }
+  };
+
+  const inline = (t: string) =>
+    t
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\[youtube:(.*?)\]/g, '<div class="relative pb-[56.25%] h-0 my-8 rounded-2xl overflow-hidden shadow-xl"><iframe src="https://www.youtube.com/embed/$1" class="absolute top-0 left-0 w-full h-full" frameborder="0" allowfullscreen></iframe></div>');
+
+  for (const raw of lines) {
+    const line = raw.trim();
+
+    if (!line) {
+      closeLists();
+      continue;
+    }
+
+    // Unordered list
+    if (line.startsWith('- ') || line.startsWith('* ')) {
+      if (inOl) { html.push('</ol>'); inOl = false; }
+      if (!inUl) { html.push('<ul>'); inUl = true; }
+      html.push(`<li>${inline(line.slice(2))}</li>`);
+      continue;
+    }
+
+    // Ordered list
+    const olMatch = line.match(/^(\d+)\.\s+(.*)/);
+    if (olMatch) {
+      if (inUl) { html.push('</ul>'); inUl = false; }
+      if (!inOl) { html.push('<ol>'); inOl = true; }
+      html.push(`<li>${inline(olMatch[2])}</li>`);
+      continue;
+    }
+
+    closeLists();
+    html.push(`<p>${inline(line)}</p>`);
+  }
+
+  closeLists();
+  return html.join('');
 };
 
 export const toPx = (value: any, defaultValue: string = ''): string => {

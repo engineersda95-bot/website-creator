@@ -9,10 +9,12 @@ import { EditorCanvas } from '@/components/blocks/EditorCanvas';
 import { ConfigSidebar } from '@/components/blocks/ConfigSidebar';
 import { deployToCloudflare } from '@/app/actions/deploy';
 import { v4 as uuidv4 } from 'uuid';
-import { Loader2, Save, ExternalLink } from 'lucide-react';
+import { Loader2, Save, ExternalLink, Rocket, Check } from 'lucide-react';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { cn } from '@/lib/utils';
 import { getProjectDomain } from '@/lib/url-utils';
+import { ToastContainer, toast } from '@/components/shared/Toast';
+import { OnboardingTour } from '@/components/editor/OnboardingTour';
 
 export function EditorClient({ 
   initialUser, 
@@ -97,19 +99,37 @@ export function EditorClient({
     const result = await deployToCloudflare(project.id);
     setIsPublishing(false);
     if (result.success) {
-      // Refresh project to get new live_url and last_published_at
       const { data: updatedProject } = await supabase
         .from('projects')
         .select('*')
         .eq('id', project.id)
         .single();
       if (updatedProject) setProject(updatedProject);
+      toast('Sito pubblicato con successo!', 'success');
     } else {
-      alert(`Deployment failed: ${result.error}`);
+      toast(`Pubblicazione fallita: ${result.error}`, 'error', 5000);
     }
   };
 
+  const handleSave = async () => {
+    await saveCurrentPage();
+    toast('Modifiche salvate', 'success', 2000);
+  };
 
+  // Ctrl+S / Cmd+S to save
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        if (hasUnsavedChanges) {
+          handleSave();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasUnsavedChanges]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -179,89 +199,108 @@ export function EditorClient({
 
   if (!isInitialized) {
     return (
-      <div className="flex flex-col h-screen w-full items-center justify-center bg-zinc-50 gap-4">
-        <Loader2 className="animate-spin text-zinc-400" size={32} />
-        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest animate-pulse">Inizializzazione Editor...</p>
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-zinc-50 gap-5">
+        <div className="relative">
+          <div className="w-14 h-14 rounded-2xl bg-zinc-900 flex items-center justify-center shadow-xl">
+            <span className="text-white font-black text-lg">SV</span>
+          </div>
+          <Loader2 className="animate-spin text-blue-500 absolute -bottom-1 -right-1" size={18} />
+        </div>
+        <div className="text-center space-y-1">
+          <p className="text-sm font-semibold text-zinc-700">Caricamento editor</p>
+          <p className="text-xs text-zinc-400">Preparazione dell&apos;ambiente di lavoro...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-zinc-50 overflow-hidden">
+    <div className="flex h-screen bg-zinc-100 overflow-hidden">
       <BlockSidebar />
 
-      <div className="flex-1 min-w-0 z-10 relative flex flex-col h-full shadow-2xl">
-        <header className="h-16 bg-white border-b border-zinc-200 flex items-center justify-between px-8 shrink-0">
-          <div className="flex items-center gap-4">
-            <h1 className="font-bold text-lg text-zinc-900">SitiVetrina <span className="text-zinc-400 font-normal">Editor</span></h1>
-            <div className="h-4 w-px bg-zinc-200" />
-            <div className="flex flex-col">
-               <span className="text-sm font-bold text-zinc-800 uppercase tracking-tight leading-tight">{currentPage?.title || 'Home Page'}</span>
-               <div className="flex items-center gap-2 mt-0.5">
-                  <div className={cn("w-1.5 h-1.5 rounded-full", 
-                    siteStatus === 'pubblicato' ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : 
-                    siteStatus === 'bozza' ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" : "bg-zinc-300"
-                  )} />
-                  <span className={cn("text-[10px] font-black uppercase tracking-wider", 
-                    siteStatus === 'pubblicato' ? "text-emerald-600" : 
-                    siteStatus === 'bozza' ? "text-amber-600" : "text-zinc-400"
-                  )}>
-                    {siteStatus === 'pubblicato' ? 'Pubblicato' : siteStatus === 'bozza' ? 'Bozza' : 'Non Pubblicato'}
-                  </span>
-                  {project?.live_url && (
-                    <>
-                      <div className="w-1 h-1 rounded-full bg-zinc-200" />
-                      <a 
-                        href={getProjectDomain(project)} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 text-[10px] font-bold text-blue-600 hover:bg-blue-100 transition-colors border border-blue-100/50 group"
-                      >
-                        Visualizza Sito
-                        <ExternalLink size={10} className="text-blue-400 group-hover:text-blue-600 transition-colors" />
-                      </a>
-                    </>
-                  )}
-               </div>
+      <div className="flex-1 min-w-0 z-10 relative flex flex-col h-full">
+        {/* Header */}
+        <header className="h-14 bg-white border-b border-zinc-200/80 flex items-center justify-between px-5 shrink-0">
+          {/* Left: branding + page info + status */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-zinc-900 flex items-center justify-center">
+                <span className="text-white font-black text-[10px]">SV</span>
+              </div>
+              <span className="text-sm font-bold text-zinc-900 hidden lg:inline">SitiVetrina</span>
+            </div>
+
+            <div className="h-5 w-px bg-zinc-200" />
+
+            <div className="flex items-center gap-2.5">
+              <span className="text-sm font-semibold text-zinc-700">{currentPage?.title || 'Home Page'}</span>
+              <div className={cn(
+                "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide",
+                siteStatus === 'pubblicato'
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                  : siteStatus === 'bozza'
+                  ? "bg-amber-50 text-amber-700 border border-amber-200/60"
+                  : "bg-zinc-100 text-zinc-500 border border-zinc-200/60"
+              )}>
+                <div className={cn("w-1.5 h-1.5 rounded-full",
+                  siteStatus === 'pubblicato' ? "bg-emerald-500" :
+                  siteStatus === 'bozza' ? "bg-amber-500" : "bg-zinc-400"
+                )} />
+                {siteStatus === 'pubblicato' ? 'Online' : siteStatus === 'bozza' ? 'Bozza' : 'Non pubblicato'}
+              </div>
+              {project?.live_url && (
+                <a
+                  href={getProjectDomain(project)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                  title="Apri sito in nuova scheda"
+                >
+                  <ExternalLink size={12} />
+                  <span className="hidden xl:inline">Vedi sito</span>
+                </a>
+              )}
             </div>
           </div>
-          
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => saveCurrentPage()}
+
+          {/* Right: actions */}
+          <div className="flex items-center gap-2" data-tour="publish-btn">
+            <button
+              onClick={handleSave}
               disabled={!hasUnsavedChanges && !isLoading}
-              className={cn("flex items-center gap-2 px-4 py-2 font-bold rounded-lg transition-all mr-2 text-sm", 
-                hasUnsavedChanges 
-                  ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md" 
-                  : "bg-zinc-100 text-zinc-400 cursor-not-allowed border border-zinc-200"
+              className={cn(
+                "flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all text-sm font-medium",
+                hasUnsavedChanges
+                  ? "bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-200"
+                  : "text-zinc-400 hover:text-zinc-500"
               )}
-              title={hasUnsavedChanges ? "Salva Modifiche (Non salvate)" : "Tutto Salvato"}
+              title={hasUnsavedChanges ? "Salva Modifiche (Ctrl+S)" : "Tutto Salvato"}
             >
-              <Save size={16} />
-              {hasUnsavedChanges ? 'Salva Modifiche' : 'Salvato'}
+              {hasUnsavedChanges ? <Save size={14} /> : <Check size={14} />}
+              <span className="hidden sm:inline">{hasUnsavedChanges ? 'Salva' : 'Salvato'}</span>
             </button>
 
-            <div className="h-4 w-px bg-zinc-200 mr-2" />
-            
             <UserMenu />
 
-            <div className="h-4 w-px bg-zinc-200 ml-2 mr-2" />
-
-            <button 
+            <button
               onClick={handlePublish}
               disabled={isPublishing || isLoading}
-              className="flex items-center gap-2 px-6 py-2 text-sm font-black bg-zinc-900 text-white rounded-full hover:bg-zinc-800 shadow-xl shadow-zinc-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-5 py-1.5 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
-              {isPublishing ? <Loader2 className="animate-spin" size={16} /> : null}
-              {isPublishing ? 'Pubblicazione...' : 'Pubblica Sito'}
+              {isPublishing ? <Loader2 className="animate-spin" size={14} /> : <Rocket size={14} />}
+              {isPublishing ? 'Pubblicando...' : 'Pubblica'}
             </button>
           </div>
         </header>
 
         {isLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center bg-zinc-50 gap-3">
-             <Loader2 className="animate-spin text-zinc-200" size={48} />
-             <p className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.2em]">Caricamento Pagina...</p>
+            <div className="relative">
+              <div className="w-12 h-12 rounded-xl bg-zinc-100 flex items-center justify-center">
+                <Loader2 className="animate-spin text-zinc-300" size={24} />
+              </div>
+            </div>
+            <p className="text-xs text-zinc-400">Caricamento pagina...</p>
           </div>
         ) : (
           <EditorCanvas />
@@ -269,6 +308,8 @@ export function EditorClient({
       </div>
 
       <ConfigSidebar />
+      <ToastContainer />
+      <OnboardingTour />
     </div>
   );
 }

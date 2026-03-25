@@ -596,7 +596,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
 
-  hydrateEditor: (project, pages) => set({ project, projectPages: pages }),
+  hydrateEditor: (project, pages) => {
+    const homePage = pages.find(p => p.slug === 'home') || pages[0] || null;
+    set({ project, projectPages: pages, currentPage: homePage });
+  },
 
   publishProject: async () => {
     const { project } = get();
