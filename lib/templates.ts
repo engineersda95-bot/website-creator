@@ -1,177 +1,144 @@
 import { Block, BlockType } from '@/types/editor';
 import { v4 as uuidv4 } from 'uuid';
 
-export const TEMPLATES = {
+// Suggested project settings per template (font, colors)
+export const TEMPLATE_SETTINGS: Record<string, any> = {
+  RISTORANTE: { fontFamily: 'Playfair Display', primaryColor: '#b45309', secondaryColor: '#78350f', appearance: 'light', themeColors: { light: { bg: '#fffbeb', text: '#1c1917' }, dark: { bg: '#1c1917', text: '#fef3c7' } } },
+  PROFESSIONISTA: { fontFamily: 'Inter', primaryColor: '#1e3a5f', secondaryColor: '#0f766e', appearance: 'light', themeColors: { light: { bg: '#ffffff', text: '#0f172a' }, dark: { bg: '#0f172a', text: '#f1f5f9' } } },
+  landing: { fontFamily: 'Outfit', primaryColor: '#7c3aed', secondaryColor: '#2563eb', appearance: 'light', themeColors: { light: { bg: '#ffffff', text: '#18181b' }, dark: { bg: '#09090b', text: '#fafafa' } } },
+  SALONE: { fontFamily: 'Cormorant Garamond', primaryColor: '#be185d', secondaryColor: '#9d174d', appearance: 'light', themeColors: { light: { bg: '#fff1f2', text: '#1c1917' }, dark: { bg: '#1c1917', text: '#fecdd3' } } },
+  PALESTRA: { fontFamily: 'Oswald', primaryColor: '#dc2626', secondaryColor: '#ea580c', appearance: 'dark', themeColors: { light: { bg: '#ffffff', text: '#18181b' }, dark: { bg: '#0a0a0a', text: '#ffffff' } } },
+  NEGOZIO: { fontFamily: 'DM Sans', primaryColor: '#059669', secondaryColor: '#0d9488', appearance: 'light', themeColors: { light: { bg: '#ffffff', text: '#1c1917' }, dark: { bg: '#0c0c0e', text: '#f0fdf4' } } },
+  MEDICO: { fontFamily: 'Source Sans 3', primaryColor: '#0284c7', secondaryColor: '#0891b2', appearance: 'light', themeColors: { light: { bg: '#f0f9ff', text: '#0c4a6e' }, dark: { bg: '#0c4a6e', text: '#e0f2fe' } } },
+  HOTEL: { fontFamily: 'Lora', primaryColor: '#92400e', secondaryColor: '#a16207', appearance: 'light', themeColors: { light: { bg: '#fffbeb', text: '#1c1917' }, dark: { bg: '#1c1917', text: '#fef3c7' } } },
+  FOTOGRAFO: { fontFamily: 'Space Grotesk', primaryColor: '#18181b', secondaryColor: '#3f3f46', appearance: 'light', themeColors: { light: { bg: '#ffffff', text: '#09090b' }, dark: { bg: '#09090b', text: '#fafafa' } } },
+};
+
+export const TEMPLATES: Record<string, any[]> = {
   landing: [
-    {
-      type: 'navigation' as BlockType,
-      content: { 
-        logoText: 'PROXIMATICA', 
-        links: [
-          { label: 'Servizi', url: '#servizi' },
-          { label: 'Chi Siamo', url: '#chi-siamo' },
-          { label: 'Progetti', url: '#gallery' }
-        ], 
-        showContact: true, 
-        contactLabel: 'Inizia Ora', 
-        contactUrl: '#contatti' 
-      },
-      style: { padding: '2rem', align: 'right' as const }
-    },
-    {
-      type: 'hero' as BlockType,
-      content: { 
-        title: 'Realizziamo Visioni Digitali Straordinarie', 
-        subtitle: 'Dalla strategia al design, costruiamo esperienze che trasformano il tuo business e incantano i tuoi clienti.', 
-        cta: 'Scopri i Servizi',
-        ctaUrl: '#servizi'
-      },
-      style: { padding: '12rem', align: 'center' as const, fontSize: '120px', gap: '3rem' }
-    },
-    {
-      type: 'features' as BlockType,
-      content: { 
-        items: [
-          { title: 'Design Strategico', description: 'Non solo estetica, ma soluzioni pensate per convertire e guidare l\'utente.', icon: 'layers' },
-          { title: 'Sviluppo Cloud', description: 'Applicazioni veloci, scalabili e sicure con le tecnologie più moderne.', icon: 'zap' },
-          { title: 'Ottimizzazione SEO', description: 'Sorgiamo dai risultati di ricerca per darti la visibilità che meriti.', icon: 'rocket' }
-        ] 
-      },
-      style: { padding: '8rem', align: 'center' as const, backgroundColor: '#f9fafb', cardStyle: 'elevated' as const, gap: '3rem' }
-    },
-    {
-      type: 'image-text' as BlockType,
-      content: {
-        title: 'Innovazione Costante',
-        text: 'Ogni progetto è una sfida che affrontiamo con passione. Crediamo che la tecnologia debba essere al servizio dell\'uomo, non il contrario. Utilizziamo i tool più avanzati per garantire risultati d\'eccellenza in ogni dettaglio.',
-        image: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&q=80&w=2070',
-        imageSide: 'right',
-        cta: 'Certificazioni',
-        ctaUrl: '#'
-      },
-      style: { padding: '8rem', align: 'left' as const, gap: '100px', borderRadius: '4rem', shadow: 'L' as const }
-    },
-    {
-      type: 'gallery' as BlockType,
-      content: {
-        images: [
-          'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2426',
-          'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=2072',
-          'https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&q=80&w=2070',
-          'https://images.unsplash.com/photo-1522542550221-31fd19575a2d?auto=format&fit=crop&q=80&w=2070',
-          'https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&q=80&w=2074',
-          'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=2070'
-        ],
-        columns: 3
-      },
-      style: { padding: '8rem', gap: '2rem', borderRadius: '2rem', shadow: 'M' as const }
-    },
-    {
-      type: 'map' as BlockType,
-      content: {
-        address: 'Piazza del Duomo, Milano',
-        zoom: 15
-      },
-      style: { padding: '8rem', borderRadius: '4rem', shadow: 'L' as const }
-    },
-    {
-      type: 'contact' as BlockType,
-      content: { 
-        title: 'Sempre al Tuo Fianco', 
-        subtitle: 'Hai una domanda o vuoi iniziare a collaborare? Il nostro team è pronto ad ascoltarti.',
-        method: 'webhook',
-        receiverEmail: 'hello@proximatica.it',
-        subjectType: 'fixed',
-        fixedSubject: 'Contatto da Landing Page',
-        showPrivacy: true,
-        successTitle: 'Messaggio Inviato!',
-        successMessage: 'Grazie per averci contattato. Abbiamo ricevuto la tua richiesta.'
-      },
-      style: { padding: '10rem', backgroundColor: '#ffffff', borderRadius: '4rem' }
-    },
-    {
-      type: 'footer' as BlockType,
-      content: { 
-        copyright: `© ${new Date().getFullYear()} PROXIMATICA Agency`, 
-        logoText: 'PROXIMATICA',
-        layout: 'columns',
-        socialLinks: [
-          { platform: 'instagram', url: '#' },
-          { platform: 'linkedin', url: '#' },
-          { platform: 'twitter', url: '#' }
-        ]
-      },
-      style: { padding: 60, hPadding: 80, maxWidth: 1200, backgroundColor: '#f9fafb' }
-    }
+    { type: 'navigation' as BlockType, content: { logoText: 'PROXIMATICA', links: [{ label: 'Servizi', url: '#servizi' }, { label: 'Chi Siamo', url: '#chi-siamo' }, { label: 'Progetti', url: '#gallery' }], showContact: true, contactLabel: 'Inizia Ora', contactUrl: '#contatti' }, style: { padding: '2rem', align: 'right' as const } },
+    { type: 'hero' as BlockType, content: { title: 'Realizziamo Visioni Digitali Straordinarie', subtitle: 'Dalla strategia al design, costruiamo esperienze che trasformano il tuo business e incantano i tuoi clienti.', cta: 'Scopri i Servizi', ctaUrl: '#servizi' }, style: { padding: 160, align: 'center' as const, fontSize: '120px', gap: '3rem' } },
+    { type: 'benefits' as BlockType, content: { title: 'I Nostri Servizi', subtitle: 'Soluzioni complete per la tua crescita digitale.', items: [{ icon: 'Layers', title: 'Design Strategico', description: 'Interfacce pensate per convertire e guidare l\'utente verso l\'azione.' }, { icon: 'Zap', title: 'Sviluppo Cloud', description: 'Applicazioni veloci, scalabili e sicure con le tecnologie più moderne.' }, { icon: 'Rocket', title: 'Ottimizzazione SEO', description: 'Ti portiamo in cima ai risultati di ricerca per farti trovare.' }] }, style: { padding: 80, columns: 3, align: 'center' as const, boxStyle: 'card' as const, backgroundColor: '#f9fafb' } },
+    { type: 'image-text' as BlockType, content: { title: 'Innovazione Costante', text: 'Ogni progetto è una sfida che affrontiamo con passione. Crediamo che la tecnologia debba essere al servizio dell\'uomo. Utilizziamo i tool più avanzati per garantire risultati d\'eccellenza.', image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1200', imageSide: 'right', cta: 'Il Nostro Team', ctaUrl: '#' }, style: { padding: 80, align: 'left' as const, gap: '100px', borderRadius: '2rem', shadow: 'M' as const } },
+    { type: 'quote' as BlockType, content: { layout: 'grid', items: [{ text: 'Hanno trasformato la nostra idea in un prodotto digitale di altissimo livello. Professionali e creativi.', author: 'Andrea M.', role: 'CEO, TechVenture' }, { text: 'Il sito ha aumentato le nostre conversioni del 340%. ROI incredibile.', author: 'Sara L.', role: 'Marketing Director' }, { text: 'Team fantastico, sempre disponibili. Il progetto è stato consegnato in anticipo.', author: 'Marco R.', role: 'Founder, StartupX' }] }, style: { padding: 80, columns: 3 }, responsiveStyles: { tablet: { columns: 2 }, mobile: { columns: 1 } } },
+    { type: 'contact' as BlockType, content: { title: 'Parliamo del Tuo Progetto', subtitle: 'Hai un\'idea? Trasformiamola insieme. Compila il modulo e ti ricontatteremo entro 24 ore.', method: 'webhook', receiverEmail: '', subjectType: 'dropdown', subjectOptions: ['Nuovo Progetto', 'Collaborazione', 'Supporto'], showPrivacy: true, successTitle: 'Messaggio Inviato!', successMessage: 'Grazie! Ti ricontatteremo al più presto.' }, style: { padding: 100, backgroundColor: '#ffffff' } },
+    { type: 'footer' as BlockType, content: { copyright: `© ${new Date().getFullYear()} PROXIMATICA Agency`, logoText: 'PROXIMATICA', layout: 'columns', socialLinks: [{ platform: 'instagram', url: '#' }, { platform: 'linkedin', url: '#' }, { platform: 'twitter', url: '#' }] }, style: { padding: 60, hPadding: 80, maxWidth: 1200, backgroundColor: '#f9fafb' } }
   ],
+
+  RISTORANTE: [
+    { type: 'navigation' as BlockType, content: { logoText: 'Trattoria Da Nonna Rosa', links: [{ label: 'Menu', url: '#menu' }, { label: 'La Nostra Storia', url: '#chi-siamo' }, { label: 'Dove Siamo', url: '#dove-siamo' }], showContact: true, contactLabel: 'Prenota', contactUrl: '#contatti' }, style: { padding: '2rem', align: 'right' as const } },
+    { type: 'hero' as BlockType, content: { title: 'La vera cucina italiana, dal 1987', subtitle: 'Ingredienti freschi, ricette della tradizione e l\'amore di sempre. Vieni a trovarci o ordina comodamente da casa.', cta: 'Prenota un Tavolo', ctaUrl: '#contatti', backgroundImage: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=1600' }, style: { padding: 180, align: 'center' as const, fontSize: '90px', gap: '2.5rem', textColor: '#ffffff' } },
+    { type: 'benefits' as BlockType, content: { title: 'Perché scegliere noi', subtitle: 'Ogni piatto racconta una storia di passione, qualità e territorio.', items: [{ icon: 'Leaf', title: 'Ingredienti Freschi', description: 'Solo materie prime locali e di stagione, selezionate ogni mattina al mercato.' }, { icon: 'ChefHat', title: 'Tradizione Familiare', description: 'Ricette tramandate da tre generazioni, preparate con cura artigianale.' }, { icon: 'Truck', title: 'Consegna a Domicilio', description: 'I nostri piatti direttamente a casa tua, caldi e pronti da gustare.' }, { icon: 'Wine', title: 'Cantina Selezionata', description: 'Oltre 50 etichette italiane per accompagnare ogni portata.' }] }, style: { padding: 80, columns: 4, align: 'center' as const, boxStyle: 'card' as const } },
+    { type: 'cards' as BlockType, content: { title: 'I Nostri Piatti', layout: 'grid', items: [{ image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80&w=800', title: 'Pizza Margherita DOP', subtitle: 'Pomodoro San Marzano, mozzarella di bufala campana, basilico fresco e olio EVO.' }, { image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&q=80&w=800', title: 'Pasta alla Norma', subtitle: 'Rigatoni con melanzane fritte, pomodorino, ricotta salata e basilico.' }, { image: 'https://images.unsplash.com/photo-1432139555190-58524dae6a55?auto=format&fit=crop&q=80&w=800', title: 'Tagliata di Manzo', subtitle: 'Black Angus alla griglia, rucola, Parmigiano e riduzione di balsamico.' }, { image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&q=80&w=800', title: 'Tiramisù della Nonna', subtitle: 'Savoiardi, caffè espresso, crema al mascarpone e cacao amaro.' }] }, style: { padding: 80, align: 'center' as const, gap: 32, columns: 2, titleSize: 48, imageAspectRatio: '4/3', imageBorderRadius: 16, imageShadow: true, imageHover: true, cardTitleSize: 24, cardSubtitleSize: 14 }, responsiveStyles: { tablet: { columns: 2 }, mobile: { columns: 1 } } },
+    { type: 'image-text' as BlockType, content: { title: 'La Nostra Storia', text: 'Dal 1987 la famiglia Rossi porta in tavola i sapori autentici della cucina italiana. Nonna Rosa iniziò con pochi tavoli e tanta passione.\n\nOggi siamo un punto di riferimento per chi cerca qualità, calore e tradizione. Ogni giorno selezioniamo personalmente gli ingredienti al mercato, perché crediamo che un grande piatto nasca da una grande materia prima.', image: 'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&q=80&w=1200', imageSide: 'right', cta: 'Scopri il Menu', ctaUrl: '#menu' }, style: { padding: 80, align: 'left' as const, gap: '80px', borderRadius: '1.5rem', shadow: 'M' as const } },
+    { type: 'quote' as BlockType, content: { layout: 'grid', items: [{ text: 'La migliore trattoria della zona. Impasto leggero, ingredienti top. Ci torniamo ogni settimana!', author: 'Marco B.', role: 'Cliente abituale' }, { text: 'Ambiente caldo e familiare. La pasta alla Norma è da perdere la testa. Consigliatissimo.', author: 'Giulia T.', role: 'Recensione Google ★★★★★' }, { text: 'Abbiamo festeggiato qui il nostro anniversario. Servizio impeccabile e cibo eccezionale.', author: 'Luca e Sara', role: 'Evento privato' }] }, style: { padding: 80, columns: 3 }, responsiveStyles: { tablet: { columns: 2 }, mobile: { columns: 1 } } },
+    { type: 'how-it-works' as BlockType, content: { title: 'Ordina in 3 passi', items: [{ number: '1', title: 'Scegli', description: 'Consulta il menu e scegli i tuoi piatti preferiti.' }, { number: '2', title: 'Ordina', description: 'Chiamaci o scrivici su WhatsApp per effettuare l\'ordine.' }, { number: '3', title: 'Gusta', description: 'Ritira al locale o ricevi tutto comodamente a domicilio.' }] }, style: { padding: 80, layout: 'grid', align: 'center' as const } },
+    { type: 'faq' as BlockType, content: { items: [{ question: 'Quali sono gli orari di apertura?', answer: 'Siamo aperti dal martedì alla domenica, 12:00-15:00 e 19:00-23:00. Lunedì chiuso.' }, { question: 'È possibile prenotare?', answer: 'Certo! Telefonicamente, via WhatsApp o compilando il modulo qui sotto.' }, { question: 'Avete opzioni per intolleranze?', answer: 'Sì: opzioni senza glutine, vegetariane e vegane. Comunicaci le tue esigenze.' }, { question: 'Fate consegna a domicilio?', answer: 'Sì, nel raggio di 5 km. Minimo 20€, gratuita sopra 35€.' }, { question: 'C\'è il parcheggio?', answer: 'Parcheggio privato gratuito con 15 posti dietro il ristorante.' }] }, style: { padding: 80, align: 'left' as const } },
+    { type: 'embed' as BlockType, content: { type: 'map', url: 'Via Roma 42, Milano' }, style: { padding: 60 } },
+    { type: 'contact' as BlockType, content: { title: 'Prenota il Tuo Tavolo', subtitle: 'Compila il modulo e ti confermiamo la disponibilità in poche ore!', method: 'webhook', receiverEmail: '', subjectType: 'dropdown', subjectOptions: ['Prenotazione Tavolo', 'Ordine a Domicilio', 'Evento Privato', 'Informazioni'], showPrivacy: true, successTitle: 'Prenotazione Ricevuta!', successMessage: 'Grazie! Ti confermeremo al più presto. A presto da Nonna Rosa!' }, style: { padding: 80, align: 'center' as const, maxWidth: 800 } },
+    { type: 'footer' as BlockType, content: { copyright: `© ${new Date().getFullYear()} Trattoria Da Nonna Rosa`, logoText: 'Trattoria Da Nonna Rosa', layout: 'columns', socialLinks: [{ platform: 'instagram', url: '#' }, { platform: 'facebook', url: '#' }, { platform: 'whatsapp', url: '#' }] }, style: { padding: 60, hPadding: 80, maxWidth: 1200, backgroundColor: '#fffbeb' } }
+  ],
+
+  PROFESSIONISTA: [
+    { type: 'navigation' as BlockType, content: { logoText: 'Avv. Marco Bianchi', links: [{ label: 'Competenze', url: '#servizi' }, { label: 'Chi Sono', url: '#chi-sono' }, { label: 'Testimonianze', url: '#testimonianze' }], showContact: true, contactLabel: 'Consulenza Gratuita', contactUrl: '#contatti' }, style: { padding: '2rem', align: 'right' as const } },
+    { type: 'hero' as BlockType, content: { title: 'Il tuo diritto, la mia missione', subtitle: 'Avvocato civilista con oltre 15 anni di esperienza. Assistenza legale chiara, trasparente e orientata ai risultati.', cta: 'Prenota una Consulenza', ctaUrl: '#contatti' }, style: { padding: 140, align: 'center' as const, fontSize: '100px', gap: '3rem' } },
+    { type: 'benefits' as BlockType, content: { title: 'Aree di Competenza', subtitle: 'Assistenza specializzata nei principali ambiti del diritto.', items: [{ icon: 'Scale', title: 'Diritto Civile', description: 'Controversie contrattuali, risarcimento danni, responsabilità professionale.' }, { icon: 'Home', title: 'Diritto Immobiliare', description: 'Compravendite, locazioni, condominio, diritti reali e usucapione.' }, { icon: 'Users', title: 'Diritto di Famiglia', description: 'Separazioni, divorzi, affidamento minori, successioni e testamenti.' }, { icon: 'Briefcase', title: 'Diritto del Lavoro', description: 'Licenziamenti, mobbing, contrattualistica e tutela del lavoratore.' }] }, style: { padding: 80, columns: 2, align: 'center' as const, boxStyle: 'card' as const } },
+    { type: 'image-text' as BlockType, content: { title: 'Chi Sono', text: 'Sono Marco Bianchi, avvocato civilista iscritto all\'Ordine di Milano dal 2008. Ho gestito oltre 500 casi con un tasso di successo del 92%.\n\nIl mio approccio è semplice: ascoltare, analizzare e agire. Ogni cliente merita una consulenza chiara e onesta, senza tecnicismi inutili.', image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=800', imageSide: 'left', cta: 'Il Mio Curriculum', ctaUrl: '#' }, style: { padding: 80, align: 'left' as const, gap: '80px', borderRadius: '1.5rem', shadow: 'M' as const } },
+    { type: 'how-it-works' as BlockType, content: { title: 'Come Lavoro', items: [{ number: '1', title: 'Consulenza Iniziale', description: 'Analizziamo il tuo caso in un primo incontro gratuito e senza impegno.' }, { number: '2', title: 'Strategia Legale', description: 'Definiamo la strategia con una stima chiara di tempi e costi.' }, { number: '3', title: 'Risultato', description: 'Mi occupo dell\'intero iter, tenendoti aggiornato a ogni passaggio.' }] }, style: { padding: 80, layout: 'grid', align: 'center' as const } },
+    { type: 'quote' as BlockType, content: { layout: 'grid', items: [{ text: 'Professionale e risolutivo. Ha gestito la mia causa con grande competenza. Consigliatissimo.', author: 'Roberto M.', role: 'Contenzioso civile' }, { text: 'Mi ha assistito nel divorzio con umanità e professionalità. Ti fa sentire tutelato.', author: 'Laura P.', role: 'Diritto di famiglia' }, { text: 'Ha risolto una disputa condominiale che si trascinava da anni. Chiaro e diretto.', author: 'Giovanni S.', role: 'Diritto immobiliare' }] }, style: { padding: 80, columns: 3 }, responsiveStyles: { tablet: { columns: 2 }, mobile: { columns: 1 } } },
+    { type: 'faq' as BlockType, content: { items: [{ question: 'La prima consulenza è gratuita?', answer: 'Sì, il primo incontro è sempre gratuito e senza impegno.' }, { question: 'Quanto costa?', answer: 'Le tariffe vengono concordate dopo la prima consulenza, in base alla complessità del caso.' }, { question: 'In quali zone operate?', answer: 'Lo studio è a Milano, seguo clienti in tutta la Lombardia. Alcune pratiche anche da remoto.' }, { question: 'Quanto dura una causa civile?', answer: 'Da pochi mesi (mediazione) a 2-3 anni (contenzioso). Valutiamo la strada più rapida.' }] }, style: { padding: 80, align: 'left' as const } },
+    { type: 'contact' as BlockType, content: { title: 'Richiedi una Consulenza', subtitle: 'Compila il modulo per fissare un appuntamento gratuito.', method: 'webhook', receiverEmail: '', subjectType: 'dropdown', subjectOptions: ['Consulenza Generica', 'Diritto Civile', 'Diritto di Famiglia', 'Diritto Immobiliare', 'Diritto del Lavoro'], showPrivacy: true, successTitle: 'Richiesta Inviata!', successMessage: 'Ti ricontatteremo entro 24 ore.' }, style: { padding: 80, align: 'center' as const, maxWidth: 800 } },
+    { type: 'footer' as BlockType, content: { copyright: `© ${new Date().getFullYear()} Avv. Marco Bianchi — Studio Legale`, logoText: 'Avv. Marco Bianchi', layout: 'columns', socialLinks: [{ platform: 'linkedin', url: '#' }] }, style: { padding: 60, hPadding: 80, maxWidth: 1200 } }
+  ],
+
+  SALONE: [
+    { type: 'navigation' as BlockType, content: { logoText: 'Maison Beauté', links: [{ label: 'Trattamenti', url: '#servizi' }, { label: 'Chi Siamo', url: '#chi-siamo' }, { label: 'Listino', url: '#listino' }], showContact: true, contactLabel: 'Prenota Ora', contactUrl: '#contatti' }, style: { padding: '2rem', align: 'right' as const } },
+    { type: 'hero' as BlockType, content: { title: 'Il tuo momento di bellezza', subtitle: 'Trattamenti personalizzati per viso e corpo. Rilassati, al resto pensiamo noi.', cta: 'Prenota il Tuo Trattamento', ctaUrl: '#contatti', backgroundImage: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1600' }, style: { padding: 180, align: 'center' as const, fontSize: '85px', gap: '2.5rem', textColor: '#ffffff' } },
+    { type: 'benefits' as BlockType, content: { title: 'I Nostri Trattamenti', subtitle: 'Cura, bellezza e benessere in un unico luogo.', items: [{ icon: 'Sparkles', title: 'Cura del Viso', description: 'Pulizia, peeling, trattamenti anti-age e illuminanti con cosmetici premium.' }, { icon: 'Heart', title: 'Cura del Corpo', description: 'Massaggi rilassanti, scrub, bendaggi e trattamenti rassodanti.' }, { icon: 'Scissors', title: 'Hair Styling', description: 'Taglio, colore, piega e trattamenti ricostruttivi per i tuoi capelli.' }, { icon: 'Star', title: 'Mani & Piedi', description: 'Manicure, pedicure, semipermanente e nail art.' }] }, style: { padding: 80, columns: 4, align: 'center' as const, boxStyle: 'card' as const } },
+    { type: 'cards' as BlockType, content: { title: 'Listino Prezzi', layout: 'grid', items: [{ image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&q=80&w=800', title: 'Pulizia Viso Completa', subtitle: 'Detergenza, scrub, vapore, estrazione e maschera. 60 min — da 65€' }, { image: 'https://images.unsplash.com/photo-1519823551278-64ac92734314?auto=format&fit=crop&q=80&w=800', title: 'Massaggio Rilassante', subtitle: 'Massaggio total body con oli essenziali. 50 min — da 55€' }, { image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=800', title: 'Taglio & Piega', subtitle: 'Consulenza, shampoo, taglio personalizzato e piega. Da 35€' }] }, style: { padding: 80, align: 'center' as const, gap: 32, columns: 3, titleSize: 42, imageAspectRatio: '3/4', imageBorderRadius: 20, imageShadow: true, imageHover: true, cardTitleSize: 22, cardSubtitleSize: 13 }, responsiveStyles: { tablet: { columns: 2 }, mobile: { columns: 1 } } },
+    { type: 'image-text' as BlockType, content: { title: 'Chi Siamo', text: 'Maison Beauté nasce dalla passione di Elena e il suo team di estetiste qualificate. Da oltre 10 anni ci prendiamo cura delle nostre clienti con professionalità e attenzione.\n\nUtilizziamo solo prodotti di alta gamma, certificati e cruelty-free. Il nostro salone è un\'oasi di relax nel cuore della città.', image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=1200', imageSide: 'left', cta: 'Scopri i Trattamenti', ctaUrl: '#servizi' }, style: { padding: 80, align: 'left' as const, gap: '80px', borderRadius: '1.5rem', shadow: 'M' as const } },
+    { type: 'quote' as BlockType, content: { layout: 'grid', items: [{ text: 'Le mie mani non sono mai state così belle. Personale gentilissimo e ambiente super rilassante.', author: 'Valentina R.', role: '★★★★★ Google' }, { text: 'Finalmente ho trovato il mio salone di fiducia. Competenza e cura del dettaglio incredibili.', author: 'Francesca M.', role: 'Cliente dal 2019' }] }, style: { padding: 80, columns: 2 }, responsiveStyles: { mobile: { columns: 1 } } },
+    { type: 'faq' as BlockType, content: { items: [{ question: 'Come posso prenotare?', answer: 'Telefonicamente, via WhatsApp o compilando il form sul sito.' }, { question: 'Quali prodotti utilizzate?', answer: 'Solo prodotti professionali certificati e cruelty-free di brand italiani ed europei.' }, { question: 'Offrite pacchetti regalo?', answer: 'Sì! Gift card e pacchetti benessere disponibili in salone e online.' }] }, style: { padding: 80, align: 'left' as const } },
+    { type: 'contact' as BlockType, content: { title: 'Prenota il Tuo Appuntamento', subtitle: 'Scegli il trattamento e ti ricontattiamo per confermare data e orario.', method: 'webhook', receiverEmail: '', subjectType: 'dropdown', subjectOptions: ['Cura del Viso', 'Cura del Corpo', 'Hair Styling', 'Mani & Piedi', 'Altro'], showPrivacy: true, successTitle: 'Prenotazione Inviata!', successMessage: 'Ti confermeremo l\'appuntamento al più presto.' }, style: { padding: 80, align: 'center' as const, maxWidth: 800 } },
+    { type: 'footer' as BlockType, content: { copyright: `© ${new Date().getFullYear()} Maison Beauté`, logoText: 'Maison Beauté', layout: 'columns', socialLinks: [{ platform: 'instagram', url: '#' }, { platform: 'facebook', url: '#' }] }, style: { padding: 60, hPadding: 80, maxWidth: 1200, backgroundColor: '#fff1f2' } }
+  ],
+
+  PALESTRA: [
+    { type: 'navigation' as BlockType, content: { logoText: 'IRON GYM', links: [{ label: 'Corsi', url: '#corsi' }, { label: 'Trainer', url: '#trainer' }, { label: 'Orari', url: '#orari' }], showContact: true, contactLabel: 'Prova Gratuita', contactUrl: '#contatti' }, style: { padding: '2rem', align: 'right' as const } },
+    { type: 'hero' as BlockType, content: { title: 'SUPERA I TUOI LIMITI', subtitle: 'Allenamenti personalizzati, trainer certificati e attrezzature di ultima generazione. La tua trasformazione inizia qui.', cta: 'Prova Gratuita', ctaUrl: '#contatti', backgroundImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1600' }, style: { padding: 200, align: 'center' as const, fontSize: '110px', gap: '2rem', textColor: '#ffffff' } },
+    { type: 'benefits' as BlockType, content: { title: 'Perché IRON GYM', subtitle: '', items: [{ icon: 'Dumbbell', title: 'Attrezzatura Premium', description: 'Macchine Technogym, pesi liberi, zona funzionale e cardio di ultima generazione.' }, { icon: 'Users', title: 'Trainer Certificati', description: 'Personal trainer qualificati per seguirti in ogni fase del tuo percorso.' }, { icon: 'Clock', title: 'Aperto 6-23', description: 'Orari flessibili per adattarsi al tuo stile di vita. Anche nei weekend.' }, { icon: 'Flame', title: '30+ Corsi', description: 'CrossFit, yoga, boxe, spinning, pilates e molto altro. Per ogni livello.' }] }, style: { padding: 80, columns: 4, align: 'center' as const, boxStyle: 'card' as const } },
+    { type: 'cards' as BlockType, content: { title: 'I Nostri Corsi', layout: 'grid', items: [{ image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=800', title: 'CrossFit', subtitle: 'Allenamento funzionale ad alta intensità. Forza, resistenza e agilità.' }, { image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=800', title: 'Yoga & Pilates', subtitle: 'Flessibilità, equilibrio e benessere mentale. Per tutti i livelli.' }, { image: 'https://images.unsplash.com/photo-1549576490-b0b4831ef60a?auto=format&fit=crop&q=80&w=800', title: 'Boxe Fitness', subtitle: 'Scarica lo stress e tonifica il corpo. Lezioni di gruppo dinamiche.' }] }, style: { padding: 80, align: 'center' as const, gap: 32, columns: 3, titleSize: 42, imageAspectRatio: '16/9', imageBorderRadius: 12, imageShadow: true, imageHover: true, cardTitleSize: 24, cardSubtitleSize: 14 }, responsiveStyles: { tablet: { columns: 2 }, mobile: { columns: 1 } } },
+    { type: 'how-it-works' as BlockType, content: { title: 'Inizia in 3 Step', items: [{ number: '1', title: 'Prova Gratuita', description: 'Vieni in palestra per un allenamento di prova senza impegno.' }, { number: '2', title: 'Piano Personalizzato', description: 'Il tuo trainer crea un programma su misura per i tuoi obiettivi.' }, { number: '3', title: 'Allenati e Cresci', description: 'Segui il tuo piano, monitora i progressi e supera i tuoi limiti.' }] }, style: { padding: 80, layout: 'grid', align: 'center' as const } },
+    { type: 'quote' as BlockType, content: { layout: 'grid', items: [{ text: 'In 6 mesi ho perso 15kg e guadagnato sicurezza. I trainer di Iron Gym sono i migliori!', author: 'Alessandro F.', role: 'Membro da 1 anno' }, { text: 'Ambiente motivante, nessun giudizio. Mi sento a casa ogni volta che entro.', author: 'Chiara D.', role: 'Membro da 3 mesi' }] }, style: { padding: 80, columns: 2 }, responsiveStyles: { mobile: { columns: 1 } } },
+    { type: 'faq' as BlockType, content: { items: [{ question: 'La prova gratuita è davvero senza impegno?', answer: 'Sì al 100%. Vieni, prova e poi decidi. Zero pressioni.' }, { question: 'Quanto costa l\'abbonamento?', answer: 'Mensile da 49€, trimestrale da 39€/mese, annuale da 29€/mese. Contattaci per dettagli.' }, { question: 'Posso allenarmi senza personal trainer?', answer: 'Certo, la sala pesi e i corsi di gruppo sono inclusi in tutti gli abbonamenti.' }] }, style: { padding: 80, align: 'left' as const } },
+    { type: 'contact' as BlockType, content: { title: 'Inizia Oggi', subtitle: 'Compila il form per prenotare la tua prova gratuita.', method: 'webhook', receiverEmail: '', subjectType: 'fixed', fixedSubject: 'Richiesta Prova Gratuita', showPrivacy: true, successTitle: 'Ci Vediamo in Palestra!', successMessage: 'Ti contatteremo per fissare il tuo primo allenamento.' }, style: { padding: 80, align: 'center' as const, maxWidth: 800 } },
+    { type: 'footer' as BlockType, content: { copyright: `© ${new Date().getFullYear()} IRON GYM`, logoText: 'IRON GYM', layout: 'columns', socialLinks: [{ platform: 'instagram', url: '#' }, { platform: 'youtube', url: '#' }] }, style: { padding: 60, hPadding: 80, maxWidth: 1200, backgroundColor: '#0a0a0a', color: '#ffffff' } }
+  ],
+
+  NEGOZIO: [
+    { type: 'navigation' as BlockType, content: { logoText: 'Bottega Verde', links: [{ label: 'Prodotti', url: '#prodotti' }, { label: 'Chi Siamo', url: '#chi-siamo' }, { label: 'Dove Siamo', url: '#dove-siamo' }], showContact: true, contactLabel: 'Contattaci', contactUrl: '#contatti' }, style: { padding: '2rem', align: 'right' as const } },
+    { type: 'hero' as BlockType, content: { title: 'Qualità artigianale, dal 1965', subtitle: 'Prodotti selezionati con cura per chi ama le cose fatte bene. Vieni a scoprire la nostra bottega.', cta: 'Scopri i Prodotti', ctaUrl: '#prodotti', backgroundImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1600' }, style: { padding: 160, align: 'center' as const, fontSize: '90px', gap: '2.5rem', textColor: '#ffffff' } },
+    { type: 'cards' as BlockType, content: { title: 'I Nostri Prodotti', layout: 'grid', items: [{ image: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?auto=format&fit=crop&q=80&w=800', title: 'Cosmesi Naturale', subtitle: 'Creme, oli e saponi artigianali con ingredienti 100% naturali e biologici.' }, { image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&q=80&w=800', title: 'Tisane & Infusi', subtitle: 'Miscele di erbe selezionate per il tuo benessere quotidiano.' }, { image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&q=80&w=800', title: 'Oli Essenziali', subtitle: 'Aromaterapia pura: lavanda, eucalipto, tea tree e molto altro.' }, { image: 'https://images.unsplash.com/photo-1563170351-be82bc888aa4?auto=format&fit=crop&q=80&w=800', title: 'Regali & Confezioni', subtitle: 'Gift box personalizzate per ogni occasione speciale.' }] }, style: { padding: 80, align: 'center' as const, gap: 28, columns: 4, titleSize: 42, imageAspectRatio: '1/1', imageBorderRadius: 16, imageShadow: true, imageHover: true, cardTitleSize: 20, cardSubtitleSize: 13 }, responsiveStyles: { tablet: { columns: 2 }, mobile: { columns: 2 } } },
+    { type: 'image-text' as BlockType, content: { title: 'La Nostra Filosofia', text: 'Bottega Verde nasce dall\'idea che le cose semplici sono le più preziose. Selezioniamo ogni prodotto con la stessa cura che avrebbe un artigiano.\n\nDal 1965, tre generazioni di passione per la qualità. Ogni articolo nel nostro negozio racconta una storia di territorio, tradizione e rispetto per la natura.', image: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&q=80&w=1200', imageSide: 'right', cta: 'Vieni a Trovarci', ctaUrl: '#dove-siamo' }, style: { padding: 80, align: 'left' as const, gap: '80px', borderRadius: '1.5rem', shadow: 'M' as const } },
+    { type: 'benefits' as BlockType, content: { title: 'Perché Sceglierci', subtitle: '', items: [{ icon: 'Leaf', title: '100% Naturale', description: 'Solo ingredienti biologici e certificati. Zero chimica.' }, { icon: 'Package', title: 'Fatto a Mano', description: 'Ogni prodotto è preparato artigianalmente nel nostro laboratorio.' }, { icon: 'Recycle', title: 'Eco-Friendly', description: 'Packaging riciclabile e filiera corta. Rispetto per l\'ambiente.' }] }, style: { padding: 80, columns: 3, align: 'center' as const, boxStyle: 'card' as const } },
+    { type: 'embed' as BlockType, content: { type: 'map', url: 'Via Garibaldi 15, Torino' }, style: { padding: 60 } },
+    { type: 'contact' as BlockType, content: { title: 'Scrivici', subtitle: 'Per ordini, informazioni o consigli personalizzati.', method: 'webhook', receiverEmail: '', subjectType: 'dropdown', subjectOptions: ['Informazioni Prodotto', 'Ordine Speciale', 'Confezione Regalo', 'Altro'], showPrivacy: true, successTitle: 'Messaggio Inviato!', successMessage: 'Ti rispondiamo entro 24 ore. Grazie!' }, style: { padding: 80, align: 'center' as const, maxWidth: 800 } },
+    { type: 'footer' as BlockType, content: { copyright: `© ${new Date().getFullYear()} Bottega Verde`, logoText: 'Bottega Verde', layout: 'columns', socialLinks: [{ platform: 'instagram', url: '#' }, { platform: 'facebook', url: '#' }] }, style: { padding: 60, hPadding: 80, maxWidth: 1200 } }
+  ],
+
+  MEDICO: [
+    { type: 'navigation' as BlockType, content: { logoText: 'Studio Dott. Rossi', links: [{ label: 'Specializzazioni', url: '#servizi' }, { label: 'Lo Studio', url: '#chi-siamo' }, { label: 'Prenota', url: '#contatti' }], showContact: true, contactLabel: 'Prenota Visita', contactUrl: '#contatti' }, style: { padding: '2rem', align: 'right' as const } },
+    { type: 'hero' as BlockType, content: { title: 'La tua salute, la nostra priorità', subtitle: 'Studio medico specializzato in medicina generale e diagnostica avanzata. Tecnologia moderna e approccio umano.', cta: 'Prenota una Visita', ctaUrl: '#contatti' }, style: { padding: 140, align: 'center' as const, fontSize: '90px', gap: '2.5rem' } },
+    { type: 'benefits' as BlockType, content: { title: 'Le Nostre Specializzazioni', subtitle: 'Un team multidisciplinare per la tua salute.', items: [{ icon: 'Stethoscope', title: 'Medicina Generale', description: 'Visite, check-up completi e programmi di prevenzione personalizzati.' }, { icon: 'Heart', title: 'Cardiologia', description: 'ECG, ecocardiogramma, monitoraggio pressorio e visite cardiologiche.' }, { icon: 'Bone', title: 'Ortopedia', description: 'Diagnosi e trattamento di problematiche muscolo-scheletriche.' }, { icon: 'Eye', title: 'Dermatologia', description: 'Mappatura nei, trattamenti dermatologici e consulenze specialistiche.' }] }, style: { padding: 80, columns: 2, align: 'center' as const, boxStyle: 'card' as const } },
+    { type: 'image-text' as BlockType, content: { title: 'Lo Studio', text: 'Lo Studio Dott. Rossi è un ambulatorio moderno situato nel centro di Roma. Disponiamo di attrezzature diagnostiche di ultima generazione e un team di 8 specialisti.\n\nCrediamo in una medicina che mette al centro la persona: ogni paziente merita tempo, ascolto e le migliori cure disponibili.', image: 'https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?auto=format&fit=crop&q=80&w=1200', imageSide: 'right', cta: 'Il Nostro Team', ctaUrl: '#' }, style: { padding: 80, align: 'left' as const, gap: '80px', borderRadius: '1.5rem', shadow: 'M' as const } },
+    { type: 'how-it-works' as BlockType, content: { title: 'Come Prenotare', items: [{ number: '1', title: 'Contattaci', description: 'Chiama, scrivi o compila il form indicando la specializzazione.' }, { number: '2', title: 'Conferma', description: 'Ti proponiamo data e orario disponibili e confermiamo via SMS.' }, { number: '3', title: 'Visita', description: 'Vieni in studio con la tessera sanitaria e eventuali referti precedenti.' }] }, style: { padding: 80, layout: 'grid', align: 'center' as const } },
+    { type: 'faq' as BlockType, content: { items: [{ question: 'Accettate il servizio sanitario nazionale?', answer: 'Sì, lavoriamo sia in convenzione SSN che in regime privato.' }, { question: 'È necessaria la prenotazione?', answer: 'Sì, per garantire il giusto tempo a ogni paziente lavoriamo solo su appuntamento.' }, { question: 'Quanto dura una visita?', answer: 'Una visita specialistica dura in media 30-45 minuti.' }, { question: 'C\'è il parcheggio?', answer: 'Parcheggio convenzionato a 50 metri dallo studio con tariffa agevolata per i pazienti.' }] }, style: { padding: 80, align: 'left' as const } },
+    { type: 'contact' as BlockType, content: { title: 'Prenota la Tua Visita', subtitle: 'Compila il modulo e ti ricontattiamo per confermare l\'appuntamento.', method: 'webhook', receiverEmail: '', subjectType: 'dropdown', subjectOptions: ['Medicina Generale', 'Cardiologia', 'Ortopedia', 'Dermatologia', 'Altro'], showPrivacy: true, successTitle: 'Richiesta Ricevuta!', successMessage: 'Ti contatteremo entro 24 ore per confermare l\'appuntamento.' }, style: { padding: 80, align: 'center' as const, maxWidth: 800 } },
+    { type: 'footer' as BlockType, content: { copyright: `© ${new Date().getFullYear()} Studio Dott. Rossi`, logoText: 'Studio Dott. Rossi', layout: 'columns', socialLinks: [{ platform: 'facebook', url: '#' }] }, style: { padding: 60, hPadding: 80, maxWidth: 1200, backgroundColor: '#f0f9ff' } }
+  ],
+
+  HOTEL: [
+    { type: 'navigation' as BlockType, content: { logoText: 'Villa Sole', links: [{ label: 'Camere', url: '#camere' }, { label: 'Servizi', url: '#servizi' }, { label: 'Posizione', url: '#posizione' }], showContact: true, contactLabel: 'Prenota', contactUrl: '#contatti' }, style: { padding: '2rem', align: 'right' as const } },
+    { type: 'hero' as BlockType, content: { title: 'Il tuo rifugio sul lago', subtitle: 'Ospitalità raffinata, panorami mozzafiato e il comfort di una casa lontano da casa. Benvenuti a Villa Sole.', cta: 'Verifica Disponibilità', ctaUrl: '#contatti', backgroundImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1600' }, style: { padding: 200, align: 'center' as const, fontSize: '85px', gap: '2.5rem', textColor: '#ffffff' } },
+    { type: 'cards' as BlockType, content: { title: 'Le Nostre Camere', layout: 'grid', items: [{ image: 'https://images.unsplash.com/photo-1590490360182-c33d955e5017?auto=format&fit=crop&q=80&w=800', title: 'Camera Superior', subtitle: 'Letto king-size, vista giardino, bagno in marmo. Da 120€/notte.' }, { image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800', title: 'Suite Panoramica', subtitle: 'Terrazza privata con vista lago, jacuzzi e minibar premium. Da 220€/notte.' }, { image: 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&q=80&w=800', title: 'Camera Family', subtitle: 'Spazio per tutta la famiglia con letti extra e area gioco. Da 160€/notte.' }] }, style: { padding: 80, align: 'center' as const, gap: 32, columns: 3, titleSize: 42, imageAspectRatio: '3/2', imageBorderRadius: 16, imageShadow: true, imageHover: true, cardTitleSize: 24, cardSubtitleSize: 13 }, responsiveStyles: { tablet: { columns: 2 }, mobile: { columns: 1 } } },
+    { type: 'benefits' as BlockType, content: { title: 'I Nostri Servizi', subtitle: 'Tutto per rendere il tuo soggiorno indimenticabile.', items: [{ icon: 'UtensilsCrossed', title: 'Ristorante Gourmet', description: 'Cucina locale con ingredienti a km zero. Colazione inclusa.' }, { icon: 'Waves', title: 'Spa & Piscina', description: 'Centro benessere con sauna, bagno turco e piscina panoramica.' }, { icon: 'Bike', title: 'Escursioni', description: 'Noleggio bici, trekking guidati e tour in barca sul lago.' }, { icon: 'Wifi', title: 'WiFi & Comfort', description: 'WiFi veloce, parcheggio privato e servizio in camera 24/7.' }] }, style: { padding: 80, columns: 4, align: 'center' as const, boxStyle: 'card' as const } },
+    { type: 'image-text' as BlockType, content: { title: 'Un Luogo Speciale', text: 'Villa Sole è una dimora storica del XVIII secolo, restaurata con cura per offrire il perfetto equilibrio tra charme d\'epoca e comfort moderno.\n\nAffacciata direttamente sul lago, con un parco secolare di 2 ettari, è il luogo ideale per una fuga romantica, una vacanza in famiglia o un evento esclusivo.', image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1200', imageSide: 'left', cta: 'Scopri la Storia', ctaUrl: '#' }, style: { padding: 80, align: 'left' as const, gap: '80px', borderRadius: '1.5rem', shadow: 'M' as const } },
+    { type: 'quote' as BlockType, content: { layout: 'grid', items: [{ text: 'Un posto magico. La vista dal balcone della suite è qualcosa di indescrivibile. Torneremo sicuramente.', author: 'Andrea & Marta', role: 'Booking.com ★★★★★' }, { text: 'Colazione eccezionale, staff gentilissimo. Il miglior hotel in cui siamo stati in Italia.', author: 'James W.', role: 'TripAdvisor' }] }, style: { padding: 80, columns: 2 }, responsiveStyles: { mobile: { columns: 1 } } },
+    { type: 'embed' as BlockType, content: { type: 'map', url: 'Bellagio, Lago di Como' }, style: { padding: 60 } },
+    { type: 'contact' as BlockType, content: { title: 'Prenota il Tuo Soggiorno', subtitle: 'Inviaci le date desiderate e ti rispondiamo con disponibilità e preventivo.', method: 'webhook', receiverEmail: '', subjectType: 'dropdown', subjectOptions: ['Camera Superior', 'Suite Panoramica', 'Camera Family', 'Evento Privato', 'Informazioni'], showPrivacy: true, successTitle: 'Richiesta Ricevuta!', successMessage: 'Ti invieremo il preventivo entro 24 ore. A presto a Villa Sole!' }, style: { padding: 80, align: 'center' as const, maxWidth: 800 } },
+    { type: 'footer' as BlockType, content: { copyright: `© ${new Date().getFullYear()} Villa Sole — Bellagio`, logoText: 'Villa Sole', layout: 'columns', socialLinks: [{ platform: 'instagram', url: '#' }, { platform: 'facebook', url: '#' }, { platform: 'tripadvisor', url: '#' }] }, style: { padding: 60, hPadding: 80, maxWidth: 1200, backgroundColor: '#fffbeb' } }
+  ],
+
+  FOTOGRAFO: [
+    { type: 'navigation' as BlockType, content: { logoText: 'LUCA NERI', links: [{ label: 'Portfolio', url: '#portfolio' }, { label: 'Servizi', url: '#servizi' }, { label: 'Contatti', url: '#contatti' }], showContact: false }, style: { padding: '2rem', align: 'right' as const } },
+    { type: 'hero' as BlockType, content: { title: 'Raccontare storie attraverso la luce', subtitle: 'Fotografo professionista specializzato in ritratti, eventi e branding. Ogni scatto è un\'emozione.', cta: 'Vedi il Portfolio', ctaUrl: '#portfolio', backgroundImage: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?auto=format&fit=crop&q=80&w=1600' }, style: { padding: 200, align: 'left' as const, fontSize: '90px', gap: '2rem', textColor: '#ffffff' } },
+    { type: 'cards' as BlockType, content: { title: 'Portfolio', layout: 'grid', items: [{ image: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=800', title: 'Ritratto', subtitle: '' }, { image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800', title: 'Matrimoni', subtitle: '' }, { image: 'https://images.unsplash.com/photo-1505236858219-8359eb29e329?auto=format&fit=crop&q=80&w=800', title: 'Food & Product', subtitle: '' }, { image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800', title: 'Eventi', subtitle: '' }, { image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=800', title: 'Travel', subtitle: '' }, { image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800', title: 'Corporate', subtitle: '' }] }, style: { padding: 60, align: 'center' as const, gap: 8, columns: 3, titleSize: 42, imageAspectRatio: '1/1', imageBorderRadius: 4, imageShadow: false, imageHover: true, cardTitleSize: 16, cardSubtitleSize: 12 }, responsiveStyles: { tablet: { columns: 2 }, mobile: { columns: 2 } } },
+    { type: 'benefits' as BlockType, content: { title: 'Servizi', subtitle: '', items: [{ icon: 'Camera', title: 'Shooting Ritratto', description: 'Sessioni in studio o outdoor. Ritocco professionale incluso. Da 150€.' }, { icon: 'Heart', title: 'Matrimoni & Eventi', description: 'Reportage completo della giornata. Consegna gallery online in 2 settimane.' }, { icon: 'Building', title: 'Branding Aziendale', description: 'Foto corporate, headshot team, prodotti. Pacchetti su misura.' }] }, style: { padding: 80, columns: 3, align: 'center' as const, boxStyle: 'card' as const } },
+    { type: 'image-text' as BlockType, content: { title: 'Chi Sono', text: 'Sono Luca Neri, fotografo professionista con 12 anni di esperienza. Ho collaborato con brand come Vogue Italia, Barilla e Fiat.\n\nLa mia filosofia è semplice: trovare la bellezza nell\'autenticità. Non cerco la perfezione, cerco la verità. Ogni persona, ogni luogo, ogni momento ha una storia — il mio lavoro è raccontarla.', image: 'https://images.unsplash.com/photo-1554048612-b6a482bc67e5?auto=format&fit=crop&q=80&w=800', imageSide: 'left' }, style: { padding: 80, align: 'left' as const, gap: '80px' } },
+    { type: 'contact' as BlockType, content: { title: 'Lavoriamo Insieme', subtitle: 'Raccontami il tuo progetto e creiamo qualcosa di unico.', method: 'webhook', receiverEmail: '', subjectType: 'dropdown', subjectOptions: ['Ritratto', 'Matrimonio', 'Evento', 'Branding', 'Altro'], showPrivacy: true, successTitle: 'Messaggio Ricevuto!', successMessage: 'Ti rispondo entro 48 ore con una proposta su misura.' }, style: { padding: 80, align: 'center' as const, maxWidth: 700 } },
+    { type: 'footer' as BlockType, content: { copyright: `© ${new Date().getFullYear()} Luca Neri Photography`, logoText: 'LUCA NERI', layout: 'minimal', socialLinks: [{ platform: 'instagram', url: '#' }, { platform: 'behance', url: '#' }] }, style: { padding: 40, hPadding: 60, maxWidth: 1200 } }
+  ],
+
   minimal: [
-    {
-      type: 'navigation' as BlockType,
-      content: { logoText: 'SV', links: [{ label: 'Bio', url: '#' }], showContact: false },
-      style: { padding: '1rem', align: 'center' as const }
-    },
-    {
-      type: 'hero' as BlockType,
-      content: { title: 'Minimal Design', subtitle: 'Focus on what matters.', cta: 'Start' },
-      style: { padding: '8rem', align: 'center' as const }
-    },
-    {
-      type: 'footer' as BlockType,
-      content: { copyright: '© Minimalist' },
-      style: { padding: 40, hPadding: 40, align: 'center' as const }
-    }
+    { type: 'navigation' as BlockType, content: { logoText: 'SV', links: [{ label: 'Bio', url: '#' }], showContact: false }, style: { padding: '1rem', align: 'center' as const } },
+    { type: 'hero' as BlockType, content: { title: 'Minimal Design', subtitle: 'Focus on what matters.', cta: 'Start' }, style: { padding: 120, align: 'center' as const } },
+    { type: 'footer' as BlockType, content: { copyright: '© Minimalist' }, style: { padding: 40, hPadding: 40, align: 'center' as const } }
   ],
   privacy: [
-    {
-      type: 'navigation' as BlockType,
-      content: { logoText: 'Studio', links: [{ label: 'Home', url: '/' }], showContact: true },
-      style: { padding: '2rem', align: 'right' as const }
-    },
-    {
-      type: 'text' as BlockType,
-      content: { 
-        text: '# Privacy Policy\r\n\r\nQuesta pagina descrive come vengono gestiti i tuoi dati personali.\r\n\r\n### 1. Titolare del Trattamento\r\nIl titolare del trattamento è **[NOME AZIENDA]**, con sede in [INDIRIZZO].\r\n\r\n### 2. Dati Raccolti\r\nAttraverso il modulo di contatto raccogliamo:\r\n- Nome e Cognome\r\n- Indirizzo Email\r\n- Messaggio testuale\r\n\r\n### 3. Finalità\r\nI dati vengono utilizzati esclusivamente per rispondere alle tue richieste. Nessun dato viene ceduto a terzi per scopi di marketing.\r\n\r\n### 4. Servizi Terzi\r\nUtilizziamo **FormSubmit.co** per l\'invio tecnico delle comunicazioni.\r\n\r\n> [!IMPORTANT]\r\n> Questo è un testo placeholder. Ricordati di generare una Privacy Policy completa e legale utilizzando servizi come **Iubenda** o **CookieYes**.'
-      },
-      style: { padding: '8rem', align: 'left' as const, maxWidth: 900 }
-    },
-    {
-      type: 'footer' as BlockType,
-      content: { copyright: '© Privacy' },
-      style: { padding: 40, hPadding: 40, align: 'center' as const }
-    }
+    { type: 'navigation' as BlockType, content: { logoText: 'Studio', links: [{ label: 'Home', url: '/' }], showContact: true }, style: { padding: '2rem', align: 'right' as const } },
+    { type: 'text' as BlockType, content: { text: '# Privacy Policy\r\n\r\nQuesta pagina descrive come vengono gestiti i tuoi dati personali.\r\n\r\n### 1. Titolare del Trattamento\r\nIl titolare del trattamento è **[NOME AZIENDA]**, con sede in [INDIRIZZO].\r\n\r\n### 2. Dati Raccolti\r\nAttraverso il modulo di contatto raccogliamo:\r\n- Nome e Cognome\r\n- Indirizzo Email\r\n- Messaggio testuale\r\n\r\n### 3. Finalità\r\nI dati vengono utilizzati esclusivamente per rispondere alle tue richieste. Nessun dato viene ceduto a terzi per scopi di marketing.\r\n\r\n### 4. Servizi Terzi\r\nUtilizziamo **FormSubmit.co** per l\'invio tecnico delle comunicazioni.\r\n\r\n> [!IMPORTANT]\r\n> Questo è un testo placeholder. Ricordati di generare una Privacy Policy completa e legale utilizzando servizi come **Iubenda** o **CookieYes**.' }, style: { padding: 80, align: 'left' as const, maxWidth: 900 } },
+    { type: 'footer' as BlockType, content: { copyright: '© Privacy' }, style: { padding: 40, hPadding: 40, align: 'center' as const } }
   ],
   contact: [
-    {
-      type: 'navigation' as BlockType,
-      content: { logoText: 'Studio', links: [{ label: 'Home', url: '/' }], showContact: false },
-      style: { padding: '2rem', align: 'right' as const }
-    },
-    {
-      type: 'contact' as BlockType,
-      content: { 
-        title: 'Mettiamoci in Contatto', 
-        subtitle: 'Hai un progetto in mente? Parliamone. Compila il modulo qui sotto e ti risponderemo il prima possibile.',
-        method: 'webhook',
-        receiverEmail: '',
-        subjectType: 'dropdown',
-        subjectOptions: ['Nuovo Progetto', 'Collaborazione', 'Supporto Tecnico'],
-        showPrivacy: true,
-        successTitle: 'Grazie!',
-        successMessage: 'Il tuo messaggio è stato inviato correttamente. A presto!'
-      },
-      style: { padding: '8rem', align: 'center' as const, maxWidth: 800 }
-    },
-    {
-      type: 'footer' as BlockType,
-      content: { copyright: '© Contatti' },
-      style: { padding: 40, hPadding: 40, align: 'center' as const }
-    }
+    { type: 'navigation' as BlockType, content: { logoText: 'Studio', links: [{ label: 'Home', url: '/' }], showContact: false }, style: { padding: '2rem', align: 'right' as const } },
+    { type: 'contact' as BlockType, content: { title: 'Mettiamoci in Contatto', subtitle: 'Compila il modulo e ti risponderemo il prima possibile.', method: 'webhook', receiverEmail: '', subjectType: 'dropdown', subjectOptions: ['Nuovo Progetto', 'Collaborazione', 'Supporto Tecnico'], showPrivacy: true, successTitle: 'Grazie!', successMessage: 'Il tuo messaggio è stato inviato correttamente.' }, style: { padding: 80, align: 'center' as const, maxWidth: 800 } },
+    { type: 'footer' as BlockType, content: { copyright: '© Contatti' }, style: { padding: 40, hPadding: 40, align: 'center' as const } }
   ]
 };
 
 export function getBlocksFromTemplate(templateName: keyof typeof TEMPLATES): Block[] {
   const blocks = TEMPLATES[templateName] || TEMPLATES.landing;
-  return blocks.map(b => ({
+  return blocks.map((b: any) => ({
     ...b,
     id: uuidv4()
   }));

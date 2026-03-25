@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ArrowLeft, Plus, FileText, ExternalLink, Rocket,
-  Loader2, Trash2, LayoutGrid, Clock, Palette, Globe, X
+  Loader2, Trash2, LayoutGrid, Clock, Palette, Globe, X,
+  Monitor, Tablet, Smartphone
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { deployToCloudflare } from '@/app/actions/deploy';
@@ -25,7 +27,8 @@ export function ProjectDashboardClient({
   initialProject: any;
   initialPages: any[];
 }) {
-  const { setUser, initialize, hydrateEditor, project: storeProject, updateProjectSettings, viewport, uploadImage, isUploading } = useEditorStore();
+  const router = useRouter();
+  const { setUser, initialize, hydrateEditor, project: storeProject, updateProjectSettings, viewport, setViewport, uploadImage, isUploading } = useEditorStore();
   const [project, setProject] = useState(initialProject);
   const [pages, setPages] = useState(initialPages);
   const [isCreating, setIsCreating] = useState(false);
@@ -110,6 +113,14 @@ export function ProjectDashboardClient({
     }
   };
 
+  const handleDeleteProject = async () => {
+    if (!confirm(`Vuoi davvero eliminare "${project.name}"? Tutte le pagine e i dati verranno persi definitivamente.`)) return;
+    // Delete pages first, then project
+    await supabase.from('pages').delete().eq('project_id', project.id);
+    await supabase.from('projects').delete().eq('id', project.id);
+    router.push('/editor');
+  };
+
   const formatDate = (d: string) => {
     try { return new Date(d).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' }); }
     catch { return ''; }
@@ -150,6 +161,13 @@ export function ProjectDashboardClient({
                 <span className="hidden sm:inline">Vedi sito</span>
               </a>
             )}
+            <button
+              onClick={handleDeleteProject}
+              className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              title="Elimina sito"
+            >
+              <Trash2 size={16} />
+            </button>
             <button
               onClick={handlePublish}
               disabled={isPublishing}
@@ -416,9 +434,34 @@ export function ProjectDashboardClient({
         ) : (
           /* ── DESIGN TAB ── */
           <div className="max-w-3xl mx-auto">
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-zinc-900">Design Globale</h2>
-              <p className="text-sm text-zinc-500 mt-0.5">Font, colori, pulsanti e impostazioni che si applicano a tutto il sito.</p>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-bold text-zinc-900">Design Globale</h2>
+                <p className="text-sm text-zinc-500 mt-0.5">Font, colori, pulsanti e impostazioni che si applicano a tutto il sito.</p>
+              </div>
+              {/* Viewport switcher */}
+              <div className="flex items-center bg-zinc-100 rounded-lg p-0.5">
+                {([
+                  { key: 'desktop' as const, icon: Monitor, label: 'Desktop' },
+                  { key: 'tablet' as const, icon: Tablet, label: 'Tablet' },
+                  { key: 'mobile' as const, icon: Smartphone, label: 'Mobile' },
+                ]).map(({ key, icon: Icon, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setViewport(key)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all",
+                      viewport === key
+                        ? "bg-white text-zinc-900 shadow-sm"
+                        : "text-zinc-400 hover:text-zinc-600"
+                    )}
+                    title={label}
+                  >
+                    <Icon size={14} />
+                    <span className="hidden sm:inline text-[11px]">{label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden p-6">
               <GlobalSettings

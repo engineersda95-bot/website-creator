@@ -6,19 +6,26 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  Plus, Globe, ExternalLink, Clock, FileText, X,
-  Layout, Utensils, Briefcase, Rocket
+  Plus, Globe, Clock, FileText, X, Utensils, Briefcase, Rocket,
+  Trash2, Eye, Scissors, Dumbbell, Store, Stethoscope, Hotel, Camera
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getProjectDomain } from '@/lib/url-utils';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { useEditorStore } from '@/store/useEditorStore';
+import { getBlocksFromTemplate, TEMPLATES, TEMPLATE_SETTINGS } from '@/lib/templates';
+import { TemplateWireframe, TemplatePreviewModal } from '@/components/editor/TemplatePreview';
 
-const TEMPLATES = [
-  { id: 'blank', name: 'Foglio bianco', desc: 'Parti da zero con una pagina vuota', icon: FileText, color: 'bg-zinc-100 text-zinc-500' },
-  { id: 'RISTORANTE', name: 'Ristorante', desc: 'Hero, menu, galleria e contatti', icon: Utensils, color: 'bg-orange-50 text-orange-600' },
-  { id: 'PROFESSIONISTA', name: 'Professionista', desc: 'Servizi, chi siamo e contatti', icon: Briefcase, color: 'bg-blue-50 text-blue-600' },
-  { id: 'landing', name: 'Agenzia & Startup', desc: 'Landing completa con CTA', icon: Rocket, color: 'bg-violet-50 text-violet-600' },
+const TEMPLATE_OPTIONS = [
+  { id: 'blank', name: 'Foglio bianco', desc: 'Parti da zero', icon: FileText, color: 'bg-zinc-100 text-zinc-500' },
+  { id: 'RISTORANTE', name: 'Ristorante', desc: 'Menu, recensioni, prenotazioni', icon: Utensils, color: 'bg-orange-50 text-orange-600' },
+  { id: 'PROFESSIONISTA', name: 'Professionista', desc: 'Servizi, competenze, contatti', icon: Briefcase, color: 'bg-blue-50 text-blue-600' },
+  { id: 'landing', name: 'Agenzia & Startup', desc: 'Landing con CTA e portfolio', icon: Rocket, color: 'bg-violet-50 text-violet-600' },
+  { id: 'SALONE', name: 'Salone & Estetica', desc: 'Trattamenti, listino, prenotazioni', icon: Scissors, color: 'bg-pink-50 text-pink-600' },
+  { id: 'PALESTRA', name: 'Palestra & Fitness', desc: 'Corsi, trainer, abbonamenti', icon: Dumbbell, color: 'bg-red-50 text-red-600' },
+  { id: 'NEGOZIO', name: 'Negozio & Bottega', desc: 'Prodotti, storia, dove siamo', icon: Store, color: 'bg-emerald-50 text-emerald-600' },
+  { id: 'MEDICO', name: 'Studio Medico', desc: 'Specializzazioni, team, prenotazioni', icon: Stethoscope, color: 'bg-sky-50 text-sky-600' },
+  { id: 'HOTEL', name: 'Hotel & B&B', desc: 'Camere, servizi, prenotazioni', icon: Hotel, color: 'bg-amber-50 text-amber-600' },
+  { id: 'FOTOGRAFO', name: 'Fotografo & Creativo', desc: 'Portfolio, servizi, contatti', icon: Camera, color: 'bg-zinc-100 text-zinc-700' },
 ];
 
 export function ProjectListClient({
@@ -35,6 +42,7 @@ export function ProjectListClient({
   const [newName, setNewName] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('blank');
   const [isCreating, setIsCreating] = useState(false);
+  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (initialUser) setUser(initialUser);
@@ -55,20 +63,24 @@ export function ProjectListClient({
         user_id: initialUser.id,
         name: newName.trim(),
         subdomain,
-        settings: { fontFamily: 'Outfit', primaryColor: '#3b82f6', secondaryColor: '#10b981' },
+        settings: TEMPLATE_SETTINGS[selectedTemplate] || { fontFamily: 'Outfit', primaryColor: '#3b82f6', secondaryColor: '#10b981' },
       })
       .select()
       .single();
 
     if (newProj) {
-      // Create home page
+      // Create home page with template blocks
       const pageId = uuidv4();
+      const templateBlocks = selectedTemplate !== 'blank' && selectedTemplate in TEMPLATES
+        ? getBlocksFromTemplate(selectedTemplate as keyof typeof TEMPLATES)
+        : [];
+
       await supabase.from('pages').insert({
         id: pageId,
         project_id: projId,
         title: 'Home',
         slug: 'home',
-        blocks: [],
+        blocks: templateBlocks,
       });
 
       setProjects([newProj, ...projects]);
@@ -124,7 +136,7 @@ export function ProjectListClient({
         {showCreate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCreate(false)} />
-            <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200">
+            <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200">
               <div className="px-6 py-5 flex items-center justify-between border-b border-zinc-100">
                 <h2 className="text-lg font-bold text-zinc-900">Crea nuovo sito</h2>
                 <button onClick={() => setShowCreate(false)} className="p-1.5 hover:bg-zinc-100 rounded-md transition-colors text-zinc-400">
@@ -146,26 +158,42 @@ export function ProjectListClient({
 
                 <div>
                   <label className="block text-sm font-medium text-zinc-700 mb-2">Template iniziale</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {TEMPLATES.map((t) => (
-                      <button
+                  <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1">
+                    {TEMPLATE_OPTIONS.map((t) => (
+                      <div
                         key={t.id}
-                        onClick={() => setSelectedTemplate(t.id)}
                         className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left",
+                          "rounded-xl border-2 transition-all overflow-hidden cursor-pointer",
                           selectedTemplate === t.id
-                            ? "border-zinc-900 bg-zinc-50"
-                            : "border-zinc-100 hover:border-zinc-200"
+                            ? "border-zinc-900 shadow-sm"
+                            : "border-zinc-100 hover:border-zinc-300"
                         )}
+                        onClick={() => setSelectedTemplate(t.id)}
                       >
-                        <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", t.color)}>
-                          <t.icon size={16} />
+                        {/* Wireframe preview */}
+                        <div className="h-28 bg-zinc-50 border-b border-zinc-100 relative group/card">
+                          <TemplateWireframe templateId={t.id} />
+                          {t.id !== 'blank' && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setPreviewTemplateId(t.id); }}
+                              className="absolute top-2 right-2 p-1.5 bg-white border border-zinc-200 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 transition-all shadow-sm opacity-0 group-hover/card:opacity-100"
+                              title="Anteprima completa"
+                            >
+                              <Eye size={13} />
+                            </button>
+                          )}
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium text-zinc-900">{t.name}</div>
-                          <div className="text-[11px] text-zinc-400 truncate">{t.desc}</div>
+                        {/* Info */}
+                        <div className="p-3 flex items-center gap-2.5">
+                          <div className={cn("w-8 h-8 rounded-md flex items-center justify-center shrink-0", t.color)}>
+                            <t.icon size={14} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-[13px] font-semibold text-zinc-900">{t.name}</div>
+                            <div className="text-[10px] text-zinc-400 truncate">{t.desc}</div>
+                          </div>
                         </div>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -211,42 +239,64 @@ export function ProjectListClient({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((proj) => (
-              <Link
+              <div
                 key={proj.id}
-                href={`/editor/${proj.id}`}
-                className="group bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md hover:border-zinc-300 transition-all"
+                className="group relative bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md hover:border-zinc-300 transition-all"
               >
-                {/* Preview placeholder */}
-                <div className="h-32 bg-gradient-to-br from-zinc-50 to-zinc-100 flex items-center justify-center">
-                  <Globe size={28} className="text-zinc-200" />
-                </div>
-
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-blue-600 transition-colors">
-                      {proj.name}
-                    </h3>
-                    <div className={cn(
-                      "w-2 h-2 rounded-full",
-                      proj.live_url ? "bg-emerald-500" : "bg-zinc-300"
-                    )} />
+                <Link href={`/editor/${proj.id}`} className="block">
+                  <div className="h-32 bg-gradient-to-br from-zinc-50 to-zinc-100 flex items-center justify-center">
+                    <Globe size={28} className="text-zinc-200" />
                   </div>
-                  <p className="text-xs text-zinc-400 flex items-center gap-3">
-                    <span className="flex items-center gap-1">
-                      <Globe size={11} />
-                      {proj.subdomain}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock size={11} />
-                      {formatDate(proj.created_at)}
-                    </span>
-                  </p>
+                  <div className="p-4 pb-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-blue-600 transition-colors">
+                        {proj.name}
+                      </h3>
+                      <div className={cn(
+                        "w-2 h-2 rounded-full",
+                        proj.live_url ? "bg-emerald-500" : "bg-zinc-300"
+                      )} />
+                    </div>
+                    <p className="text-xs text-zinc-400 flex items-center gap-3">
+                      <span className="flex items-center gap-1">
+                        <Globe size={11} />
+                        {proj.subdomain}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock size={11} />
+                        {formatDate(proj.created_at)}
+                      </span>
+                    </p>
+                  </div>
+                </Link>
+                <div className="px-4 py-2.5 border-t border-zinc-100 flex items-center justify-end">
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Vuoi eliminare "${proj.name}"? Tutti i dati verranno persi.`)) return;
+                      await supabase.from('pages').delete().eq('project_id', proj.id);
+                      await supabase.from('projects').delete().eq('id', proj.id);
+                      setProjects(projects.filter(p => p.id !== proj.id));
+                    }}
+                    className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                    title="Elimina sito"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
       </main>
+
+      {/* Template live preview modal */}
+      {previewTemplateId && (
+        <TemplatePreviewModal
+          templateId={previewTemplateId}
+          templateName={TEMPLATE_OPTIONS.find(t => t.id === previewTemplateId)?.name || ''}
+          onClose={() => setPreviewTemplateId(null)}
+        />
+      )}
     </div>
   );
 }

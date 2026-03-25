@@ -144,7 +144,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
             height: (content.type === 'map' || (content.type === 'custom' && !isIframeCode)) ? '100%' : 'auto'
           }}
         >
-          {isIframeCode || (content.type === 'map' && content.url.trim().startsWith('<iframe')) ? (
+          {isIframeCode || (content.type === 'map' && content.url?.trim().startsWith('<iframe')) ? (
             <div
               className="max-w-full overflow-auto"
               dangerouslySetInnerHTML={{ __html: content.url }}
