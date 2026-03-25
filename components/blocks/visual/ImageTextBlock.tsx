@@ -146,26 +146,29 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
             }}
           >
             <div className="space-y-4 w-full" style={{ alignItems: 'inherit' }}>
-              {content.title && (
-                <h2
-                  className="tracking-tighter transition-all duration-500 leading-[1.1]"
-                  style={{
-                    fontSize: 'var(--title-fs)',
-                    fontWeight: 'var(--title-fw)' as any,
-                    fontStyle: 'var(--title-fs-style)' as any,
-                    letterSpacing: 'var(--title-ls)',
-                    lineHeight: 'var(--title-lh)',
-                    textTransform: 'var(--title-upper)' as any,
-                    textAlign: 'inherit'
-                  }}
-                  dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-                />
-              )}
+              {content.title && (() => {
+                const TitleTag = (style.titleTag || 'h2') as any;
+                return (
+                  <TitleTag
+                    className="tracking-tighter transition-all duration-500 leading-[1.1]"
+                    style={{
+                      fontSize: 'var(--title-fs)',
+                      fontWeight: 'var(--title-fw)' as any,
+                      fontStyle: 'var(--title-fs-style)' as any,
+                      letterSpacing: 'var(--title-ls)',
+                      lineHeight: 'var(--title-lh)',
+                      textTransform: 'var(--title-upper)' as any,
+                      textAlign: 'inherit'
+                    }}
+                    dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+                  />
+                );
+              })()}
               {content.text && (
                 <div
                   className="rt-content max-w-none transition-all duration-500"
                   style={{
-                    fontSize: 'var(--subtitle-fs)',
+                    fontSize: style.subtitleSize ? 'var(--subtitle-fs)' : 'var(--global-body-fs)',
                     fontWeight: 'var(--subtitle-fw)' as any,
                     fontStyle: 'var(--subtitle-fs-style)' as any,
                     lineHeight: '1.6',

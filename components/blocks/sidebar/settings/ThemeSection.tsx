@@ -109,7 +109,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
                      />
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Bott. Sec.</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Secondario</label>
                      <input
                         type="color"
                         className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"

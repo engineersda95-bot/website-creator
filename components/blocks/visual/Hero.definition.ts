@@ -22,8 +22,8 @@ export const heroDefinition: BlockDefinition = {
     },
     style: {
       padding: 120,
-      align: 'center',
-      buttonTheme: 'primary',
+      titleBold: false,
+      titleTag: 'h1',
       patternType: 'none',
       patternColor: '#ffffff',
       patternOpacity: 10,

@@ -33,7 +33,9 @@ export const contactDefinition: BlockDefinition = {
       patternType: 'none',
       patternColor: '#ffffff',
       patternOpacity: 10,
-      patternScale: 40
+      patternScale: 40,
+      titleTag: 'h2',
+      itemTitleTag: 'h3'
     }
   },
   styleMapper: (style, block, project, viewport) => {

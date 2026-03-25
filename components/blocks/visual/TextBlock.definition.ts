@@ -17,11 +17,11 @@ export const textDefinition: BlockDefinition = {
       text: 'Il tuo contenuto va qui. Usa questo blocco per descrivere la tua attività, i tuoi valori o qualsiasi altra informazione importante.'
     },
     style: {
-      padding: 80,
+      padding: 60,
       align: 'left',
-      patternType: 'none',
-      patternColor: '#ffffff',
-      patternOpacity: 10,
+      width: 'max-w-4xl',
+      titleBold: false,
+      titleTag: 'h2',
       patternScale: 40
     }
   },

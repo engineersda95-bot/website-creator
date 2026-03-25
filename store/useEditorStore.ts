@@ -22,8 +22,12 @@ interface EditorState {
   copiedBlock: Block | null;
   imageMemoryCache: Record<string, string>;
   version: number;
+  leftSidebarCollapsed: boolean;
+  rightSidebarCollapsed: boolean;
 
   // Actions
+  setLeftSidebarCollapsed: (v: boolean) => void;
+  setRightSidebarCollapsed: (v: boolean) => void;
   setUnsavedChanges: (val: boolean) => void;
   setProject: (project: Project) => void;
   listProjectPages: (projectId: string) => Promise<void>;
@@ -88,6 +92,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   copiedBlock: null,
   imageMemoryCache: {},
   version: 0,
+  leftSidebarCollapsed: false,
+  rightSidebarCollapsed: false,
+  setLeftSidebarCollapsed: (v) => set({ leftSidebarCollapsed: v }),
+  setRightSidebarCollapsed: (v) => set({ rightSidebarCollapsed: v }),
 
   takeSnapshot: () => {
     const { currentPage, project, pageHistories } = get();
@@ -351,12 +359,21 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   updateProjectSettings: async (settings) => {
-    const { project } = get();
+    const { project, viewport } = get();
     if (!project) return;
 
     const { name, ...otherSettings } = settings;
-    const newSettings = { ...(project.settings || {}), ...otherSettings };
-    const updatedProject = { ...project, name: name || project.name, settings: newSettings };
+    let updatedProject = { ...project };
+
+    if (name) updatedProject.name = name;
+
+    if (viewport === 'desktop') {
+      updatedProject.settings = { ...(project.settings || {}), ...otherSettings };
+    } else {
+      const responsive = { ...(project.settings.responsive || {}) };
+      responsive[viewport] = { ...(responsive[viewport] || {}), ...otherSettings };
+      updatedProject.settings = { ...project.settings, responsive };
+    }
     
     set({ project: updatedProject });
     triggerAutoSave(get, set);

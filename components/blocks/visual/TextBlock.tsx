@@ -53,22 +53,27 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
           alignItems: 'var(--block-items)' as any,
         }}
       >
-        <div
-          className={cn(
-            "rt-content max-w-none transition-all duration-500",
-          )}
-          style={{
-            fontSize: 'var(--base-fs)',
-            color: 'inherit',
-            fontWeight: 'var(--title-fw)' as any,
-            lineHeight: 'var(--title-lh)',
-            textAlign: 'var(--block-align)' as any,
-            fontStyle: 'var(--title-fs-style)' as any,
-            marginLeft: 'var(--block-ml-auto)',
-            marginRight: 'var(--block-mr-auto)',
-          }}
-          dangerouslySetInnerHTML={{ __html: formatRichText(content.text) }}
-        />
+        {(() => {
+          const TextTag = (style.titleTag || 'div') as any;
+          return (
+            <TextTag
+              className={cn(
+                "rt-content max-w-none transition-all duration-500",
+              )}
+              style={{
+                fontSize: 'var(--title-fs)',
+                color: 'inherit',
+                fontWeight: 'var(--title-fw)' as any,
+                lineHeight: 'var(--title-lh)',
+                textAlign: 'var(--block-align)' as any,
+                fontStyle: 'var(--title-fs-style)' as any,
+                marginLeft: 'var(--block-ml-auto)',
+                marginRight: 'var(--block-mr-auto)',
+              }}
+              dangerouslySetInnerHTML={{ __html: formatRichText(content.text) }}
+            />
+          );
+        })()}
       </div>
     </section>
   );

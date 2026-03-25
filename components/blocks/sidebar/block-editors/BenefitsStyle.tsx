@@ -80,6 +80,9 @@ export const BenefitsStyle: React.FC<BenefitsStyleProps> = ({
             sizeKey="titleSize"
             boldKey="titleBold"
             italicKey="titleItalic"
+            tagKey="titleTag"
+            showTagSelector={true}
+            defaultTag="h2"
             getStyleValue={getStyleValue}
             updateStyle={updateStyle}
             defaultValue={48}
@@ -99,9 +102,12 @@ export const BenefitsStyle: React.FC<BenefitsStyleProps> = ({
               sizeKey="itemTitleSize"
               boldKey="itemTitleBold"
               italicKey="itemTitleItalic"
+              tagKey="itemTitleTag"
+              showTagSelector={true}
+              defaultTag="h3"
               getStyleValue={getStyleValue}
               updateStyle={updateStyle}
-              defaultValue={22}
+                defaultValue={22}
             />
             <TypographyFields
               label="Descrizione Vantaggio"

@@ -31,8 +31,8 @@ export const logosDefinition: BlockDefinition = {
       scrollSpeed: 40,
       aspectRatio: '1:1',
       logoWidth: 120,
-      titleSize: 24,
       background: 'transparent',
+      titleTag: 'h2'
     }
   },
   styleMapper: (style, block, project, viewport) => {
@@ -41,7 +41,7 @@ export const logosDefinition: BlockDefinition = {
       ...vars,
       '--logo-width': toPx(style.logoWidth, '120px'),
       '--logo-gap': toPx(style.gap, '40px'),
-      '--title-fs': toPx(style.titleSize, '24px'),
+      '--title-fs': style.titleSize ? toPx(style.titleSize) : 'var(--global-h2-fs)',
       '--scroll-speed': `${style.scrollSpeed || 40}s`,
       '--logo-filter': style.grayscale ? 'grayscale(100%) opacity(0.5)' : 'none',
       '--logo-hover-filter': style.grayscale ? 'grayscale(0%) opacity(1)' : 'none',

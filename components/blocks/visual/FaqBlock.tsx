@@ -54,22 +54,24 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
           textAlign: 'var(--block-align)' as any,
         }}
       >
-        {content.title && (
-          <h2
-            className="tracking-tight transition-all duration-500 w-full"
-            style={{
-              fontSize: 'var(--title-fs)',
-              fontWeight: 'var(--title-fw)' as any,
-              fontStyle: 'var(--title-fs-style)' as any,
-              letterSpacing: 'var(--title-ls)',
-              lineHeight: 'var(--title-lh)',
-              textTransform: 'var(--title-upper)' as any,
-              // Usiamo il gap del container per la distanza, azzeriamo il margin
-              marginBottom: '0'
-            }}
-            dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-          />
-        )}
+        {content.title && (() => {
+          const TitleTag = (style.titleTag || 'h2') as any;
+          return (
+            <TitleTag
+              className="tracking-tight transition-all duration-500 w-full"
+              style={{
+                fontSize: 'var(--title-fs)',
+                fontWeight: 'var(--title-fw)' as any,
+                fontStyle: 'var(--title-fs-style)' as any,
+                letterSpacing: 'var(--title-ls)',
+                lineHeight: 'var(--title-lh)',
+                textTransform: 'var(--title-upper)' as any,
+                marginBottom: '0'
+              }}
+              dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+            />
+          );
+        })()}
 
         <div
           className="w-full bg-white/[0.03] backdrop-blur-md rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden divide-y divide-white/5"
@@ -86,16 +88,21 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
                 className="list-none cursor-pointer w-full flex items-center justify-between py-8 px-8 group transition-all"
                 style={{ textAlign: 'left' }}
               >
-                <div
-                  style={{
-                    fontSize: 'var(--faq-q-fs)',
-                    fontWeight: 'var(--faq-q-fw)' as any,
-                    color: blockColor,
-                    textAlign: 'left'
-                  }}
-                  className="transition-all opacity-80 group-hover:opacity-100 flex-1 pr-6"
-                  dangerouslySetInnerHTML={{ __html: formatRichText(item.question) }}
-                />
+                {(() => {
+                  const ItemTitleTag = (style.itemTitleTag || 'h3') as any;
+                  return (
+                    <ItemTitleTag
+                      style={{
+                        fontSize: style.questionSize ? `${style.questionSize}px` : `var(--global-${style.itemTitleTag || 'h3'}-fs)`,
+                        fontWeight: style.questionBold ? '700' : 'bold',
+                        color: blockColor,
+                        textAlign: 'left'
+                      }}
+                      className="transition-all opacity-80 group-hover:opacity-100 flex-1 pr-6"
+                      dangerouslySetInnerHTML={{ __html: formatRichText(item.question) }}
+                    />
+                  );
+                })()}
                 <ChevronDown
                   className="w-6 h-6 shrink-0 transition-all duration-500 ease-out opacity-40 group-hover:opacity-100 group-open:rotate-180 group-open:opacity-100"
                   style={{ color: 'currentColor' }}

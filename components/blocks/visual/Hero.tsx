@@ -117,19 +117,24 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
         )} style={{
           alignItems: 'var(--block-items)' as any,
         }}>
-          <h1 className={cn(
-            "tracking-tighter leading-[0.9] transition-all duration-500",
-          )} style={{ 
-            fontSize: 'var(--title-fs)',
-            textAlign: 'var(--block-align)' as any,
-            fontWeight: 'var(--title-fw)' as any,
-            fontStyle: 'var(--title-fs-style)' as any,
-            letterSpacing: 'var(--title-ls)',
-            lineHeight: 'var(--title-lh)',
-            textTransform: 'var(--title-upper)' as any
-          }}
-          dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-          />
+          {(() => {
+            const TitleTag = (style.titleTag || 'h1') as any;
+            return (
+              <TitleTag className={cn(
+                "tracking-tighter leading-[0.9] transition-all duration-500",
+              )} style={{ 
+                fontSize: 'var(--title-fs)',
+                textAlign: 'var(--block-align)' as any,
+                fontWeight: 'var(--title-fw)' as any,
+                fontStyle: 'var(--title-fs-style)' as any,
+                letterSpacing: 'var(--title-ls)',
+                lineHeight: 'var(--title-lh)',
+                textTransform: 'var(--title-upper)' as any
+              }}
+              dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+              />
+            );
+          })()}
           <p className={cn(
             "max-w-2xl leading-relaxed transition-all duration-500",
           )} style={{

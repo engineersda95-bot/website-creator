@@ -39,8 +39,8 @@ export const howItWorksDefinition: BlockDefinition = {
       align: 'center',
       numberBgColor: '',
       numberTextColor: '',
-      itemTitleSize: 24,
-      itemDescSize: 16
+      titleTag: 'h2',
+      itemTitleTag: 'h3'
     }
   },
   styleMapper: (style, block, project, viewport) => {

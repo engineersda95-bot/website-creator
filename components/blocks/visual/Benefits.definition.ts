@@ -38,6 +38,8 @@ export const benefitsDefinition: BlockDefinition = {
       padding: 80,
       columns: 3,
       align: 'center',
+      titleTag: 'h2',
+      itemTitleTag: 'h3',
       boxStyle: 'card'
     }
   },

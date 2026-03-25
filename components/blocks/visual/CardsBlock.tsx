@@ -130,15 +130,20 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
         </div>
 
         <div className="flex flex-col flex-1 w-full min-w-0">
-          <h3 
-            className="mb-2 tracking-tight transition-all duration-500 leading-tight"
-            style={{ 
-              fontSize: style.cardTitleSize ? `${style.cardTitleSize}px` : undefined,
-              fontWeight: style.cardTitleBold ? '700' : '400',
-              fontStyle: style.cardTitleItalic ? 'italic' : 'normal',
-            }}
-            dangerouslySetInnerHTML={{ __html: formatRichText(item.title || 'Titolo Card') }}
-          />
+          {(() => {
+            const ItemTitleTag = (style.itemTitleTag || 'h3') as any;
+            return (
+              <ItemTitleTag 
+                className="mb-2 tracking-tight transition-all duration-500 leading-tight"
+                style={{ 
+                  fontSize: style.cardTitleSize ? `${style.cardTitleSize}px` : 'var(--global-h3-fs)',
+                  fontWeight: style.cardTitleBold ? '700' : '400',
+                  fontStyle: style.cardTitleItalic ? 'italic' : 'normal',
+                }}
+                dangerouslySetInnerHTML={{ __html: formatRichText(item.title || 'Titolo Card') }}
+              />
+            );
+          })()}
           <p 
             className="opacity-70 leading-relaxed transition-all duration-500"
             style={{ 
@@ -189,18 +194,21 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
         imageMemoryCache={imageMemoryCache}
       />
       <div className="relative z-10">
-        {content.title && (
-          <h2 
-            className="mb-16 tracking-tighter transition-all duration-500 leading-tight"
-            style={{ 
-              fontSize: style.titleSize ? `${style.titleSize}px` : (isMobile ? '2.5rem' : '4rem'),
-              fontWeight: style.titleBold ? '700' : '400',
-              fontStyle: style.titleItalic ? 'italic' : 'normal',
-              textAlign: align as any
-            }}
-            dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-          />
-        )}
+        {content.title && (() => {
+          const TitleTag = (style.titleTag || 'h2') as any;
+          return (
+            <TitleTag 
+              className="mb-16 tracking-tighter transition-all duration-500 leading-tight"
+              style={{ 
+                fontSize: 'var(--title-fs)',
+                fontWeight: style.titleBold ? '700' : '400',
+                fontStyle: style.titleItalic ? 'italic' : 'normal',
+                textAlign: align as any
+              }}
+              dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+            />
+          );
+        })()}
 
         {isSlider ? (
           <div className="relative group/slider">

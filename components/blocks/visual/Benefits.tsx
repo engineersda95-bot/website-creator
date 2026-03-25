@@ -102,11 +102,19 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
         <div className="mb-6 h-12 flex items-center justify-center transition-all duration-300">
           {renderIcon(item.icon, itemStyle)}
         </div>
-        <h3 
-          className="mb-3 tracking-tight transition-all duration-300"
-          style={itemTitleStyle}
-          dangerouslySetInnerHTML={{ __html: formatRichText(item.title || 'Vantaggio') }}
-        />
+        {(() => {
+          const BenefitTitleTag = (style.itemTitleTag || 'h3') as any;
+          return (
+            <BenefitTitleTag 
+              className="mb-3 tracking-tight transition-all duration-300"
+              style={{
+                fontSize: style.itemTitleSize ? `${style.itemTitleSize}px` : `var(--global-${style.itemTitleTag || 'h3'}-fs)`,
+                fontWeight: style.itemTitleBold ? '700' : 'bold',
+              }}
+              dangerouslySetInnerHTML={{ __html: formatRichText(item.title || 'Vantaggio') }}
+            />
+          );
+        })()}
         <p 
           className="opacity-70 leading-relaxed transition-all duration-300"
           style={itemSubtitleStyle}
@@ -131,17 +139,20 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
       <div className="relative z-10 max-w-7xl mx-auto">
         {(content.title || content.subtitle) && (
           <div className={cn("mb-16", align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left")}>
-            {content.title && (
-              <h2 
-                className="mb-4 tracking-tighter transition-all duration-500 leading-tight"
-                style={{ 
-                  fontSize: style.titleSize ? `${style.titleSize}px` : (isMobile ? '32px' : '48px'),
-                  fontWeight: style.titleBold ? '700' : '400',
-                  fontStyle: style.titleItalic ? 'italic' : 'normal',
-                }}
-                dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-              />
-            )}
+            {content.title && (() => {
+              const TitleTag = (style.titleTag || 'h2') as any;
+              return (
+                <TitleTag 
+                  className="mb-4 tracking-tighter transition-all duration-500 leading-tight"
+                  style={{ 
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: style.titleBold ? '700' : '400',
+                    fontStyle: style.titleItalic ? 'italic' : 'normal',
+                  }}
+                  dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+                />
+              );
+            })()}
             {content.subtitle && (
               <p 
                 className="opacity-70 max-w-2xl mx-auto leading-relaxed transition-all duration-500"

@@ -44,6 +44,9 @@ export function ContactStyle({ selectedBlock, updateContent, updateStyle, getSty
           <TypographyFields
             label="Titolo Principale"
             sizeKey="titleSize" boldKey="titleBold" italicKey="titleItalic"
+            tagKey="titleTag"
+            showTagSelector={true}
+            defaultTag="h2"
             getStyleValue={getStyleValue} updateStyle={updateStyle} defaultValue={48}
           />
           <TypographyFields
@@ -63,6 +66,9 @@ export function ContactStyle({ selectedBlock, updateContent, updateStyle, getSty
             <TypographyFields
               label="Etichette (E-mail, Tel...)"
               sizeKey="contactLabelSize" boldKey="contactLabelBold"
+              tagKey="itemTitleTag"
+              showTagSelector={true}
+              defaultTag="h3"
               getStyleValue={getStyleValue} updateStyle={updateStyle} defaultValue={9}
               min={8} max={24}
             />

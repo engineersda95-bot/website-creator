@@ -33,6 +33,9 @@ export interface TypographyFieldsProps extends StyleEditorProps {
    boldKey?: string;
    italicKey?: string;
    uppercaseKey?: string;
+   tagKey?: string;
+   showTagSelector?: boolean;
+   defaultTag?: string;
    min?: number;
    max?: number;
    defaultValue?: number;

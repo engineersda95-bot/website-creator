@@ -17,6 +17,8 @@ export const quoteDefinition: BlockDefinition = {
     style: { 
       padding: 80, 
       columns: 3,
+      titleTag: 'h2',
+      itemTitleTag: 'h3',
       patternType: 'none',
       patternColor: '#ffffff',
       patternOpacity: 10,

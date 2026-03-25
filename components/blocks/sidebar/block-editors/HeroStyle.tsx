@@ -78,15 +78,18 @@ export const HeroStyle: React.FC<HeroStyleProps> = ({
          <section className="pt-8 border-t border-zinc-100">
             <SectionHeader icon={Type} title="Stile Testi" />
             <div className="space-y-8">
-               <TypographyFields 
-                  label="Dimensione Titolo" 
-                  sizeKey="titleSize" 
-                  boldKey="titleBold" 
-                  italicKey="titleItalic" 
-                  getStyleValue={getStyleValue} 
-                  updateStyle={updateStyle} 
-                  defaultValue={40} 
-               />
+                <TypographyFields 
+                   label="Dimensione Titolo" 
+                   sizeKey="titleSize" 
+                   boldKey="titleBold" 
+                   italicKey="titleItalic" 
+                   tagKey="titleTag"
+                   showTagSelector={true}
+                   defaultTag="h1"
+                   getStyleValue={getStyleValue} 
+                   updateStyle={updateStyle} 
+                   defaultValue={40} 
+                />
                <TypographyFields 
                   label="Dimensione Sottotitolo" 
                   sizeKey="subtitleSize" 

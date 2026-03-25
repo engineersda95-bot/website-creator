@@ -14,6 +14,9 @@ export function EmbedStyle({ selectedBlock, updateContent, getStyleValue, update
           sizeKey="titleSize" 
           boldKey="titleBold" 
           italicKey="titleItalic" 
+          tagKey="titleTag"
+          showTagSelector={true}
+          defaultTag="h2"
           getStyleValue={getStyleValue} 
           updateStyle={updateStyle} 
           defaultValue={32} 

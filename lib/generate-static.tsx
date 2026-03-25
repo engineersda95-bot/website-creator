@@ -66,7 +66,32 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
             --primary: ${pColor};
             --secondary: ${sColor};
             --font-main: '${font}', sans-serif;
+            --global-h1-fs: ${toPx(project?.settings?.typography?.h1Size, '4rem')};
+            --global-h2-fs: ${toPx(project?.settings?.typography?.h2Size, '3rem')};
+            --global-h3-fs: ${toPx(project?.settings?.typography?.h3Size, '2rem')};
+            --global-h4-fs: ${toPx(project?.settings?.typography?.h4Size, '1.5rem')};
+            --global-body-fs: ${toPx(project?.settings?.typography?.bodySize, '1rem')};
         }
+        ${project?.settings?.responsive?.tablet?.typography ? `
+        @media (max-width: 1024px) {
+            :root {
+                ${project.settings.responsive.tablet.typography.h1Size ? `--global-h1-fs: ${toPx(project.settings.responsive.tablet.typography.h1Size)};` : ''}
+                ${project.settings.responsive.tablet.typography.h2Size ? `--global-h2-fs: ${toPx(project.settings.responsive.tablet.typography.h2Size)};` : ''}
+                ${project.settings.responsive.tablet.typography.h3Size ? `--global-h3-fs: ${toPx(project.settings.responsive.tablet.typography.h3Size)};` : ''}
+                ${project.settings.responsive.tablet.typography.h4Size ? `--global-h4-fs: ${toPx(project.settings.responsive.tablet.typography.h4Size)};` : ''}
+                ${project.settings.responsive.tablet.typography.bodySize ? `--global-body-fs: ${toPx(project.settings.responsive.tablet.typography.bodySize)};` : ''}
+            }
+        }` : ''}
+        ${project?.settings?.responsive?.mobile?.typography ? `
+        @media (max-width: 768px) {
+            :root {
+                ${project.settings.responsive.mobile.typography.h1Size ? `--global-h1-fs: ${toPx(project.settings.responsive.mobile.typography.h1Size)};` : ''}
+                ${project.settings.responsive.mobile.typography.h2Size ? `--global-h2-fs: ${toPx(project.settings.responsive.mobile.typography.h2Size)};` : ''}
+                ${project.settings.responsive.mobile.typography.h3Size ? `--global-h3-fs: ${toPx(project.settings.responsive.mobile.typography.h3Size)};` : ''}
+                ${project.settings.responsive.mobile.typography.h4Size ? `--global-h4-fs: ${toPx(project.settings.responsive.mobile.typography.h4Size)};` : ''}
+                ${project.settings.responsive.mobile.typography.bodySize ? `--global-body-fs: ${toPx(project.settings.responsive.mobile.typography.bodySize)};` : ''}
+            }
+        }` : ''}
         * { font-family: inherit; }
         body { font-family: var(--font-main); }
         .bg-primary { background-color: var(--primary); }

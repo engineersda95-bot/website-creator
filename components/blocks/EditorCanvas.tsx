@@ -7,9 +7,9 @@ import {
   Trash2, ChevronUp, ChevronDown, Monitor, Tablet, Smartphone,
   Moon, Sun, Plus, Type, Layout, Menu, Square, Copy,
   Clipboard as ClipboardIcon, Layers, Settings, RotateCcw, RotateCw, Minus,
-  HelpCircle, ZoomIn, ZoomOut
+  HelpCircle, ZoomIn, ZoomOut, Maximize, Minimize
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, toPx } from '@/lib/utils';
 import { getBlockLibrary } from '@/lib/block-definitions';
 import { HelpCenter } from '../editor/HelpCenter';
 
@@ -169,7 +169,11 @@ export const EditorCanvas: React.FC = () => {
     undo,
     redo,
     pageHistories,
-    imageMemoryCache
+    imageMemoryCache,
+    leftSidebarCollapsed,
+    rightSidebarCollapsed,
+    setLeftSidebarCollapsed,
+    setRightSidebarCollapsed
   } = useEditorStore();
 
   const currentHist = currentPage ? pageHistories[currentPage.id] : null;
@@ -230,9 +234,13 @@ export const EditorCanvas: React.FC = () => {
   const [isMounted, setIsMounted] = React.useState(false);
   const [isHelpOpen, setIsHelpOpen] = React.useState(false);
   const [zoom, setZoom] = React.useState(100);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
   const ZOOM_STEPS = [50, 67, 75, 80, 90, 100, 110, 125, 150];
-  const zoomIn = () => setZoom(prev => ZOOM_STEPS.find(z => z > prev) || prev);
-  const zoomOut = () => setZoom(prev => [...ZOOM_STEPS].reverse().find(z => z < prev) || prev);
+  const zoomIn = () => { setZoom(prev => ZOOM_STEPS.find(z => z > prev) || prev); };
+  const zoomOut = () => { setZoom(prev => [...ZOOM_STEPS].reverse().find(z => z < prev) || prev); };
+
+  const currentScale = zoom / 100;
   React.useEffect(() => { setIsMounted(true); }, []);
 
   if (!isMounted) return <div className="flex-1 bg-zinc-100" />;
@@ -300,18 +308,18 @@ export const EditorCanvas: React.FC = () => {
           <div className="h-5 w-px bg-zinc-200" />
 
           {/* Zoom */}
-          <div className="flex items-center gap-0.5" data-tour="zoom-controls">
+          <div className="flex items-center gap-0.5 bg-zinc-100 rounded-lg p-0.5" data-tour="zoom-controls">
             <button
               onClick={zoomOut}
               disabled={zoom <= ZOOM_STEPS[0]}
-              className={cn("p-1.5 rounded-md transition-all", zoom > ZOOM_STEPS[0] ? "text-zinc-600 hover:bg-zinc-100" : "text-zinc-200 cursor-not-allowed")}
+              className={cn("p-1.5 rounded-md transition-all", zoom > ZOOM_STEPS[0] ? "text-zinc-600 hover:bg-white" : "text-zinc-200 cursor-not-allowed")}
               title="Zoom out"
             >
-              <ZoomOut size={15} />
+              <ZoomOut size={13} />
             </button>
             <button
               onClick={() => setZoom(100)}
-              className="px-1.5 py-0.5 rounded text-[11px] font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 transition-all min-w-[3rem] text-center tabular-nums"
+              className="px-1.5 py-0.5 rounded text-[11px] font-bold text-zinc-900 hover:bg-white transition-all min-w-[3rem] text-center tabular-nums"
               title="Reset zoom"
             >
               {zoom}%
@@ -319,16 +327,31 @@ export const EditorCanvas: React.FC = () => {
             <button
               onClick={zoomIn}
               disabled={zoom >= ZOOM_STEPS[ZOOM_STEPS.length - 1]}
-              className={cn("p-1.5 rounded-md transition-all", zoom < ZOOM_STEPS[ZOOM_STEPS.length - 1] ? "text-zinc-600 hover:bg-zinc-100" : "text-zinc-200 cursor-not-allowed")}
+              className={cn("p-1.5 rounded-md transition-all", zoom < ZOOM_STEPS[ZOOM_STEPS.length - 1] ? "text-zinc-600 hover:bg-white" : "text-zinc-200 cursor-not-allowed")}
               title="Zoom in"
             >
-              <ZoomIn size={15} />
+              <ZoomIn size={13} />
             </button>
           </div>
         </div>
 
         {/* Right: tools */}
         <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => {
+              const hide = !leftSidebarCollapsed || !rightSidebarCollapsed;
+              setLeftSidebarCollapsed(hide);
+              setRightSidebarCollapsed(hide);
+            }}
+            className={cn(
+              "p-1.5 rounded-md transition-all",
+              (leftSidebarCollapsed && rightSidebarCollapsed) ? "text-blue-600 bg-blue-50" : "text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100"
+            )}
+            title={(leftSidebarCollapsed && rightSidebarCollapsed) ? "Esci da Focus Mode" : "Focus Mode (Nascondi Barre)"}
+          >
+            {(leftSidebarCollapsed && rightSidebarCollapsed) ? <Minimize size={16} /> : <Maximize size={16} />}
+          </button>
+
           <button
             onClick={() => setIsHelpOpen(true)}
             className="p-1.5 rounded-md text-zinc-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
@@ -365,19 +388,29 @@ export const EditorCanvas: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-12 flex justify-center scroll-smooth bg-zinc-100/50 custom-scrollbar">
+      <div 
+        ref={containerRef}
+        className="flex-1 overflow-y-auto p-12 flex justify-center scroll-smooth bg-zinc-100/50 custom-scrollbar relative"
+      >
         <style>{`
           #editor-content { font-family: '${font}', sans-serif !important; }
           #editor-content * { font-family: inherit !important; }
           #editor-content { 
             background-color: ${themeBg} !important; 
             color: ${themeText} !important; 
+            --global-h1-fs: ${toPx(project?.settings?.typography?.h1Size, '4rem')};
+            --global-h2-fs: ${toPx(project?.settings?.typography?.h2Size, '3rem')};
+            --global-h3-fs: ${toPx(project?.settings?.typography?.h3Size, '2rem')};
+            --global-h4-fs: ${toPx(project?.settings?.typography?.h4Size, '1.5rem')};
+            --global-h5-fs: ${toPx(project?.settings?.typography?.h5Size, '1.25rem')};
+            --global-h6-fs: ${toPx(project?.settings?.typography?.h6Size, '1.1rem')};
+            --global-body-fs: ${toPx(project?.settings?.typography?.bodySize, '1rem')};
           }
           #editor-content .insert-menu * { color: #18181b !important; }
           #editor-content .insert-menu button:hover * { color: #ffffff !important; }
           #editor-content .block-wrapper:hover { outline: 2px solid #3b82f6; }
           .block-wrapper { background-color: inherit; }
-          .canvas-desktop { width: 100%; }
+          .canvas-desktop { width: 1280px; }
           .canvas-tablet { width: 768px; }
           .canvas-mobile { width: 390px; }
         `}</style>
@@ -393,7 +426,7 @@ export const EditorCanvas: React.FC = () => {
           style={{
             backgroundColor: themeBg,
             display: 'flow-root',
-            transform: zoom !== 100 ? `scale(${zoom / 100})` : undefined,
+            transform: `scale(${currentScale})`,
             transformOrigin: 'top center',
           }}
         >

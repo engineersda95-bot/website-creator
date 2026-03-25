@@ -5,7 +5,9 @@ import { useEditorStore } from '@/store/useEditorStore';
 import {
    X,
    Monitor,
-   Smartphone
+   Smartphone,
+   ChevronLeft,
+   ChevronRight
 } from 'lucide-react';
 import { cn, getStyleValue as getStyleValueUtil } from '@/lib/utils';
 import { GlobalSettings } from './sidebar/GlobalSettings';
@@ -16,11 +18,13 @@ export const ConfigSidebar: React.FC = () => {
       project, 
       projectPages, 
       selectedBlockId, 
-      currentPage, 
-      updateBlock, 
-      updateProjectSettings, 
-      viewport, 
-      updateBlockStyle 
+      currentPage,
+      updateBlock,
+      updateProjectSettings,
+      viewport,
+      updateBlockStyle,
+      rightSidebarCollapsed,
+      setRightSidebarCollapsed
    } = useEditorStore();
    
    const [activeTab, setActiveTab] = useState<'content' | 'style'>('content');
@@ -37,12 +41,27 @@ export const ConfigSidebar: React.FC = () => {
    // Global Settings (No block selected)
    if (!selectedBlock) {
       return (
-         <div data-tour="config-sidebar" className="w-80 shrink-0 z-20 bg-white border-l border-zinc-200/80 flex flex-col h-full animate-in slide-in-from-right duration-500 overflow-y-auto">
-            <GlobalSettings
-               project={project}
-               updateProjectSettings={updateProjectSettings}
-               viewport={viewport}
-            />
+         <div data-tour="config-sidebar" className={cn(
+            "shrink-0 z-20 bg-white border-l border-zinc-200/80 flex flex-col h-full transition-all duration-300 relative",
+            rightSidebarCollapsed ? "w-12" : "w-80"
+         )}>
+            <button
+               onClick={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+               className="absolute -left-3 top-5 flex items-center justify-center bg-white border border-zinc-200 rounded-full w-6 h-6 shadow-sm hover:shadow-md z-30 transition-all active:scale-90"
+               title={rightSidebarCollapsed ? "Espandi Sidebar" : "Riduci Sidebar"}
+            >
+               {rightSidebarCollapsed ? <ChevronLeft size={12} className="text-zinc-500" /> : <ChevronRight size={12} className="text-zinc-500" />}
+            </button>
+            <div className={cn(
+               "w-80 flex flex-col h-full shrink-0 transition-opacity duration-300",
+               rightSidebarCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+            )}>
+               <GlobalSettings
+                  project={project}
+                  updateProjectSettings={updateProjectSettings}
+                  viewport={viewport}
+               />
+            </div>
          </div>
       );
    }
@@ -94,7 +113,22 @@ export const ConfigSidebar: React.FC = () => {
    };
 
    return (
-      <div data-tour="config-sidebar" className="w-80 shrink-0 z-20 bg-white border-l border-zinc-200/80 flex flex-col h-full animate-in slide-in-from-right duration-200">
+      <div data-tour="config-sidebar" className={cn(
+         "shrink-0 z-20 bg-white border-l border-zinc-200/80 flex flex-col h-full transition-all duration-300 relative",
+         rightSidebarCollapsed ? "w-12" : "w-80"
+      )}>
+         <button
+            onClick={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+            className="absolute -left-3 top-5 flex items-center justify-center bg-white border border-zinc-200 rounded-full w-6 h-6 shadow-sm hover:shadow-md z-30 transition-all active:scale-90"
+            title={rightSidebarCollapsed ? "Espandi Sidebar" : "Riduci Sidebar"}
+         >
+            {rightSidebarCollapsed ? <ChevronLeft size={12} className="text-zinc-500" /> : <ChevronRight size={12} className="text-zinc-500" />}
+         </button>
+
+         <div className={cn(
+            "w-80 flex flex-col h-full shrink-0 transition-opacity duration-300",
+            rightSidebarCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+         )}>
          {/* Block header */}
          <div className="px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
@@ -148,6 +182,7 @@ export const ConfigSidebar: React.FC = () => {
                   {renderStyleEditor()}
                </div>
             )}
+         </div>
          </div>
       </div>
    );

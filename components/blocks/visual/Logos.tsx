@@ -38,20 +38,23 @@ export const Logos: React.FC<any> = ({
       />
       
       <div className="container mx-auto relative z-10">
-        {title && (
-          <h2 
-            className="text-center mb-12 tracking-tight"
-            style={{ 
-              fontSize: 'var(--title-fs)',
-              fontWeight: 'var(--title-fw)',
-              fontStyle: 'var(--title-fs-style)',
-              textTransform: 'var(--title-upper)' as any,
-              lineHeight: '1.2'
-            }}
-          >
-            {title}
-          </h2>
-        )}
+        {title && (() => {
+          const TitleTag = (style.titleTag || 'h2') as any;
+          return (
+            <TitleTag 
+              className="text-center mb-12 tracking-tight"
+              style={{ 
+                fontSize: style.titleSize ? `${style.titleSize}px` : 'var(--global-h2-fs)',
+                fontWeight: style.titleBold ? '700' : 'var(--title-fw)' as any,
+                fontStyle: style.titleItalic ? 'italic' : 'var(--title-fs-style)' as any,
+                textTransform: 'var(--title-upper)' as any,
+                lineHeight: '1.2'
+              }}
+            >
+              {title}
+            </TitleTag>
+          );
+        })()}
 
         {/* Marquee Container */}
         <div className="relative w-full overflow-hidden mask-fade-edges group">

@@ -22,10 +22,12 @@ export const faqDefinition: BlockDefinition = {
     },
     style: {
       padding: 80,
-      align: 'left',
+      align: 'center',
+      gap: 48,
+      titleBold: false,
+      titleTag: 'h2',
+      itemTitleTag: 'h3',
       patternType: 'none',
-      patternColor: '#ffffff',
-      patternOpacity: 10,
       patternScale: 40
     }
   },

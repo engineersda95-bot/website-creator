@@ -26,8 +26,7 @@ import {
 import { getBlockLibrary } from '@/lib/block-definitions';
 
 export const BlockSidebar: React.FC = () => {
-  const { addBlock, currentPage, selectedBlockId, selectBlock } = useEditorStore();
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const { addBlock, currentPage, selectedBlockId, selectBlock, leftSidebarCollapsed, setLeftSidebarCollapsed } = useEditorStore();
   
   const blockLibrary = getBlockLibrary();
 
@@ -51,23 +50,23 @@ export const BlockSidebar: React.FC = () => {
   return (
     <aside data-tour="block-sidebar" className={cn(
       "shrink-0 bg-white border-r border-zinc-200/80 flex flex-col h-full z-20 transition-all duration-300 relative",
-      isCollapsed ? "w-12" : "w-[17rem]"
+      leftSidebarCollapsed ? "w-12" : "w-[17rem]"
     )}>
 
       {/* TOGGLE BUTTON */}
       <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
         className="absolute -right-3 top-5 flex items-center justify-center bg-white border border-zinc-200 rounded-full w-6 h-6 shadow-sm hover:shadow-md z-30 transition-all active:scale-90"
-        title={isCollapsed ? "Espandi Sidebar" : "Riduci Sidebar"}
+        title={leftSidebarCollapsed ? "Espandi Sidebar" : "Riduci Sidebar"}
       >
-        {isCollapsed ? <ChevronRight size={12} className="text-zinc-500" /> : <ChevronLeft size={12} className="text-zinc-500" />}
+        {leftSidebarCollapsed ? <ChevronRight size={12} className="text-zinc-500" /> : <ChevronLeft size={12} className="text-zinc-500" />}
       </button>
 
       {/* CONTENT WRAPPER */}
       <div className="w-full h-full flex flex-col overflow-hidden relative">
         <div className={cn(
           "w-[17rem] flex flex-col h-full shrink-0 transition-opacity duration-300",
-          isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+          leftSidebarCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
         )}>
           <div className="p-4 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
             {/* PAGE BLOCKS LIST */}

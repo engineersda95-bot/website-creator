@@ -156,16 +156,21 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
           </div>
         )}
         <div className={cn("min-w-0 flex-1 ml-0", align === 'right' && "text-right")}>
-          <h4 
-            style={{ 
-              fontSize: style.nameSize ? `${style.nameSize}px` : undefined, 
-              fontWeight: style.nameBold ? '700' : '400', 
-              fontStyle: style.nameItalic ? 'italic' : 'normal' 
-            }} 
-            className="tracking-tight leading-snug whitespace-normal break-words mb-1"
-          >
-            {item.name}
-          </h4>
+          {(() => {
+            const ItemTitleTag = (style.itemTitleTag || 'h4') as any;
+            return (
+              <ItemTitleTag 
+                style={{ 
+                  fontSize: style.nameSize ? `${style.nameSize}px` : `var(--global-${style.itemTitleTag || 'h4'}-fs)`, 
+                  fontWeight: style.nameBold ? '700' : '400', 
+                  fontStyle: style.nameItalic ? 'italic' : 'normal' 
+                }} 
+                className="tracking-tight leading-snug whitespace-normal break-words mb-1"
+              >
+                {item.name}
+              </ItemTitleTag>
+            );
+          })()}
           <p 
             style={{ 
               fontSize: style.roleSize ? `${style.roleSize}px` : undefined, 
@@ -194,19 +199,22 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
         imageMemoryCache={imageMemoryCache}
       />
       <div className="relative z-10 text-left">
-        {content.title && (
-          <h2 
-            style={{ 
-              fontSize: style.titleSize ? `${style.titleSize}px` : undefined, 
-              fontWeight: style.titleBold ? '700' : '400', 
-              fontStyle: style.titleItalic ? 'italic' : 'normal',
-              textAlign: align as any
-            }}
-            className="text-4xl md:text-6xl mb-16 tracking-tighter leading-tight"
-          >
-            {content.title}
-          </h2>
-        )}
+        {content.title && (() => {
+          const TitleTag = (style.titleTag || 'h2') as any;
+          return (
+            <TitleTag 
+              style={{ 
+                fontSize: 'var(--title-fs)', 
+                fontWeight: style.titleBold ? '700' : '400', 
+                fontStyle: style.titleItalic ? 'italic' : 'normal',
+                textAlign: align as any
+              }}
+              className="mb-16 tracking-tighter leading-tight"
+            >
+              {content.title}
+            </TitleTag>
+          );
+        })()}
 
         {isSlider ? (
           <div className="relative group/quote">

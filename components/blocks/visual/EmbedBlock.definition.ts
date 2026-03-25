@@ -22,7 +22,8 @@ export const embedDefinition: BlockDefinition = {
       patternType: 'none',
       patternColor: '#ffffff',
       patternOpacity: 10,
-      patternScale: 40
+      patternScale: 40,
+      titleTag: 'h2'
     }
   },
   styleMapper: (style, block, project, viewport) => {

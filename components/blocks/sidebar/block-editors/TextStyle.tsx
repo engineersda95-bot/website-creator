@@ -41,13 +41,16 @@ export const TextStyle: React.FC<TextStyleProps> = ({
          <section className="pt-8 border-t border-zinc-100">
             <SectionHeader icon={Type} title="Stile Testi" />
             <TypographyFields 
-               label="Dimensione Testo" 
-               sizeKey="fontSize" 
+               label="Dimensione Titolo / Testo" 
+               sizeKey="titleSize" 
                boldKey="titleBold" 
                italicKey="titleItalic" 
+               tagKey="titleTag"
+               showTagSelector={true}
+               defaultTag="div"
                getStyleValue={getStyleValue} 
                updateStyle={updateStyle} 
-               defaultValue={14} 
+               defaultValue={18} 
             />
          </section>
         <AnchorManager 

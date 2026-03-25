@@ -111,22 +111,25 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
           alignItems: (alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start') as any,
         }}
       >
-        {content.title && (
-          <h2
-            className="w-full transition-all duration-500"
-            style={{
-              fontSize: 'var(--title-fs, 2rem)',
-              fontWeight: 'var(--title-fw)' as any,
-              fontStyle: 'var(--title-fs-style)' as any,
-              textTransform: 'var(--title-upper)' as any,
-              textAlign: 'var(--block-align)' as any,
-              color: 'inherit',
-              marginBottom: 'var(--block-gap, 2rem)'
-            }}
-          >
-            {content.title}
-          </h2>
-        )}
+        {content.title && (() => {
+          const TitleTag = (style.titleTag || 'h2') as any;
+          return (
+            <TitleTag
+              className="w-full transition-all duration-500"
+              style={{
+                fontSize: 'var(--title-fs)',
+                fontWeight: style.titleBold ? '700' : 'var(--title-fw)' as any,
+                fontStyle: style.titleItalic ? 'italic' : 'var(--title-fs-style)' as any,
+                textTransform: 'var(--title-upper)' as any,
+                textAlign: 'var(--block-align)' as any,
+                color: 'inherit',
+                marginBottom: 'var(--block-gap, 2rem)'
+              }}
+            >
+              {content.title}
+            </TitleTag>
+          );
+        })()}
 
         <div
           className={cn(

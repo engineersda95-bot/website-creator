@@ -40,7 +40,18 @@ export function getBaseStyleVars(style: any, block: any, project?: Project, view
     
     // Typography
     '--base-fs': toPx(val('fontSize', '1rem')),
-    '--title-fs': toPx(val('titleSize', val('fontSize', '3rem'))),
+    '--title-fs': (() => {
+      const size = val('titleSize', null);
+      if (size !== null) return toPx(size);
+      const tag = val('titleTag', 'h2');
+      if (tag === 'h1') return 'var(--global-h1-fs)';
+      if (tag === 'h2') return 'var(--global-h2-fs)';
+      if (tag === 'h3') return 'var(--global-h3-fs)';
+      if (tag === 'h4') return 'var(--global-h4-fs)';
+      if (tag === 'h5') return 'var(--global-h5-fs)';
+      if (tag === 'h6') return 'var(--global-h6-fs)';
+      return 'var(--global-body-fs)';
+    })(),
     '--subtitle-fs': toPx(val('subtitleSize', '1.25rem')),
     '--title-fw': val('titleBold', false) ? '700' : '400',
     '--title-fs-style': val('titleItalic', false) ? 'italic' : 'normal',
@@ -66,6 +77,15 @@ export function getBaseStyleVars(style: any, block: any, project?: Project, view
     '--btn-px': toPx(project?.settings?.buttonPaddingX, '32px'),
     '--btn-fs': toPx(project?.settings?.buttonFontSize, '1rem'),
     '--btn-upper': project?.settings?.buttonUppercase ? 'uppercase' : 'none',
+
+    // Global Typography Defaults
+    '--global-h1-fs': toPx(project?.settings?.typography?.h1Size, '4rem'),
+    '--global-h2-fs': toPx(project?.settings?.typography?.h2Size, '3rem'),
+    '--global-h3-fs': toPx(project?.settings?.typography?.h3Size, '2rem'),
+    '--global-h4-fs': toPx(project?.settings?.typography?.h4Size, '1.5rem'),
+    '--global-h5-fs': toPx(project?.settings?.typography?.h5Size, '1.25rem'),
+    '--global-h6-fs': toPx(project?.settings?.typography?.h6Size, '1.1rem'),
+    '--global-body-fs': toPx(project?.settings?.typography?.bodySize, '1rem'),
   };
 
   // Responsive Gap Tuning
@@ -76,16 +96,28 @@ export function getBaseStyleVars(style: any, block: any, project?: Project, view
     }
   }
 
-  // Global Button Overrides (Mobile/Tablet)
+  // Global Responsive Overrides (Typography & Buttons)
   if (viewport !== 'desktop' && project?.settings?.responsive) {
     const responsive = project.settings.responsive as any;
     const rv = responsive[viewport];
     if (rv) {
+      // Buttons
       if (rv.buttonRadius !== undefined) vars['--btn-radius'] = toPx(rv.buttonRadius);
       if (rv.buttonFontSize !== undefined) vars['--btn-fs'] = toPx(rv.buttonFontSize);
       if (rv.buttonPaddingX !== undefined) vars['--btn-px'] = toPx(rv.buttonPaddingX);
       if (rv.buttonPaddingY !== undefined) vars['--btn-py'] = toPx(rv.buttonPaddingY);
       if (rv.buttonUppercase !== undefined) vars['--btn-upper'] = rv.buttonUppercase ? 'uppercase' : 'none';
+
+      // Typography
+      if (rv.typography) {
+        if (rv.typography.h1Size !== undefined) vars['--global-h1-fs'] = toPx(rv.typography.h1Size);
+        if (rv.typography.h2Size !== undefined) vars['--global-h2-fs'] = toPx(rv.typography.h2Size);
+        if (rv.typography.h3Size !== undefined) vars['--global-h3-fs'] = toPx(rv.typography.h3Size);
+        if (rv.typography.h4Size !== undefined) vars['--global-h4-fs'] = toPx(rv.typography.h4Size);
+        if (rv.typography.h5Size !== undefined) vars['--global-h5-fs'] = toPx(rv.typography.h5Size);
+        if (rv.typography.h6Size !== undefined) vars['--global-h6-fs'] = toPx(rv.typography.h6Size);
+        if (rv.typography.bodySize !== undefined) vars['--global-body-fs'] = toPx(rv.typography.bodySize);
+      }
     }
   }
 

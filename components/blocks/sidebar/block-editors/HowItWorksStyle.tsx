@@ -104,6 +104,9 @@ export const HowItWorksStyle: React.FC<HowItWorksStyleProps> = ({
             sizeKey="titleSize"
             boldKey="titleBold"
             italicKey="titleItalic"
+            tagKey="titleTag"
+            showTagSelector={true}
+            defaultTag="h2"
             getStyleValue={getStyleValue}
             updateStyle={updateStyle}
             defaultValue={48}
@@ -114,9 +117,12 @@ export const HowItWorksStyle: React.FC<HowItWorksStyleProps> = ({
               sizeKey="itemTitleSize"
               boldKey="itemTitleBold"
               italicKey="itemTitleItalic"
+              tagKey="itemTitleTag"
+              showTagSelector={true}
+              defaultTag="h3"
               getStyleValue={getStyleValue}
               updateStyle={updateStyle}
-              defaultValue={24}
+                defaultValue={24}
             />
             <TypographyFields
               label="Descrizione Passaggio"

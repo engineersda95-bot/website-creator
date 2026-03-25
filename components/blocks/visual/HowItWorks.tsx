@@ -77,42 +77,52 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
     color: style.numberTextColor || style.backgroundColor || '#fff',
   };
 
-  const StepItem = ({ item, index, layoutType }: { item: any, index: number, layoutType: string }) => (
-    <div className={cn(
-      "relative flex flex-col transition-all duration-500",
-      layoutType === 'grid' ? (
-          align === 'center' ? "items-center text-center group" :
-          align === 'right' ? "items-end text-right group" :
-          "items-start text-left group"
-      ) : (
-          align === 'center' ? "flex-col md:flex-row items-center text-center md:text-left gap-6 md:gap-10" :
-          align === 'right' ? "flex-col md:flex-row-reverse items-center md:items-start text-center md:text-right gap-6 md:gap-10" :
-          "flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 md:gap-10"
-      )
-    )}>
-      {/* Number Icon */}
-      <div 
-        className={cn(
-          "rounded-2xl flex items-center justify-center font-black text-white shrink-0 shadow-lg z-10 transition-all",
-          layoutType === 'grid' ? "w-[56px] h-[56px] text-xl mb-6 group-hover:scale-110" : 
-          "w-[48px] h-[48px] md:w-[64px] md:h-[64px] text-lg md:text-2xl"
-        )}
-        style={numberStyle}
-      >
-        {item.number || (index + 1)}
-      </div>
+  const StepItem = ({ item, index, layoutType }: { item: any, index: number, layoutType: string }) => {
+    const ItemTitleTag = (style.itemTitleTag || 'h3') as any;
+    
+    return (
+      <div className={cn(
+        "relative flex flex-col transition-all duration-500",
+        layoutType === 'grid' ? (
+            align === 'center' ? "items-center text-center group" :
+            align === 'right' ? "items-end text-right group" :
+            "items-start text-left group"
+        ) : (
+            align === 'center' ? "flex-col md:flex-row items-center text-center md:text-left gap-6 md:gap-10" :
+            align === 'right' ? "flex-col md:flex-row-reverse items-center md:items-start text-center md:text-right gap-6 md:gap-10" :
+            "flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 md:gap-10"
+        )
+      )}>
+        {/* Number Icon */}
+        <div 
+          className={cn(
+            "rounded-2xl flex items-center justify-center font-black text-white shrink-0 shadow-lg z-10 transition-all",
+            layoutType === 'grid' ? "w-[56px] h-[56px] text-xl mb-6 group-hover:scale-110" : 
+            "w-[48px] h-[48px] md:w-[64px] md:h-[64px] text-lg md:text-2xl"
+          )}
+          style={numberStyle}
+        >
+          {item.number || (index + 1)}
+        </div>
 
-      {/* Content */}
-      <div className="flex-1">
-        <h3 className="mb-2 tracking-tight transition-all duration-300" style={titleStyles}>
-          {item.title || `Step ${index + 1}`}
-        </h3>
-        <p className="opacity-70 leading-relaxed transition-all duration-300" style={descStyles}>
-          {item.description || 'Descrizione del passaggio.'}
-        </p>
+        {/* Content */}
+        <div className="flex-1">
+          <ItemTitleTag 
+            className="mb-2 tracking-tight transition-all duration-300" 
+            style={{
+              fontSize: style.itemTitleSize ? `${style.itemTitleSize}px` : `var(--global-${style.itemTitleTag || 'h3'}-fs)`,
+              fontWeight: style.itemTitleBold ? '700' : 'bold',
+            }}
+          >
+            {item.title || `Step ${index + 1}`}
+          </ItemTitleTag>
+          <p className="opacity-70 leading-relaxed transition-all duration-300" style={descStyles}>
+            {item.description || 'Descrizione del passaggio.'}
+          </p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <section id={blockId} className="relative overflow-hidden how-it-works-block" style={blockStyles}>
@@ -127,20 +137,23 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
         imageMemoryCache={imageMemoryCache}
       />
       <div className="relative z-10 max-w-7xl mx-auto">
-        {content.title && (
-          <h2 
-            className={cn(
-                "mb-16 tracking-tighter transition-all duration-500 leading-tight",
-                align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left"
-            )}
-            style={{ 
-              fontSize: style.titleSize ? `${style.titleSize}px` : (isMobile ? '32px' : '48px'),
-              fontWeight: style.titleBold ? '700' : '400',
-              fontStyle: style.titleItalic ? 'italic' : 'normal',
-            }}
-            dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-          />
-        )}
+        {content.title && (() => {
+          const TitleTag = (style.titleTag || 'h2') as any;
+          return (
+            <TitleTag 
+              className={cn(
+                  "mb-16 tracking-tighter transition-all duration-500 leading-tight",
+                  align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left"
+              )}
+              style={{ 
+                fontSize: 'var(--title-fs)',
+                fontWeight: style.titleBold ? '700' : '400',
+                fontStyle: style.titleItalic ? 'italic' : 'normal',
+              }}
+              dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+            />
+          );
+        })()}
 
         {layout === 'linear' ? (
           <div 
