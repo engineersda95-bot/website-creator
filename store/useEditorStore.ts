@@ -52,7 +52,7 @@ interface EditorState {
   duplicateBlock: (id: string) => void;
   copyBlock: (id: string) => void;
   pasteBlock: (atIndex?: number) => void;
-  hydrateEditor: (project: Project, pages: Page[]) => void;
+  hydrateEditor: (project: Project, pages: Page[], pageId?: string) => void;
   publishProject: () => Promise<{ success: boolean; url?: string; error?: string }>;
   uploadImage: (base64: string, filename?: string) => Promise<string>;
 }
@@ -596,9 +596,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
 
-  hydrateEditor: (project, pages) => {
-    const homePage = pages.find(p => p.slug === 'home') || pages[0] || null;
-    set({ project, projectPages: pages, currentPage: homePage });
+  hydrateEditor: (project, pages, pageId) => {
+    const targetPage = pageId
+      ? pages.find(p => p.id === pageId) || pages[0] || null
+      : pages.find(p => p.slug === 'home') || pages[0] || null;
+    set({ project, projectPages: pages, currentPage: targetPage });
   },
 
   publishProject: async () => {

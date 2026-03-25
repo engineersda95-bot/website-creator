@@ -23,7 +23,6 @@ import {
   ShoppingBag,
   Minus
 } from 'lucide-react';
-import { PageManager } from '../editor/PageManager';
 import { getBlockLibrary } from '@/lib/block-definitions';
 
 export const BlockSidebar: React.FC = () => {
@@ -71,8 +70,6 @@ export const BlockSidebar: React.FC = () => {
           isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
         )}>
           <div className="p-4 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
-            <PageManager />
-
             {/* PAGE BLOCKS LIST */}
             {currentPage && currentPage.blocks.length > 0 && (
               <div className="border-t border-zinc-100 pt-5 animate-in fade-in slide-in-from-top-4 duration-500">

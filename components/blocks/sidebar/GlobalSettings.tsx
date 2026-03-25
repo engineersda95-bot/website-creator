@@ -17,34 +17,37 @@ interface GlobalSettingsProps {
    project: any;
    updateProjectSettings: (settings: Partial<ProjectSettings>) => void;
    viewport: string;
+   variant?: 'sidebar' | 'page';
 }
 
 export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
    project,
    updateProjectSettings,
-   viewport
+   viewport,
+   variant = 'sidebar'
 }) => {
    const { isUploading, uploadImage } = useEditorStore();
+   const isPage = variant === 'page';
 
    return (
-      <div className="w-full flex flex-col h-full bg-white overflow-hidden shadow-2xl relative">
-         <div className="p-6 border-b border-zinc-200 bg-zinc-50/50 flex flex-col gap-2 shrink-0">
-            <div className="flex items-center justify-between">
-               <h2 className="text-xl font-black text-zinc-900 tracking-tight">Design Globale</h2>
-               <div className={cn(
-                  "px-2 py-1 rounded-md flex items-center gap-1.5 border animate-in fade-in zoom-in duration-300",
-                  viewport === 'desktop' ? "bg-zinc-100 border-zinc-200 text-zinc-400" : "bg-indigo-50 border-indigo-100 text-indigo-600"
-               )}>
-                  {viewport === 'desktop' ? <Monitor size={10} /> : <Smartphone size={10} />}
-                  <span className="text-[10px] font-black uppercase tracking-wider">
+      <div className={cn("w-full flex flex-col bg-white overflow-hidden relative", isPage ? "" : "h-full shadow-2xl")}>
+         {/* Header — hidden in page variant (dashboard has its own) */}
+         {!isPage && (
+            <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between shrink-0">
+               <h2 className="text-sm font-bold text-zinc-900">Design Globale</h2>
+               {viewport !== 'desktop' && (
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-600 border border-indigo-100">
+                     <Smartphone size={9} />
                      {viewport}
-                  </span>
-               </div>
+                  </div>
+               )}
             </div>
-            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Personalizza l'estetica del tuo sito</p>
-         </div>
+         )}
 
-         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-12 bg-white">
+         <div className={cn(
+            "overflow-y-auto custom-scrollbar bg-white",
+            isPage ? "space-y-8 py-2" : "flex-1 p-5 space-y-10"
+         )}>
             <SeoSection
                project={project}
                updateProjectSettings={updateProjectSettings}
@@ -72,11 +75,6 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
                project={project}
                updateProjectSettings={updateProjectSettings}
             />
-         </div>
-
-         {/* Footer branding */}
-         <div className="p-6 border-t border-zinc-50 bg-zinc-50/30 shrink-0 text-center">
-            <p className="text-[9px] font-black text-zinc-300 uppercase tracking-[0.3em]">v2.0</p>
          </div>
       </div>
    );

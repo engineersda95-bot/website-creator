@@ -1,0 +1,46 @@
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { EditorClient } from './EditorClient';
+
+export default async function PageEditorPage({
+  params,
+}: {
+  params: Promise<{ projectId: string; pageId: string }>;
+}) {
+  const { projectId, pageId } = await params;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) redirect('/login');
+
+  // Fetch project (must belong to user)
+  const { data: project } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (!project) redirect('/editor');
+
+  // Fetch all pages for this project (needed for nav/footer syncing)
+  const { data: pages } = await supabase
+    .from('pages')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('created_at', { ascending: true });
+
+  const allPages = pages || [];
+  const targetPage = allPages.find(p => p.id === pageId);
+
+  if (!targetPage) redirect(`/editor/${projectId}`);
+
+  return (
+    <EditorClient
+      initialUser={user}
+      initialProject={project}
+      initialPages={allPages}
+      initialPageId={pageId}
+    />
+  );
+}
