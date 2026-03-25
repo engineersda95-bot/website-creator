@@ -110,7 +110,24 @@ export const Navigation: React.FC<NavigationProps> = ({
   const activeColor = style.buttonTheme === 'secondary' ? secondaryColor : pColor;
   const ctaUrl = content.ctaUrl || (content as any).ctaLink || '#';
 
-  const NavContent = (
+   const getRGBA = (hex: string, opacity: number) => {
+     if (!hex || hex === 'transparent') return 'transparent';
+     let r = 255, g = 255, b = 255;
+     if (hex.startsWith('#')) {
+       r = parseInt(hex.slice(1, 3), 16) || 255;
+       g = parseInt(hex.slice(3, 5), 16) || 255;
+       b = parseInt(hex.slice(5, 7), 16) || 255;
+     } else if (hex.startsWith('rgb')) {
+       const match = hex.match(/\d+/g);
+       if (match) { r = parseInt(match[0]); g = parseInt(match[1]); b = parseInt(match[2]); }
+     }
+     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+   };
+
+   const currentOpacity = (style.scrolledOpacity ?? 100) / 100;
+   const bgColor = getRGBA(bg || '#ffffff', currentOpacity);
+
+   const NavContent = (
     <nav 
       id={blockId}
       data-transparent={style.isTransparent ? 'true' : 'false'}
@@ -121,7 +138,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         (style.isTransparent && !isEditing) ? "absolute top-0 left-0 right-0" : ""
       )}
       style={{ 
-        background: style.isTransparent ? 'transparent' : 'var(--block-bg)', 
+        background: style.isTransparent ? 'transparent' : bgColor, 
         color: 'var(--block-color)',
         paddingTop: 'var(--nav-padding)',
         paddingBottom: 'var(--nav-padding)',
@@ -157,23 +174,28 @@ export const Navigation: React.FC<NavigationProps> = ({
 
         {/* DESKTOP (AND MOBILE IF STANDARD) LINKS */}
         <div 
-          className={cn("items-center gap-8 ml-auto text-inherit")}
-          style={{ display: 'var(--nav-links-display)' }}
+          className={cn("items-center ml-auto text-inherit")}
+          style={{ 
+            display: 'var(--nav-links-display)',
+            gap: 'var(--nav-links-cta-gap, 32px)'
+          }}
         >
-          {links.map((link, i) => (
-            <a 
-              key={i} 
-              {...formatLink(isEditing ? '#' : link.url, !isEditing)}
-              className="font-medium transition-all hover:opacity-70 no-underline text-inherit whitespace-nowrap"
-              style={{ 
-                fontSize: 'var(--base-fs)', 
-                fontWeight: 'var(--title-fw)' as any,
-                fontStyle: 'var(--title-fs-style)' as any
-              }}
-            >
-              {link.label}
-            </a>
-          ))}
+          <div className="flex items-center gap-8">
+            {links.map((link, i) => (
+              <a 
+                key={i} 
+                {...formatLink(isEditing ? '#' : link.url, !isEditing)}
+                className="font-medium transition-all hover:opacity-70 no-underline text-inherit whitespace-nowrap"
+                style={{ 
+                  fontSize: 'var(--base-fs)', 
+                  fontWeight: 'var(--title-fw)' as any,
+                  fontStyle: 'var(--title-fs-style)' as any
+                }}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
           {content.cta && (
             <CTA 
               label={content.cta} 
@@ -296,45 +318,39 @@ export const Navigation: React.FC<NavigationProps> = ({
 
             const update = (scrolled) => {
               const bg = getComputedStyle(nav).getPropertyValue('--block-bg').trim() || '#ffffff';
-              const opacity = getComputedStyle(nav).getPropertyValue('--scrolled-opacity') || '0';
+              const opacity = getComputedStyle(nav).getPropertyValue('--scrolled-opacity') || '1';
               
+              // Helper to parse color
+              let r=255, g=255, b=255;
+              if (bg.startsWith('#')) {
+                r = parseInt(bg.slice(1, 3), 16) || 255;
+                g = parseInt(bg.slice(3, 5), 16) || 255;
+                b = parseInt(bg.slice(5, 7), 16) || 255;
+              } else if (bg.startsWith('rgb')) {
+                const match = bg.match(/\d+/g);
+                if (match) { r=match[0]; g=match[1]; b=match[2]; }
+              }
+
               if (scrolled && isSticky) {
                 nav.style.position = 'fixed';
                 nav.style.top = '0';
-                
-                // Helper to parse color (hex or rgb)
-                let r=255, g=255, b=255;
-                if (bg.startsWith('#')) {
-                  r = parseInt(bg.slice(1, 3), 16);
-                  g = parseInt(bg.slice(3, 5), 16);
-                  b = parseInt(bg.slice(5, 7), 16);
-                } else if (bg.startsWith('rgb')) {
-                  const match = bg.match(/\d+/g);
-                  if (match) { r=match[0]; g=match[1]; b=match[2]; }
-                }
-
                 nav.style.background = 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
                 nav.style.boxShadow = '0 10px 30px -10px rgba(0,0,0,0.1)';
                 nav.style.backdropFilter = 'blur(10px)';
-                nav.style.paddingTop = 'var(--nav-padding)';
-                nav.style.paddingBottom = 'var(--nav-padding)';
               } else {
                 if (isTransparent) {
                   nav.style.position = 'absolute';
                   nav.style.background = 'transparent';
-                } else if (isSticky) {
-                  nav.style.position = 'sticky';
-                  nav.style.background = 'var(--block-bg)';
                 } else {
-                  nav.style.position = 'relative';
-                  nav.style.background = 'var(--block-bg)';
+                  nav.style.position = isSticky ? 'sticky' : 'relative';
+                  nav.style.background = 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
                 }
                 nav.style.top = '0';
                 nav.style.boxShadow = 'none';
                 nav.style.backdropFilter = 'none';
-                nav.style.paddingTop = 'var(--nav-padding)';
-                nav.style.paddingBottom = 'var(--nav-padding)';
               }
+              nav.style.paddingTop = 'var(--nav-padding)';
+              nav.style.paddingBottom = 'var(--nav-padding)';
             };
 
             const onScroll = () => {

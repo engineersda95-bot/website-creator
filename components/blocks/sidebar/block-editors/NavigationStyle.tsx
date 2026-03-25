@@ -30,6 +30,20 @@ export const NavigationStyle: React.FC<NavigationStyleProps> = ({
                hPaddingLabel="Padding Dx/Sx"
             />
 
+            {(selectedBlock.content?.layoutType || 'standard') === 'standard' && (
+               <div className="mt-6 space-y-4 pt-6 border-t border-zinc-100">
+                   <div className="flex items-center justify-between">
+                       <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Gap Link - CTA (px)</label>
+                       <input 
+                           type="number"
+                           value={getStyleValue('linksCtaGap', 32)}
+                           onChange={(e) => updateStyle({ linksCtaGap: parseInt(e.target.value) || 32 })}
+                           className="w-20 px-3 py-1 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold text-zinc-900 outline-none focus:border-zinc-900 transition-colors"
+                       />
+                   </div>
+               </div>
+            )}
+
             <div className="mt-8 space-y-4">
                <div className="flex items-center justify-between">
                   <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Larghezza Sidebar (px)</label>
@@ -58,41 +72,38 @@ export const NavigationStyle: React.FC<NavigationStyleProps> = ({
                      className={cn("w-10 h-5 rounded-full p-1 cursor-pointer transition-colors", getStyleValue('isTransparent', false) ? "bg-zinc-900" : "bg-zinc-200")}
                      onClick={() => {
                         const newVal = !getStyleValue('isTransparent', false);
-                         updateStyle({ 
+                        updateStyle({ 
                            isTransparent: newVal,
-                           scrolledOpacity: newVal ? 0 : getStyleValue('scrolledOpacity', 0)
-                         });
+                           scrolledOpacity: newVal ? 0 : 100
+                        });
                       }}
                   >
                      <div className={cn("w-3 h-3 bg-white rounded-full transition-transform", getStyleValue('isTransparent', false) && "translate-x-5")} />
                   </div>
                </div>
-
-               {getStyleValue('isTransparent', false) && (
-                  <div className="space-y-4 pt-4 border-t border-zinc-100">
-                     <p className="text-[12px] font-black text-zinc-300 uppercase tracking-widest">Configurazione Scrolled (Header Pieno)</p>
-                     
-                     <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                           <label className="text-[12px] font-bold text-zinc-400 uppercase">Opacità ({getStyleValue('scrolledOpacity', 0)}%)</label>
-                        </div>
-                        <input
-                           type="range"
-                           min="0"
-                           max="100"
-                           step="1"
-                           value={getStyleValue('scrolledOpacity', 0)}
-                           onChange={(e) => updateStyle({ scrolledOpacity: parseInt(e.target.value) })}
-                           className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
-                        />
-                     </div>
-                  </div>
-               )}
             </div>
          </section>
 
          <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
-        <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
+         
+         <div className="px-4 py-4 bg-zinc-50 rounded-2xl border border-zinc-100 -mt-4 mb-4">
+            <div className="space-y-2">
+               <div className="flex justify-between items-center">
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase">Opacità Sfondo ({getStyleValue('scrolledOpacity', 100)}%)</label>
+               </div>
+               <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={getStyleValue('scrolledOpacity', 100)}
+                  onChange={(e) => updateStyle({ scrolledOpacity: parseInt(e.target.value) })}
+                  className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900"
+               />
+            </div>
+         </div>
+
+         <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
          <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 

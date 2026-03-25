@@ -21,7 +21,9 @@ export const navigationDefinition: BlockDefinition = {
       patternType: 'none',
       patternColor: '#ffffff',
       patternOpacity: 10,
-      patternScale: 40
+      patternScale: 40,
+      scrolledOpacity: 100,
+      linksCtaGap: 32
     }
   },
   styleMapper: (style, block, project, viewport) => {
@@ -48,8 +50,9 @@ export const navigationDefinition: BlockDefinition = {
       '--nav-links-display': (isHamburger ? 'none' : 'flex'),
       '--nav-sticky': val('isSticky', false) ? 'sticky' : 'relative',
       '--nav-transparent': val('isTransparent', false) ? 'transparent' : 'var(--block-bg)',
-      '--scrolled-opacity': ((val('scrolledOpacity', 0) / 100)).toString(),
+      '--scrolled-opacity': ((val('scrolledOpacity', 100) / 100)).toString(),
       '--hamburger-width': toPx(val('hamburgerWidth', 450)),
+      '--nav-links-cta-gap': viewport === 'mobile' ? '0px' : toPx(val('linksCtaGap', 32)),
     };
   }
 };
