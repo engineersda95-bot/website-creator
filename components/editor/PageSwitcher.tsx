@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Page } from '@/types/editor';
+import { useEditorStore } from '@/store/useEditorStore';
+import { useRouter } from 'next/navigation';
 
 interface PageSwitcherProps {
   currentPage: Page | null;
@@ -16,6 +18,23 @@ interface PageSwitcherProps {
 
 export function PageSwitcher({ currentPage, pages, projectId, initialPageId, fontFamily }: PageSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { hasUnsavedChanges } = useEditorStore();
+  const router = useRouter();
+
+  const handlePageClick = (e: React.MouseEvent, targetPageId: string) => {
+    if (targetPageId === initialPageId) {
+      e.preventDefault();
+      setIsOpen(false);
+      return;
+    }
+
+    if (hasUnsavedChanges) {
+      if (!confirm('Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?')) {
+        e.preventDefault();
+        setIsOpen(false);
+      }
+    }
+  };
 
   return (
     <div className="relative" style={{ fontFamily }}>
@@ -49,7 +68,7 @@ export function PageSwitcher({ currentPage, pages, projectId, initialPageId, fon
                   <Link
                     key={p.id}
                     href={`/editor/${projectId}/${p.id}`}
-                    onClick={() => setIsOpen(false)}
+                    onClick={(e) => { handlePageClick(e, p.id); if (!e.defaultPrevented) setIsOpen(false); }}
                     className={cn(
                       "flex items-center justify-between px-3 py-2 rounded-lg text-[13px] transition-all mb-0.5 group/item",
                       isCurrent 

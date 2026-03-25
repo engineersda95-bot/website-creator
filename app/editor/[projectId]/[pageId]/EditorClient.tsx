@@ -168,7 +168,7 @@ export function EditorClient({
                 {targetProject?.name || 'Sito'}
               </Link>
               <ChevronRight size={12} className="text-zinc-300" />
-              <PageSwitcher 
+              <PageSwitcher
                 currentPage={currentPage}
                 pages={targetPages}
                 projectId={initialProject.id}
@@ -182,12 +182,12 @@ export function EditorClient({
               siteStatus === 'pubblicato'
                 ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
                 : siteStatus === 'bozza'
-                ? "bg-amber-50 text-amber-700 border border-amber-200/60"
-                : "bg-zinc-100 text-zinc-500 border border-zinc-200/60"
+                  ? "bg-amber-50 text-amber-700 border border-amber-200/60"
+                  : "bg-zinc-100 text-zinc-500 border border-zinc-200/60"
             )}>
               <div className={cn("w-1.5 h-1.5 rounded-full",
                 siteStatus === 'pubblicato' ? "bg-emerald-500" :
-                siteStatus === 'bozza' ? "bg-amber-500" : "bg-zinc-400"
+                  siteStatus === 'bozza' ? "bg-amber-500" : "bg-zinc-400"
               )} />
               {siteStatus === 'pubblicato' ? 'Online' : siteStatus === 'bozza' ? 'Bozza' : 'Bozza'}
             </div>
