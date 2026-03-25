@@ -16,7 +16,9 @@ export type BlockType =
   'quote' |
   'divider' |
   'logos' |
-  'cards';
+  'cards' |
+  'benefits' |
+  'how-it-works';
 
 export interface Block {
   id: string;

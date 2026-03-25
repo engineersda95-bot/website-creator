@@ -14,6 +14,9 @@ import { footerDefinition } from '@/components/blocks/visual/FooterBlock.definit
 import { navigationDefinition } from '@/components/blocks/visual/navigation/Navigation.definition';
 import { cardsDefinition } from '@/components/blocks/visual/CardsBlock.definition';
 import { logosDefinition } from '@/components/blocks/visual/Logos.definition';
+import { benefitsDefinition } from '@/components/blocks/visual/Benefits.definition';
+import { howItWorksDefinition } from '@/components/blocks/visual/HowItWorks.definition';
+import { singleImageDefinition } from '@/components/blocks/visual/SingleImage.definition';
 
 export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   hero: heroDefinition,
@@ -28,12 +31,14 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   navigation: navigationDefinition,
   logos: logosDefinition,
   cards: cardsDefinition,
+  benefits: benefitsDefinition,
+  'how-it-works': howItWorksDefinition,
+  image: singleImageDefinition,
   
   // Placeholders for unimplemented/transitioning blocks
   map: { type: 'map', label: 'Mappa', icon: MapPin, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
   features: { type: 'features', label: 'Caratteristiche', icon: LayoutTemplate, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
   gallery: { type: 'gallery', label: 'Galleria', icon: LayoutTemplate, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
-  image: { type: 'image', label: 'Immagine', icon: ImageIcon, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
   reviews: { type: 'reviews', label: 'Recensioni', icon: FileText, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
   'product-carousel': { type: 'product-carousel', label: 'Prodotti', icon: ShoppingBag, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
 };
