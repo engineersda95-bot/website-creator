@@ -24,13 +24,16 @@
   width: 5px !important;
   height: 5px !important;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent !important;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.1) !important;
   border-radius: 10px !important;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2) !important;
 }
@@ -41,6 +44,7 @@
 .dark::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1) !important;
 }
+
 .dark ::-webkit-scrollbar-thumb:hover,
 [data-theme='dark'] ::-webkit-scrollbar-thumb:hover,
 .dark::-webkit-scrollbar-thumb:hover {
@@ -56,6 +60,7 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
 }
+
 .dark * {
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
@@ -71,8 +76,20 @@ body {
   width: 0 !important;
   height: 0 !important;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
 
+/* Rich text: reset browser defaults for <p>, <ul>, <ol> from formatRichText (multi-line).
+   Mirrors generate-static.tsx so editor preview = published site. */
+.rt-content p { margin: 0; padding: 0; line-height: inherit; }
+.rt-content p + p { margin-top: 0.75em; }
+.rt-content ul,
+.rt-content ol { margin: 0.5em 0; padding-left: 1.5em; }
+.rt-content li { margin: 0.25em 0; }
+.rt-content ul { list-style-type: disc; }
+.rt-content ol { list-style-type: decimal; }
+.rt-content strong { font-weight: 700; }
+.rt-content em { font-style: italic; }

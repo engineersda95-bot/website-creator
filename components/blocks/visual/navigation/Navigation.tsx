@@ -97,7 +97,7 @@ export const Navigation: React.FC<NavigationProps> = ({
     if (isEditing) return <div className="cursor-pointer flex items-center gap-3">{children}</div>;
     return (
       <a 
-        {...formatLink(content.logoLinkHome ? (content.logoUrl || '/') : undefined)} 
+        {...formatLink(content.logoLinkHome ? (content.logoUrl || '/') : undefined, !isEditing)} 
         className={cn("no-underline flex items-center gap-3", !content.logoLinkHome && "pointer-events-none")}
       >
         {children}
@@ -144,7 +144,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         />
       )}
       <div 
-        className="mx-auto flex items-center justify-between transition-all duration-300 w-full"
+        className="relative z-[1] mx-auto flex items-center justify-between transition-all duration-300 w-full"
         style={{ 
           paddingLeft: 'var(--nav-hpadding)',
           paddingRight: 'var(--nav-hpadding)'
@@ -163,7 +163,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           {links.map((link, i) => (
             <a 
               key={i} 
-              {...formatLink(isEditing ? '#' : link.url)}
+              {...formatLink(isEditing ? '#' : link.url, !isEditing)}
               className="font-medium transition-all hover:opacity-70 no-underline text-inherit whitespace-nowrap"
               style={{ 
                 fontSize: 'var(--base-fs)', 
@@ -230,7 +230,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                     {links.map((link, i) => (
                       <a 
                         key={i} 
-                        {...formatLink(link.url)}
+                        {...formatLink(link.url, true)}
                         className="group flex items-center justify-between py-8 no-underline border-b text-inherit hover:opacity-70 transition-all duration-500 ease-out"
                         style={{ 
                           borderColor: project?.settings?.appearance === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
@@ -389,6 +389,14 @@ export const Navigation: React.FC<NavigationProps> = ({
                 if (isOpen) closeMenu(); else openMenu(); 
               });
               if (overlay) overlay.addEventListener('click', closeMenu);
+
+              // Auto-close menu on anchor links click (#...)
+              const menuLinks = menu.querySelectorAll('a[href^="#"]');
+              menuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                  setTimeout(closeMenu, 100); // Small delay for visual feedback
+                });
+              });
             }
           })();
         </script>`}} />

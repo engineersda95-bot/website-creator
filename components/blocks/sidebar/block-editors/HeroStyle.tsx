@@ -2,12 +2,13 @@
 
 import React from 'react';
 import { Layers, Type } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, BackgroundManager, PatternManager } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, BackgroundManager, PatternManager, AnchorManager } from '../SharedSidebarComponents';
 import { useEditorStore } from '@/store/useEditorStore';
 import { cn } from '@/lib/utils';
 
 interface HeroStyleProps {
    selectedBlock: any;
+   updateContent: (content: any) => void;
    updateStyle: (style: any) => void;
    getStyleValue: (key: string, defaultValue: any) => any;
    project: any;
@@ -15,6 +16,7 @@ interface HeroStyleProps {
 
 export const HeroStyle: React.FC<HeroStyleProps> = ({
    selectedBlock,
+   updateContent,
    updateStyle,
    getStyleValue,
    project
@@ -96,6 +98,11 @@ export const HeroStyle: React.FC<HeroStyleProps> = ({
                />
             </div>
          </section>
+
+         <AnchorManager 
+            selectedBlock={selectedBlock} 
+            updateContent={updateContent} 
+         />
       </div>
    );
 };

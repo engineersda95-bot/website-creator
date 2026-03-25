@@ -66,6 +66,9 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
         textAlign: 'var(--block-align)' as any,
       }}
     >
+      {(content as any).sectionId && (
+        <span id={(content as any).sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
         style={style} 

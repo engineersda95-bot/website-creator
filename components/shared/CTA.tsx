@@ -43,7 +43,7 @@ export const CTA: React.FC<CTAProps> = ({
 
   return (
     <a
-      {...formatLink(url)}
+      {...formatLink(url, isStatic)}
       className={cn(getButtonClass(project), className)}
       style={{ ...buttonStyle, ...extraStyle }}
       onClick={onClick}

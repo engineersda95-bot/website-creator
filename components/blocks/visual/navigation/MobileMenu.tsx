@@ -124,7 +124,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               {links.map((link, i) => (
                 <a 
                   key={i} 
-                  {...formatLink(isEditing ? '#' : link.url)}
+                  {...formatLink(isEditing ? '#' : link.url, !isEditing)}
                   className="group flex items-center justify-between py-8 no-underline border-b text-inherit hover:opacity-70 transition-all duration-500"
                   style={{ borderColor, ...linkStyle }}
                   onClick={() => setIsMenuOpen(false)}

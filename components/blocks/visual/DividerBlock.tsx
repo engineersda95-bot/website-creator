@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
@@ -21,7 +19,7 @@ export const DividerBlock: React.FC<DividerBlockProps> = ({ block, project, view
   const { content } = block;
 
   return (
-    <section 
+    <section id={block.id} 
       className={cn("w-full flex transition-all duration-500 relative overflow-hidden", alignClass)}
       style={{
         background: 'var(--block-bg)',
@@ -31,6 +29,9 @@ export const DividerBlock: React.FC<DividerBlockProps> = ({ block, project, view
         paddingRight: 'var(--block-px)',
       }}
     >
+      {content.sectionId && (
+        <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
         style={style} 

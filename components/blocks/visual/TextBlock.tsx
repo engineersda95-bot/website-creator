@@ -9,6 +9,7 @@ interface TextBlockProps {
   content: {
     text: string;
     backgroundImage?: string;
+    sectionId?: string;
   };
   block: Block;
   isEditing?: boolean;
@@ -22,7 +23,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
   const { style, alignClass } = getBlockStyles(block, project, viewport || 'desktop');
 
   return (
-    <section 
+      <section
       className={cn("w-full transition-all duration-500 overflow-hidden relative")}
       style={{
         background: 'var(--block-bg)',
@@ -31,16 +32,19 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
         paddingBottom: 'var(--block-pb)',
       }}
     >
-      <BlockBackground 
-        backgroundImage={content.backgroundImage} 
-        style={style} 
-        project={project} 
-        isStatic={isStatic} 
+      {content.sectionId && (
+        <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
+      <BlockBackground
+        backgroundImage={content.backgroundImage}
+        style={style}
+        project={project}
+        isStatic={isStatic}
         imageMemoryCache={imageMemoryCache}
       />
-      <div 
+      <div
         className={cn("w-full flex flex-col transition-all duration-500 relative z-10")}
-        style={{ 
+        style={{
           paddingLeft: 'var(--block-px)',
           paddingRight: 'var(--block-px)',
           marginLeft: 'var(--block-ml-auto)',
@@ -49,11 +53,11 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
           alignItems: 'var(--block-items)' as any,
         }}
       >
-        <div 
+        <div
           className={cn(
-            "prose prose-sm md:prose-base max-w-none transition-all duration-500",
+            "rt-content max-w-none transition-all duration-500",
           )}
-          style={{ 
+          style={{
             fontSize: 'var(--base-fs)',
             color: 'inherit',
             fontWeight: 'var(--title-fw)' as any,

@@ -79,6 +79,9 @@ export const SingleImage: React.FC<SingleImageBlockProps> = ({
 
   return (
     <section id={blockId} className="relative overflow-hidden single-image-block" style={blockStyles}>
+      {content.sectionId && (
+        <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
         style={style} 
@@ -88,7 +91,7 @@ export const SingleImage: React.FC<SingleImageBlockProps> = ({
       />
       <div className="relative z-10">
         {content.url ? (
-          <a {...formatLink(content.url)} className="block no-underline">
+          <a {...formatLink(content.url, isStatic)} className="block no-underline">
             {ImageElement}
           </a>
         ) : (

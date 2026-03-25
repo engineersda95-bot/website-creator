@@ -130,7 +130,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
                          {content.socialLinks.map((social, i) => {
                             const Icon = SOCIAL_ICONS[social.platform.toLowerCase()] || Mail;
                             return (
-                               <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit">
+                               <a key={i} {...formatLink(social.url, isStatic)} className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit">
                                   <Icon 
                                      width="var(--social-icon-size, 20px)" 
                                      height="var(--social-icon-size, 20px)" 
@@ -145,7 +145,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
                    <ul className="flex flex-col items-center gap-3 list-none p-0 m-0">
                       {links.map((link, i) => (
                          <li key={i}>
-                            <a href={link.url} className="opacity-70 hover:opacity-100 transition-opacity no-underline text-inherit font-medium" style={{ fontSize: 'var(--base-fs)' }}>
+                            <a {...formatLink(link.url, isStatic)} className="opacity-70 hover:opacity-100 transition-opacity no-underline text-inherit font-medium" style={{ fontSize: 'var(--base-fs)' }}>
                                {link.label}
                             </a>
                          </li>
@@ -192,7 +192,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
                            {content.socialLinks.map((social, i) => {
                               const Icon = SOCIAL_ICONS[social.platform.toLowerCase()] || Mail;
                               return (
-                                 <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit">
+                                 <a key={i} {...formatLink(social.url, isStatic)} className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit">
                                     <Icon 
                                        width="var(--social-icon-size, 20px)" 
                                        height="var(--social-icon-size, 20px)" 
@@ -213,7 +213,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
                      <ul className="space-y-3 list-none p-0 m-0">
                         {links.map((link, i) => (
                            <li key={i}>
-                              <a href={link.url} className="opacity-70 hover:opacity-100 transition-opacity no-underline text-inherit font-medium text-sm" style={{ fontSize: 'var(--base-fs)' }}>
+                              <a {...formatLink(link.url, isStatic)} className="opacity-70 hover:opacity-100 transition-opacity no-underline text-inherit font-medium text-sm" style={{ fontSize: 'var(--base-fs)' }}>
                                  {link.label}
                               </a>
                            </li>

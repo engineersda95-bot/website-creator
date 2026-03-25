@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
@@ -12,6 +10,7 @@ interface EmbedBlockProps {
     url: string;
     title?: string;
     backgroundImage?: string;
+    sectionId?: string;
   };
   block: Block;
   isEditing?: boolean;
@@ -79,7 +78,8 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
   const alignment = style?.align || 'center';
 
   return (
-    <section
+    <section 
+      id={block.id}
       className={cn("w-full transition-all duration-500 overflow-hidden relative flex flex-col justify-center")}
       style={{
         background: 'var(--block-bg)',
@@ -91,6 +91,9 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
         minHeight: 'var(--block-min-height, auto)',
       }}
     >
+      {content.sectionId && (
+        <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
         style={style} 

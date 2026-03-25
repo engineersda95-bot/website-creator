@@ -154,7 +154,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
 
     if (item.url) {
       return (
-        <a {...formatLink(item.url)} className="no-underline text-inherit block h-full">
+        <a {...formatLink(item.url, isStatic)} className="no-underline text-inherit block h-full">
           {cardContent}
         </a>
       );
@@ -178,6 +178,9 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
 
   return (
     <section id={blockId} className="relative overflow-hidden cards-block" style={blockStyles}>
+      {content.sectionId && (
+        <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
         style={style} 

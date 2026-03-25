@@ -116,6 +116,9 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
 
   return (
     <section id={blockId} className="relative overflow-hidden how-it-works-block" style={blockStyles}>
+      {content.sectionId && (
+        <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
         style={style} 

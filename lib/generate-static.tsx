@@ -42,7 +42,7 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
       const isPng = fullOgUrl.toLowerCase().includes('.png');
       const isJpg = fullOgUrl.toLowerCase().includes('.jpg') || fullOgUrl.toLowerCase().includes('.jpeg');
       const contentType = isPng ? 'image/png' : isJpg ? 'image/jpeg' : 'image/png';
-      
+
       return `
     <meta property="og:image" content="${fullOgUrl}">
     <meta property="og:image:secure_url" content="${fullOgUrl}">
@@ -100,6 +100,17 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
 
         .no-scrollbar::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
         .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+
+        /* Rich text reset: neutralize browser default margins on <p>, <ul>, <ol>
+           emitted by formatRichText for multi-line content. */
+        .rt-content p { margin: 0; padding: 0; line-height: inherit; }
+        .rt-content p + p { margin-top: 0.75em; }
+        .rt-content ul, .rt-content ol { margin: 0.5em 0; padding-left: 1.5em; }
+        .rt-content li { margin: 0.25em 0; }
+        .rt-content ul { list-style-type: disc; }
+        .rt-content ol { list-style-type: decimal; }
+        .rt-content strong { font-weight: 700; }
+        .rt-content em { font-style: italic; }
 
         /* Mobile Menu Visibility */
         [data-menu][data-open="true"] {
@@ -191,18 +202,18 @@ function renderBlock(block: Block, allPages: Page[], project: Project | undefine
   const styleWrapper = `<style>${responsiveCss}</style>`;
   const isNav = type === 'navigation';
   const blockWrapper = (inner: string) => `${styleWrapper}<div id="${blockId}" class="w-full transition-all duration-500">${inner}</div>`;
-  
+
   const Component = StaticRegistry[type];
-  
+
   if (!Component) {
     return `<!-- Block type ${type} ignored in static generation -->`;
   }
 
   return blockWrapper(renderToStaticMarkup(
-    <Component 
-      content={content} 
-      block={block} 
-      project={project} 
+    <Component
+      content={content}
+      block={block}
+      project={project}
       allPages={allPages}
       isStatic={true}
       imageMemoryCache={{}}

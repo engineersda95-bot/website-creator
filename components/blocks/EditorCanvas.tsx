@@ -79,6 +79,7 @@ const MemoizedBlock = React.memo(({
         content={block.content}
         block={block}
         isEditing={true}
+        isStatic={false}
         project={project}
         allPages={projectPages}
         viewport={viewport}

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Type } from 'lucide-react';
-import { LayoutFields, ColorManager, BorderShadowManager, TypographyFields, SectionHeader, BackgroundManager, PatternManager } from '@/components/blocks/sidebar/SharedSidebarComponents';
+import { LayoutFields, ColorManager, BorderShadowManager, TypographyFields, SectionHeader, BackgroundManager, PatternManager, AnchorManager } from '@/components/blocks/sidebar/SharedSidebarComponents';
 
 export function EmbedStyle({ selectedBlock, updateContent, getStyleValue, updateStyle, project }: any) {
   return (
@@ -59,6 +59,10 @@ export function EmbedStyle({ selectedBlock, updateContent, getStyleValue, update
           getStyleValue={getStyleValue} 
         />
       </section>
+      <AnchorManager 
+        selectedBlock={selectedBlock} 
+        updateContent={updateContent} 
+      />
     </div>
   );
 }

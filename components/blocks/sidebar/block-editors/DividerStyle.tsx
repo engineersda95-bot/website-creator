@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Layers, Palette } from 'lucide-react';
-import { LayoutFields, SectionHeader, ColorManager, BackgroundManager, PatternManager } from '../SharedSidebarComponents';
+import { LayoutFields, SectionHeader, ColorManager, BackgroundManager, PatternManager, AnchorManager } from '../SharedSidebarComponents';
 
 interface DividerStyleProps {
    selectedBlock: any;
@@ -90,7 +90,11 @@ export const DividerStyle: React.FC<DividerStyleProps> = ({
                </button>
             </div>
          </section>
-      </div>
+        <AnchorManager 
+        selectedBlock={selectedBlock} 
+        updateContent={updateContent} 
+      />
+    </div>
    );
 };
 

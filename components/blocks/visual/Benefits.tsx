@@ -118,6 +118,9 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
 
   return (
     <section id={blockId} className="relative overflow-hidden benefits-block" style={blockStyles}>
+      {content.sectionId && (
+        <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
         style={style} 

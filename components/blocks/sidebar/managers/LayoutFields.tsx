@@ -7,7 +7,7 @@ import { AdvancedMargins } from './AdvancedMargins';
 
 import { LayoutFieldsProps } from '@/types/sidebar';
 
-export function LayoutFields({ getStyleValue, updateStyle, showAlign = true, paddingLabel = "Padding Vert", hPaddingLabel = "Spazio Laterale" }: LayoutFieldsProps) {
+export function LayoutFields({ getStyleValue, updateStyle, showAlign = true, paddingLabel = "Spazio Vert", hPaddingLabel = "Spazio Orizz" }: LayoutFieldsProps) {
    return (
       <div className="space-y-6">
          <div className="grid grid-cols-2 gap-4">

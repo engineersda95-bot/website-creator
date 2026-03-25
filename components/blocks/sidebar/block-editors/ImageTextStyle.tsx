@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Layers, Type, MoreVertical, MoveHorizontal, ImageIcon } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, ImageStyleFields, BackgroundManager, PatternManager } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, ImageStyleFields, BackgroundManager, PatternManager, AnchorManager } from '../SharedSidebarComponents';
 import { cn } from '@/lib/utils';
 
 interface ImageTextStyleProps {
@@ -138,6 +138,10 @@ export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
           />
         </div>
       </section>
+      <AnchorManager 
+        selectedBlock={selectedBlock} 
+        updateContent={updateContent} 
+      />
     </div>
   );
 };

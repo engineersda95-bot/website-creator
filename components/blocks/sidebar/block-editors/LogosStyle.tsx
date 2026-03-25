@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Settings, Maximize2, Zap, Palette, Image as ImageIcon } from 'lucide-react';
-import { SectionHeader, LayoutFields, ColorManager, BackgroundManager, BorderShadowManager, PatternManager, SimpleSlider, TypographyFields } from '../SharedSidebarComponents';
+import { SectionHeader, LayoutFields, ColorManager, BackgroundManager, BorderShadowManager, PatternManager, SimpleSlider, TypographyFields, AnchorManager } from '../SharedSidebarComponents';
 import { cn } from '@/lib/utils';
 
 interface LogosStyleProps {
@@ -183,6 +183,10 @@ export const LogosStyle: React.FC<LogosStyleProps> = ({
           getStyleValue={getStyleValue} 
         />
       </section>
+      <AnchorManager 
+        selectedBlock={selectedBlock} 
+        updateContent={updateContent} 
+      />
     </div>
   );
 };

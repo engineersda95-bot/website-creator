@@ -14,12 +14,12 @@ export const TextContent: React.FC<TextContentProps> = ({
 }) => {
    return (
       <div className="space-y-4">
-         <RichTextarea 
-            placeholder="Inserisci il tuo testo..." 
-            value={selectedBlock.content.text || ''} 
-            onChange={(val) => updateContent({ text: val })} 
+         <RichTextarea
+            placeholder="Inserisci il tuo testo..."
+            value={selectedBlock.content.text || ''}
+            onChange={(val) => updateContent({ text: val })}
          />
-      </div>
+    </div>
    );
 };
 

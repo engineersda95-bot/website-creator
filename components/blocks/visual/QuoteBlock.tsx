@@ -183,6 +183,9 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
 
   return (
     <section id={blockId} style={blockStyles} className="relative overflow-hidden quote-block">
+      {content.sectionId && (
+        <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
         style={style} 

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Type, Palette, AlignLeft, Layers, ArrowDown } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, BackgroundManager, PatternManager } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, BackgroundManager, PatternManager, AnchorManager } from '../SharedSidebarComponents';
 
 interface FAQStyleProps {
   selectedBlock: any;
@@ -102,6 +102,10 @@ export const FAQStyle: React.FC<FAQStyleProps> = ({
 
       {/* 4. Bordi & Ombre */}
       <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
+      <AnchorManager 
+        selectedBlock={selectedBlock} 
+        updateContent={updateContent} 
+      />
     </div>
   );
 };

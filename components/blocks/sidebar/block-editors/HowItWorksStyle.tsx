@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Layers, Type, Palette, Layout } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BackgroundManager, PatternManager, BorderShadowManager, SimpleSlider } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BackgroundManager, PatternManager, BorderShadowManager, SimpleSlider, AnchorManager } from '../SharedSidebarComponents';
 import { cn } from '@/lib/utils';
 
 interface HowItWorksStyleProps {
@@ -130,6 +130,10 @@ export const HowItWorksStyle: React.FC<HowItWorksStyleProps> = ({
           </div>
         </div>
       </section>
+      <AnchorManager 
+        selectedBlock={selectedBlock} 
+        updateContent={updateContent} 
+      />
     </div>
   );
 };

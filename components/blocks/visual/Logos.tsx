@@ -13,11 +13,8 @@ export const Logos: React.FC<any> = ({
   const items = content.items || [];
   const title = content.title;
 
-  // Duplicate items for infinite scroll effect
-  const displayItems = [...items, ...items, ...items];
-
   return (
-    <div 
+    <section 
       id={id}
       className="relative overflow-hidden"
       style={{
@@ -29,6 +26,9 @@ export const Logos: React.FC<any> = ({
         color: 'var(--block-color)',
       }}
     >
+      {content.sectionId && (
+        <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
         style={style} 
@@ -113,6 +113,6 @@ export const Logos: React.FC<any> = ({
           mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         }
       `}} />
-    </div>
+    </section>
   );
 };

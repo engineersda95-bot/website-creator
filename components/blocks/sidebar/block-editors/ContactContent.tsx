@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Mail, Phone, MapPin } from 'lucide-react';
-import { SectionHeader, SimpleInput, RichTextarea } from '@/components/blocks/sidebar/SharedSidebarComponents';
+import { SectionHeader, SimpleInput, RichTextarea, AnchorManager } from '@/components/blocks/sidebar/SharedSidebarComponents';
 
 export function ContactContent({ selectedBlock, updateContent }: any) {
   const content = selectedBlock?.content;
@@ -64,7 +64,6 @@ export function ContactContent({ selectedBlock, updateContent }: any) {
           </div>
         </div>
       </section>
-
     </div>
   );
 }

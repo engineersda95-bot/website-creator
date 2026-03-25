@@ -15,6 +15,7 @@ interface HeroProps {
     cta: string;
     ctaUrl?: string;
     backgroundImage?: string;
+    sectionId?: string;
   };
   block: Block;
   isEditing?: boolean;
@@ -37,6 +38,7 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
 
   return (
     <section 
+      id={block.id}
       className={cn(
         "relative flex flex-col overflow-hidden transition-all duration-500",
       )}
@@ -49,6 +51,9 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
         color: 'var(--block-color)',
       }}
     >
+      {content.sectionId && (
+        <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
       {/* Pattern Layer */}
       {(() => {
         const pattern = BACKGROUND_PATTERNS.find(p => p.id === style.patternType);
@@ -149,7 +154,7 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
           {content.cta && (
             <CTA 
               label={content.cta} 
-              url={content.ctaUrl} 
+              url={content.ctaUrl || (content as any).ctaLink} 
               project={project} 
               viewport={viewport as any} 
               theme={style.buttonTheme} 

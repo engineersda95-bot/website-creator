@@ -18,6 +18,7 @@ interface ImageTextBlockProps {
     alt?: string;
     imageAspectRatio?: string;
     backgroundImage?: string;
+    sectionId?: string;
   };
   block: Block;
   isEditing?: boolean;
@@ -27,16 +28,16 @@ interface ImageTextBlockProps {
   imageMemoryCache?: Record<string, string>;
 }
 
-export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({ 
-  content, 
-  block, 
-  project, 
-  viewport, 
-  isStatic, 
-  imageMemoryCache 
+export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
+  content,
+  block,
+  project,
+  viewport,
+  isStatic,
+  imageMemoryCache
 }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
-  
+
   const pColor = project?.settings?.primaryColor || '#3b82f6';
   const secondaryColor = project?.settings?.secondaryColor || '#10b981';
   const activeColor = style.buttonTheme === 'secondary' ? secondaryColor : pColor;
@@ -47,7 +48,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
   const hasImageHover = style.imageHover !== false;
 
   return (
-    <section 
+    <section
       id={block.id}
       className={cn(
         "relative overflow-hidden transition-all duration-500",
@@ -65,18 +66,21 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
         color: 'var(--block-color)',
       }}
     >
-      <BlockBackground 
-        backgroundImage={content.backgroundImage} 
-        style={style} 
-        project={project} 
-        isStatic={isStatic} 
+      {content.sectionId && (
+        <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
+      )}
+      <BlockBackground
+        backgroundImage={content.backgroundImage}
+        style={style}
+        project={project}
+        isStatic={isStatic}
         imageMemoryCache={imageMemoryCache}
       />
-      <div 
+      <div
         className="mx-auto relative z-10"
         style={{ maxWidth: 'var(--block-max-width)' }}
       >
-        <div 
+        <div
           className={cn(
             "grid",
             (viewport === 'mobile' || viewport === 'tablet') ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
@@ -87,13 +91,13 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
           }}
         >
           {/* Immagine */}
-          <div 
+          <div
             className="w-full shrink-0 order-[var(--image-order)]"
-            style={{ 
+            style={{
               order: 'var(--image-order)' as any,
             }}
           >
-            <div 
+            <div
               className={cn(
                 "relative w-full overflow-hidden transition-all duration-700 h-auto",
                 hasImageShadow && "shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]"
@@ -104,7 +108,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
               }}
             >
               {content.image ? (
-                <SitiImage 
+                <SitiImage
                   src={content.image}
                   project={project}
                   isStatic={isStatic}
@@ -116,14 +120,14 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   )}
                 />
               ) : (
-                <div 
+                <div
                   className="w-full bg-zinc-100 flex flex-col items-center justify-center text-zinc-400 p-8 border-2 border-dashed border-zinc-200 h-full"
-                  style={{ 
+                  style={{
                     borderRadius: imageRadius
                   }}
                 >
                   <div className="p-4 bg-white rounded-full shadow-sm mb-4">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Nessuna Immagine</span>
                 </div>
@@ -133,19 +137,19 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
 
 
           {/* Testo */}
-          <div 
+          <div
             className="flex flex-col space-y-6 order-[var(--text-order)]"
-            style={{ 
-                order: 'var(--text-order)' as any,
-                textAlign: 'var(--block-align)' as any,
-                alignItems: 'var(--block-items)' as any,
+            style={{
+              order: 'var(--text-order)' as any,
+              textAlign: 'var(--block-align)' as any,
+              alignItems: 'var(--block-items)' as any,
             }}
           >
             <div className="space-y-4 w-full" style={{ alignItems: 'inherit' }}>
               {content.title && (
-                <h2 
+                <h2
                   className="tracking-tighter transition-all duration-500 leading-[1.1]"
-                  style={{ 
+                  style={{
                     fontSize: 'var(--title-fs)',
                     fontWeight: 'var(--title-fw)' as any,
                     fontStyle: 'var(--title-fs-style)' as any,
@@ -158,8 +162,8 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                 />
               )}
               {content.text && (
-                <div 
-                  className="prose prose-lg dark:prose-invert max-w-none transition-all duration-500"
+                <div
+                  className="rt-content max-w-none transition-all duration-500"
                   style={{
                     fontSize: 'var(--subtitle-fs)',
                     fontWeight: 'var(--subtitle-fw)' as any,
@@ -176,19 +180,19 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
             </div>
 
             {content.cta && (
-              <div 
+              <div
                 className="pt-4 flex w-full"
-                style={{ 
-                    justifyContent: 'var(--block-justify)',
+                style={{
+                  justifyContent: 'var(--block-justify)',
                 }}
               >
-                <CTA 
-                  label={content.cta} 
-                  url={content.ctaUrl} 
-                  project={project} 
-                  viewport={viewport as any} 
-                  theme={style.buttonTheme} 
-                  isStatic={isStatic} 
+                <CTA
+                  label={content.cta}
+                  url={content.ctaUrl || (content as any).ctaLink}
+                  project={project}
+                  viewport={viewport as any}
+                  theme={style.buttonTheme}
+                  isStatic={isStatic}
                 />
               </div>
             )}

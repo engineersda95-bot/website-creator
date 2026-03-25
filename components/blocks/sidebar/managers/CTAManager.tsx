@@ -38,12 +38,11 @@ export function CTAManager({ content, updateContent, style, updateStyle }: CTAMa
                <input
                   className="flex-1 bg-transparent text-xs outline-none"
                   placeholder="Link (es: /contatti o https://...)"
-                  value={content.ctaLink || ''}
-                  onChange={(e) => updateContent({ ctaLink: e.target.value })}
+                  value={content.ctaUrl || content.ctaLink || ''}
+                  onChange={(e) => updateContent({ ctaUrl: e.target.value })}
                />
             </div>
          </div>
       </div>
    );
 }
-
