@@ -144,7 +144,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         />
       )}
       <div 
-        className="mx-auto flex items-center justify-between transition-all duration-300 w-full relative z-10"
+        className="mx-auto flex items-center justify-between transition-all duration-300 w-full"
         style={{ 
           paddingLeft: 'var(--nav-hpadding)',
           paddingRight: 'var(--nav-hpadding)'

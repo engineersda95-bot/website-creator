@@ -10,7 +10,6 @@ import {
 import { cn, getStyleValue as getStyleValueUtil } from '@/lib/utils';
 import { GlobalSettings } from './sidebar/GlobalSettings';
 import { BLOCK_DEFINITIONS } from '@/lib/block-definitions';
-import { AnchorIdField } from './sidebar/ui/AnchorIdField';
 
 export const ConfigSidebar: React.FC = () => {
    const { 
@@ -147,11 +146,6 @@ export const ConfigSidebar: React.FC = () => {
             ) : (
                <div className="p-5 space-y-6 animate-in fade-in duration-300">
                   {renderStyleEditor()}
-                  <AnchorIdField 
-                     selectedBlock={selectedBlock} 
-                     updateStyle={updateStyle} 
-                     getStyleValue={getStyleValue} 
-                  />
                </div>
             )}
          </div>
