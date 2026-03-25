@@ -14,12 +14,14 @@ interface EditorState {
   user: any | null;
   isLoading: boolean;
   isUploading: boolean;
+  isSaving: boolean;
   isInitialized: boolean;
   hasUnsavedChanges: boolean;
   pageHistories: Record<string, { steps: any[], index: number }>;
   takeSnapshot: () => void;
   copiedBlock: Block | null;
   imageMemoryCache: Record<string, string>;
+  version: number;
 
   // Actions
   setUnsavedChanges: (val: boolean) => void;
@@ -60,7 +62,10 @@ interface EditorState {
 
 const triggerAutoSave = (get: () => EditorState, set?: any) => {
   if (set) {
-    set({ hasUnsavedChanges: true });
+    set((state: any) => ({ 
+      hasUnsavedChanges: true,
+      version: state.version + 1 
+    }));
     get().takeSnapshot();
   }
 };
@@ -73,6 +78,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   user: null,
   isLoading: false,
   isUploading: false,
+  isSaving: false,
   isInitialized: false,
   hasUnsavedChanges: false,
   setUnsavedChanges: (val) => set({ hasUnsavedChanges: val }),
@@ -81,6 +87,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   pageHistories: {},
   copiedBlock: null,
   imageMemoryCache: {},
+  version: 0,
 
   takeSnapshot: () => {
     const { currentPage, project, pageHistories } = get();
@@ -218,8 +225,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   saveCurrentPage: async () => {
-    const { currentPage, project, projectPages, user, hasUnsavedChanges } = get();
-    if (!currentPage || !user || !hasUnsavedChanges) return;
+    const { currentPage, project, projectPages, user, hasUnsavedChanges, version, isSaving } = get();
+    if (!currentPage || !user || !hasUnsavedChanges || isSaving) return;
+
+    set({ isSaving: true });
+
+    // Capture the version at the start of the save
+    const versionAtStart = version;
 
     const pagesToSave = [{
       id: currentPage.id,
@@ -266,34 +278,67 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
 
     const { data: savedData, error } = await supabase.from('pages').upsert(pagesToSave).select();
+    
     if (error) {
       console.error('[Store] saveCurrentPage error:', error);
     } else if (savedData) {
-      // Sync local state with server-side data (especially updated_at)
-      set(state => ({
-        hasUnsavedChanges: false,
-        currentPage: state.currentPage?.id === savedData[0].id ? { ...state.currentPage, ...savedData[0] } : state.currentPage,
-        projectPages: state.projectPages.map(p => {
-          const saved = savedData.find(s => s.id === p.id);
-          return saved ? { ...p, ...saved } : p;
-        })
-      }));
+      // Check if the store changed while we were waiting for the database
+      const { version: versionNow } = get();
+      const hasNewChanges = versionNow !== versionAtStart;
+
+      set(state => {
+        if (!state.currentPage) return state;
+
+        return {
+          // Only set unsaved changes to false if NO new changes happened during the async call
+          hasUnsavedChanges: hasNewChanges ? true : false,
+          
+          // Update local state WITH pieces from server (e.g. updated_at) but WITHOUT overwriting 
+          // the content if it's already moved forward.
+          currentPage: state.currentPage.id === savedData[0].id 
+            ? { 
+                ...state.currentPage, 
+                updated_at: savedData[0].updated_at,
+                // We only update blocks if the user didn't change them in the meantine
+                blocks: hasNewChanges ? state.currentPage.blocks : savedData[0].blocks,
+                seo: hasNewChanges ? state.currentPage.seo : savedData[0].seo,
+              } 
+            : state.currentPage,
+          
+          projectPages: state.projectPages.map(p => {
+            const saved = savedData.find(s => s.id === p.id);
+            // Same logic: if it's the current page we already handled it, if it's another page
+            // (like nav/footer sync) we just update the metadata
+            return saved ? { ...p, updated_at: saved.updated_at } : p;
+          })
+        };
+      });
     }
+    set({ isSaving: false });
   },
 
   saveProject: async () => {
-    const { project, user, hasUnsavedChanges } = get();
-    if (!project || !user || !hasUnsavedChanges) return;
+    const { project, user, hasUnsavedChanges, version, isSaving } = get();
+    if (!project || !user || !hasUnsavedChanges || isSaving) return;
+
+    set({ isSaving: true });
+
+    const versionAtStart = version;
 
     const { error } = await supabase.from('projects')
         .update({ name: project.name, settings: project.settings })
         .eq('id', project.id);
     
     if (!error) {
-       set({ hasUnsavedChanges: false });
+       const { version: versionNow } = get();
+       // Only reset unsaved changes if no new changes happened during the async call
+       if (versionNow === versionAtStart) {
+         set({ hasUnsavedChanges: false });
+       }
     } else {
        console.error('[Store] saveProject error:', error);
     }
+    set({ isSaving: false });
   },
 
   updatePageSEO: async (seo) => {
@@ -736,7 +781,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         [currentPage.id]: { ...currentHist, index: targetIdx }
       },
       projectPages: projectPages.map(p => p.id === updatedPage.id ? updatedPage : p),
-      hasUnsavedChanges: true
+      hasUnsavedChanges: true,
+      version: get().version + 1
     });
   },
 
@@ -761,7 +807,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         [currentPage.id]: { ...currentHist, index: targetIdx }
       },
       projectPages: projectPages.map(p => p.id === updatedPage.id ? updatedPage : p),
-      hasUnsavedChanges: true
+      hasUnsavedChanges: true,
+      version: get().version + 1
     });
   }
 }));

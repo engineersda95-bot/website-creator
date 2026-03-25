@@ -45,7 +45,15 @@ export const UserMenu: React.FC = () => {
 
           <div className="py-1">
             <button
-              onClick={async () => { await logout(); window.location.href = '/login'; }}
+              onClick={async () => { 
+                if (useEditorStore.getState().hasUnsavedChanges) {
+                  if (!confirm('Hai delle modifiche non salvate. Vuoi uscire e perdere le modifiche?')) {
+                    return;
+                  }
+                }
+                await logout(); 
+                window.location.href = '/login'; 
+              }}
               className="w-full px-4 py-2.5 text-left text-sm text-zinc-600 hover:bg-red-50 hover:text-red-700 flex items-center gap-2.5 transition-colors"
             >
               <LogOut size={14} />

@@ -157,13 +157,26 @@ export function EditorClient({
           <div className="flex items-center gap-2">
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1 text-sm">
-              <Link href="/editor" className="text-zinc-400 hover:text-zinc-600 transition-colors font-medium">
+              <Link 
+                href="/editor" 
+                onClick={(e) => {
+                  if (hasUnsavedChanges && !confirm('Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?')) {
+                    e.preventDefault();
+                  }
+                }}
+                className="text-zinc-400 hover:text-zinc-600 transition-colors font-medium text-[13px]"
+              >
                 I miei siti
               </Link>
               <ChevronRight size={12} className="text-zinc-300" />
               <Link
                 href={`/editor/${initialProject?.id}`}
-                className="text-zinc-400 hover:text-zinc-600 transition-colors font-medium max-w-[120px] truncate"
+                onClick={(e) => {
+                  if (hasUnsavedChanges && !confirm('Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?')) {
+                    e.preventDefault();
+                  }
+                }}
+                className="text-zinc-400 hover:text-zinc-600 transition-colors font-medium max-w-[120px] truncate text-[13px]"
               >
                 {targetProject?.name || 'Sito'}
               </Link>
