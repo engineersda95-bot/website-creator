@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { TEMPLATES, TEMPLATE_SETTINGS, getBlocksFromTemplate } from '@/lib/templates';
 import { getBlockComponent } from '@/components/blocks/BlockRegistry';
 import { getBlockCSSVariables } from '@/lib/responsive-utils';
@@ -67,6 +67,7 @@ export function TemplatePreviewModal({
   templateName: string;
   onClose: () => void;
 }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const blocks = getBlocksFromTemplate(templateId as keyof typeof TEMPLATES);
 
   // Use template-specific settings for accurate preview
@@ -104,12 +105,32 @@ export function TemplatePreviewModal({
           </button>
         </div>
 
-        {/* Preview container — block all link navigation */}
+        {/* Preview container — handle anchor scrolling, block external navigation */}
         <div
-          className="flex-1 overflow-y-auto bg-zinc-100 custom-scrollbar"
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto bg-zinc-100 custom-scrollbar scroll-smooth"
           onClick={(e) => {
-            const target = (e.target as HTMLElement).closest('a');
-            if (target) { e.preventDefault(); e.stopPropagation(); }
+            const anchor = (e.target as HTMLElement).closest('a');
+            if (!anchor) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const href = anchor.getAttribute('href') || '';
+            // Extract hash — handles both "#menu" and "/#menu" formats
+            const hashMatch = href.match(/#(.+)/);
+            if (hashMatch && scrollContainerRef.current) {
+              const hash = hashMatch[1].toLowerCase();
+              // Try exact match first, then fuzzy match on all data-anchor attributes
+              const allAnchored = scrollContainerRef.current.querySelectorAll('[data-anchor]');
+              let targetEl: Element | null = null;
+              for (const el of allAnchored) {
+                const parts = (el.getAttribute('data-anchor') || '').split(' ');
+                if (parts.some(p => p === hash || p.includes(hash) || hash.includes(p))) {
+                  targetEl = el;
+                  break;
+                }
+              }
+              if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
           }}
         >
           <div className="mx-auto" style={{ maxWidth: 1200 }}>
@@ -129,9 +150,18 @@ export function TemplatePreviewModal({
                 const Component = getBlockComponent(block.type);
                 const vars = getBlockCSSVariables(block, fakeProject, 'desktop');
 
+                // Generate multiple anchor ids for matching
+                const slugify = (s: string) => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || '';
+                const anchorId = [
+                  block.content?.sectionId,
+                  slugify(block.content?.title || ''),
+                  block.type,
+                ].filter(Boolean).join(' ');
+
                 return (
                   <div
                     key={block.id}
+                    data-anchor={anchorId}
                     style={{
                       ...vars,
                       borderRadius: 'var(--block-radius)',

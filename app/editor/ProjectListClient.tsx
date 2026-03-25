@@ -12,7 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { useEditorStore } from '@/store/useEditorStore';
-import { getBlocksFromTemplate, TEMPLATES, TEMPLATE_SETTINGS } from '@/lib/templates';
+import { getBlocksFromTemplate, TEMPLATES, TEMPLATE_SETTINGS, TEMPLATE_PAGES } from '@/lib/templates';
 import { TemplateWireframe, TemplatePreviewModal } from '@/components/editor/TemplatePreview';
 
 const TEMPLATE_OPTIONS = [
@@ -70,18 +70,29 @@ export function ProjectListClient({
 
     if (newProj) {
       // Create home page with template blocks
-      const pageId = uuidv4();
       const templateBlocks = selectedTemplate !== 'blank' && selectedTemplate in TEMPLATES
         ? getBlocksFromTemplate(selectedTemplate as keyof typeof TEMPLATES)
         : [];
 
-      await supabase.from('pages').insert({
-        id: pageId,
-        project_id: projId,
-        title: 'Home',
-        slug: 'home',
-        blocks: templateBlocks,
-      });
+      const pagesToInsert = [
+        { id: uuidv4(), project_id: projId, title: 'Home', slug: 'home', blocks: templateBlocks },
+      ];
+
+      // Add extra pages from template
+      const extraPages = TEMPLATE_PAGES[selectedTemplate];
+      if (extraPages) {
+        for (const ep of extraPages) {
+          pagesToInsert.push({
+            id: uuidv4(),
+            project_id: projId,
+            title: ep.title,
+            slug: ep.slug,
+            blocks: ep.blocks.map((b: any) => ({ ...b, id: uuidv4() })),
+          });
+        }
+      }
+
+      await supabase.from('pages').insert(pagesToInsert);
 
       setProjects([newProj, ...projects]);
       setShowCreate(false);
