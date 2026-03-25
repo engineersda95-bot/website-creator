@@ -63,9 +63,6 @@ export function RichTextarea({ label = "Contenuto Testuale", value, onChange, pl
                </div>
             )}
          </div>
-         <div className="flex justify-end pr-2">
-            <span className="text-[12px] text-zinc-300 uppercase font-bold tracking-tighter">Supporta Bold & Italic</span>
-         </div>
       </div>
    );
 }

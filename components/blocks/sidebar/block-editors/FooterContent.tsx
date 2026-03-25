@@ -3,7 +3,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '@/components/shared/ImageUpload';
-import { SocialLinksManager, LinkListManager } from '../SharedSidebarComponents';
+import { SocialLinksManager, LinkListManager, RichTextarea, SimpleInput } from '../SharedSidebarComponents';
 import { useEditorStore } from '@/store/useEditorStore';
 import { resolveImageUrl } from '@/lib/image-utils';
 
@@ -41,11 +41,16 @@ export const FooterContent: React.FC<FooterContentProps> = ({
                   </div>
 
                   {selectedBlock.content.logoType !== 'image' && (
-                     <input className="w-full p-3 border border-zinc-200 rounded-xl text-sm font-bold bg-zinc-50" placeholder="Testo Logo" value={selectedBlock.content.logoText || ''} onChange={(e) => updateContent({ logoText: e.target.value })} />
+                     <SimpleInput
+                        label="Testo Logo"
+                        value={selectedBlock.content.logoText}
+                        onChange={(val: string) => updateContent({ logoText: val })}
+                        placeholder="Nome Sito"
+                     />
                   )}
                   {selectedBlock.content.logoType !== 'text' && (
                      <>
-                        <div className="flex items-center justify-between gap-2 mb-2 px-1">
+                        <div className="flex items-center justify-between gap-2 mb-2 px-1 pt-2">
                            <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Logo</label>
                            {isUploading && <span className="text-[12px] font-bold text-blue-500 animate-pulse uppercase">Caricamento...</span>}
                         </div>
@@ -58,24 +63,45 @@ export const FooterContent: React.FC<FooterContentProps> = ({
                         />
                      </>
                   )}
+
+                  <div className="pt-2">
+                     <SimpleInput
+                        label="Titolo Link Rapidi"
+                        value={selectedBlock.content.linksTitle}
+                        onChange={(val: string) => updateContent({ linksTitle: val })}
+                        placeholder="Link Rapidi"
+                     />
+                     <div className="h-6" />
+
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block mb-2 px-1">Descrizione</label>
+                     <RichTextarea
+                        placeholder="Inserisci una descrizione per il footer..."
+                        value={selectedBlock.content.description || ''}
+                        onChange={(val: string) => updateContent({ description: val })}
+                     />
+                  </div>
                </div>
             )}
 
-            <div className="pt-4 mt-6 border-t border-zinc-100">
-               <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block mb-2">Testo Copyright</label>
-               <input className="w-full p-3 border border-zinc-200 rounded-xl text-xs bg-zinc-50 focus:bg-white transition-all outline-none" placeholder="Copyright (es: © 2026 Nome)" value={selectedBlock.content.copyright || ''} onChange={(e) => updateContent({ copyright: e.target.value })} />
+            <div className="pt-4 mt-6 border-t border-zinc-200">
+               <SimpleInput
+                  label="Testo Copyright"
+                  value={selectedBlock.content.copyright}
+                  onChange={(val: string) => updateContent({ copyright: val })}
+                  placeholder="© 2026 Nome"
+               />
             </div>
          </div>
 
-         <SocialLinksManager 
-            links={selectedBlock.content.socialLinks || []} 
-            onChange={(socialLinks) => updateContent({ socialLinks })} 
+         <SocialLinksManager
+            links={selectedBlock.content.socialLinks || []}
+            onChange={(socialLinks) => updateContent({ socialLinks })}
          />
 
-         <LinkListManager 
-            label="Link Legali / Bottom" 
-            links={selectedBlock.content.links || []} 
-            onChange={(links) => updateContent({ links })} 
+         <LinkListManager
+            label="Link"
+            links={selectedBlock.content.links || []}
+            onChange={(links) => updateContent({ links })}
          />
       </div>
    );
