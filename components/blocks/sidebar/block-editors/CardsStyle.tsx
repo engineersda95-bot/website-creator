@@ -33,7 +33,7 @@ export const CardsStyle: React.FC<CardsStyleProps> = ({
         
         <div className="pt-8 mt-8 border-t border-zinc-100 space-y-8">
            <div>
-              <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
+              <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
                 <ImageIcon size={12} /> Proporzioni Immagine (Aspect Ratio)
               </label>
               <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
@@ -47,7 +47,7 @@ export const CardsStyle: React.FC<CardsStyleProps> = ({
                       key={item.id}
                       onClick={() => updateStyle({ imageAspectRatio: item.id })}
                       className={cn(
-                        "flex-1 p-2.5 text-[10px] font-black uppercase transition-all",
+                        "flex-1 p-2.5 text-[12px] font-black uppercase transition-all",
                         getStyleValue('imageAspectRatio', '16/9') === item.id 
                           ? "bg-zinc-900 text-white shadow-lg z-10" 
                           : "text-zinc-400 hover:text-zinc-600"
@@ -87,7 +87,7 @@ export const CardsStyle: React.FC<CardsStyleProps> = ({
         <div className="space-y-10">
            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-3">
-                 <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo Card</label>
+                 <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo Card</label>
                  <input
                     type="color"
                     className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -96,7 +96,7 @@ export const CardsStyle: React.FC<CardsStyleProps> = ({
                  />
               </div>
               <div className="space-y-3">
-                 <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Card</label>
+                 <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Card</label>
                  <input
                     type="color"
                     className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -122,7 +122,7 @@ export const CardsStyle: React.FC<CardsStyleProps> = ({
            
            <button
              onClick={() => updateStyle({ cardBgColor: undefined, cardTextColor: undefined, cardBorderRadius: undefined, cardPadding: undefined })}
-             className="w-full p-2.5 text-[10px] font-bold text-zinc-400 border border-dashed rounded-xl hover:text-zinc-900 transition-all uppercase tracking-widest"
+             className="w-full p-2.5 text-[12px] font-bold text-zinc-400 border border-dashed rounded-xl hover:text-zinc-900 transition-all uppercase tracking-widest"
            >
              Resetta Stile Card
            </button>
@@ -165,3 +165,4 @@ export const CardsStyle: React.FC<CardsStyleProps> = ({
     </div>
   );
 };
+

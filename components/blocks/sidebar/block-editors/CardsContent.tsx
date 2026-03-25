@@ -88,7 +88,7 @@ export const CardsContent: React.FC<CardsContentProps> = ({
           <SectionHeader icon={Plus} title="Elementi" />
           <button
             onClick={addItem}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-md active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-[12px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-md active:scale-95"
           >
             <Plus size={14} /> Aggiungi
           </button>
@@ -119,7 +119,7 @@ export const CardsContent: React.FC<CardsContentProps> = ({
               </div>
 
               <div className="space-y-4">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Immagine Card</label>
+                <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Immagine Card</label>
                 <ImageUpload
                   label="Copertina"
                   value={resolveImageUrl(item.image, project, imageMemoryCache)}
@@ -158,7 +158,7 @@ export const CardsContent: React.FC<CardsContentProps> = ({
               <div className="p-4 bg-white rounded-full shadow-sm inline-flex mb-4 text-zinc-300">
                 <ImageIcon size={32} />
               </div>
-              <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Nessun elemento presente</p>
+              <p className="text-[12px] font-black uppercase text-zinc-400 tracking-widest">Nessun elemento presente</p>
             </div>
           )}
         </div>
@@ -166,3 +166,4 @@ export const CardsContent: React.FC<CardsContentProps> = ({
     </div>
   );
 };
+

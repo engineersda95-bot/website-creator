@@ -53,3 +53,4 @@ export const TextStyle: React.FC<TextStyleProps> = ({
       </div>
    );
 };
+

@@ -7,7 +7,7 @@ import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
 export const embedDefinition: BlockDefinition = {
   type: 'embed',
-  label: 'Embed (Video/Code)',
+  label: 'Embed (Video/Post)',
   icon: Plus,
   visual: EmbedBlock,
   contentEditor: EmbedContent,

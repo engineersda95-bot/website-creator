@@ -36,7 +36,7 @@ export const DividerStyle: React.FC<DividerStyleProps> = ({
             
             <div className="space-y-6 mt-8 pt-8 border-t border-zinc-100">
                <div>
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
                      <span>Larghezza (%)</span>
                      <span className="text-zinc-900 font-bold">{getStyleValue('dividerWidth', 100)}%</span>
                   </label>
@@ -47,7 +47,7 @@ export const DividerStyle: React.FC<DividerStyleProps> = ({
                </div>
                
                <div>
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
                      <span>Spessore (px)</span>
                      <span className="text-zinc-900 font-bold">{getStyleValue('dividerStroke', 1)}px</span>
                   </label>
@@ -74,7 +74,7 @@ export const DividerStyle: React.FC<DividerStyleProps> = ({
             <SectionHeader icon={Palette} title="Elemento Visivo" />
             <div className="space-y-6">
                <div>
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Colore Linea</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Colore Linea</label>
                   <input
                      type="color"
                      className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -84,7 +84,7 @@ export const DividerStyle: React.FC<DividerStyleProps> = ({
                </div>
                <button
                   onClick={() => updateStyle({ dividerColor: undefined })}
-                  className="w-full p-2.5 text-[10px] font-bold text-zinc-400 border border-dashed rounded-xl hover:text-zinc-900 transition-all uppercase tracking-widest"
+                  className="w-full p-2.5 text-[12px] font-bold text-zinc-400 border border-dashed rounded-xl hover:text-zinc-900 transition-all uppercase tracking-widest"
                >
                   Resetta a Colore Tema
                </button>
@@ -93,3 +93,4 @@ export const DividerStyle: React.FC<DividerStyleProps> = ({
       </div>
    );
 };
+

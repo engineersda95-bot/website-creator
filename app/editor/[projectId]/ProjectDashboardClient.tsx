@@ -47,7 +47,7 @@ export function ProjectDashboardClient({
   }, [initialUser, setUser, initialize]);
 
   useEffect(() => {
-    if (initialProject && !storeProject) {
+    if (initialProject && (!storeProject || storeProject.id !== initialProject.id)) {
       hydrateEditor(initialProject, initialPages);
     }
   }, [initialProject, initialPages, storeProject, hydrateEditor]);

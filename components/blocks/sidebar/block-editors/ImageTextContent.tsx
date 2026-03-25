@@ -37,7 +37,7 @@ export const ImageTextContent: React.FC<ImageTextContentProps> = ({
          </div>
 
          <div className="space-y-4 pt-6 border-t border-zinc-100">
-            <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">Immagine Principale</label>
+            <label className="text-[13px] font-bold text-zinc-400 uppercase tracking-wider block">Immagine Principale</label>
             <ImageUpload 
                value={selectedBlock.content.image || ''}
                onChange={(val) => updateContent({ image: val })}
@@ -52,7 +52,7 @@ export const ImageTextContent: React.FC<ImageTextContentProps> = ({
          </div>
 
          <div className="pt-6 border-t border-zinc-100">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block tracking-widest">Aspetto Immagine</label>
+            <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block tracking-widest">Aspetto Immagine</label>
             <select
                className="w-full p-3 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold focus:bg-white transition-all outline-none"
                value={selectedBlock.content.imageAspectRatio || '16/9'}
@@ -75,3 +75,4 @@ export const ImageTextContent: React.FC<ImageTextContentProps> = ({
       </div>
    );
 };
+

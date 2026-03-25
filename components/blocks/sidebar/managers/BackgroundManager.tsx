@@ -15,9 +15,9 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
    return (
       <div className="space-y-6 pt-4 border-t border-zinc-100">
          <div className="flex bg-zinc-100 p-1 rounded-2xl mb-6">
-            <button className="flex-1 py-1.5 text-[9px] font-black uppercase bg-white text-zinc-900 rounded-xl shadow-sm border border-zinc-200">Immagine Sfondo</button>
+            <button className="flex-1 py-1.5 text-[12px] font-black uppercase bg-white text-zinc-900 rounded-xl shadow-sm border border-zinc-200">Immagine Sfondo</button>
             {selectedBlock.content.backgroundImage && (
-               <button onClick={() => updateContent({ backgroundImage: undefined })} className="flex-1 py-1.5 text-[9px] font-black uppercase text-red-500 hover:text-red-600 transition-colors">Rimuovi</button>
+               <button onClick={() => updateContent({ backgroundImage: undefined })} className="flex-1 py-1.5 text-[12px] font-black uppercase text-red-500 hover:text-red-600 transition-colors">Rimuovi</button>
             )}
          </div>
          <ImageUpload
@@ -34,7 +34,7 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
             <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
                <div className="grid grid-cols-2 gap-4">
                   <div>
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Dimensione</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Dimensione</label>
                      <select
                         className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold focus:bg-white transition-all outline-none"
                         value={getStyleValue('backgroundSize', 'cover')}
@@ -46,7 +46,7 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
                      </select>
                   </div>
                   <div>
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Posizione</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Posizione</label>
                      <select
                         className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold focus:bg-white transition-all outline-none"
                         value={getStyleValue('backgroundPosition', 'center')}
@@ -62,7 +62,7 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
                </div>
 
                <div>
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
                      <span>Opacità Immagine</span>
                      <span className="text-zinc-900 font-bold">{getStyleValue('opacity', 100)}%</span>
                   </label>
@@ -74,7 +74,7 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
                
                <div className="pt-4 border-t border-zinc-50">
                   <div className="flex items-center justify-between mb-4">
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                         Overlay
                         <button 
                            onClick={() => updateStyle({ overlayDisabled: !getStyleValue('overlayDisabled', false) })}
@@ -98,7 +98,7 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
                               key={type.id}
                               onClick={() => updateStyle({ overlayType: type.id })}
                               className={cn(
-                                 "px-2 py-1 text-[8px] font-black uppercase tracking-tight rounded-md transition-all",
+                                 "px-2 py-1 text-[13px] font-black uppercase tracking-tight rounded-md transition-all",
                                  getStyleValue('overlayType', 'solid') === type.id 
                                     ? "bg-zinc-900 text-white shadow-sm" 
                                     : "text-zinc-400 hover:text-zinc-600"
@@ -114,7 +114,7 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
                      <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
                         <div className="grid grid-cols-2 gap-4">
                            <div>
-                              <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block tracking-tighter">Colore {getStyleValue('overlayType', 'solid') === 'gradient' ? 'Inizio' : 'Overlay'}</label>
+                              <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block tracking-tighter">Colore {getStyleValue('overlayType', 'solid') === 'gradient' ? 'Inizio' : 'Overlay'}</label>
                               <input
                                  type="color"
                                  className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -124,7 +124,7 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
                            </div>
                            {getStyleValue('overlayType', 'solid') === 'gradient' && (
                               <div>
-                                 <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block tracking-tighter">Colore Fine</label>
+                                 <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block tracking-tighter">Colore Fine</label>
                                  <input
                                     type="color"
                                     className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -137,9 +137,9 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
 
                         {getStyleValue('overlayType', 'solid') === 'gradient' && (
                            <div>
-                              <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Direzione</label>
+                              <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Direzione</label>
                               <select
-                                 className="w-full p-2.5 border border-zinc-200 rounded-xl text-[10px] font-black uppercase bg-zinc-50 outline-none"
+                                 className="w-full p-2.5 border border-zinc-200 rounded-xl text-[12px] font-black uppercase bg-zinc-50 outline-none"
                                  value={getStyleValue('overlayDirection', 'to bottom')}
                                  onChange={(e) => updateStyle({ overlayDirection: e.target.value })}
                               >
@@ -151,7 +151,7 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
                         )}
 
                         <div>
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between tracking-widest">
+                           <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between tracking-widest">
                               <span>Opacità Overlay</span>
                               <span className="text-zinc-900 font-bold">{getStyleValue('overlayOpacity', 40)}%</span>
                            </label>
@@ -164,7 +164,7 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
                   )}
                </div>
                <div>
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between tracking-widest">
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between tracking-widest">
                      <span>Sfocatura (Blur)</span>
                      <span className="text-zinc-900 font-bold">{getStyleValue('blur', 0)}px</span>
                   </label>
@@ -178,3 +178,4 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
       </div>
    );
 }
+

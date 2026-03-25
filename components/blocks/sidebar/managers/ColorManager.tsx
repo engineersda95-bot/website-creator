@@ -30,7 +30,7 @@ export function ColorManager({
    return (
       <section className="pt-8 border-t border-zinc-100">
          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[10px] font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
+            <h3 className="text-[12px] font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
                <Palette size={14} className={colorClass} /> {title}
             </h3>
             <div className="flex bg-zinc-100 p-1 rounded-lg">
@@ -39,7 +39,7 @@ export function ColorManager({
                      key={t}
                      onClick={() => updateStyle({ [bgTypeKey]: t })}
                      className={cn(
-                        "px-3 py-1 text-[9px] font-black uppercase rounded-md transition-all",
+                        "px-3 py-1 text-[12px] font-black uppercase rounded-md transition-all",
                         getStyleValue(bgTypeKey, 'solid') === t ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600"
                      )}
                   >
@@ -51,7 +51,7 @@ export function ColorManager({
          <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo</label>
                   <input
                      type="color"
                      className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -60,7 +60,7 @@ export function ColorManager({
                   />
                </div>
                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo</label>
                   <input
                      type="color"
                      className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -74,7 +74,7 @@ export function ColorManager({
                <div className="animate-in slide-in-from-top-2 duration-300 space-y-4 pt-4 border-t border-zinc-50">
                   <div className="grid grid-cols-2 gap-4">
                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Punto Fine</label>
+                        <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Punto Fine</label>
                         <input
                            type="color"
                            className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -83,9 +83,9 @@ export function ColorManager({
                         />
                      </div>
                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Direzione</label>
+                        <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Direzione</label>
                         <select
-                           className="w-full p-2.5 border border-zinc-200 rounded-xl text-[10px] font-black uppercase bg-zinc-50 outline-none focus:bg-white transition-all shadow-sm"
+                           className="w-full p-2.5 border border-zinc-200 rounded-xl text-[12px] font-black uppercase bg-zinc-50 outline-none focus:bg-white transition-all shadow-sm"
                            value={getStyleValue(bgDirectionKey, 'to bottom')}
                            onChange={(e) => updateStyle({ [bgDirectionKey]: e.target.value })}
                         >
@@ -109,7 +109,7 @@ export function ColorManager({
                      [bgColor2Key]: undefined, 
                      [bgDirectionKey]: undefined 
                   })}
-                  className="w-full p-2.5 text-[10px] font-bold text-zinc-400 border border-dashed rounded-xl hover:text-zinc-900 transition-all uppercase tracking-widest"
+                  className="w-full p-2.5 text-[12px] font-bold text-zinc-400 border border-dashed rounded-xl hover:text-zinc-900 transition-all uppercase tracking-widest"
                >
                   Resetta a Tema Globale
                </button>
@@ -118,3 +118,4 @@ export function ColorManager({
       </section>
    );
 }
+

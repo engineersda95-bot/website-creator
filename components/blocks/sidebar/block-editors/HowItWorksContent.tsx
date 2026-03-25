@@ -83,7 +83,7 @@ export const HowItWorksContent: React.FC<HowItWorksContentProps> = ({
           <SectionHeader icon={Plus} title="Passaggi" />
           <button
             onClick={addItem}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-md active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-[12px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-md active:scale-95"
           >
             <Plus size={14} /> Aggiungi
           </button>
@@ -140,3 +140,4 @@ export const HowItWorksContent: React.FC<HowItWorksContentProps> = ({
     </div>
   );
 };
+

@@ -44,7 +44,7 @@ export function EmbedContent({ selectedBlock, updateContent }: any) {
                 )}
               >
                 <type.icon size={20} className={cn(content.type === type.id ? "text-white" : "group-hover:text-zinc-600")} />
-                <span className="text-[10px] font-black uppercase tracking-tight">{type.label}</span>
+                <span className="text-[12px] font-black uppercase tracking-tight">{type.label}</span>
               </button>
             ))}
           </div>
@@ -69,7 +69,7 @@ export function EmbedContent({ selectedBlock, updateContent }: any) {
           </div>
 
           <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-            <p className="text-[10px] text-blue-600 font-medium leading-relaxed space-y-2">
+            <p className="text-[12px] text-blue-600 font-medium leading-relaxed space-y-2">
               {content.type === 'youtube' && "💡 Inserisci l'indirizzo del video o solo l'ID finale. L'aspect ratio verrà mantenuto a 16:9."}
               {content.type === 'map' && "Scrivi semplicemente l'indirizzo dell'attività o del luogo. Il sistema genererà la mappa automaticamente."}
               {content.type === 'instagram' && "📸 Copia l'URL del post. Verrà visualizzato centrato con un formato ottimizzato per i social."}
@@ -81,3 +81,4 @@ export function EmbedContent({ selectedBlock, updateContent }: any) {
     </div>
   );
 }
+

@@ -18,7 +18,7 @@ export function LayoutGridSlider({ content, updateContent, updateStyle, getStyle
    return (
       <section className="pt-8 border-t border-zinc-100 space-y-8">
          <div className="flex items-center justify-between">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Layout & Griglia</label>
+            <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Layout & Griglia</label>
             <div className="flex bg-zinc-100 p-1 rounded-xl">
                {[
                   { id: 'grid', label: 'Griglia' },
@@ -28,7 +28,7 @@ export function LayoutGridSlider({ content, updateContent, updateStyle, getStyle
                      key={l.id}
                      onClick={() => updateContent({ layout: l.id })}
                      className={cn(
-                        "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg transition-all",
+                        "px-4 py-1.5 text-[12px] font-black uppercase rounded-lg transition-all",
                         layout === l.id ? "bg-zinc-900 text-white shadow-lg" : "text-zinc-400 hover:text-zinc-600"
                      )}
                   >
@@ -42,7 +42,7 @@ export function LayoutGridSlider({ content, updateContent, updateStyle, getStyle
             <div className="flex items-center justify-between mb-2">
                <div className="flex items-center gap-2">
                   <Package size={14} className="text-zinc-400" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                  <span className="text-[12px] font-black uppercase tracking-widest text-zinc-500">
                      Elementi per riga ({viewport})
                   </span>
                </div>
@@ -61,10 +61,11 @@ export function LayoutGridSlider({ content, updateContent, updateStyle, getStyle
 
             <div className="flex justify-between px-1">
                {[1, 2, 3, 4, 5, 6].map(n => (
-                  <span key={n} className="text-[8px] font-bold text-zinc-300">{n}</span>
+                  <span key={n} className="text-[13px] font-bold text-zinc-300">{n}</span>
                ))}
             </div>
          </div>
       </section>
    );
 }
+

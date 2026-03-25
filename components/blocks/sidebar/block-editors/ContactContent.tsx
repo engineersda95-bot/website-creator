@@ -52,8 +52,8 @@ export function ContactContent({ selectedBlock, updateContent }: any) {
 
           <div className="flex items-center justify-between p-4 bg-zinc-50 border border-zinc-100 rounded-2xl mt-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase text-zinc-900 tracking-widest leading-none">Mostra Mappa Google</label>
-              <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-tight">Verrà mostrata se inserisci l'indirizzo</p>
+              <label className="text-[12px] font-black uppercase text-zinc-900 tracking-widest leading-none">Mostra Mappa Google</label>
+              <p className="text-[13px] text-zinc-400 font-bold uppercase tracking-tight">Verrà mostrata se inserisci l'indirizzo</p>
             </div>
             <input 
               type="checkbox" 
@@ -68,3 +68,4 @@ export function ContactContent({ selectedBlock, updateContent }: any) {
     </div>
   );
 }
+

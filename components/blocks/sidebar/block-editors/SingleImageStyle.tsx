@@ -46,7 +46,7 @@ export const SingleImageStyle: React.FC<SingleImageStyleProps> = ({
         <SectionHeader icon={ImageIcon} title="Stile Immagine" />
         <div className="space-y-8">
            <div>
-              <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block tracking-widest pl-1">
+              <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block tracking-widest pl-1">
                 Proporzioni (Aspect Ratio)
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -61,7 +61,7 @@ export const SingleImageStyle: React.FC<SingleImageStyleProps> = ({
                       key={item.id}
                       onClick={() => updateStyle({ imageAspectRatio: item.id })}
                       className={cn(
-                        "p-2.5 text-[10px] font-black uppercase transition-all border rounded-xl",
+                        "p-2.5 text-[12px] font-black uppercase transition-all border rounded-xl",
                         getStyleValue('imageAspectRatio', '16/9') === item.id 
                           ? "bg-zinc-900 text-white shadow-lg border-zinc-900" 
                           : "text-zinc-400 bg-zinc-50 border-zinc-100 hover:text-zinc-600"
@@ -92,3 +92,4 @@ export const SingleImageStyle: React.FC<SingleImageStyleProps> = ({
     </div>
   );
 };
+

@@ -48,7 +48,7 @@ export const LogosStyle: React.FC<LogosStyleProps> = ({
           />
 
           <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block pl-1 mb-3">Aspect Ratio</label>
+            <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block pl-1 mb-3">Aspect Ratio</label>
             <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
               {[
                 { label: 'Originale', value: 'original' },
@@ -60,7 +60,7 @@ export const LogosStyle: React.FC<LogosStyleProps> = ({
                   key={opt.value}
                   onClick={() => updateStyle({ aspectRatio: opt.value })}
                   className={cn(
-                    "flex-1 p-2.5 text-[9px] font-black uppercase transition-all tracking-tighter",
+                    "flex-1 p-2.5 text-[12px] font-black uppercase transition-all tracking-tighter",
                     getStyleValue('aspectRatio', '1:1') === opt.value
                       ? "bg-zinc-900 text-white shadow-lg z-10"
                       : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100"
@@ -74,8 +74,8 @@ export const LogosStyle: React.FC<LogosStyleProps> = ({
 
           <div className="flex items-center justify-between p-4 bg-zinc-50 border border-zinc-100 rounded-2xl">
             <div className="space-y-0.5">
-               <label className="text-[10px] font-black uppercase text-zinc-900 tracking-wider block">Filtro Bianco e Nero</label>
-               <p className="text-[9px] text-zinc-400 font-medium tracking-tight">Applica l'effetto grayscale ai loghi</p>
+               <label className="text-[12px] font-black uppercase text-zinc-900 tracking-wider block">Filtro Bianco e Nero</label>
+               <p className="text-[12px] text-zinc-400 font-medium tracking-tight">Applica l'effetto grayscale ai loghi</p>
             </div>
             <div className="flex bg-white p-1 rounded-xl border border-zinc-200">
                {[
@@ -86,7 +86,7 @@ export const LogosStyle: React.FC<LogosStyleProps> = ({
                      key={String(opt.id)}
                      onClick={() => updateStyle({ grayscale: opt.id })}
                      className={cn(
-                        "px-3 py-1 text-[8px] font-black uppercase rounded-md transition-all",
+                        "px-3 py-1 text-[13px] font-black uppercase rounded-md transition-all",
                         getStyleValue('grayscale', true) === opt.id 
                            ? "bg-zinc-900 text-white shadow-sm" 
                            : "text-zinc-400 hover:text-zinc-600"
@@ -114,7 +114,7 @@ export const LogosStyle: React.FC<LogosStyleProps> = ({
             suffix="s"
           />
           <div className="p-3 bg-zinc-900/[0.03] rounded-xl border border-zinc-100">
-             <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest pl-1 leading-relaxed">
+             <p className="text-[12px] text-zinc-500 font-bold uppercase tracking-widest pl-1 leading-relaxed">
                 <span className="text-zinc-900">Nota:</span> Valori bassi (es. 5s) = Molto veloce <br />
                 Valori alti (es. 40s) = Molto lento
              </p>
@@ -186,3 +186,4 @@ export const LogosStyle: React.FC<LogosStyleProps> = ({
     </div>
   );
 };
+

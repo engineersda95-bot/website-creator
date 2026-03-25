@@ -10,17 +10,17 @@ export function CTAManager({ content, updateContent, style, updateStyle }: CTAMa
    return (
       <div className="space-y-4 pt-4 border-t border-zinc-100">
          <div className="flex items-center justify-between mb-2">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Pulsante (CTA)</label>
+            <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block">Pulsante (CTA)</label>
             <div className="flex bg-zinc-100 p-1 rounded-lg">
                <button
                   onClick={() => updateStyle?.({ buttonTheme: 'primary' })}
-                  className={cn("px-3 py-1 text-[9px] font-black uppercase tracking-tight rounded-md transition-all", (style?.buttonTheme || 'primary') === 'primary' ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
+                  className={cn("px-3 py-1 text-[12px] font-black uppercase tracking-tight rounded-md transition-all", (style?.buttonTheme || 'primary') === 'primary' ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
                >
                   Primario
                </button>
                <button
                   onClick={() => updateStyle?.({ buttonTheme: 'secondary' })}
-                  className={cn("px-3 py-1 text-[9px] font-black uppercase tracking-tight rounded-md transition-all", style?.buttonTheme === 'secondary' ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
+                  className={cn("px-3 py-1 text-[12px] font-black uppercase tracking-tight rounded-md transition-all", style?.buttonTheme === 'secondary' ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
                >
                   Secondario
                </button>
@@ -46,3 +46,4 @@ export function CTAManager({ content, updateContent, style, updateStyle }: CTAMa
       </div>
    );
 }
+

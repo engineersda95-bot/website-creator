@@ -31,7 +31,7 @@ export function RichTextarea({ label = "Contenuto Testuale", value, onChange, pl
    return (
       <div className="space-y-3">
          <div className="flex items-center justify-between">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{label}</label>
+            <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">{label}</label>
             <div className="flex border rounded-lg overflow-hidden bg-white shadow-sm">
                <button
                   onClick={() => applyFormat('bold')}
@@ -64,8 +64,9 @@ export function RichTextarea({ label = "Contenuto Testuale", value, onChange, pl
             )}
          </div>
          <div className="flex justify-end pr-2">
-            <span className="text-[9px] text-zinc-300 uppercase font-bold tracking-tighter">Supporta Bold & Italic</span>
+            <span className="text-[12px] text-zinc-300 uppercase font-bold tracking-tighter">Supporta Bold & Italic</span>
          </div>
       </div>
    );
 }
+

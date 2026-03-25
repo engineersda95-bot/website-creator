@@ -93,7 +93,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
            />
          )}
          <div className={cn(
-            "w-full mx-auto flex flex-col gap-12",
+            "w-full mx-auto flex flex-col gap-12 relative z-10",
          )} style={{
             maxWidth: 'var(--block-max-width)',
             paddingLeft: 'var(--block-px)',

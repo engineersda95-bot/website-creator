@@ -34,7 +34,7 @@ export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
         <div className="space-y-8 mt-8 pt-8 border-t border-zinc-50">
           {/* Posizione Immagine */}
           <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
+            <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
               <MoveHorizontal size={12} /> Posizione Immagine
             </label>
             <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
@@ -46,7 +46,7 @@ export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
                   key={item.id}
                   onClick={() => updateStyle({ imagePosition: item.id })}
                   className={cn(
-                    "flex-1 p-2.5 text-[10px] font-bold uppercase transition-all",
+                    "flex-1 p-2.5 text-[12px] font-bold uppercase transition-all",
                     getStyleValue('imagePosition', 'left') === item.id
                       ? "bg-zinc-900 text-white shadow-lg z-10"
                       : "text-zinc-400 hover:text-zinc-600"
@@ -60,7 +60,7 @@ export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
 
           {/* Allineamento Verticale */}
           <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
+            <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
               <MoreVertical size={12} /> Allineamento Verticale
             </label>
             <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
@@ -73,7 +73,7 @@ export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
                   key={item.id}
                   onClick={() => updateStyle({ verticalAlign: item.id })}
                   className={cn(
-                    "flex-1 p-2.5 text-[10px] font-bold uppercase transition-all",
+                    "flex-1 p-2.5 text-[12px] font-bold uppercase transition-all",
                     getStyleValue('verticalAlign', 'center') === item.id
                       ? "bg-zinc-900 text-white shadow-lg z-10"
                       : "text-zinc-400 hover:text-zinc-600"
@@ -141,3 +141,4 @@ export const ImageTextStyle: React.FC<ImageTextStyleProps> = ({
     </div>
   );
 };
+

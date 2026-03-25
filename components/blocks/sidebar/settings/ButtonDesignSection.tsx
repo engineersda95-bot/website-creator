@@ -52,7 +52,7 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
             <div className="space-y-8">
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-4">
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Arrotondamento</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Arrotondamento</label>
                      <input
                         type="number"
                         className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none"
@@ -62,7 +62,7 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
                      />
                   </div>
                   <div className="space-y-4">
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Ombra</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Ombra</label>
                      <select
                         className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none"
                         value={getValue('buttonShadow')}
@@ -79,22 +79,22 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
 
                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-50">
                   <div className="space-y-4">
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Padding Oriz.</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Padding Oriz.</label>
                      <input type="number" className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none" value={getValue('buttonPaddingX')} placeholder={getPlaceholder('buttonPaddingX', 32)} onChange={(e) => updateGlobal({ buttonPaddingX: parseInt(e.target.value) || 0 })} />
                   </div>
                   <div className="space-y-4">
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Padding Vert.</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Padding Vert.</label>
                      <input type="number" className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none" value={getValue('buttonPaddingY')} placeholder={getPlaceholder('buttonPaddingY', 12)} onChange={(e) => updateGlobal({ buttonPaddingY: parseInt(e.target.value) || 0 })} />
                   </div>
                </div>
 
                <div className="space-y-4">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Dimensione Font</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Dimensione Font</label>
                   <input type="number" className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none" value={getValue('buttonFontSize')} placeholder={getPlaceholder('buttonFontSize', 16)} onChange={(e) => updateGlobal({ buttonFontSize: parseInt(e.target.value) || 0 })} />
                </div>
 
                <div className="space-y-4">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Animazione Hover</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Animazione Hover</label>
                   <select
                      className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none"
                      value={getValue('buttonAnimation') || 'none'}
@@ -107,7 +107,7 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
                </div>
 
                <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                  <label className="text-[10px] font-bold text-zinc-900 uppercase tracking-widest cursor-pointer" htmlFor="btn-caps">Tutto Maiuscolo</label>
+                  <label className="text-[12px] font-bold text-zinc-900 uppercase tracking-widest cursor-pointer" htmlFor="btn-caps">Tutto Maiuscolo</label>
                   <input
                      id="btn-caps"
                      type="checkbox"
@@ -121,3 +121,4 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
       </section>
    );
 };
+

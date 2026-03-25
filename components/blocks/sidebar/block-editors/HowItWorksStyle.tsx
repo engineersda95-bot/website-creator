@@ -32,7 +32,7 @@ export const HowItWorksStyle: React.FC<HowItWorksStyleProps> = ({
         />
 
         <div className="pt-8 mt-8 border-t border-zinc-100">
-          <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
+          <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
             <Layout size={12} /> Layout Visivo
           </label>
           <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
@@ -44,7 +44,7 @@ export const HowItWorksStyle: React.FC<HowItWorksStyleProps> = ({
                 key={item.id}
                 onClick={() => updateStyle({ layout: item.id })}
                 className={cn(
-                  "flex-1 p-2.5 text-[10px] font-black uppercase transition-all",
+                  "flex-1 p-2.5 text-[12px] font-black uppercase transition-all",
                   getStyleValue('layout', 'grid') === item.id 
                     ? "bg-zinc-900 text-white shadow-lg z-10" 
                     : "text-zinc-400 hover:text-zinc-600"
@@ -74,7 +74,7 @@ export const HowItWorksStyle: React.FC<HowItWorksStyleProps> = ({
         <div className="space-y-8">
            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-3">
-                 <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo Numero</label>
+                 <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo Numero</label>
                  <input
                     type="color"
                     className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -83,7 +83,7 @@ export const HowItWorksStyle: React.FC<HowItWorksStyleProps> = ({
                  />
               </div>
               <div className="space-y-3">
-                 <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Numero</label>
+                 <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Numero</label>
                  <input
                     type="color"
                     className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -133,3 +133,4 @@ export const HowItWorksStyle: React.FC<HowItWorksStyleProps> = ({
     </div>
   );
 };
+

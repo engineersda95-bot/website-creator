@@ -86,7 +86,7 @@ export const BenefitsContent: React.FC<BenefitsContentProps> = ({
           />
 
           <div className="pt-4 border-t border-zinc-100">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
+            <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
                Stile Box
             </label>
             <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
@@ -98,7 +98,7 @@ export const BenefitsContent: React.FC<BenefitsContentProps> = ({
                   key={item.id}
                   onClick={() => updateContent({ boxStyle: item.id })}
                   className={cn(
-                    "flex-1 p-2.5 text-[10px] font-black uppercase transition-all",
+                    "flex-1 p-2.5 text-[12px] font-black uppercase transition-all",
                     boxStyle === item.id 
                       ? "bg-zinc-900 text-white shadow-lg z-10" 
                       : "text-zinc-400 hover:text-zinc-600"
@@ -113,7 +113,7 @@ export const BenefitsContent: React.FC<BenefitsContentProps> = ({
           {isCard && (
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100 animate-in fade-in slide-in-from-top-2">
               <div className="space-y-3">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo Card</label>
+                <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo Card</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -125,7 +125,7 @@ export const BenefitsContent: React.FC<BenefitsContentProps> = ({
                 </div>
               </div>
               <div className="space-y-3">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Card</label>
+                <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Card</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -146,7 +146,7 @@ export const BenefitsContent: React.FC<BenefitsContentProps> = ({
           <SectionHeader icon={Star} title="Vantaggi" />
           <button
             onClick={addItem}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-md active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-[12px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-md active:scale-95"
           >
             <Plus size={14} /> Aggiungi
           </button>
@@ -202,3 +202,4 @@ export const BenefitsContent: React.FC<BenefitsContentProps> = ({
     </div>
   );
 };
+

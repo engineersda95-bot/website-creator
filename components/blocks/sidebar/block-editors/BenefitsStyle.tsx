@@ -118,3 +118,4 @@ export const BenefitsStyle: React.FC<BenefitsStyleProps> = ({
     </div>
   );
 };
+

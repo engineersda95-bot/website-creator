@@ -28,8 +28,8 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
          <SectionHeader icon={Globe} title="SEO & Social" colorClass="text-teal-500" />
          <div className="space-y-8 mt-6">
             <div className="flex items-center justify-between gap-2 px-1">
-               <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Icone Sito</label>
-               {isUploading && <span className="text-[10px] font-bold text-blue-500 animate-pulse uppercase">Caricamento...</span>}
+               <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Icone Sito</label>
+               {isUploading && <span className="text-[12px] font-bold text-blue-500 animate-pulse uppercase">Caricamento...</span>}
             </div>
             
             <div className="grid gap-6">
@@ -61,7 +61,7 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
                      onChange={(val) => updateProjectSettings({ metaTitle: val })}
                   />
                   <div className={cn(
-                     "absolute top-1 right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase",
+                     "absolute top-1 right-2 text-[13px] font-black px-1.5 py-0.5 rounded-full uppercase",
                      (project?.settings?.metaTitle?.length || 0) < 40 || (project?.settings?.metaTitle?.length || 0) > 70 ? "bg-red-50 text-red-500" :
                         (project?.settings?.metaTitle?.length || 0) < 50 || (project?.settings?.metaTitle?.length || 0) > 60 ? "bg-amber-50 text-amber-500" : "bg-emerald-50 text-emerald-500"
                   )}>
@@ -70,7 +70,7 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
                </div>
 
                <div className="relative">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block pl-1 mb-2">Meta Description</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block pl-1 mb-2">Meta Description</label>
                   <textarea
                      className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none shadow-inner resize-none min-h-[100px]"
                      value={project?.settings?.metaDescription || ''}
@@ -78,7 +78,7 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
                      placeholder="Descrizione per motori di ricerca..."
                   />
                   <div className={cn(
-                     "absolute top-1 right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase",
+                     "absolute top-1 right-2 text-[13px] font-black px-1.5 py-0.5 rounded-full uppercase",
                      (project?.settings?.metaDescription?.length || 0) < 100 || (project?.settings?.metaDescription?.length || 0) > 200 ? "bg-red-50 text-red-500" :
                         (project?.settings?.metaDescription?.length || 0) < 110 || (project?.settings?.metaDescription?.length || 0) > 160 ? "bg-amber-50 text-amber-500" : "bg-emerald-50 text-emerald-500"
                   )}>
@@ -90,3 +90,4 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
       </section>
    );
 };
+

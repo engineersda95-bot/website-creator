@@ -14,6 +14,13 @@ import { cn } from '@/lib/utils';
 import { getProjectDomain } from '@/lib/url-utils';
 import { ToastContainer, toast } from '@/components/shared/Toast';
 import { OnboardingTour } from '@/components/editor/OnboardingTour';
+import { PageSwitcher } from '@/components/editor/PageSwitcher';
+
+const FontLoader = React.memo(({ font }: { font: string }) => {
+  const googleFontUrl = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap`;
+  return <link rel="stylesheet" href={googleFontUrl} />;
+});
+FontLoader.displayName = 'FontLoader';
 
 export function EditorClient({
   initialUser,
@@ -56,6 +63,13 @@ export function EditorClient({
   const siteStatus = !isPublished ? 'non_pubblicato' : (hasUnsavedChanges || isDraftAtLeastOnePage ? 'bozza' : 'pubblicato');
 
   const [isPublishing, setIsPublishing] = React.useState(false);
+  const font = targetProject?.settings?.fontFamily || 'Outfit';
+
+  // Flicker Fix Check
+  const hasPageMismatch = currentPage && currentPage.id !== initialPageId;
+  const hasProjectMismatch = project && project.id !== initialProject.id;
+  const isStale = hasPageMismatch || hasProjectMismatch;
+  const showLoader = isLoading || isStale;
 
   // Hydrate user
   useEffect(() => {
@@ -64,10 +78,10 @@ export function EditorClient({
 
   // Hydrate project + pages + specific page
   useEffect(() => {
-    if (initialProject && initialPages && !project) {
+    if (initialProject && initialPages && (!project || project.id !== initialProject.id || currentPage?.id !== initialPageId)) {
       hydrateEditor(initialProject, initialPages, initialPageId);
     }
-  }, [initialProject, initialPages, initialPageId, project, hydrateEditor]);
+  }, [initialProject, initialPages, initialPageId, project, currentPage, hydrateEditor]);
 
   useEffect(() => { initialize(); }, [initialize]);
 
@@ -132,12 +146,13 @@ export function EditorClient({
   }
 
   return (
-    <div className="flex h-screen bg-zinc-100 overflow-hidden">
+    <div className="flex h-screen bg-zinc-100 overflow-hidden" style={{ fontFamily: `'${font}', sans-serif` }}>
+      <FontLoader font={font} />
       <BlockSidebar />
 
       <div className="flex-1 min-w-0 z-10 relative flex flex-col h-full">
         {/* Header */}
-        <header className="h-14 bg-white border-b border-zinc-200/80 flex items-center justify-between px-5 shrink-0">
+        <header className="h-14 bg-white border-b border-zinc-200/80 flex items-center justify-between px-5 shrink-0 z-[9999] relative">
           {/* Left: breadcrumb + status */}
           <div className="flex items-center gap-2">
             {/* Breadcrumb */}
@@ -153,9 +168,13 @@ export function EditorClient({
                 {targetProject?.name || 'Sito'}
               </Link>
               <ChevronRight size={12} className="text-zinc-300" />
-              <span className="text-zinc-900 font-semibold" data-tour="page-status">
-                {currentPage?.title || 'Pagina'}
-              </span>
+              <PageSwitcher 
+                currentPage={currentPage}
+                pages={targetPages}
+                projectId={initialProject.id}
+                initialPageId={initialPageId}
+                fontFamily={`'${font}', sans-serif`}
+              />
             </nav>
 
             <div className={cn(
@@ -216,10 +235,10 @@ export function EditorClient({
           </div>
         </header>
 
-        {isLoading ? (
+        {showLoader ? (
           <div className="flex-1 flex flex-col items-center justify-center bg-zinc-50 gap-3">
-            <Loader2 className="animate-spin text-zinc-300" size={24} />
-            <p className="text-xs text-zinc-400">Caricamento pagina...</p>
+            <Loader2 className="animate-spin text-zinc-400" size={32} />
+            <p className="text-xs font-medium text-zinc-400">Caricamento in corso...</p>
           </div>
         ) : (
           <EditorCanvas />

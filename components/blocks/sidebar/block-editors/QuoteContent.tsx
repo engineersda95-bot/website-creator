@@ -45,10 +45,10 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
   return (
     <div className="space-y-4 pt-4 border-t border-zinc-100">
       <div className="flex items-center justify-between">
-        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Recensioni Personali</label>
+        <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Recensioni Personali</label>
         <button
           onClick={addItem}
-          className="px-3 py-1 bg-zinc-900 text-white rounded-lg text-[10px] font-bold hover:bg-zinc-800 transition-colors"
+          className="px-3 py-1 bg-zinc-900 text-white rounded-lg text-[12px] font-bold hover:bg-zinc-800 transition-colors"
         >
           <Plus size={10} className="inline mr-1" /> AGGIUNGI
         </button>
@@ -58,7 +58,7 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
         {items.map((item, i) => (
           <div key={i} className="p-4 bg-white border border-zinc-200 rounded-2xl shadow-sm space-y-4 relative group animate-in slide-in-from-right-2 duration-200">
             <div className="flex items-center justify-between gap-2 border-b border-zinc-50 pb-2">
-              <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">Recensione #{i + 1}</span>
+              <span className="text-[12px] font-black text-zinc-300 uppercase tracking-widest">Recensione #{i + 1}</span>
               <div className="flex items-center gap-1">
                 <button 
                   onClick={() => moveItem(i, 'up')} 
@@ -85,7 +85,7 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
 
             <div className="grid grid-cols-[80px,1fr] gap-4">
               <div className="space-y-2">
-                <label className="text-[9px] font-bold text-zinc-400 uppercase block">Avatar</label>
+                <label className="text-[12px] font-bold text-zinc-400 uppercase block">Avatar</label>
                 <div className="scale-90 origin-top-left">
                     <ImageUpload
                       value={resolveImageUrl(item.avatar, project, imageMemoryCache)}
@@ -99,7 +99,7 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-2">
                    <div className="space-y-1">
-                     <label className="text-[9px] font-bold text-zinc-400 uppercase block">Nome</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase block">Nome</label>
                      <input
                        className="w-full p-2 border border-zinc-100 rounded-xl text-xs bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none"
                        value={item.name}
@@ -107,7 +107,7 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
                      />
                    </div>
                    <div className="space-y-1">
-                     <label className="text-[9px] font-bold text-zinc-400 uppercase block">Ruolo</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase block">Ruolo</label>
                      <input
                        className="w-full p-2 border border-zinc-100 rounded-xl text-xs bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none"
                        value={item.role}
@@ -116,7 +116,7 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
                    </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-zinc-400 uppercase block flex justify-between">
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase block flex justify-between">
                     Valutazione
                     <span className="text-zinc-900 font-bold">{item.stars} ★</span>
                   </label>
@@ -131,7 +131,7 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
             </div>
             
             <div className="space-y-1">
-              <label className="text-[9px] font-bold text-zinc-400 uppercase block">Testo Recensione</label>
+              <label className="text-[12px] font-bold text-zinc-400 uppercase block">Testo Recensione</label>
               <textarea
                 className="w-full h-32 p-3 border border-zinc-100 rounded-xl text-xs bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none leading-relaxed resize-none"
                 value={item.text}
@@ -144,7 +144,7 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
 
         {items.length === 0 && (
           <div className="p-12 text-center border-2 border-dashed border-zinc-100 rounded-3xl">
-             <p className="text-[10px] font-black text-zinc-300 uppercase tracking-widest leading-relaxed">Nessuna recensione.<br/>Clicca aggiungi per iniziare.</p>
+             <p className="text-[12px] font-black text-zinc-300 uppercase tracking-widest leading-relaxed">Nessuna recensione.<br/>Clicca aggiungi per iniziare.</p>
           </div>
         )}
       </div>
@@ -186,7 +186,7 @@ export const QuoteContent: React.FC<any> = ({
         />
 
         <div className="pt-4 border-t border-zinc-100">
-          <label className="text-[10px] font-bold text-zinc-400 uppercase mb-4 block tracking-widest">Icona / Stile</label>
+          <label className="text-[12px] font-bold text-zinc-400 uppercase mb-4 block tracking-widest">Icona / Stile</label>
           <div className="flex p-1.5 bg-zinc-100 rounded-[1.25rem] gap-1.5 shadow-inner">
               {[
                 { id: 'quotes', icon: Quote, label: 'Quote' },
@@ -201,7 +201,7 @@ export const QuoteContent: React.FC<any> = ({
                   )}
                 >
                     <t.icon size={14} />
-                    <span className="text-[8px] font-black uppercase tracking-tighter">{t.label}</span>
+                    <span className="text-[13px] font-black uppercase tracking-tighter">{t.label}</span>
                 </button>
               ))}
           </div>
@@ -210,13 +210,13 @@ export const QuoteContent: React.FC<any> = ({
         <section className="pt-8 border-t border-zinc-100 space-y-6">
            <div className="flex items-center gap-3">
               <Circle size={14} className="text-zinc-900" />
-              <h3 className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">Avatar Cliente</h3>
+              <h3 className="text-[12px] font-black text-zinc-900 uppercase tracking-widest">Avatar Cliente</h3>
            </div>
            
            <div className="bg-zinc-50/50 border border-zinc-100 rounded-3xl p-6 space-y-8 shadow-sm">
               <div className="grid grid-cols-2 gap-6">
                  <div className="space-y-3">
-                    <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Forma</label>
+                    <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-wider block">Forma</label>
                     <div className="flex p-1 bg-white border border-zinc-200 rounded-xl gap-1">
                        {[
                          { id: 'circle', icon: Circle, label: 'Cerchio' },
@@ -236,9 +236,9 @@ export const QuoteContent: React.FC<any> = ({
                     </div>
                  </div>
                  <div className="space-y-3">
-                    <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Proporzioni</label>
+                    <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-wider block">Proporzioni</label>
                     <select
-                      className="w-full p-2 border border-zinc-200 rounded-xl text-[11px] bg-white font-black text-zinc-900 focus:ring-2 focus:ring-zinc-900/5 transition-all outline-none appearance-none cursor-pointer"
+                      className="w-full p-2 border border-zinc-200 rounded-xl text-[13px] bg-white font-black text-zinc-900 focus:ring-2 focus:ring-zinc-900/5 transition-all outline-none appearance-none cursor-pointer"
                       value={content.avatarAspectRatio || '1/1'}
                       onChange={(e) => updateSetting('avatarAspectRatio', e.target.value)}
                     >
@@ -252,7 +252,7 @@ export const QuoteContent: React.FC<any> = ({
 
               <div className="space-y-4">
                  <div className="flex items-center justify-between px-1">
-                    <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Dimensione Avatar</label>
+                    <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-wider">Dimensione Avatar</label>
                     <span className="text-[12px] font-black text-zinc-900 bg-white px-3 py-1 rounded-full border border-zinc-200 shadow-sm">{content.avatarSize || 60}px</span>
                  </div>
                  <input
@@ -273,3 +273,4 @@ export const QuoteContent: React.FC<any> = ({
     </div>
   );
 };
+

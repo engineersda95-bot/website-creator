@@ -94,3 +94,4 @@ export const QuoteStyle: React.FC<any> = ({
     </div>
   );
 };
+

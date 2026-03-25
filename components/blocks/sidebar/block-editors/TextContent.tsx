@@ -22,3 +22,4 @@ export const TextContent: React.FC<TextContentProps> = ({
       </div>
    );
 };
+

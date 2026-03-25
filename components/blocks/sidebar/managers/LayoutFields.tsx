@@ -12,7 +12,7 @@ export function LayoutFields({ getStyleValue, updateStyle, showAlign = true, pad
       <div className="space-y-6">
          <div className="grid grid-cols-2 gap-4">
             <div>
-               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">{paddingLabel} (px)</label>
+               <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">{paddingLabel} (px)</label>
                <input
                   type="number"
                   className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
@@ -21,7 +21,7 @@ export function LayoutFields({ getStyleValue, updateStyle, showAlign = true, pad
                />
             </div>
             <div>
-               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">{hPaddingLabel} (px)</label>
+               <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">{hPaddingLabel} (px)</label>
                <input
                   type="number"
                   className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
@@ -33,7 +33,7 @@ export function LayoutFields({ getStyleValue, updateStyle, showAlign = true, pad
 
          {showAlign && (
             <div>
-               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Allineamento</label>
+               <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Allineamento</label>
                <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
                   {[
                      { id: 'left', icon: AlignLeft },
@@ -55,3 +55,4 @@ export function LayoutFields({ getStyleValue, updateStyle, showAlign = true, pad
       </div>
    );
 }
+

@@ -7,7 +7,7 @@ import { SimpleInputProps } from '@/types/sidebar';
 export function SimpleInput({ label, value, onChange, placeholder, icon: Icon }: SimpleInputProps) {
    return (
       <div className="space-y-2">
-         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block pl-1">{label}</label>
+         <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block pl-1">{label}</label>
          <div className="relative group">
             {Icon && (
                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 transition-colors pointer-events-none z-10">
@@ -27,3 +27,4 @@ export function SimpleInput({ label, value, onChange, placeholder, icon: Icon }:
       </div>
    );
 }
+

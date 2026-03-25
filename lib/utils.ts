@@ -129,6 +129,9 @@ export function formatLink(url: string | undefined): { href: string; target?: st
     return { href: url, target: '_blank', rel: 'noopener noreferrer' };
   }
   
+  // Anchor links: Preserve as is
+  if (url.startsWith('#')) return { href: url };
+
   // Internal links: Ensure starts with / and remove .html
   let clean = url.startsWith('/') ? url : `/${url}`;
   if (clean.endsWith('.html')) {
@@ -158,5 +161,36 @@ export function fuzzySearch(query: string, text: string): boolean {
   const normText = normalizeText(text);
   if (!normQuery) return true;
   return normText.includes(normQuery);
+}
+
+export function slugify(text: string): string {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove accents
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w-]+/g, '')        // Remove all non-word chars
+    .replace(/--+/g, '-')           // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+}
+
+export function getAnchorId(block: any): string {
+  if (!block) return '';
+  
+  // 1. Manually set anchorId in style
+  if (block.style?.anchorId) return block.style.anchorId;
+
+  // 2. Slugified title if available
+  const title = block.content?.title || block.content?.text?.split('\n')[0];
+  if (title && typeof title === 'string' && title.length < 100) {
+    const slug = slugify(title);
+    if (slug) return slug;
+  }
+
+  // 3. Fallback to block type + truncated ID
+  const shortId = block.id ? block.id.substring(0, 8) : Math.random().toString(36).substring(2, 10);
+  return `${block.type || 'section'}-${shortId}`;
 }
 

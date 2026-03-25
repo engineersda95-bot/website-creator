@@ -103,3 +103,4 @@ export function ContactStyle({ selectedBlock, updateContent, updateStyle, getSty
     </div>
   );
 }
+

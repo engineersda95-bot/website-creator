@@ -82,7 +82,7 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-8 text-center text-xs text-zinc-400">
-            Protetto da Supabase Auth
+            Accedi al tuo account per gestire i tuoi siti
           </p>
         </div>
       </div>

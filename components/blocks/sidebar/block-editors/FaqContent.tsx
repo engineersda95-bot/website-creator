@@ -38,10 +38,10 @@ const FAQListManager: React.FC<FAQListManagerProps> = ({ items = [], onChange })
   return (
     <div className="space-y-4 pt-4 border-t border-zinc-100">
       <div className="flex items-center justify-between">
-        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Domande e Risposte</label>
+        <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Domande e Risposte</label>
         <button
           onClick={addItem}
-          className="px-3 py-1 bg-zinc-900 text-white rounded-lg text-[10px] font-bold hover:bg-zinc-800 transition-colors"
+          className="px-3 py-1 bg-zinc-900 text-white rounded-lg text-[12px] font-bold hover:bg-zinc-800 transition-colors"
         >
           <Plus size={10} className="inline mr-1" /> AGGIUNGI
         </button>
@@ -51,7 +51,7 @@ const FAQListManager: React.FC<FAQListManagerProps> = ({ items = [], onChange })
         {items.map((item, i) => (
           <div key={i} className="p-4 bg-white border border-zinc-200 rounded-2xl shadow-sm space-y-3 relative group animate-in slide-in-from-right-2 duration-200">
             <div className="flex items-center justify-between gap-2 border-b border-zinc-50 pb-2">
-              <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">FAQ #{i + 1}</span>
+              <span className="text-[12px] font-black text-zinc-300 uppercase tracking-widest">FAQ #{i + 1}</span>
               <div className="flex items-center gap-1">
                 <button 
                   onClick={() => moveItem(i, 'up')} 
@@ -77,7 +77,7 @@ const FAQListManager: React.FC<FAQListManagerProps> = ({ items = [], onChange })
             </div>
             
             <div className="space-y-2">
-              <label className="text-[9px] font-bold text-zinc-400 uppercase block">Domanda</label>
+              <label className="text-[12px] font-bold text-zinc-400 uppercase block">Domanda</label>
               <textarea
                 className="w-full p-2 border border-zinc-100 rounded-xl text-xs bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none font-bold resize-none"
                 rows={2}
@@ -88,7 +88,7 @@ const FAQListManager: React.FC<FAQListManagerProps> = ({ items = [], onChange })
             </div>
             
             <div className="space-y-2">
-              <label className="text-[9px] font-bold text-zinc-400 uppercase block">Risposta</label>
+              <label className="text-[12px] font-bold text-zinc-400 uppercase block">Risposta</label>
               <textarea
                 className="w-full p-2 border border-zinc-100 rounded-xl text-xs bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none resize-none leading-relaxed"
                 rows={3}
@@ -102,7 +102,7 @@ const FAQListManager: React.FC<FAQListManagerProps> = ({ items = [], onChange })
 
         {items.length === 0 && (
           <div className="p-12 text-center border-2 border-dashed border-zinc-100 rounded-3xl">
-             <p className="text-[10px] font-black text-zinc-300 uppercase tracking-widest leading-relaxed">Nessuna domanda.<br/>Clicca aggiungi per iniziare.</p>
+             <p className="text-[12px] font-black text-zinc-300 uppercase tracking-widest leading-relaxed">Nessuna domanda.<br/>Clicca aggiungi per iniziare.</p>
           </div>
         )}
       </div>
@@ -141,3 +141,4 @@ export const FAQContent: React.FC<FAQContentProps> = ({
     </div>
   );
 };
+

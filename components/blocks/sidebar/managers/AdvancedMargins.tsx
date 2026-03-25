@@ -8,14 +8,14 @@ export function AdvancedMargins({ getStyleValue, updateStyle }: StyleEditorProps
    return (
       <div className="pt-4 border-t border-zinc-50">
          <details className="group">
-            <summary className="flex items-center justify-between cursor-pointer text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-zinc-900 transition-colors">
+            <summary className="flex items-center justify-between cursor-pointer text-[12px] font-black text-zinc-400 uppercase tracking-widest hover:text-zinc-900 transition-colors">
                <span>Margini Avanzati</span>
                <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
             </summary>
             <div className="grid grid-cols-2 gap-4 mt-6">
                {['marginTop', 'marginBottom', 'marginLeft', 'marginRight'].map((key) => (
                   <div key={key}>
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">
                         {key === 'marginTop' ? 'Sup' : key === 'marginBottom' ? 'Inf' : key === 'marginLeft' ? 'Sx' : 'Dx'} (px)
                      </label>
                      <input
@@ -31,3 +31,4 @@ export function AdvancedMargins({ getStyleValue, updateStyle }: StyleEditorProps
       </div>
    );
 }
+

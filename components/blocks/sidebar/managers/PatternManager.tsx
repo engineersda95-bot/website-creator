@@ -20,7 +20,7 @@ export function PatternManager({ getStyleValue, updateStyle }: PatternManagerPro
     <div className="space-y-6 pt-6 border-t border-zinc-100">
       <div className="flex items-center gap-2 mb-4">
         <Grid size={12} className="text-zinc-400" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Texture & Pattern</span>
+        <span className="text-[12px] font-black uppercase tracking-widest text-zinc-400">Texture & Pattern</span>
       </div>
 
       <div className="grid grid-cols-3 gap-2">
@@ -42,7 +42,7 @@ export function PatternManager({ getStyleValue, updateStyle }: PatternManagerPro
                 backgroundColor: currentPattern === p.id ? 'transparent' : '#ffffff'
               }}
             />
-            <span className="text-[8px] font-bold uppercase truncate w-full text-center">{p.label}</span>
+            <span className="text-[13px] font-bold uppercase truncate w-full text-center">{p.label}</span>
           </button>
         ))}
       </div>
@@ -51,7 +51,7 @@ export function PatternManager({ getStyleValue, updateStyle }: PatternManagerPro
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Colore Pattern</label>
+              <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Colore Pattern</label>
               <input
                 type="color"
                 className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -60,7 +60,7 @@ export function PatternManager({ getStyleValue, updateStyle }: PatternManagerPro
               />
             </div>
             <div>
-               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+               <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
                   <span>Opacità</span>
                   <span className="text-zinc-900 font-bold">{patternOpacity}%</span>
                </label>
@@ -71,7 +71,7 @@ export function PatternManager({ getStyleValue, updateStyle }: PatternManagerPro
             </div>
           </div>
           <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+            <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
               <span>Dimensione (Scala)</span>
               <span className="text-zinc-900 font-bold">{patternScale}px</span>
             </label>
@@ -85,3 +85,4 @@ export function PatternManager({ getStyleValue, updateStyle }: PatternManagerPro
     </div>
   );
 }
+

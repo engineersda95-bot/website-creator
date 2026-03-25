@@ -1,7 +1,7 @@
 import 'server-only';
 import { Block, Page, Project } from '@/types/editor';
 import React from 'react';
-import { toPx } from '@/lib/utils';
+import { toPx, getAnchorId } from '@/lib/utils';
 import { generateBlockCSS } from '@/lib/responsive-utils';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { getProjectDomain } from '@/lib/url-utils';
@@ -184,7 +184,7 @@ const StaticRegistry: Record<string, React.FC<any>> = Object.entries(BLOCK_DEFIN
 
 function renderBlock(block: Block, allPages: Page[], project: Project | undefined, renderToStaticMarkup: any): string {
   const { type, content } = block;
-  const blockId = `block-${block.id.substring(0, 8)}`;
+  const blockId = getAnchorId(block);
 
   // Generate responsive CSS using the new unified utility
   const responsiveCss = generateBlockCSS(blockId, block, project);

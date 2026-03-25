@@ -74,7 +74,7 @@ export const BlockSidebar: React.FC = () => {
             {currentPage && currentPage.blocks.length > 0 && (
               <div className="border-t border-zinc-100 pt-5 animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="px-1 mb-3">
-                  <h3 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">Struttura</h3>
+                  <h3 className="text-[13px] font-semibold text-zinc-500 uppercase tracking-wide">Struttura</h3>
                 </div>
                 <div className="space-y-1">
                   {currentPage.blocks.map((block, idx) => {
@@ -99,16 +99,16 @@ export const BlockSidebar: React.FC = () => {
                           <Icon size={12} className={isSelected ? "text-white" : "text-zinc-400"} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-[11px] font-medium truncate">
+                          <div className="text-[13px] font-medium truncate">
                             {block.type.charAt(0).toUpperCase() + block.type.slice(1).replace('-', ' ')}
                           </div>
                           {(block.content?.title || block.content?.text) && (
-                            <div className={cn("text-[10px] truncate mt-0.5", isSelected ? "text-white/50" : "text-zinc-400")}>
+                            <div className={cn("text-[11px] truncate mt-0.5", isSelected ? "text-white/50" : "text-zinc-400")}>
                               {block.content.title || block.content.text?.substring(0, 30)}
                             </div>
                           )}
                         </div>
-                        <span className={cn("text-[9px] font-medium", isSelected ? "text-white/30" : "text-zinc-300")}>
+                        <span className={cn("text-[10px] font-medium", isSelected ? "text-white/30" : "text-zinc-300")}>
                           {idx + 1}
                         </span>
                       </button>
@@ -120,8 +120,8 @@ export const BlockSidebar: React.FC = () => {
 
             <div className="border-t border-zinc-100 pt-5">
               <div className="px-1 mb-3">
-                <h3 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">Blocchi</h3>
-                <p className="text-[10px] text-zinc-400 mt-0.5">Clicca per aggiungere in fondo</p>
+                <h3 className="text-[13px] font-semibold text-zinc-500 uppercase tracking-wide">Blocchi</h3>
+                <p className="text-[11px] text-zinc-400 mt-0.5">Clicca per aggiungere in fondo</p>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
@@ -132,7 +132,7 @@ export const BlockSidebar: React.FC = () => {
                     className="flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border border-zinc-100 hover:border-zinc-300 hover:bg-zinc-50 transition-all group text-center"
                   >
                     <block.icon size={18} className="text-zinc-400 group-hover:text-zinc-700 transition-colors" />
-                    <span className="text-[10px] font-medium text-zinc-500 group-hover:text-zinc-700 leading-tight">{block.label}</span>
+                    <span className="text-[11px] font-medium text-zinc-500 group-hover:text-zinc-700 leading-tight">{block.label}</span>
                   </button>
                 ))}
               </div>
@@ -140,7 +140,7 @@ export const BlockSidebar: React.FC = () => {
           </div>
 
           <div className="px-4 py-3 border-t border-zinc-100">
-            <p className="text-[10px] text-zinc-400 leading-relaxed flex items-center gap-1.5">
+            <p className="text-[11px] text-zinc-400 leading-relaxed flex items-center gap-1.5">
               <MousePointer2 size={10} className="shrink-0" />
               Usa il tasto + nel canvas per inserire tra i blocchi
             </p>

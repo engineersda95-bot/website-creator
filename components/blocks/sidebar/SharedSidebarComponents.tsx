@@ -29,3 +29,4 @@ export { LinkListManager } from './managers/LinkListManager';
 export { ImageStyleFields } from './managers/ImageStyleFields';
 export { LayoutGridSlider } from './managers/LayoutGridSlider';
 export { PatternManager } from './managers/PatternManager';
+

@@ -32,7 +32,7 @@ export const NavigationStyle: React.FC<NavigationStyleProps> = ({
 
             <div className="mt-8 space-y-4">
                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Larghezza Sidebar (px)</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Larghezza Sidebar (px)</label>
                   <input 
                      type="number"
                      value={getStyleValue('hamburgerWidth', 450)}
@@ -44,7 +44,7 @@ export const NavigationStyle: React.FC<NavigationStyleProps> = ({
 
             <div className="mt-8 space-y-4 p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
                <div className="flex items-center justify-between gap-4">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Header Sticky (Fisso)</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Header Sticky (Fisso)</label>
                   <div
                      className={cn("w-10 h-5 rounded-full p-1 cursor-pointer transition-colors", getStyleValue('isSticky', false) ? "bg-zinc-900" : "bg-zinc-200")}
                      onClick={() => updateStyle({ isSticky: !getStyleValue('isSticky', false) })}
@@ -53,7 +53,7 @@ export const NavigationStyle: React.FC<NavigationStyleProps> = ({
                   </div>
                </div>
                <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Sfondo Trasparente</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Sfondo Trasparente</label>
                   <div
                      className={cn("w-10 h-5 rounded-full p-1 cursor-pointer transition-colors", getStyleValue('isTransparent', false) ? "bg-zinc-900" : "bg-zinc-200")}
                      onClick={() => {
@@ -70,11 +70,11 @@ export const NavigationStyle: React.FC<NavigationStyleProps> = ({
 
                {getStyleValue('isTransparent', false) && (
                   <div className="space-y-4 pt-4 border-t border-zinc-100">
-                     <p className="text-[9px] font-black text-zinc-300 uppercase tracking-widest">Configurazione Scrolled (Header Pieno)</p>
+                     <p className="text-[12px] font-black text-zinc-300 uppercase tracking-widest">Configurazione Scrolled (Header Pieno)</p>
                      
                      <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase">Opacità ({getStyleValue('scrolledOpacity', 0)}%)</label>
+                           <label className="text-[12px] font-bold text-zinc-400 uppercase">Opacità ({getStyleValue('scrolledOpacity', 0)}%)</label>
                         </div>
                         <input
                            type="range"
@@ -111,3 +111,4 @@ export const NavigationStyle: React.FC<NavigationStyleProps> = ({
       </div>
    );
 };
+

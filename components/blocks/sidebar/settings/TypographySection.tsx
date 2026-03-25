@@ -18,7 +18,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
       <section className="pt-8 border-t border-zinc-100 animate-in fade-in slide-in-from-right-4 duration-500 delay-75">
          <SectionHeader icon={Type} title="Tipografia" colorClass="text-indigo-500" />
          <div className="space-y-4">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Fonte Principale</label>
+            <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Fonte Principale</label>
             <div className="p-1 bg-zinc-50 rounded-2xl border border-zinc-100 font-bold">
                <select
                   className="w-full p-3 bg-transparent text-sm font-black focus:ring-0 outline-none cursor-pointer"
@@ -39,3 +39,4 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
       </section>
    );
 };
+

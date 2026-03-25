@@ -105,3 +105,4 @@ export const FAQStyle: React.FC<FAQStyleProps> = ({
     </div>
   );
 };
+

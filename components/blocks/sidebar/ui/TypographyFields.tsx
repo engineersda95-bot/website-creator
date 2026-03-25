@@ -19,7 +19,7 @@ export function TypographyFields({
 }: TypographyFieldsProps) {
    return (
       <div className="pb-6 border-b border-zinc-50 last:border-0 last:pb-0">
-         <label className="text-[10px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
+         <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
             <span>{label}</span>
             <span className="text-zinc-900 font-bold">{getStyleValue(sizeKey, defaultValue)}px</span>
          </label>
@@ -60,3 +60,4 @@ export function TypographyFields({
       </div>
    );
 }
+

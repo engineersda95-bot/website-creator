@@ -36,7 +36,7 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
             <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between shrink-0">
                <h2 className="text-sm font-bold text-zinc-900">Design Globale</h2>
                {viewport !== 'desktop' && (
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-600 border border-indigo-100">
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[13px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-600 border border-indigo-100">
                      <Smartphone size={9} />
                      {viewport}
                   </div>
@@ -79,3 +79,4 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
       </div>
    );
 };
+

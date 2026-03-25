@@ -209,12 +209,24 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
           <div className="relative group/quote">
             {/* Slider Navigation Arrows */}
             <div className="absolute top-1/2 left-2 md:-left-6 -translate-y-1/2 z-30 transition-all duration-300">
-              <button data-arrow="left" className="p-4 bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow">
+              <button 
+                data-arrow="left" 
+                className={cn(
+                  "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow",
+                  isDark ? "bg-zinc-900 border-white/10" : "bg-white border-black/5"
+                )}
+              >
                 <ChevronLeft size={24} style={{ color: style.textColor }} />
               </button>
             </div>
             <div className="absolute top-1/2 right-2 md:-right-6 -translate-y-1/2 z-30 transition-all duration-300">
-              <button data-arrow="right" className="p-4 bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border border-black/5 dark:border-white/10 transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow">
+              <button 
+                data-arrow="right" 
+                className={cn(
+                  "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow",
+                  isDark ? "bg-zinc-900 border-white/10" : "bg-white border-black/5"
+                )}
+              >
                 <ChevronRight size={24} style={{ color: style.textColor }} />
               </button>
             </div>

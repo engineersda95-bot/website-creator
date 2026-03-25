@@ -37,7 +37,7 @@ export const UserMenu: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white border border-zinc-200 rounded-xl shadow-lg py-1 z-[200] animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 mt-2 w-56 bg-white border border-zinc-200 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] py-1 z-[10001] animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="px-4 py-3 border-b border-zinc-100">
             <p className="text-sm font-medium text-zinc-900 truncate">{user.email?.split('@')[0]}</p>
             <p className="text-xs text-zinc-400 truncate mt-0.5">{user.email}</p>

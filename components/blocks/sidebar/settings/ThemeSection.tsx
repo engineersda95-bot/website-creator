@@ -24,14 +24,14 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
                <div className="grid grid-cols-2 gap-3">
                   <button
                      onClick={() => updateProjectSettings({ appearance: 'light' })}
-                     className={cn("py-4 flex flex-col items-center gap-2 text-[10px] font-bold border-2 rounded-2xl transition-all", project?.settings?.appearance !== 'dark' ? "bg-zinc-900 text-white border-zinc-900 shadow-xl scale-[1.05]" : "text-zinc-400 border-zinc-100 hover:border-zinc-200")}
+                     className={cn("py-4 flex flex-col items-center gap-2 text-[12px] font-bold border-2 rounded-2xl transition-all", project?.settings?.appearance !== 'dark' ? "bg-zinc-900 text-white border-zinc-900 shadow-xl scale-[1.05]" : "text-zinc-400 border-zinc-100 hover:border-zinc-200")}
                   >
                      <Sun size={20} />
                      <span>CHIARO</span>
                   </button>
                   <button
                      onClick={() => updateProjectSettings({ appearance: 'dark' })}
-                     className={cn("py-4 flex flex-col items-center gap-2 text-[10px] font-bold border-2 rounded-2xl transition-all", project?.settings?.appearance === 'dark' ? "bg-zinc-900 text-white border-zinc-900 shadow-xl scale-[1.05]" : "text-zinc-400 border-zinc-100 hover:border-zinc-200")}
+                     className={cn("py-4 flex flex-col items-center gap-2 text-[12px] font-bold border-2 rounded-2xl transition-all", project?.settings?.appearance === 'dark' ? "bg-zinc-900 text-white border-zinc-900 shadow-xl scale-[1.05]" : "text-zinc-400 border-zinc-100 hover:border-zinc-200")}
                   >
                      <Moon size={20} />
                      <span>SCURO</span>
@@ -40,32 +40,32 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
 
                <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-4">
-                     <h4 className="text-[9px] font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
+                     <h4 className="text-[12px] font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
                         <Sun size={12} className="text-amber-400" /> Colori Tema Light
                      </h4>
                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo</label>
+                           <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo</label>
                            <input type="color" className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent" value={project?.settings?.themeColors?.light?.bg || '#ffffff'} onChange={(e) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, light: { bg: e.target.value, text: project?.settings?.themeColors?.light?.text || '#000000' } } })} />
                         </div>
                         <div className="space-y-2">
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo</label>
+                           <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo</label>
                            <input type="color" className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent" value={project?.settings?.themeColors?.light?.text || '#000000'} onChange={(e) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, light: { text: e.target.value, bg: project?.settings?.themeColors?.light?.bg || '#ffffff' } } })} />
                         </div>
                      </div>
                   </div>
 
                   <div className="space-y-4 pt-4 border-t border-zinc-50">
-                     <h4 className="text-[9px] font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
+                     <h4 className="text-[12px] font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
                         <Moon size={12} className="text-indigo-400" /> Colori Tema Dark
                      </h4>
                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo</label>
+                           <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo</label>
                            <input type="color" className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent" value={project?.settings?.themeColors?.dark?.bg || '#0c0c0e'} onChange={(e) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, dark: { bg: e.target.value, text: project?.settings?.themeColors?.dark?.text || '#ffffff' } } })} />
                         </div>
                         <div className="space-y-2">
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo</label>
+                           <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo</label>
                            <input type="color" className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent" value={project?.settings?.themeColors?.dark?.text || '#ffffff'} onChange={(e) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, dark: { text: e.target.value, bg: project?.settings?.themeColors?.dark?.bg || '#0c0c0e' } } })} />
                         </div>
                      </div>
@@ -80,7 +80,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
             <div className="space-y-6">
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Primario</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Primario</label>
                      <input
                         type="color"
                         className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -89,7 +89,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
                      />
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Secondario</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Secondario</label>
                      <input
                         type="color"
                         className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -100,7 +100,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
                </div>
                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-50">
                   <div className="space-y-2">
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Bottoni</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Bottoni</label>
                      <input
                         type="color"
                         className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -109,7 +109,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
                      />
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Bott. Sec.</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Bott. Sec.</label>
                      <input
                         type="color"
                         className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -123,3 +123,4 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
       </div>
    );
 };
+

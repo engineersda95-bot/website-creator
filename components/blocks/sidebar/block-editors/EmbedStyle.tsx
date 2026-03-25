@@ -24,7 +24,7 @@ export function EmbedStyle({ selectedBlock, updateContent, getStyleValue, update
         <LayoutFields getStyleValue={getStyleValue} updateStyle={updateStyle} />
         <div className="grid grid-cols-1 gap-4 mt-6 pt-6 border-t border-zinc-50">
           <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Altezza (px)</label>
+            <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Altezza (px)</label>
             <input 
               type="number" 
               className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" 
@@ -33,7 +33,7 @@ export function EmbedStyle({ selectedBlock, updateContent, getStyleValue, update
             />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Larghezza Max Embed (px)</label>
+            <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Larghezza Max Embed (px)</label>
             <input 
               type="number" 
               className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold" 
@@ -62,3 +62,4 @@ export function EmbedStyle({ selectedBlock, updateContent, getStyleValue, update
     </div>
   );
 }
+

@@ -12,7 +12,7 @@ export function BorderShadowManager({ getStyleValue, updateStyle }: BorderShadow
          <SectionHeader icon={Layers} title="Bordi" colorClass="text-zinc-500" />
          <div className="space-y-6">
             <div>
-               <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Arrotondamento</label>
+               <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Arrotondamento</label>
                <input
                   type="number"
                   className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
@@ -21,7 +21,7 @@ export function BorderShadowManager({ getStyleValue, updateStyle }: BorderShadow
                />
             </div>
             <div className="flex items-center justify-between">
-               <label className="text-[10px] font-bold text-zinc-400 uppercase cursor-pointer" htmlFor="has-border">Bordo</label>
+               <label className="text-[12px] font-bold text-zinc-400 uppercase cursor-pointer" htmlFor="has-border">Bordo</label>
                <input
                   id="has-border"
                   type="checkbox"
@@ -33,7 +33,7 @@ export function BorderShadowManager({ getStyleValue, updateStyle }: BorderShadow
             {getStyleValue('borderWidth', 0) > 0 && (
                <div className="grid grid-cols-2 gap-4 animate-in fade-in zoom-in-95 duration-200">
                   <div>
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Colore Bordo</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Colore Bordo</label>
                      <input
                         type="color"
                         className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -42,7 +42,7 @@ export function BorderShadowManager({ getStyleValue, updateStyle }: BorderShadow
                      />
                   </div>
                   <div>
-                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block">Spessore (px)</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Spessore (px)</label>
                      <input
                         type="number"
                         className="w-full p-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-bold"
@@ -56,3 +56,4 @@ export function BorderShadowManager({ getStyleValue, updateStyle }: BorderShadow
       </section>
    );
 }
+

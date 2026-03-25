@@ -13,10 +13,10 @@ export function LinkListManager({ links = [], onChange, label = "Link Testuali" 
    return (
       <div className="space-y-4 pt-4 border-t border-zinc-100">
          <div className="flex items-center justify-between">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{label}</label>
+            <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">{label}</label>
             <button
                onClick={() => onChange([...links, { label: 'Link', url: '/' }])}
-               className="px-3 py-1 bg-zinc-900 text-white rounded-lg text-[10px] font-bold"
+               className="px-3 py-1 bg-zinc-900 text-white rounded-lg text-[12px] font-bold"
             >
                <Plus size={10} className="inline mr-1" /> AGGIUNGI
             </button>
@@ -37,3 +37,4 @@ export function LinkListManager({ links = [], onChange, label = "Link Testuali" 
       </div>
    );
 }
+

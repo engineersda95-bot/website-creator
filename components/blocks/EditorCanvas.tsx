@@ -9,7 +9,7 @@ import {
   Clipboard as ClipboardIcon, Layers, Settings, RotateCcw, RotateCw, Minus,
   HelpCircle, ZoomIn, ZoomOut
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getAnchorId } from '@/lib/utils';
 import { getBlockLibrary } from '@/lib/block-definitions';
 import { HelpCenter } from '../editor/HelpCenter';
 
@@ -51,6 +51,7 @@ const MemoizedBlock = React.memo(({
 
   return (
     <div
+      id={getAnchorId(block)}
       onClick={(e) => {
         e.stopPropagation();
         onSelect(block.id);
@@ -205,9 +206,25 @@ export const EditorCanvas: React.FC = () => {
     const checkCopied = () => setHasCopiedBlock(!!localStorage.getItem('sv_copied_block'));
     checkCopied();
     window.addEventListener('storage', checkCopied);
+
+    // Prevent navigation from links inside the editor canvas
+    const handleCanvasClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+      const canvasEl = document.getElementById('editor-content');
+      
+      if (link && canvasEl && canvasEl.contains(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    
+    window.addEventListener('click', handleCanvasClick, true);
+
     const interval = setInterval(checkCopied, 1000);
     return () => {
       window.removeEventListener('storage', checkCopied);
+      window.removeEventListener('click', handleCanvasClick, true);
       clearInterval(interval);
     };
   }, []);
@@ -379,6 +396,7 @@ export const EditorCanvas: React.FC = () => {
           .canvas-desktop { width: 100%; }
           .canvas-tablet { width: 768px; }
           .canvas-mobile { width: 390px; }
+          #editor-content a { pointer-events: none !important; }
         `}</style>
 
         <main

@@ -53,9 +53,10 @@ export const SingleImageContent: React.FC<SingleImageContentProps> = ({
             onChange={(val) => updateContent({ url: val })}
             placeholder="https://... o /pagina"
           />
-          <p className="text-[10px] text-zinc-400 italic pl-1">Lascia vuoto se l'immagine non deve essere cliccabile.</p>
+          <p className="text-[12px] text-zinc-400 italic pl-1">Lascia vuoto se l'immagine non deve essere cliccabile.</p>
         </div>
       </section>
     </div>
   );
 };
+

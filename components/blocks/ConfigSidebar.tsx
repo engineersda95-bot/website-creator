@@ -10,6 +10,7 @@ import {
 import { cn, getStyleValue as getStyleValueUtil } from '@/lib/utils';
 import { GlobalSettings } from './sidebar/GlobalSettings';
 import { BLOCK_DEFINITIONS } from '@/lib/block-definitions';
+import { AnchorIdField } from './sidebar/ui/AnchorIdField';
 
 export const ConfigSidebar: React.FC = () => {
    const { 
@@ -98,12 +99,12 @@ export const ConfigSidebar: React.FC = () => {
          {/* Block header */}
          <div className="px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
-               <div className="px-2 py-0.5 rounded bg-zinc-900 text-white text-[10px] font-bold uppercase tracking-wide shrink-0">
+               <div className="px-2 py-0.5 rounded bg-zinc-900 text-white text-[13px] font-bold uppercase tracking-wide shrink-0">
                   {selectedBlock.type}
                </div>
                {viewport !== 'desktop' && (
                   <div className={cn(
-                     "flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide shrink-0",
+                     "flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide shrink-0",
                      "bg-indigo-50 text-indigo-600 border border-indigo-100"
                   )}>
                      <Smartphone size={9} />
@@ -126,7 +127,7 @@ export const ConfigSidebar: React.FC = () => {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={cn(
-                     "flex-1 py-2.5 text-[11px] font-semibold transition-all border-b-2 capitalize",
+                     "flex-1 py-2.5 text-[13px] font-semibold transition-all border-b-2 capitalize",
                      activeTab === tab
                         ? "border-zinc-900 text-zinc-900"
                         : "border-transparent text-zinc-400 hover:text-zinc-600"
@@ -146,6 +147,11 @@ export const ConfigSidebar: React.FC = () => {
             ) : (
                <div className="p-5 space-y-6 animate-in fade-in duration-300">
                   {renderStyleEditor()}
+                  <AnchorIdField 
+                     selectedBlock={selectedBlock} 
+                     updateStyle={updateStyle} 
+                     getStyleValue={getStyleValue} 
+                  />
                </div>
             )}
          </div>

@@ -61,8 +61,8 @@ export function IconManager({ value, onChange, label = "Icona" }: IconManagerPro
       <div className="space-y-4 pt-4 border-t border-zinc-100" ref={wrapperRef}>
          <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">{label}</label>
-                {isMatched && <span className="text-[9px] font-bold text-green-500 uppercase tracking-tight">Selezionata</span>}
+                <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block">{label}</label>
+                {isMatched && <span className="text-[12px] font-bold text-green-500 uppercase tracking-tight">Selezionata</span>}
             </div>
             
             <div className="relative">
@@ -78,7 +78,7 @@ export function IconManager({ value, onChange, label = "Icona" }: IconManagerPro
                                 setIsOpen(true);
                             }}
                             placeholder="Cerca un'icona..."
-                            className="w-full pl-9 pr-8 py-3 text-[11px] bg-zinc-50 border border-zinc-100 rounded-2xl focus:ring-1 focus:ring-zinc-900 outline-none transition-all placeholder:text-zinc-300"
+                            className="w-full pl-9 pr-8 py-3 text-[13px] bg-zinc-50 border border-zinc-100 rounded-2xl focus:ring-1 focus:ring-zinc-900 outline-none transition-all placeholder:text-zinc-300"
                         />
                         <ChevronDown className={cn(
                             "absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300 transition-transform",
@@ -122,7 +122,7 @@ export function IconManager({ value, onChange, label = "Icona" }: IconManagerPro
                                     );
                                 })
                             ) : (
-                                <div className="col-span-full py-10 text-center text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
+                                <div className="col-span-full py-10 text-center text-[12px] text-zinc-400 font-bold uppercase tracking-widest">
                                     Nessun risultato
                                 </div>
                             )}
@@ -134,3 +134,4 @@ export function IconManager({ value, onChange, label = "Icona" }: IconManagerPro
       </div>
    );
 }
+

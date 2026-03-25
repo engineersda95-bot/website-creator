@@ -402,7 +402,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       id: uuidv4(),
       type,
       content: defaultContent,
-      style: defaultStyle,
+      style: { 
+        ...defaultStyle,
+        anchorId: '' // Initialize anchorId in style
+      },
       responsiveStyles: defaultResponsiveStyles || {}
     };
 

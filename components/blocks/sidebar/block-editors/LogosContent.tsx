@@ -71,7 +71,7 @@ export const LogosContent: React.FC<LogosContentProps> = ({
           <SectionHeader icon={Plus} title="Loghi Partner" />
           <button
             onClick={addItem}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-md active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-[12px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-md active:scale-95"
           >
             <Plus size={14} /> Aggiungi
           </button>
@@ -104,7 +104,7 @@ export const LogosContent: React.FC<LogosContentProps> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Logo #{index + 1}</label>
+                <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Logo #{index + 1}</label>
                 <ImageUpload
                   label="Carica Logo"
                   value={resolveImageUrl(item.image, project, imageMemoryCache)}
@@ -122,7 +122,7 @@ export const LogosContent: React.FC<LogosContentProps> = ({
               <div className="p-4 bg-white rounded-full shadow-sm inline-flex mb-4 text-zinc-300">
                 <ImageIcon size={32} />
               </div>
-              <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Nessun logo aggiunto</p>
+              <p className="text-[12px] font-black uppercase text-zinc-400 tracking-widest">Nessun logo aggiunto</p>
             </div>
           )}
         </div>
@@ -130,3 +130,4 @@ export const LogosContent: React.FC<LogosContentProps> = ({
     </div>
   );
 };
+
