@@ -39,7 +39,7 @@ export const PageManager: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-tour="page-manager">
       <div className="flex items-center justify-between px-2">
         <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Pagine</h3>
         <button

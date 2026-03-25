@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronRight, ChevronLeft, X, Layers, MousePointer, PanelRight, Monitor, Rocket } from 'lucide-react';
+import { ChevronRight, ChevronLeft, X, Layers, MousePointer, PanelRight, Monitor, Rocket, FileText, RotateCcw, ZoomIn, HelpCircle, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TourStep {
@@ -14,37 +14,79 @@ interface TourStep {
 
 const STEPS: TourStep[] = [
   {
+    target: '[data-tour="page-status"]',
+    title: 'Benvenuto nell\'Editor!',
+    description: 'Qui vedi la pagina attuale e lo stato del sito: Non pubblicato (grigio), Bozza (arancione) o Online (verde). Iniziamo il tour!',
+    icon: <FileText size={18} />,
+    position: 'bottom',
+  },
+  {
+    target: '[data-tour="page-manager"]',
+    title: 'Gestione Pagine',
+    description: 'Qui gestisci le pagine del sito. Clicca su una pagina per aprirla, usa il "+" per crearne di nuove. L\'icona globo apre le impostazioni SEO.',
+    icon: <FileText size={18} />,
+    position: 'right',
+  },
+  {
     target: '[data-tour="block-sidebar"]',
-    title: 'Libreria Blocchi',
-    description: 'Qui trovi tutti i blocchi disponibili e la struttura della pagina. Clicca un blocco per aggiungerlo.',
+    title: 'Blocchi e Struttura',
+    description: 'In alto trovi la struttura della pagina attuale con tutti i blocchi. Sotto, la libreria con 20+ blocchi disponibili: Hero, Testo, Contatti, FAQ e molto altro. Clicca per aggiungerne uno.',
     icon: <Layers size={18} />,
     position: 'right',
   },
   {
     target: '[data-tour="canvas"]',
-    title: 'Canvas di Editing',
-    description: 'Questa è l\'anteprima del tuo sito. Clicca su un blocco per modificarlo, usa il "+" tra i blocchi per inserirne di nuovi.',
+    title: 'Canvas — L\'Anteprima Live',
+    description: 'Questa è l\'anteprima in tempo reale del tuo sito. Clicca su qualsiasi blocco per selezionarlo e modificarlo. Usa il pulsante "+" tra i blocchi per inserirne di nuovi in una posizione precisa.',
     icon: <MousePointer size={18} />,
-    position: 'bottom',
+    position: 'left',
   },
   {
     target: '[data-tour="config-sidebar"]',
-    title: 'Pannello Proprietà',
-    description: 'Seleziona un blocco per modificarne contenuto e stile. Senza selezione vedi le impostazioni globali.',
+    title: 'Modifica Contenuto e Stile',
+    description: 'Quando selezioni un blocco, qui trovi due tab: "Contenuto" per testi e immagini, "Stile" per colori, margini e layout. Se nessun blocco è selezionato, vedi le impostazioni globali del sito (font, colori, pulsanti).',
     icon: <PanelRight size={18} />,
     position: 'left',
   },
   {
     target: '[data-tour="viewport-switcher"]',
-    title: 'Anteprima Dispositivi',
-    description: 'Desktop, Tablet, Mobile — controlla come appare il sito su ogni schermo. Usa lo zoom per avvicinarti.',
+    title: 'Anteprima per Dispositivo',
+    description: 'Passa tra Desktop, Tablet e Mobile per vedere come appare il sito su ogni schermo. Ogni vista può avere stili diversi — puoi ridurre il padding su mobile o cambiare dimensione dei testi.',
     icon: <Monitor size={18} />,
+    position: 'bottom',
+  },
+  {
+    target: '[data-tour="undo-redo"]',
+    title: 'Annulla e Ripristina',
+    description: 'Hai fatto un errore? Nessun problema. Annulla con il pulsante freccia (o Ctrl+Z) e ripristina con Ctrl+Y. La cronologia tiene fino a 50 passaggi.',
+    icon: <RotateCcw size={18} />,
+    position: 'bottom',
+  },
+  {
+    target: '[data-tour="zoom-controls"]',
+    title: 'Zoom',
+    description: 'Usa i controlli zoom per avvicinarti ai dettagli o allontanarti per una visione d\'insieme. Clicca sulla percentuale per tornare al 100%.',
+    icon: <ZoomIn size={18} />,
+    position: 'bottom',
+  },
+  {
+    target: '[data-tour="theme-toggle"]',
+    title: 'Tema Chiaro / Scuro',
+    description: 'Alterna tra tema chiaro e scuro per il tuo sito. Questo cambia i colori di sfondo e testo di tutte le sezioni — perfetto per siti con atmosfera dark.',
+    icon: <Sun size={18} />,
+    position: 'bottom',
+  },
+  {
+    target: '[data-tour="help-btn"]',
+    title: 'Centro Assistenza',
+    description: 'Hai dubbi? Clicca qui per aprire la guida completa con tutorial su blocchi, SEO, pubblicazione, scorciatoie da tastiera e molto altro.',
+    icon: <HelpCircle size={18} />,
     position: 'bottom',
   },
   {
     target: '[data-tour="publish-btn"]',
     title: 'Salva e Pubblica',
-    description: 'Salva con Ctrl+S, poi clicca Pubblica per rendere il sito visibile a tutti!',
+    description: 'Salva le modifiche con il pulsante Salva (o Ctrl+S). Quando sei pronto, clicca Pubblica per rendere il sito visibile a tutti con un dominio dedicato. Buon lavoro!',
     icon: <Rocket size={18} />,
     position: 'bottom',
   },
@@ -52,11 +94,27 @@ const STEPS: TourStep[] = [
 
 const STORAGE_KEY = 'sv_onboarding_done';
 
+let startTourFn: (() => void) | null = null;
+
+export function restartTour() {
+  startTourFn?.();
+}
+
 export const OnboardingTour: React.FC = () => {
   const [active, setActive] = useState(false);
   const [step, setStep] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const retryRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const startTour = useCallback(() => {
+    setStep(0);
+    setActive(true);
+  }, []);
+
+  useEffect(() => {
+    startTourFn = startTour;
+    return () => { startTourFn = null; };
+  }, [startTour]);
 
   // Auto-start on first visit
   useEffect(() => {

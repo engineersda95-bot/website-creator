@@ -232,7 +232,7 @@ export function EditorClient({
 
             <div className="h-5 w-px bg-zinc-200" />
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5" data-tour="page-status">
               <span className="text-sm font-semibold text-zinc-700">{currentPage?.title || 'Home Page'}</span>
               <div className={cn(
                 "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide",

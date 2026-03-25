@@ -277,7 +277,7 @@ export const EditorCanvas: React.FC = () => {
           <div className="h-5 w-px bg-zinc-200" />
 
           {/* Undo/Redo */}
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-0.5" data-tour="undo-redo">
             <button
               onClick={() => undo()}
               disabled={historyIndex <= 0}
@@ -299,7 +299,7 @@ export const EditorCanvas: React.FC = () => {
           <div className="h-5 w-px bg-zinc-200" />
 
           {/* Zoom */}
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-0.5" data-tour="zoom-controls">
             <button
               onClick={zoomOut}
               disabled={zoom <= ZOOM_STEPS[0]}
@@ -332,6 +332,7 @@ export const EditorCanvas: React.FC = () => {
             onClick={() => setIsHelpOpen(true)}
             className="p-1.5 rounded-md text-zinc-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
             title="Guida / Aiuto"
+            data-tour="help-btn"
           >
             <HelpCircle size={16} />
           </button>
@@ -356,6 +357,7 @@ export const EditorCanvas: React.FC = () => {
               isDark ? "text-amber-500 hover:bg-amber-50" : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
             )}
             title={isDark ? 'Passa a tema chiaro' : 'Passa a tema scuro'}
+            data-tour="theme-toggle"
           >
             {isDark ? <Moon size={16} /> : <Sun size={16} />}
           </button>
