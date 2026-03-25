@@ -130,7 +130,7 @@ export function ProjectDashboardClient({
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
       <header className="bg-white border-b border-zinc-200/80 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/editor" className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-700 transition-colors">
               <ArrowLeft size={16} />
@@ -180,7 +180,7 @@ export function ProjectDashboardClient({
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-[1440px] mx-auto px-6 py-8">
         {/* Tabs */}
         <div className="flex items-center gap-1 mb-8 border-b border-zinc-200">
           <button
@@ -275,7 +275,7 @@ export function ProjectDashboardClient({
             )}
 
             {/* Pages grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
               {pages.map((page) => (
                 <div
                   key={page.id}

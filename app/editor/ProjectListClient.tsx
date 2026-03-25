@@ -112,7 +112,7 @@ export function ProjectListClient({
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
       <header className="bg-white border-b border-zinc-200/80 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-zinc-900 flex items-center justify-center">
@@ -125,7 +125,7 @@ export function ProjectListClient({
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="max-w-[1440px] mx-auto px-6 py-10">
         {/* Title */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -248,7 +248,7 @@ export function ProjectListClient({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
             {projects.map((proj) => (
               <div
                 key={proj.id}
