@@ -35,20 +35,28 @@ export const contactDefinition: BlockDefinition = {
       patternOpacity: 10,
       patternScale: 40,
       titleTag: 'h2',
-      itemTitleTag: 'h3'
+      itemTitleTag: 'h3',
+      itemTitleBold: true
     }
   },
   styleMapper: (style, block, project, viewport) => {
-    const { vars, style: s } = getBaseStyleVars(style, block, project, viewport);
+    // Migrazione vecchie chiavi Contact
+    const s_mig = { ...style };
+    if (s_mig.contactLabelSize !== undefined && s_mig.itemTitleSize === undefined) s_mig.itemTitleSize = s_mig.contactLabelSize;
+    if (s_mig.contactLabelBold !== undefined && s_mig.itemTitleBold === undefined) s_mig.itemTitleBold = s_mig.contactLabelBold;
+
+    const { vars, style: s } = getBaseStyleVars(s_mig, block, project, viewport);
     const val = (key: string, def: any) => s[key] !== undefined && s[key] !== null ? s[key] : def;
     
     return {
       ...vars,
       '--icon-size': toPx(val('iconSize', 20)),
-      '--label-fs': toPx(val('contactLabelSize', 9)),
-      '--label-fw': val('contactLabelBold', true) ? '900' : '400',
+      '--label-fs': vars['--item-title-fs'],
+      '--label-fw': vars['--item-title-fw'],
+      '--label-is': vars['--item-title-is'],
       '--value-fs': toPx(val('contactValueSize', 18)),
       '--value-fw': val('contactValueBold', true) ? '700' : '400',
+      '--value-is': val('contactValueItalic', false) ? 'italic' : 'normal',
       '--map-width': val('mapWidth', 100) + '%',
     };
   }

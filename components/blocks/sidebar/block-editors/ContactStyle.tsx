@@ -43,16 +43,23 @@ export function ContactStyle({ selectedBlock, updateContent, updateStyle, getSty
         <div className="space-y-8">
           <TypographyFields
             label="Titolo Principale"
-            sizeKey="titleSize" boldKey="titleBold" italicKey="titleItalic"
+            sizeKey="titleSize" 
+            boldKey="titleBold" 
+            italicKey="titleItalic"
             tagKey="titleTag"
             showTagSelector={true}
             defaultTag="h2"
-            getStyleValue={getStyleValue} updateStyle={updateStyle} defaultValue={48}
+            getStyleValue={getStyleValue} 
+            updateStyle={updateStyle}
           />
           <TypographyFields
             label="Sottotitolo"
-            sizeKey="subtitleSize" boldKey="subtitleBold" italicKey="subtitleItalic"
-            getStyleValue={getStyleValue} updateStyle={updateStyle} defaultValue={18}
+            sizeKey="subtitleSize" 
+            boldKey="subtitleBold" 
+            italicKey="subtitleItalic"
+            getStyleValue={getStyleValue} 
+            updateStyle={updateStyle} 
+            defaultValue={18}
           />
 
           <div className="pt-8 border-t border-zinc-50 space-y-8">
@@ -65,18 +72,24 @@ export function ContactStyle({ selectedBlock, updateContent, updateStyle, getSty
 
             <TypographyFields
               label="Etichette (E-mail, Tel...)"
-              sizeKey="contactLabelSize" boldKey="contactLabelBold"
+              sizeKey="itemTitleSize" 
+              boldKey="itemTitleBold"
+              italicKey="itemTitleItalic"
               tagKey="itemTitleTag"
               showTagSelector={true}
               defaultTag="h3"
-              getStyleValue={getStyleValue} updateStyle={updateStyle} defaultValue={9}
-              min={8} max={24}
+              getStyleValue={getStyleValue} 
+              updateStyle={updateStyle} 
+              defaultValue={9}
             />
             <TypographyFields
-              label="Dimensione Contatti"
-              sizeKey="contactValueSize" boldKey="contactValueBold"
-              getStyleValue={getStyleValue} updateStyle={updateStyle} defaultValue={18}
-              min={12} max={48}
+              label="Dati Contatto"
+              sizeKey="contactValueSize" 
+              boldKey="contactValueBold"
+              italicKey="contactValueItalic"
+              getStyleValue={getStyleValue} 
+              updateStyle={updateStyle} 
+              defaultValue={18}
             />
           </div>
         </div>

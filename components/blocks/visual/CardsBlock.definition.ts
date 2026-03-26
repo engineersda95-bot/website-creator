@@ -57,7 +57,7 @@ export const cardsDefinition: BlockDefinition = {
       '--card-color': val('cardTextColor', 'inherit'),
       '--card-radius': toPx(val('cardBorderRadius', 32), '32px'),
       '--card-padding': toPx(val('cardPadding', 32), '32px'),
-      '--card-title-fs': val('cardTitleSize', null) !== null ? toPx(val('cardTitleSize'), '1.75rem') : `var(--global-${val('itemTitleTag', 'h3')}-fs)`,
+      '--card-title-fs': val('cardTitleSize', null) !== null ? toPx(val('cardTitleSize', null), '1.75rem') : `var(--global-${val('itemTitleTag', 'h3')}-fs)`,
       '--card-subtitle-fs': toPx(val('cardSubtitleSize', '1rem'), '1rem'),
       '--image-radius': toPx(val('imageBorderRadius', 24), '24px'),
       '--image-aspect': block.content?.imageAspectRatio || val('imageAspectRatio', '16/9'),

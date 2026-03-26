@@ -68,17 +68,15 @@ export const FAQStyle: React.FC<FAQStyleProps> = ({
           
           <TypographyFields 
             label="Dimensione Domande" 
-            sizeKey="questionSize" 
-            boldKey="questionBold" 
-            italicKey="questionItalic" 
+            sizeKey="itemTitleSize" 
+            boldKey="itemTitleBold" 
+            italicKey="itemTitleItalic" 
             tagKey="itemTitleTag"
             showTagSelector={true}
             defaultTag="h3"
             getStyleValue={getStyleValue} 
             updateStyle={updateStyle} 
             defaultValue={18} 
-            min={12}
-            max={40}
           />
 
           <TypographyFields 
@@ -89,8 +87,6 @@ export const FAQStyle: React.FC<FAQStyleProps> = ({
             getStyleValue={getStyleValue} 
             updateStyle={updateStyle} 
             defaultValue={16} 
-            min={12}
-            max={32}
           />
         </div>
       </section>

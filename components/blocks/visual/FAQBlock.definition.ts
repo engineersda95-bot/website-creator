@@ -27,19 +27,24 @@ export const faqDefinition: BlockDefinition = {
       titleBold: false,
       titleTag: 'h2',
       itemTitleTag: 'h3',
+      itemTitleBold: true,
       patternType: 'none',
       patternScale: 40
     }
   },
   styleMapper: (style, block, project, viewport) => {
-    const { vars, style: s } = getBaseStyleVars(style, block, project, viewport);
+    // Migrazione vecchie chiavi FAQ
+    const s_mig = { ...style };
+    if (s_mig.questionSize !== undefined && s_mig.itemTitleSize === undefined) s_mig.itemTitleSize = s_mig.questionSize;
+    if (s_mig.questionBold !== undefined && s_mig.itemTitleBold === undefined) s_mig.itemTitleBold = s_mig.questionBold;
+    if (s_mig.questionItalic !== undefined && s_mig.itemTitleItalic === undefined) s_mig.itemTitleItalic = s_mig.questionItalic;
+
+    const { vars, style: s } = getBaseStyleVars(s_mig, block, project, viewport);
     const val = (key: string, def: any) => s[key] !== undefined && s[key] !== null ? s[key] : def;
     
     return {
       ...vars,
-      '--faq-q-fs': toPx(val('questionSize', '1.125rem')),
       '--faq-a-fs': toPx(val('answerSize', '1rem')),
-      '--faq-q-fw': val('questionBold', true) ? '700' : '500',
       '--faq-a-fw': val('answerBold', false) ? '600' : '400',
     };
   }

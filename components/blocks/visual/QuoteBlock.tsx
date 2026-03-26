@@ -129,9 +129,9 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
         
         <p 
           style={{ 
-            fontSize: style.reviewSize ? `${style.reviewSize}px` : undefined, 
-            fontWeight: style.reviewBold ? '700' : '400', 
-            fontStyle: style.reviewItalic ? 'italic' : 'normal', 
+            fontSize: 'var(--review-fs)', 
+            fontWeight: 'var(--review-fw)' as any, 
+            fontStyle: 'var(--review-is)' as any, 
             textAlign: align as any 
           }}
           className="leading-relaxed opacity-80 mb-10 whitespace-pre-wrap break-words w-full"
@@ -161,9 +161,9 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
             return (
               <ItemTitleTag 
                 style={{ 
-                  fontSize: style.nameSize ? `${style.nameSize}px` : `var(--global-${style.itemTitleTag || 'h4'}-fs)`, 
-                  fontWeight: style.nameBold ? '700' : '400', 
-                  fontStyle: style.nameItalic ? 'italic' : 'normal' 
+                  fontSize: 'var(--item-title-fs)', 
+                  fontWeight: 'var(--item-title-fw)' as any, 
+                  fontStyle: 'var(--item-title-is)' as any 
                 }} 
                 className="tracking-tight leading-snug whitespace-normal break-words mb-1"
               >
@@ -173,9 +173,9 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
           })()}
           <p 
             style={{ 
-              fontSize: style.roleSize ? `${style.roleSize}px` : undefined, 
-              fontWeight: style.roleBold ? '700' : '400', 
-              fontStyle: style.roleItalic ? 'italic' : 'normal' 
+              fontSize: 'var(--review-role-fs)', 
+              fontWeight: 'var(--review-role-fw)' as any, 
+              fontStyle: 'var(--review-role-is)' as any 
             }} 
             className="opacity-40 uppercase tracking-widest text-[9px] leading-snug whitespace-normal break-words"
           >

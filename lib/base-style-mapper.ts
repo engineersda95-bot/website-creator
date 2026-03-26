@@ -3,7 +3,8 @@ import { toPx } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 
 export function getBaseStyleVars(style: any, block: any, project?: Project, viewport: 'desktop' | 'tablet' | 'mobile' = 'desktop') {
-  const { style: effectiveStyle } = getBlockStyles(block, project, viewport);
+  // Use provided style (which might be migrated) or resolve it from block
+  const effectiveStyle = style || getBlockStyles(block, project, viewport).style;
   
   const val = (key: string, def: any) => effectiveStyle[key] !== undefined && effectiveStyle[key] !== null ? effectiveStyle[key] : def;
   const num = (key: string, def: number) => {

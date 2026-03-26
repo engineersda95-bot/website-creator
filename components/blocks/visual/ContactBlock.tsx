@@ -30,17 +30,8 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
   const isMapVisible = content.address && content.showMap !== false;
   const mapUrl = content.address ? `https://maps.google.com/maps?q=${encodeURIComponent(content.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed` : null;
 
-  // Variabili di stile dinamiche (Solo se NON statico, altrimenti usiamo quelle del CSS generato per la responsività)
+  // Utilizziamo le variabili dello style mapper direttamente
   const contactStyles = !isStatic ? {
-    '--title-fs': 'var(--title-fs)',
-    '--title-fw': style.titleBold !== false ? '900' : '400',
-    '--title-fs-style': style.titleItalic ? 'italic' : 'normal',
-    '--subtitle-fs': style.subtitleSize ? `${style.subtitleSize}px` : 'var(--global-body-fs)',
-    '--subtitle-fw': style.subtitleBold !== false ? '500' : '400',
-    '--label-fs': 'var(--item-title-fs)',
-    '--label-fw': 'var(--item-title-fw)',
-    '--value-fs': style.contactValueSize ? `${style.contactValueSize}px` : 'var(--global-body-fs)',
-    '--value-fw': style.contactValueBold !== false ? '700' : '400',
     '--icon-size': `${style.iconSize || 20}px`,
     '--map-width': `${style.mapWidth !== undefined ? style.mapWidth : 100}%`,
     '--block-gap': `${style.gap !== undefined ? style.gap : 64}px`,
@@ -51,6 +42,7 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
       id={block.id}
       className={cn("w-full transition-all duration-500 overflow-hidden flex flex-col relative")}
       style={{
+        ...style as any,
         ...contactStyles,
         background: 'var(--block-bg)',
         color: 'var(--block-color)',
@@ -103,6 +95,7 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
                    style={{ 
                      fontSize: 'var(--subtitle-fs)',
                      fontWeight: 'var(--subtitle-fw)' as any,
+                     fontStyle: 'var(--subtitle-fs-style)' as any,
                      textAlign: 'inherit',
                      // Utilizziamo le variabili responsive per centrare anche in statico
                      marginLeft: 'var(--block-ml-auto)',
@@ -134,9 +127,17 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
                     </div>
                     <div style={{ textAlign: 'var(--block-align)' as any }}>
                       <LabelTag className="uppercase font-black text-inherit opacity-40 block tracking-widest leading-none mb-1" 
-                            style={{ fontSize: 'var(--label-fs)', fontWeight: 'var(--label-fw)' as any }}>E-mail</LabelTag>
+                            style={{ 
+                              fontSize: 'var(--label-fs)', 
+                              fontWeight: 'var(--label-fw)' as any,
+                              fontStyle: 'var(--label-is)' as any
+                            }}>E-mail</LabelTag>
                       <a href={`mailto:${content.email}`} className="hover:underline transition-all block leading-tight"
-                         style={{ fontSize: 'var(--value-fs)', fontWeight: 'var(--value-fw)' as any }}>{content.email}</a>
+                         style={{ 
+                           fontSize: 'var(--value-fs)', 
+                           fontWeight: 'var(--value-fw)' as any,
+                           fontStyle: 'var(--value-is)' as any
+                         }}>{content.email}</a>
                     </div>
                   </div>
                 )}
@@ -147,9 +148,17 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
                     </div>
                     <div style={{ textAlign: 'var(--block-align)' as any }}>
                       <LabelTag className="uppercase font-black text-inherit opacity-40 block tracking-widest leading-none mb-1"
-                            style={{ fontSize: 'var(--label-fs)', fontWeight: 'var(--label-fw)' as any }}>Telefono</LabelTag>
+                            style={{ 
+                              fontSize: 'var(--label-fs)', 
+                              fontWeight: 'var(--label-fw)' as any,
+                              fontStyle: 'var(--label-is)' as any
+                            }}>Telefono</LabelTag>
                       <a href={`tel:${content.phone}`} className="hover:underline transition-all block leading-tight"
-                         style={{ fontSize: 'var(--value-fs)', fontWeight: 'var(--value-fw)' as any }}>{content.phone}</a>
+                         style={{ 
+                           fontSize: 'var(--value-fs)', 
+                           fontWeight: 'var(--value-fw)' as any,
+                           fontStyle: 'var(--value-is)' as any
+                         }}>{content.phone}</a>
                     </div>
                   </div>
                 )}
@@ -160,8 +169,16 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
                     </div>
                     <div style={{ textAlign: 'var(--block-align)' as any }}>
                       <LabelTag className="uppercase font-black text-inherit opacity-40 block tracking-widest leading-none mb-1"
-                            style={{ fontSize: 'var(--label-fs)', fontWeight: 'var(--label-fw)' as any }}>Indirizzo</LabelTag>
-                      <p className="block leading-tight" style={{ fontSize: 'var(--value-fs)', fontWeight: 'var(--value-fw)' as any }}>{content.address}</p>
+                            style={{ 
+                              fontSize: 'var(--label-fs)', 
+                              fontWeight: 'var(--label-fw)' as any,
+                              fontStyle: 'var(--label-is)' as any
+                            }}>Indirizzo</LabelTag>
+                      <p className="block leading-tight" style={{ 
+                        fontSize: 'var(--value-fs)', 
+                        fontWeight: 'var(--value-fw)' as any,
+                        fontStyle: 'var(--value-is)' as any
+                      }}>{content.address}</p>
                     </div>
                   </div>
                 )}
