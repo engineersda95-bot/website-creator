@@ -18,6 +18,7 @@ import { benefitsDefinition } from '@/components/blocks/visual/Benefits.definiti
 import { howItWorksDefinition } from '@/components/blocks/visual/HowItWorks.definition';
 import { singleImageDefinition } from '@/components/blocks/visual/SingleImage.definition';
 import { pdfDefinition } from '@/components/blocks/visual/PdfBlock.definition';
+import { pricingDefinition } from '@/components/blocks/visual/PricingBlock.definition';
 
 export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   hero: heroDefinition,
@@ -36,6 +37,7 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   'how-it-works': howItWorksDefinition,
   image: singleImageDefinition,
   pdf: pdfDefinition,
+  pricing: pricingDefinition,
   
   // Placeholders for unimplemented/transitioning blocks
   map: { type: 'map', label: 'Mappa', icon: MapPin, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },

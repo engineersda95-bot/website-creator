@@ -19,7 +19,8 @@ export type BlockType =
   'cards' |
   'benefits' |
   'how-it-works' |
-  'pdf';
+  'pdf' |
+  'pricing';
 
 export interface Block {
   id: string;
