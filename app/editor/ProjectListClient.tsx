@@ -15,6 +15,8 @@ import { UserMenu } from '@/components/auth/UserMenu';
 import { useEditorStore } from '@/store/useEditorStore';
 import { getBlocksFromTemplate, TEMPLATES, TEMPLATE_SETTINGS, TEMPLATE_PAGES } from '@/lib/templates';
 import { TemplateWireframe, TemplatePreviewModal } from '@/components/editor/TemplatePreview';
+import { ProjectCard } from '@/components/editor/cards/ProjectCard';
+import { ProjectQuickEditModal } from '@/components/editor/modals/ProjectQuickEditModal';
 
 const TEMPLATE_OPTIONS = [
   { id: 'blank', name: 'Foglio bianco', desc: 'Parti da zero', icon: FileText, color: 'bg-zinc-100 text-zinc-500' },
@@ -422,60 +424,18 @@ export function ProjectListClient({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
             {projects.map((proj) => (
-              <div
+              <ProjectCard
                 key={proj.id}
-                className="group relative bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md hover:border-zinc-300 transition-all"
-              >
-                <Link href={`/editor/${proj.id}`} className="block">
-                  <div className="h-32 bg-gradient-to-br from-zinc-50 to-zinc-100 flex items-center justify-center">
-                    <Globe size={28} className="text-zinc-200" />
-                  </div>
-                  <div className="p-4 pb-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-blue-600 transition-colors">
-                        {proj.name}
-                      </h3>
-                      <div className={cn(
-                        "w-2 h-2 rounded-full",
-                        proj.live_url ? "bg-emerald-500" : "bg-zinc-300"
-                      )} />
-                    </div>
-                    <p className="text-xs text-zinc-400 flex items-center gap-3">
-                      <span className="flex items-center gap-1">
-                        <Globe size={11} />
-                        {proj.subdomain}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock size={11} />
-                        {formatDate(proj.created_at)}
-                      </span>
-                    </p>
-                  </div>
-                </Link>
-                <div className="px-4 py-2.5 border-t border-zinc-100 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setEditingProjectId(proj.id)}
-                      className="p-1.5 text-zinc-400 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
-                      title="Impostazioni attività"
-                    >
-                      <SettingsIcon size={14} />
-                    </button>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      if (!confirm(`Vuoi eliminare "${proj.name}"? Tutti i dati verranno persi.`)) return;
-                      await supabase.from('pages').delete().eq('project_id', proj.id);
-                      await supabase.from('projects').delete().eq('id', proj.id);
-                      setProjects(projects.filter(p => p.id !== proj.id));
-                    }}
-                    className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
-                    title="Elimina sito"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
+                project={proj}
+                formatDate={formatDate}
+                onEdit={(id) => setEditingProjectId(id)}
+                onDelete={async (id, name) => {
+                  if (!confirm(`Vuoi eliminare "${name}"? Tutti i dati verranno persi.`)) return;
+                  await supabase.from('pages').delete().eq('project_id', id);
+                  await supabase.from('projects').delete().eq('id', id);
+                  setProjects(projects.filter(p => p.id !== id));
+                }}
+              />
             ))}
           </div>
         )}
@@ -492,7 +452,7 @@ export function ProjectListClient({
 
       {/* Quick Edit Modal */}
       {editingProjectId && (
-        <QuickEditModal
+        <ProjectQuickEditModal
           projectId={editingProjectId}
           project={projects.find(p => p.id === editingProjectId)}
           onClose={() => setEditingProjectId(null)}
@@ -502,146 +462,6 @@ export function ProjectListClient({
           }}
         />
       )}
-    </div>
-  );
-}
-
-function QuickEditModal({ projectId, project, onClose, onSave }: any) {
-  const [name, setName] = useState(project.name);
-  const [bName, setBName] = useState(project.settings?.businessDetails?.businessName || '');
-  const [bType, setBType] = useState(project.settings?.businessType || 'LocalBusiness');
-  const [email, setEmail] = useState(project.settings?.businessDetails?.email || '');
-  const [phone, setPhone] = useState(project.settings?.businessDetails?.phone || '');
-  const [address, setAddress] = useState(project.settings?.businessDetails?.address || '');
-  const [city, setCity] = useState(project.settings?.businessDetails?.city || '');
-  const [zip, setZip] = useState(project.settings?.businessDetails?.postalCode || '');
-  const [country, setCountry] = useState(project.settings?.businessDetails?.country || 'Italia');
-  const [lang, setLang] = useState(project.settings?.language || 'it');
-  const [cuisine, setCuisine] = useState(project.settings?.businessDetails?.servesCuisine || '');
-  const [isSaving, setIsSaving] = useState(false);
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    const updatedSettings = {
-      ...project.settings,
-      businessType: bType,
-      businessDetails: {
-        ...project.settings.businessDetails,
-        businessName: bName,
-        email,
-        phone,
-        address,
-        city,
-        postalCode: zip,
-        country,
-        priceRange: (project.settings?.businessDetails as any)?.priceRange, // Preserve existing if any
-        servesCuisine: bType === 'Restaurant' ? cuisine : undefined
-      },
-      language: lang,
-      // Update metaTitle only if it follows the template pattern or is empty
-      metaTitle: project.settings.metaTitle === `${project.settings.businessDetails?.businessName || project.name} - ` || !project.settings.metaTitle
-        ? (bName || name)
-        : project.settings.metaTitle
-    };
-
-    const { data, error } = await supabase
-      .from('projects')
-      .update({
-        name,
-        settings: updatedSettings
-      })
-      .eq('id', projectId)
-      .select()
-      .single();
-
-    if (!error && data) {
-      onSave(data);
-    }
-    setIsSaving(false);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200">
-        <div className="px-6 py-4 flex items-center justify-between border-b border-zinc-100">
-          <h2 className="text-lg font-bold text-zinc-900">Impostazioni sito</h2>
-          <button onClick={onClose} className="p-1.5 hover:bg-zinc-100 rounded-md transition-colors text-zinc-400">
-            <X size={16} />
-          </button>
-        </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Nome Progetto</label>
-              <input value={name} onChange={e => setName(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Lingua</label>
-              <select value={lang} onChange={e => setLang(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm">
-                {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Nome Azienda (SEO)</label>
-              <input value={bName} onChange={e => setBName(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Settore</label>
-              <select value={bType} onChange={e => setBType(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm">
-                {BUSINESS_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </div>
-          </div>
-          {bType === 'Restaurant' && (
-            <div className="space-y-1 animation-in slide-in-from-top-1 duration-200">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Tipo di Cucina</label>
-              <input value={cuisine} onChange={e => setCuisine(e.target.value)} placeholder="es: Mediterranea, Pesce" className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm" />
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Via e Numero</label>
-              <input value={address} onChange={e => setAddress(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm" />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Città</label>
-                <input value={city} onChange={e => setCity(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">CAP</label>
-                <input value={zip} onChange={e => setZip(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm" />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Email aziendale</label>
-            <input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="example@business.it" className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Paese</label>
-              <input value={country} onChange={e => setCountry(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Telefono</label>
-              <input value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm" />
-            </div>
-          </div>
-        </div>
-        <div className="px-6 py-4 border-t border-zinc-100 flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-zinc-500">Chiudi</button>
-          <button onClick={handleSave} disabled={isSaving} className="px-5 py-2 text-sm font-semibold bg-zinc-900 text-white rounded-lg active:scale-95 disabled:opacity-50 transition-all">
-            {isSaving ? 'Salvataggio...' : 'Salva modifiche'}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

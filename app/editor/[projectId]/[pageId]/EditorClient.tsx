@@ -15,6 +15,8 @@ import { getProjectDomain } from '@/lib/url-utils';
 import { ToastContainer, toast } from '@/components/shared/Toast';
 import { OnboardingTour } from '@/components/editor/OnboardingTour';
 import { PageSwitcher } from '@/components/editor/PageSwitcher';
+import { EditorHeader } from '@/components/editor/EditorHeader';
+import { useEditorShortcuts } from '@/hooks/useEditorShortcuts';
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
   const googleFontUrl = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap`;
@@ -110,23 +112,8 @@ export function EditorClient({
     }
   };
 
-  const handleSave = async () => {
-    await saveCurrentPage();
-    toast('Modifiche salvate', 'success', 2000);
-  };
-
-  // Ctrl+S / Cmd+S
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        if (hasUnsavedChanges) handleSave();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [hasUnsavedChanges]);
+  // Use centralized keyboard shortcuts
+  useEditorShortcuts();
 
   if (!isInitialized) {
     return (
@@ -151,102 +138,24 @@ export function EditorClient({
       <BlockSidebar />
 
       <div className="flex-1 min-w-0 z-10 relative flex flex-col h-full">
-        {/* Header */}
-        <header className="h-14 bg-white border-b border-zinc-200/80 flex items-center justify-between px-5 shrink-0 z-[9999] relative">
-          {/* Left: breadcrumb + status */}
-          <div className="flex items-center gap-2">
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-1 text-sm">
-              <Link 
-                href="/editor" 
-                onClick={(e) => {
-                  if (hasUnsavedChanges && !confirm('Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?')) {
-                    e.preventDefault();
-                  }
-                }}
-                className="text-zinc-400 hover:text-zinc-600 transition-colors font-medium text-[13px]"
-              >
-                I miei siti
-              </Link>
-              <ChevronRight size={12} className="text-zinc-300" />
-              <Link
-                href={`/editor/${initialProject?.id}`}
-                onClick={(e) => {
-                  if (hasUnsavedChanges && !confirm('Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?')) {
-                    e.preventDefault();
-                  }
-                }}
-                className="text-zinc-400 hover:text-zinc-600 transition-colors font-medium max-w-[120px] truncate text-[13px]"
-              >
-                {targetProject?.name || 'Sito'}
-              </Link>
-              <ChevronRight size={12} className="text-zinc-300" />
-              <PageSwitcher
-                currentPage={currentPage}
-                pages={targetPages}
-                projectId={initialProject.id}
-                initialPageId={initialPageId}
-                fontFamily={`'${font}', sans-serif`}
-              />
-            </nav>
-
-            <div className={cn(
-              "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ml-2",
-              siteStatus === 'pubblicato'
-                ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                : siteStatus === 'bozza'
-                  ? "bg-amber-50 text-amber-700 border border-amber-200/60"
-                  : "bg-zinc-100 text-zinc-500 border border-zinc-200/60"
-            )}>
-              <div className={cn("w-1.5 h-1.5 rounded-full",
-                siteStatus === 'pubblicato' ? "bg-emerald-500" :
-                  siteStatus === 'bozza' ? "bg-amber-500" : "bg-zinc-400"
-              )} />
-              {siteStatus === 'pubblicato' ? 'Online' : siteStatus === 'bozza' ? 'Bozza' : 'Bozza'}
-            </div>
-
-            {project?.live_url && (
-              <a
-                href={getProjectDomain(project)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 hover:bg-blue-50 transition-colors"
-              >
-                <ExternalLink size={12} />
-                <span className="hidden xl:inline">Vedi sito</span>
-              </a>
-            )}
-          </div>
-
-          {/* Right: actions */}
-          <div className="flex items-center gap-2" data-tour="publish-btn">
-            <button
-              onClick={handleSave}
-              disabled={!hasUnsavedChanges && !isLoading}
-              className={cn(
-                "flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all text-sm font-medium",
-                hasUnsavedChanges
-                  ? "bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-200"
-                  : "text-zinc-400 hover:text-zinc-500"
-              )}
-              title={hasUnsavedChanges ? "Salva Modifiche (Ctrl+S)" : "Tutto Salvato"}
-            >
-              {hasUnsavedChanges ? <Save size={14} /> : <Check size={14} />}
-              <span className="hidden sm:inline">{hasUnsavedChanges ? 'Salva' : 'Salvato'}</span>
-            </button>
-
-            <UserMenu />
-
-            <button
-              onClick={handlePublish}
-              disabled={isPublishing || isLoading}
-              className="flex items-center gap-2 px-5 py-1.5 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-            >
-              {isPublishing ? <Loader2 className="animate-spin" size={14} /> : <Rocket size={14} />}
-              {isPublishing ? 'Pubblicando...' : 'Pubblica'}
-            </button>
-          </div>
-        </header>
+        <EditorHeader
+          project={project}
+          targetProject={targetProject}
+          currentPage={currentPage}
+          targetPages={targetPages}
+          initialProject={initialProject}
+          initialPageId={initialPageId}
+          hasUnsavedChanges={hasUnsavedChanges}
+          siteStatus={siteStatus}
+          isPublishing={isPublishing}
+          isLoading={isLoading}
+          font={font}
+          onSave={async () => {
+            await saveCurrentPage();
+            toast('Modifiche salvate', 'success', 2000);
+          }}
+          onPublish={handlePublish}
+        />
 
         {showLoader ? (
           <div className="flex-1 flex flex-col items-center justify-center bg-zinc-50 gap-3">

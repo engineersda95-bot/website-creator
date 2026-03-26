@@ -3,14 +3,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
 import { getBlockComponent } from './BlockRegistry';
-import {
-  Trash2, ChevronUp, ChevronDown, Monitor, Tablet, Smartphone,
-  Moon, Sun, Plus, Type, Layout, Menu, Square, Copy,
-  Clipboard as ClipboardIcon, Layers, Settings, RotateCcw, RotateCw, Minus,
-  HelpCircle, ZoomIn, ZoomOut, Maximize, Minimize
-} from 'lucide-react';
+import { Plus, Type, Layout, Menu, Square, Trash2, Clipboard as ClipboardIcon } from 'lucide-react';
 import { cn, toPx } from '@/lib/utils';
 import { getBlockLibrary } from '@/lib/block-definitions';
+import { CanvasToolbar } from '@/components/editor/CanvasToolbar';
+import { EditorBlockWrapper } from '@/components/editor/EditorBlockWrapper';
 import { HelpCenter } from '../editor/HelpCenter';
 
 import { getBlockCSSVariables } from '@/lib/responsive-utils';
@@ -23,130 +20,6 @@ const FontLoader = React.memo(({ font }: { font: string }) => {
 });
 FontLoader.displayName = 'FontLoader';
 
-const MemoizedBlock = React.memo(({
-  block,
-  project,
-  projectPages,
-  viewport,
-  isSelected,
-  index,
-  totalBlocks,
-  onSelect,
-  onCopy,
-  onDuplicate,
-  onMoveUp,
-  onMoveDown,
-  onRemove,
-  imageMemoryCache
-}: any) => {
-  const Component = getBlockComponent(block.type);
-  const vars = getBlockCSSVariables(block, project, viewport || 'desktop');
-  const [confirmDelete, setConfirmDelete] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!confirmDelete) return;
-    const timer = setTimeout(() => setConfirmDelete(false), 2500);
-    return () => clearTimeout(timer);
-  }, [confirmDelete]);
-
-  return (
-    <div
-      onClick={(e) => {
-        e.stopPropagation();
-        onSelect(block.id);
-      }}
-      className={cn(
-        "group relative transition-all cursor-pointer block-wrapper",
-        block.type === 'navigation' ? "z-[500]" : "z-0",
-        isSelected ? (block.type === 'navigation' ? "z-[501]" : "z-[40]") : "",
-      )}
-      style={{
-        ...vars,
-        borderRadius: 'var(--block-radius)',
-        border: 'var(--block-border-w) solid var(--block-border-c)',
-        marginTop: 'var(--block-mt)',
-        marginBottom: 'var(--block-mb)',
-        marginLeft: 'var(--block-ml)',
-        marginRight: 'var(--block-mr)',
-      } as any}
-    >
-      {isSelected && (
-        <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none z-20" />
-      )}
-
-      <Component
-        content={block.content}
-        block={block}
-        isEditing={true}
-        isStatic={false}
-        project={project}
-        allPages={projectPages}
-        viewport={viewport}
-        imageMemoryCache={imageMemoryCache}
-      />
-
-      {/* Block Controls */}
-      <div className={cn(
-        "absolute flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100 bg-zinc-900/90 backdrop-blur-md shadow-2xl rounded-2xl p-2 border border-white/20 z-[10001] transform",
-        index === 0 ? "left-6 bottom-6 -translate-x-4 group-hover:translate-x-0" : "right-6 top-6 translate-x-4 group-hover:translate-x-0"
-      )}>
-        <div className="flex items-center gap-1 pr-2 mr-2 border-r border-white/10 text-[10px] font-black text-white/40 uppercase tracking-widest pl-2">
-          {block.type}
-        </div>
-        <button
-          onClick={(e) => { e.stopPropagation(); onCopy(block.id); }}
-          className="p-2 hover:bg-white/20 text-white rounded-xl transition-colors"
-          title="Copia (Ctrl+C)"
-        >
-          <Copy size={16} />
-        </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); onDuplicate(block.id); }}
-          className="p-2 hover:bg-white/20 text-white rounded-xl transition-colors"
-          title="Duplica (Ctrl+D)"
-        >
-          <Layers size={16} />
-        </button>
-        <div className="w-px h-4 bg-white/10 mx-1" />
-        <button
-          onClick={(e) => { e.stopPropagation(); onMoveUp(block.id); }}
-          className="p-2 hover:bg-white/20 text-white rounded-xl transition-colors disabled:opacity-20"
-          disabled={index === 0}
-          title="Sposta Su"
-        >
-          <ChevronUp size={18} />
-        </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); onMoveDown(block.id); }}
-          className="p-2 hover:bg-white/20 text-white rounded-xl transition-colors disabled:opacity-20"
-          disabled={index === totalBlocks - 1}
-          title="Sposta Giu"
-        >
-          <ChevronDown size={18} />
-        </button>
-        {confirmDelete ? (
-          <button
-            onClick={(e) => { e.stopPropagation(); onRemove(block.id); setConfirmDelete(false); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white rounded-xl transition-all ml-1 text-[11px] font-semibold animate-in fade-in zoom-in-95 duration-150"
-            title="Conferma eliminazione"
-          >
-            <Trash2 size={14} />
-            Elimina?
-          </button>
-        ) : (
-          <button
-            onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
-            className="p-2 hover:bg-red-500 text-white rounded-xl transition-colors ml-1"
-            title="Elimina"
-          >
-            <Trash2 size={18} />
-          </button>
-        )}
-      </div>
-    </div>
-  );
-});
-MemoizedBlock.displayName = 'MemoizedBlock';
 
 export const EditorCanvas: React.FC = () => {
   const {
@@ -179,29 +52,6 @@ export const EditorCanvas: React.FC = () => {
   const historyIndex = currentHist?.index ?? -1;
   const historyLength = currentHist?.steps.length ?? 0;
 
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isInput = ['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName) || (e.target as HTMLElement).isContentEditable;
-      if (isInput) return;
-
-      if (e.ctrlKey || e.metaKey) {
-        const key = e.key.toLowerCase();
-        
-        if (key === 'z') {
-           e.preventDefault();
-           if (e.shiftKey) redo();
-           else undo();
-        }
-        else if (key === 'y') { e.preventDefault(); redo(); }
-        else if (key === 'c' && selectedBlockId) { e.preventDefault(); copyBlock(selectedBlockId); }
-        else if (key === 'v') { e.preventDefault(); pasteBlock(); }
-        else if (key === 'd' && selectedBlockId) { e.preventDefault(); duplicateBlock(selectedBlockId); }
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown, true);
-    return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [selectedBlockId, copyBlock, pasteBlock, duplicateBlock, undo, redo]);
 
   const [hasCopiedBlock, setHasCopiedBlock] = React.useState(false);
 
@@ -255,137 +105,28 @@ export const EditorCanvas: React.FC = () => {
       <FontLoader font={font} />
 
       {/* TOOLBAR TOP */}
-      <div className="h-11 bg-white border-b border-zinc-200/80 flex items-center justify-between px-4 shrink-0 z-20">
-        {/* Left: viewport + undo/redo */}
-        <div className="flex items-center gap-3">
-          {/* Segmented viewport control */}
-          <div data-tour="viewport-switcher" className="flex items-center bg-zinc-100 rounded-lg p-0.5">
-            {([
-              { key: 'desktop' as const, icon: Monitor, label: 'Desktop' },
-              { key: 'tablet' as const, icon: Tablet, label: 'Tablet' },
-              { key: 'mobile' as const, icon: Smartphone, label: 'Mobile' },
-            ]).map(({ key, icon: Icon, label }) => (
-              <button
-                key={key}
-                onClick={() => setViewport(key)}
-                className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all",
-                  viewport === key
-                    ? "bg-white text-zinc-900 shadow-sm"
-                    : "text-zinc-400 hover:text-zinc-600"
-                )}
-                title={label}
-              >
-                <Icon size={14} />
-                <span className="hidden lg:inline text-[11px]">{label}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="h-5 w-px bg-zinc-200" />
-
-          {/* Undo/Redo */}
-          <div className="flex items-center gap-0.5" data-tour="undo-redo">
-            <button
-              onClick={() => undo()}
-              disabled={historyIndex <= 0}
-              className={cn("p-1.5 rounded-md transition-all", historyIndex > 0 ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" : "text-zinc-200 cursor-not-allowed")}
-              title="Annulla (Ctrl+Z)"
-            >
-              <RotateCcw size={15} />
-            </button>
-            <button
-              onClick={() => redo()}
-              disabled={historyIndex >= historyLength - 1}
-              className={cn("p-1.5 rounded-md transition-all", historyIndex < historyLength - 1 ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" : "text-zinc-200 cursor-not-allowed")}
-              title="Ripristina (Ctrl+Y)"
-            >
-              <RotateCw size={15} />
-            </button>
-          </div>
-
-          <div className="h-5 w-px bg-zinc-200" />
-
-          {/* Zoom */}
-          <div className="flex items-center gap-0.5 bg-zinc-100 rounded-lg p-0.5" data-tour="zoom-controls">
-            <button
-              onClick={zoomOut}
-              disabled={zoom <= ZOOM_STEPS[0]}
-              className={cn("p-1.5 rounded-md transition-all", zoom > ZOOM_STEPS[0] ? "text-zinc-600 hover:bg-white" : "text-zinc-200 cursor-not-allowed")}
-              title="Zoom out"
-            >
-              <ZoomOut size={13} />
-            </button>
-            <button
-              onClick={() => setZoom(100)}
-              className="px-1.5 py-0.5 rounded text-[11px] font-bold text-zinc-900 hover:bg-white transition-all min-w-[3rem] text-center tabular-nums"
-              title="Reset zoom"
-            >
-              {zoom}%
-            </button>
-            <button
-              onClick={zoomIn}
-              disabled={zoom >= ZOOM_STEPS[ZOOM_STEPS.length - 1]}
-              className={cn("p-1.5 rounded-md transition-all", zoom < ZOOM_STEPS[ZOOM_STEPS.length - 1] ? "text-zinc-600 hover:bg-white" : "text-zinc-200 cursor-not-allowed")}
-              title="Zoom in"
-            >
-              <ZoomIn size={13} />
-            </button>
-          </div>
-        </div>
-
-        {/* Right: tools */}
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => {
-              const hide = !leftSidebarCollapsed || !rightSidebarCollapsed;
-              setLeftSidebarCollapsed(hide);
-              setRightSidebarCollapsed(hide);
-            }}
-            className={cn(
-              "p-1.5 rounded-md transition-all",
-              (leftSidebarCollapsed && rightSidebarCollapsed) ? "text-blue-600 bg-blue-50" : "text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100"
-            )}
-            title={(leftSidebarCollapsed && rightSidebarCollapsed) ? "Esci da Focus Mode" : "Focus Mode (Nascondi Barre)"}
-          >
-            {(leftSidebarCollapsed && rightSidebarCollapsed) ? <Minimize size={16} /> : <Maximize size={16} />}
-          </button>
-
-          <button
-            onClick={() => setIsHelpOpen(true)}
-            className="p-1.5 rounded-md text-zinc-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
-            title="Guida / Aiuto"
-            data-tour="help-btn"
-          >
-            <HelpCircle size={16} />
-          </button>
-
-          {selectedBlockId !== null && (
-            <button
-              onClick={() => selectBlock(null)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium transition-all text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
-              title="Torna agli stili globali"
-            >
-              <Settings size={14} />
-              <span className="hidden lg:inline">Stili globali</span>
-            </button>
-          )}
-
-          <div className="h-5 w-px bg-zinc-200" />
-
-          <button
-            onClick={() => updateProjectSettings({ appearance: isDark ? 'light' : 'dark' })}
-            className={cn(
-              "p-1.5 rounded-md transition-all",
-              isDark ? "text-amber-500 hover:bg-amber-50" : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
-            )}
-            title={isDark ? 'Passa a tema chiaro' : 'Passa a tema scuro'}
-            data-tour="theme-toggle"
-          >
-            {isDark ? <Moon size={16} /> : <Sun size={16} />}
-          </button>
-        </div>
-      </div>
+      <CanvasToolbar
+        viewport={viewport}
+        setViewport={setViewport}
+        undo={undo}
+        redo={redo}
+        historyIndex={historyIndex}
+        historyLength={historyLength}
+        zoom={zoom}
+        setZoom={setZoom}
+        zoomIn={zoomIn}
+        zoomOut={zoomOut}
+        ZOOM_STEPS={ZOOM_STEPS}
+        leftSidebarCollapsed={leftSidebarCollapsed}
+        rightSidebarCollapsed={rightSidebarCollapsed}
+        setLeftSidebarCollapsed={setLeftSidebarCollapsed}
+        setRightSidebarCollapsed={setRightSidebarCollapsed}
+        setIsHelpOpen={setIsHelpOpen}
+        selectedBlockId={selectedBlockId}
+        selectBlock={selectBlock}
+        isDark={isDark}
+        updateProjectSettings={updateProjectSettings}
+      />
 
       <div 
         ref={containerRef}
@@ -506,22 +247,22 @@ export const EditorCanvas: React.FC = () => {
 
               {currentPage.blocks.map((block, index) => (
                 <React.Fragment key={block.id}>
-                  <MemoizedBlock
-                    block={block}
-                    project={project}
-                    projectPages={projectPages}
-                    viewport={viewport}
-                    isSelected={selectedBlockId === block.id}
-                    index={index}
-                    totalBlocks={currentPage.blocks.length}
-                    onSelect={selectBlock}
-                    onCopy={copyBlock}
-                    onDuplicate={duplicateBlock}
-                    onMoveUp={moveBlockUp}
-                    onMoveDown={moveBlockDown}
-                    onRemove={removeBlock}
-                    imageMemoryCache={imageMemoryCache}
-                  />
+                      <EditorBlockWrapper
+                        block={block}
+                        project={project}
+                        projectPages={projectPages}
+                        viewport={viewport}
+                        isSelected={selectedBlockId === block.id}
+                        index={index}
+                        totalBlocks={currentPage.blocks.length}
+                        onSelect={selectBlock}
+                        onCopy={copyBlock}
+                        onDuplicate={duplicateBlock}
+                        onMoveUp={moveBlockUp}
+                        onMoveDown={moveBlockDown}
+                        onRemove={removeBlock}
+                        imageMemoryCache={imageMemoryCache}
+                      />
 
                   {/* Insertion Points */}
                   <div
