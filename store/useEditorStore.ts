@@ -36,7 +36,7 @@ interface EditorState {
   deletePage: (pageId: string) => Promise<void>;
   saveCurrentPage: () => Promise<void>;
   saveProject: () => Promise<void>;
-  updatePageSEO: (seo: { title?: string; description?: string; image?: string }) => Promise<void>;
+  updatePageSEO: (seo: { title?: string; description?: string; image?: string; indexable?: boolean }) => Promise<void>;
   updateProjectSettings: (settings: Partial<ProjectSettings> & { name?: string }) => Promise<void>;
 
   // Auth Actions

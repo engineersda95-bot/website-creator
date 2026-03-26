@@ -96,6 +96,26 @@ export const PageManager: React.FC = () => {
               <div className="mx-2 mt-1 p-3 bg-zinc-50 border border-zinc-200 rounded-lg space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div className="text-[10px] font-bold text-zinc-400 uppercase">SEO PAGINA</div>
                 <div className="space-y-3">
+                  {/* Indexable Toggle */}
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-zinc-200">
+                    <div className="space-y-0.5">
+                      <label className="text-[10px] font-bold text-zinc-900 block uppercase tracking-tighter">Indicizzazione</label>
+                      <p className="text-[9px] text-zinc-400 font-medium leading-tight">Visibile su Google</p>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); updatePageSEO({ indexable: currentPage?.seo?.indexable === false ? true : false }); }}
+                      className={cn(
+                        "w-8 h-4 rounded-full transition-all relative flex items-center",
+                        currentPage?.seo?.indexable !== false ? "bg-emerald-500" : "bg-zinc-200"
+                      )}
+                    >
+                      <div className={cn(
+                        "absolute w-3 h-3 bg-white rounded-full shadow-sm transition-all",
+                        currentPage?.seo?.indexable !== false ? "right-0.5" : "left-0.5"
+                      )} />
+                    </button>
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <label className="text-[10px] font-medium text-zinc-500 block uppercase">Meta Title</label>
                     <span className={cn(

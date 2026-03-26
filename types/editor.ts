@@ -42,6 +42,7 @@ export interface Page {
     title?: string;
     description?: string;
     image?: string;
+    indexable?: boolean;
   };
   updated_at: string;
 }
@@ -54,6 +55,7 @@ export interface ProjectSettings {
   metaTitle?: string;
   metaDescription?: string;
   metaImage?: string;
+  logo?: string;
   floatingCTA?: {
     enabled: boolean;
     label: string;
@@ -80,6 +82,19 @@ export interface ProjectSettings {
   buttonAnimation?: 'none' | 'move-up' | 'scale';
   customScriptsHead?: string;
   customScriptsBody?: string;
+  language?: string; // Global site language (e.g. 'it', 'en')
+  businessType?: string; // Schema.org type (e.g. 'LocalBusiness', 'Restaurant')
+  businessDetails?: {
+    address?: string;
+    city?: string;
+    postalCode?: string;
+    country?: string;
+    phone?: string;
+    email?: string;
+    businessName?: string;
+    priceRange?: string; // e.g. '€', '€€', '€€€', '€€€€'
+    servesCuisine?: string; // e.g. 'Italiana, Pizza'
+  };
   responsive?: {
     mobile?: Partial<ProjectSettings>;
     tablet?: Partial<ProjectSettings>;

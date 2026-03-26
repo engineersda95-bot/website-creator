@@ -14,10 +14,13 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
   const sColor = project?.settings?.secondaryColor || '#10b981';
   const floating = project?.settings?.floatingCTA;
 
+  const bDetails = project?.settings?.businessDetails || {};
+  const bType = project?.settings?.businessType || 'LocalBusiness';
+
   const baseUrl = getProjectDomain(project);
   return `
 <!DOCTYPE html>
-<html lang="it" class="scroll-smooth">
+<html lang="${project?.settings?.language || 'it'}" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,20 +28,26 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     
     <title>${page.seo?.title || project?.settings?.metaTitle || page.title}</title>
     <meta name="description" content="${page.seo?.description || project?.settings?.metaDescription || ''}">
+    <meta name="author" content="${bDetails?.businessName || project?.name || 'Siti Vetrina'}">
     
+    <!-- Robots -->
+    <meta name="robots" content="${page.seo?.indexable === false ? 'noindex, nofollow' : 'index, follow'}">
+    <meta name="googlebot" content="${page.seo?.indexable === false ? 'noindex, nofollow' : 'index, follow'}">
+    <meta name="bingbot" content="${page.seo?.indexable === false ? 'noindex, nofollow' : 'index, follow'}">
+
     <!-- Open Graph -->
     <meta property="og:site_name" content="${project?.settings?.metaTitle || 'Sito Vetrina'}">
     <meta property="og:title" content="${page.seo?.title || project?.settings?.metaTitle || page.title}">
     <meta property="og:description" content="${page.seo?.description || project?.settings?.metaDescription || ''}">
     <meta property="og:url" content="${baseUrl}${page.slug === 'home' ? '' : '/' + page.slug}">
     <meta property="og:type" content="website">
-    <meta property="og:locale" content="it_IT">
+    <meta property="og:locale" content="${(project?.settings?.language === 'en' ? 'en_US' : project?.settings?.language === 'it' ? 'it_IT' : 'it_IT')}">
     ${(() => {
       const ogImageUrl = resolveImageUrl(page.seo?.image || project?.settings?.metaImage, project || null, {}, true);
       if (!ogImageUrl) return '';
       // Cache buster to force social crawlers to refresh
       const v = project?.last_published_at ? `?v=${new Date(project.last_published_at).getTime()}` : '';
-      const fullOgUrl = `${baseUrl}${ogImageUrl}${v}`;
+      const fullOgUrl = ogImageUrl.startsWith('http') ? ogImageUrl : `${baseUrl}${ogImageUrl}${v}`;
       const isPng = fullOgUrl.toLowerCase().includes('.png');
       const isJpg = fullOgUrl.toLowerCase().includes('.jpg') || fullOgUrl.toLowerCase().includes('.jpeg');
       const contentType = isPng ? 'image/png' : isJpg ? 'image/jpeg' : 'image/png';
@@ -60,6 +69,35 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    ${(() => {
+      if (!bDetails?.address && !bDetails?.phone && !bDetails?.businessName) return '';
+      
+      return `
+    <script type="application/ld+json">
+    ${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": bType,
+      "name": bDetails?.businessName || project?.name || "Sito Vetrina",
+      "url": baseUrl,
+      ...(bDetails.address || bDetails.city || bDetails.postalCode || bDetails.country ? {
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": bDetails.address || "",
+          "addressLocality": bDetails.city || "",
+          "postalCode": bDetails.postalCode || "",
+          "addressCountry": bDetails.country || ""
+        }
+      } : {}),
+      ...(bDetails.phone ? { "telephone": bDetails.phone } : {}),
+      ...(bDetails.email ? { "email": bDetails.email } : {}),
+      ...(project?.settings?.logo ? { "image": resolveImageUrl(project?.settings?.logo, project || null, {}, true) || "" } : {}),
+      ...(bType === 'Restaurant' && bDetails.servesCuisine ? { "servesCuisine": bDetails.servesCuisine } : {})
+    }, null, 2)}
+    </script>
+      `;
+    })()}
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -250,16 +288,18 @@ export function generateSitemap(pages: Page[], project: Project): string {
   const baseUrl = getProjectDomain(project);
   const now = new Date().toISOString().split('T')[0];
 
-  const urls = pages.map(page => {
-    const url = page.slug === 'home' ? baseUrl : `${baseUrl}/${page.slug}`;
-    return `
+  const urls = pages
+    .filter(page => page?.seo?.indexable !== false)
+    .map(page => {
+      const url = page.slug === 'home' ? baseUrl : `${baseUrl}/${page.slug}`;
+      return `
   <url>
     <loc>${url}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>${page.slug === 'home' ? '1.0' : '0.8'}</priority>
   </url>`;
-  }).join('');
+    }).join('');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -267,11 +307,17 @@ ${urls}
 </urlset>`.trim();
 }
 
-export function generateRobotsTxt(project: Project): string {
+export function generateRobotsTxt(project: Project, pages: Page[] = []): string {
   const baseUrl = getProjectDomain(project);
+  const disallows = pages
+    .filter(p => p?.seo?.indexable === false)
+    .map(p => `Disallow: /${p.slug === 'home' ? '' : p.slug}`)
+    .join('\n');
+
   return `
 User-agent: *
 Allow: /
+${disallows}
 
 Sitemap: ${baseUrl}/sitemap.xml
 `.trim();

@@ -86,7 +86,7 @@ export async function deployToCloudflare(projectId: string) {
 
     // 3.1. Generate Sitemap & Robots.txt
     const sitemapContent = generateSitemap(pages as any as Page[], project);
-    const robotsContent = generateRobotsTxt(project);
+    const robotsContent = generateRobotsTxt(project, pages as any as Page[]);
     fs.writeFileSync(path.join(tempDir, 'sitemap.xml'), sitemapContent);
     fs.writeFileSync(path.join(tempDir, 'robots.txt'), robotsContent);
     console.log('Generated sitemap.xml and robots.txt');
