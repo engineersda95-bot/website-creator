@@ -6,6 +6,7 @@ import { SectionHeader } from '../ui/SectionHeader';
 import { SimpleSlider } from '../ui/SimpleSlider';
 import { ProjectSettings } from '@/types/editor';
 import { useEditorStore } from '@/store/useEditorStore';
+import { FontManager } from '../ui/FontManager';
 
 interface TypographySectionProps {
    project: any;
@@ -44,23 +45,10 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
          
          <div className="space-y-8">
             <div className="space-y-4">
-               <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Fonte Principale</label>
-               <div className="p-1 bg-zinc-50 rounded-2xl border border-zinc-100 font-bold shadow-sm">
-                  <select
-                     className="w-full p-3 bg-transparent text-sm font-black focus:ring-0 outline-none cursor-pointer"
-                     value={project?.settings?.fontFamily || 'Outfit'}
-                     onChange={(e) => updateProjectSettings({ fontFamily: e.target.value })}
-                  >
-                     <option value="Outfit">Outfit</option>
-                     <option value="Inter">Inter</option>
-                     <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
-                     <option value="Bebas Neue">Bebas Neue</option>
-                     <option value="Playfair Display">Playfair Display</option>
-                     <option value="Unbounded">Unbounded</option>
-                     <option value="DM Sans">DM Sans</option>
-                     <option value="Montserrat">Montserrat</option>
-                  </select>
-               </div>
+               <FontManager 
+                  value={project?.settings?.fontFamily || 'Outfit'} 
+                  onChange={(val: string) => updateProjectSettings({ fontFamily: val })} 
+               />
             </div>
 
             <div className="space-y-6 pt-6 border-t border-zinc-50">
