@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Bold, Italic, CaseSensitive } from 'lucide-react';
+import { Bold, Italic, CaseSensitive, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TypographyFieldsProps } from '@/types/sidebar';
 import { useEditorStore } from '@/store/useEditorStore';
@@ -76,9 +76,20 @@ export function TypographyFields({
                    <option value="span">SPAN</option>
                  </select>
                )}
-               <span className={cn("font-bold", currentSize === null ? "text-zinc-300" : "text-zinc-900")}>
-                 {displaySize}px {currentSize === null ? '(Auto)' : ''}
-               </span>
+               <div className="flex items-center gap-2">
+                 <span className={cn("font-bold", currentSize === null ? "text-zinc-300" : "text-zinc-900")}>
+                   {displaySize}px {currentSize === null ? '(Auto)' : ''}
+                 </span>
+                 {currentSize !== null && (
+                   <button 
+                     onClick={() => updateStyle({ [sizeKey]: undefined })}
+                     className="p-1 hover:bg-zinc-100 rounded text-zinc-400 hover:text-zinc-900 transition-all"
+                     title="Ripristina dimensione automatica"
+                   >
+                     <RotateCcw size={10} />
+                   </button>
+                 )}
+               </div>
              </div>
           </label>
          <div className="flex gap-2">
@@ -116,6 +127,6 @@ export function TypographyFields({
             </div>
          </div>
       </div>
-   );
+    );
 }
 

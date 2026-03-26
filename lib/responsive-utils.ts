@@ -1,17 +1,19 @@
 import { Block, Project } from '@/types/editor';
 import { getBlockDefinition } from './block-definitions';
 import { getBaseStyleVars } from './base-style-mapper';
+import { getBlockStyles } from './hooks/useBlockStyles';
 
 export function getBlockCSSVariables(block: Block, project?: Project, viewport: 'desktop' | 'tablet' | 'mobile' = 'desktop') {
   try {
     const definition = getBlockDefinition(block.type);
+    const { style: mergedStyle } = getBlockStyles(block, project, viewport);
     
     if (definition && definition.styleMapper) {
-      return definition.styleMapper(block.style, block, project, viewport);
+      return definition.styleMapper(mergedStyle, block, project, viewport);
     }
     
     // Fallback to base vars if no specific mapper exists (or for placeholder blocks)
-    return getBaseStyleVars(block.style, block, project, viewport).vars;
+    return getBaseStyleVars(mergedStyle, block, project, viewport).vars;
   } catch (e) {
     console.error('Error in getBlockCSSVariables:', e);
     return {};
