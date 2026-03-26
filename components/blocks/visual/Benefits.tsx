@@ -132,6 +132,7 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
       )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
+        backgroundAlt={(content as any).backgroundAlt}
         style={style} 
         project={project} 
         isStatic={isStatic} 

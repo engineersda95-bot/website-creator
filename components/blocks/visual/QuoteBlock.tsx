@@ -152,7 +152,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
               avatarShape === 'circle' ? "rounded-full" : "rounded-2xl"
             )}
           >
-            <img src={resolveImageUrl(item.avatar, project)} alt={item.name} className="w-full h-full object-cover" />
+            <img src={resolveImageUrl(item.avatar, project)} alt={item.avatarAlt || item.name} className="w-full h-full object-cover" />
           </div>
         )}
         <div className={cn("min-w-0 flex-1 ml-0", align === 'right' && "text-right")}>
@@ -193,6 +193,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
       )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
+        backgroundAlt={content.backgroundAlt}
         style={style} 
         project={project} 
         isStatic={isStatic} 

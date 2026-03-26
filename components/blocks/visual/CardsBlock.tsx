@@ -115,7 +115,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
               project={project}
               isStatic={isStatic}
               imageMemoryCache={imageMemoryCache}
-              alt={item.title || ''}
+              alt={item.alt || item.title || ''}
               className={cn(
                 "w-full h-full object-cover transition-transform duration-1000 ease-out",
                 hasImageHover && "group-hover/card:scale-110"
@@ -188,10 +188,11 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
       )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
+        backgroundAlt={content.backgroundAlt}
         style={style} 
         project={project} 
-        isStatic={isStatic} 
-        imageMemoryCache={imageMemoryCache}
+        imageMemoryCache={imageMemoryCache} 
+        isStatic={isStatic}
       />
       <div className="relative z-10">
         {content.title && (() => {

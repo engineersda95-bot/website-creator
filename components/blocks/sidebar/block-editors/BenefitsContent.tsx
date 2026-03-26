@@ -25,37 +25,41 @@ export const BenefitsContent: React.FC<BenefitsContentProps> = ({
   const isCard = boxStyle === 'card';
 
   const updateItem = (index: number, updates: any) => {
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], ...updates };
-    updateContent({ items: newItems });
+    updateContent((prev: any) => {
+      const currentItems = [...(prev.items || [])];
+      currentItems[index] = { ...currentItems[index], ...updates };
+      return { items: currentItems };
+    });
   };
 
   const addItem = () => {
-    updateContent({
+    updateContent((prev: any) => ({
       items: [
-        ...items,
+        ...(prev.items || []),
         {
           icon: 'Star',
           title: 'Vantaggio',
           description: 'Spiegazione del beneficio per l\'utente.'
         }
       ]
-    });
+    }));
   };
 
   const removeItem = (index: number) => {
-    updateContent({
-      items: items.filter((_: any, i: number) => i !== index)
-    });
+    updateContent((prev: any) => ({
+      items: (prev.items || []).filter((_: any, i: number) => i !== index)
+    }));
   };
 
   const moveItem = (index: number, direction: 'up' | 'down') => {
-    if (direction === 'up' && index === 0) return;
-    if (direction === 'down' && index === items.length - 1) return;
-    const newItems = [...items];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
-    updateContent({ items: newItems });
+    updateContent((prev: any) => {
+      const currentItems = [...(prev.items || [])];
+      if (direction === 'up' && index === 0) return prev;
+      if (direction === 'down' && index === currentItems.length - 1) return prev;
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      [currentItems[index], currentItems[targetIndex]] = [currentItems[targetIndex], currentItems[index]];
+      return { items: currentItems };
+    });
   };
 
   return (

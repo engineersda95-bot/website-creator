@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { ImageIcon, Upload, X } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ImageUploadProps {
@@ -11,6 +11,12 @@ interface ImageUploadProps {
   hidePreview?: boolean;
   onImageLoad?: (dimensions: { width: number; height: number }) => void;
   showSEOStatus?: boolean;
+  /** Current alt text value – renders an inline alt-text field when provided */
+  altValue?: string;
+  /** Called when the user edits the alt text */
+  onAltChange?: (alt: string) => void;
+  /** Called once right after the user picks a file, with the cleaned filename */
+  onFilenameSelect?: (filename: string) => void;
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({ 
@@ -19,7 +25,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   label = "Immagine", 
   hidePreview = false,
   onImageLoad,
-  showSEOStatus = false
+  showSEOStatus = false,
+  altValue,
+  onAltChange,
+  onFilenameSelect,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dimensions, setDimensions] = React.useState<{width: number, height: number} | null>(null);
@@ -45,6 +54,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     if (file.size > 10 * 1024 * 1024) {
       alert("L'immagine è troppo grande (max 10MB)");
       return;
+    }
+
+    // Auto-fill alt text with filename (no extension) if field is empty
+    if (onFilenameSelect) {
+      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      onFilenameSelect(nameWithoutExt);
     }
 
     const reader = new FileReader();
@@ -94,7 +109,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             <Upload size={20} />
           </div>
           <span className="text-xs font-medium">Carica Immagine</span>
-          <span className="text-[10px] opacity-60 mt-1">PNG, JPG fino a 2MB</span>
+          <span className="text-[10px] opacity-60 mt-1">PNG, JPG fino a 10MB</span>
         </button>
       ) : (
         <button 
@@ -112,6 +127,22 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         accept="image/*" 
         className="hidden" 
       />
+
+      {/* Inline Alt Text field */}
+      {onAltChange !== undefined && (
+        <div className="space-y-1 pt-1">
+          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block px-1">
+            Testo Alternativo (Alt / SEO)
+          </label>
+          <input
+            type="text"
+            value={altValue ?? ''}
+            onChange={(e) => onAltChange(e.target.value)}
+            placeholder="Descrizione immagine per accessibilità e SEO..."
+            className="w-full p-2.5 border border-zinc-200 rounded-xl text-[12px] bg-zinc-50 focus:bg-white focus:border-zinc-400 transition-all outline-none"
+          />
+        </div>
+      )}
 
       {showSEOStatus && seoStatus && dimensions && (
         <div className="mt-2 p-3 bg-zinc-50 border border-zinc-100 rounded-xl space-y-3 animate-in fade-in slide-in-from-top-1 duration-200 shadow-sm">

@@ -71,7 +71,7 @@ export const ConfigSidebar: React.FC = () => {
 
    // Block Specific Handlers
    const updateContent = (newContent: any) => {
-      updateBlock(selectedBlock.id, { ...selectedBlock.content, ...newContent });
+      updateBlock(selectedBlock.id, newContent);
    };
 
    const updateStyle = (newStyle: any) => {

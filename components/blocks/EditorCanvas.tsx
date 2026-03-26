@@ -68,7 +68,6 @@ const MemoizedBlock = React.memo(({
         marginBottom: 'var(--block-mb)',
         marginLeft: 'var(--block-ml)',
         marginRight: 'var(--block-mr)',
-        width: 'var(--block-width)',
       } as any}
     >
       {isSelected && (

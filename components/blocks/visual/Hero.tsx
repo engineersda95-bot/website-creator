@@ -15,6 +15,7 @@ interface HeroProps {
     cta: string;
     ctaUrl?: string;
     backgroundImage?: string;
+    backgroundAlt?: string;
     sectionId?: string;
   };
   block: Block;
@@ -77,7 +78,7 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
             project={project}
             isStatic={isStatic}
             imageMemoryCache={imageMemoryCache}
-            alt=""
+            alt={content.backgroundAlt || ''}
             loading="eager"
             className="absolute inset-0 z-0 w-full h-full pointer-events-none transition-all duration-700" 
             style={{ 

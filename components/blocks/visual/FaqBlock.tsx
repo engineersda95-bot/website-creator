@@ -42,6 +42,7 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
       )}
       <BlockBackground
         backgroundImage={content.backgroundImage}
+        backgroundAlt={(content as any).backgroundAlt}
         style={style}
         project={project}
         isStatic={isStatic}

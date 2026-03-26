@@ -31,6 +31,7 @@ export const Logos: React.FC<any> = ({
       )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
+        backgroundAlt={content.backgroundAlt}
         style={style} 
         project={project} 
         imageMemoryCache={imageMemoryCache} 
@@ -79,7 +80,7 @@ export const Logos: React.FC<any> = ({
                 {item.image ? (
                   <img 
                     src={resolveImageUrl(item.image, project, imageMemoryCache)} 
-                    alt="Partner"
+                    alt={item.alt || 'Partner'}
                     className="max-w-full max-h-full object-contain pointer-events-none"
                   />
                 ) : (

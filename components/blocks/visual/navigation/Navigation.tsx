@@ -12,6 +12,7 @@ export interface NavigationProps {
   content: {
     logoText?: string;
     logoImage?: string;
+    logoAlt?: string;
     logoType?: 'text' | 'image' | 'both';
     logoSize?: number;
     logoTextSize?: number;
@@ -76,7 +77,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             project={project}
             isStatic={isStatic}
             imageMemoryCache={imageMemoryCache}
-            alt="Logo" 
+            alt={content.logoAlt || content.logoText || 'Logo'} 
             style={{ height: 'var(--logo-fs)', width: 'auto' }} 
             className="object-contain shrink-0" 
           />

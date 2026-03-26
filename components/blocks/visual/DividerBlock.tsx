@@ -34,6 +34,7 @@ export const DividerBlock: React.FC<DividerBlockProps> = ({ block, project, view
       )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
+        backgroundAlt={(content as any).backgroundAlt}
         style={style} 
         project={project} 
         isStatic={isStatic} 

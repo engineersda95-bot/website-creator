@@ -28,6 +28,11 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
                updateContent({ backgroundImage: relativePath });
                if (getStyleValue('overlayOpacity', undefined) === undefined) updateStyle({ overlayOpacity: 40 });
             }}
+            altValue={selectedBlock.content.backgroundAlt ?? ''}
+            onAltChange={(alt) => updateContent({ backgroundAlt: alt })}
+            onFilenameSelect={(name) => {
+               if (!selectedBlock.content.backgroundAlt) updateContent({ backgroundAlt: name });
+            }}
          />
 
          {selectedBlock.content.backgroundImage && (

@@ -37,6 +37,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
       )}
       <BlockBackground
         backgroundImage={content.backgroundImage}
+        backgroundAlt={(content as any).backgroundAlt}
         style={style}
         project={project}
         isStatic={isStatic}

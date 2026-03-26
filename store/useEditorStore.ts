@@ -512,7 +512,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const blocks = currentPage.blocks.map(b => {
       if (b.id !== id) return b;
 
-      const newBlock = { ...b, content: { ...(b.content || {}), ...content } };
+      const oldContent = b.content || {};
+      const newContent = typeof content === 'function' ? content(oldContent) : content;
+      const newBlock = { ...b, content: { ...oldContent, ...newContent } };
 
       if (style) {
         if (viewport === 'desktop') {
@@ -563,12 +565,15 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       if (b.id !== id) return b;
 
       let newBlock = { ...b };
+      const oldStyle = (viewport === 'desktop' ? (b.style || {}) : (b.responsiveStyles?.[viewport] || {}));
+      const extraStyle = typeof style === 'function' ? style(oldStyle) : style;
+
       if (viewport === 'desktop') {
-        newBlock.style = { ...(b.style || {}), ...style };
+        newBlock.style = { ...(b.style || {}), ...extraStyle };
       } else {
         newBlock.responsiveStyles = {
           ...b.responsiveStyles,
-          [viewport]: { ...(b.responsiveStyles?.[viewport] || {}), ...style }
+          [viewport]: { ...(b.responsiveStyles?.[viewport] || {}), ...extraStyle }
         };
       }
       targetBlock = newBlock;

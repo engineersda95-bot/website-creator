@@ -37,6 +37,7 @@ interface FooterProps {
    content: {
       logoType?: 'text' | 'image' | 'both';
       logoImage?: string;
+      logoAlt?: string;
       logoText?: string;
       showLogo?: boolean;
       description?: string;
@@ -118,7 +119,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
                                 project={project}
                                 isStatic={isStatic}
                                 imageMemoryCache={imageMemoryCache}
-                                alt="Logo" 
+                                alt={content.logoAlt || content.logoText || 'Logo'} 
                                 style={{ height: 'var(--logo-fs)', width: 'auto' }} 
                                 className="object-contain shrink-0" 
                               />
@@ -191,7 +192,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
                                  project={project}
                                  isStatic={isStatic}
                                  imageMemoryCache={imageMemoryCache}
-                                 alt="Logo" 
+                                 alt={content.logoAlt || content.logoText || 'Logo'} 
                                  style={{ height: 'var(--logo-fs)', width: 'auto' }} 
                                  className="object-contain shrink-0" 
                               />

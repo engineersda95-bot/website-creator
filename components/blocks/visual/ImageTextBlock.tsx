@@ -18,6 +18,7 @@ interface ImageTextBlockProps {
     alt?: string;
     imageAspectRatio?: string;
     backgroundImage?: string;
+    backgroundAlt?: string;
     sectionId?: string;
   };
   block: Block;
@@ -71,6 +72,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
       )}
       <BlockBackground
         backgroundImage={content.backgroundImage}
+        backgroundAlt={content.backgroundAlt}
         style={style}
         project={project}
         isStatic={isStatic}

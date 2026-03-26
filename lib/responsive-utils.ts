@@ -47,7 +47,6 @@ export function generateBlockCSS(blockId: string, block: Block, project?: Projec
       margin-bottom: var(--block-mb, 0px);
       margin-left: var(--block-ml, 0px);
       margin-right: var(--block-mr, 0px);
-      width: var(--block-width, 100%);
       transition: all 0.5s ease;
     }
     ${urlOverrides}

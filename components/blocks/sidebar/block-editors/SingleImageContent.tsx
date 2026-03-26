@@ -33,13 +33,11 @@ export const SingleImageContent: React.FC<SingleImageContentProps> = ({
               const relativePath = await uploadImage(val, filename);
               updateContent({ image: relativePath });
             }}
-          />
-
-          <SimpleInput
-            label="Testo Alternativo (SEO)"
-            value={selectedBlock.content.alt || ''}
-            onChange={(val) => updateContent({ alt: val })}
-            placeholder="Descrizione per i motori di ricerca..."
+            altValue={selectedBlock.content.alt ?? ''}
+            onAltChange={(alt) => updateContent({ alt })}
+            onFilenameSelect={(name) => {
+              if (!selectedBlock.content.alt) updateContent({ alt: name });
+            }}
           />
         </div>
       </section>

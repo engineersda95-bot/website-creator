@@ -96,9 +96,11 @@ export const PdfBlock = ({ block, project, isStatic, viewport }: any) => {
     >
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
+        backgroundAlt={content.backgroundAlt}
         style={style} 
         project={project} 
         isStatic={isStatic} 
+        imageMemoryCache={undefined}
       />
       
       <div className="max-w-[var(--container-width,100%)] mx-auto relative z-10">

@@ -3,6 +3,8 @@
 import React from 'react';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { CTAManager, RichTextarea, SimpleInput } from '../SharedSidebarComponents';
+import { resolveImageUrl } from '@/lib/image-utils';
+import { useEditorStore } from '@/store/useEditorStore';
 
 interface ImageTextContentProps {
    selectedBlock: any;
@@ -39,15 +41,17 @@ export const ImageTextContent: React.FC<ImageTextContentProps> = ({
          <div className="space-y-4 pt-6 border-t border-zinc-100">
             <label className="text-[13px] font-bold text-zinc-400 uppercase tracking-wider block">Immagine Principale</label>
             <ImageUpload 
-               value={selectedBlock.content.image || ''}
-               onChange={(val) => updateContent({ image: val })}
+               value={resolveImageUrl(selectedBlock.content.image, project, useEditorStore.getState().imageMemoryCache)}
+               onChange={async (val: string, filename?: string) => {
+                 const relativePath = await useEditorStore.getState().uploadImage(val, filename);
+                 updateContent({ image: relativePath });
+               }}
                label="Carica Immagine"
-            />
-            <SimpleInput 
-               label="Alt Text (SEO)"
-               placeholder="Descrizione dell'immagine" 
-               value={selectedBlock.content.alt || ''} 
-               onChange={(val) => updateContent({ alt: val })} 
+               altValue={selectedBlock.content.alt ?? ''}
+               onAltChange={(alt) => updateContent({ alt })}
+               onFilenameSelect={(name) => {
+                 if (!selectedBlock.content.alt) updateContent({ alt: name });
+               }}
             />
          </div>
 

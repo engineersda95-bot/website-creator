@@ -46,6 +46,11 @@ export const NavigationContent: React.FC<NavigationContentProps> = ({
                      const relativePath = await uploadImage(val, filename);
                      updateContent({ logoImage: relativePath });
                   }}
+                  altValue={selectedBlock.content.logoAlt ?? ''}
+                  onAltChange={(alt) => updateContent({ logoAlt: alt })}
+                  onFilenameSelect={(name) => {
+                    if (!selectedBlock.content.logoAlt) updateContent({ logoAlt: name });
+                  }}
                />
             )}
 

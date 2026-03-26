@@ -6,6 +6,7 @@ import { SitiImage } from './SitiImage';
 
 interface BlockBackgroundProps {
   backgroundImage?: string;
+  backgroundAlt?: string;
   style: any;
   project?: Project | null;
   isStatic?: boolean;
@@ -20,6 +21,7 @@ import { BACKGROUND_PATTERNS } from '@/lib/background-patterns';
  */
 export const BlockBackground: React.FC<BlockBackgroundProps> = ({ 
   backgroundImage, 
+  backgroundAlt,
   style, 
   project, 
   isStatic, 
@@ -44,7 +46,7 @@ export const BlockBackground: React.FC<BlockBackgroundProps> = ({
         project={project}
         isStatic={isStatic}
         imageMemoryCache={imageMemoryCache}
-        alt=""
+        alt={backgroundAlt || ''}
         loading="lazy"
         className="absolute inset-0 z-0 w-full h-full pointer-events-none transition-all duration-700" 
         style={{ 

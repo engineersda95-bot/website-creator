@@ -9,8 +9,8 @@ import { resolveImageUrl } from '@/lib/image-utils';
 import { cn } from '@/lib/utils';
 
 interface ReviewListManagerProps {
-  items: Array<{ text: string; name: string; role: string; stars: number; avatar?: string }>;
-  onChange: (items: Array<{ text: string; name: string; role: string; stars: number; avatar?: string }>) => void;
+  items: Array<{ text: string; name: string; role: string; stars: number; avatar?: string; avatarAlt?: string }>;
+  onChange: (itemsOrFn: any) => void;
 }
 
 const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onChange }) => {
@@ -19,27 +19,30 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
   const imageMemoryCache = useEditorStore(state => state.imageMemoryCache);
 
   const addItem = () => {
-    onChange([...items, { text: 'Inserisci qui la recensione.', name: 'Nome Utente', role: 'Ruolo / Azienda', stars: 5 }]);
+    onChange((prev: any) => [...(prev || []), { text: 'Inserisci qui la recensione.', name: 'Nome Utente', role: 'Ruolo / Azienda', stars: 5 }]);
   };
 
   const removeItem = (index: number) => {
-    onChange(items.filter((_, i) => i !== index));
+    onChange((prev: any) => (prev || []).filter((_: any, i: number) => i !== index));
   };
 
-  const updateItem = (index: number, field: string, value: any) => {
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    onChange(newItems);
+  const updateItem = (index: number, updates: any) => {
+    onChange((prev: any) => {
+      const current = [...(prev || [])];
+      current[index] = { ...current[index], ...updates };
+      return current;
+    });
   };
 
   const moveItem = (index: number, direction: 'up' | 'down') => {
-    if (direction === 'up' && index === 0) return;
-    if (direction === 'down' && index === items.length - 1) return;
-    
-    const newItems = [...items];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
-    onChange(newItems);
+    onChange((prev: any) => {
+      const current = [...(prev || [])];
+      if (direction === 'up' && index === 0) return current;
+      if (direction === 'down' && index === current.length - 1) return current;
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      [current[index], current[targetIndex]] = [current[targetIndex], current[index]];
+      return current;
+    });
   };
 
   return (
@@ -91,7 +94,12 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
                       value={resolveImageUrl(item.avatar, project, imageMemoryCache)}
                       onChange={async (val: string, filename?: string) => {
                         const relativePath = await uploadImage(val, filename);
-                        updateItem(i, 'avatar', relativePath);
+                        updateItem(i, { avatar: relativePath });
+                      }}
+                      altValue={item.avatarAlt ?? ''}
+                      onAltChange={(alt) => updateItem(i, { avatarAlt: alt })}
+                      onFilenameSelect={(name) => {
+                        if (!item.avatarAlt) updateItem(i, { avatarAlt: name });
                       }}
                     />
                 </div>
@@ -103,7 +111,7 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
                      <input
                        className="w-full p-2 border border-zinc-100 rounded-xl text-xs bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none"
                        value={item.name}
-                       onChange={(e) => updateItem(i, 'name', e.target.value)}
+                       onChange={(e) => updateItem(i, { name: e.target.value })}
                      />
                    </div>
                    <div className="space-y-1">
@@ -111,7 +119,7 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
                      <input
                        className="w-full p-2 border border-zinc-100 rounded-xl text-xs bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none"
                        value={item.role}
-                       onChange={(e) => updateItem(i, 'role', e.target.value)}
+                       onChange={(e) => updateItem(i, { role: e.target.value })}
                      />
                    </div>
                 </div>
@@ -124,7 +132,7 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
                     type="range" min="0" max="5" step="1" 
                     className="w-full h-1 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
                     value={item.stars}
-                    onChange={(e) => updateItem(i, 'stars', parseInt(e.target.value))}
+                    onChange={(e) => updateItem(i, { stars: parseInt(e.target.value) })}
                   />
                 </div>
               </div>
@@ -135,7 +143,7 @@ const ReviewListManager: React.FC<ReviewListManagerProps> = ({ items = [], onCha
               <textarea
                 className="w-full h-32 p-3 border border-zinc-100 rounded-xl text-xs bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none leading-relaxed resize-none"
                 value={item.text}
-                onChange={(e) => updateItem(i, 'text', e.target.value)}
+                onChange={(e) => updateItem(i, { text: e.target.value })}
                 placeholder="Scrivi qui la recensione..."
               />
             </div>
@@ -268,7 +276,9 @@ export const QuoteContent: React.FC<any> = ({
 
       <ReviewListManager 
         items={content.items || []}
-        onChange={(items) => updateContent({ items })}
+        onChange={(itemsOrFn) => updateContent((prev: any) => ({
+          items: typeof itemsOrFn === 'function' ? itemsOrFn(prev.items) : itemsOrFn
+        }))}
       />
     </div>
   );

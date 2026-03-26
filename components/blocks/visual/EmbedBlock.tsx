@@ -10,6 +10,7 @@ interface EmbedBlockProps {
     url: string;
     title?: string;
     backgroundImage?: string;
+    backgroundAlt?: string;
     sectionId?: string;
   };
   block: Block;
@@ -77,6 +78,14 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
   const isIframeCode = content.url?.trim().startsWith('<iframe');
   const alignment = style?.align || 'center';
 
+  // Destrutturiamo per evitare conflitti shorthand/longhand (fix console error)
+  const { 
+    padding, paddingLeft, paddingRight, paddingTop, paddingBottom,
+    margin, marginLeft, marginRight, marginTop, marginBottom,
+    background, backgroundColor,
+    ...safeStyle
+  } = style as any;
+
   return (
     <section 
       id={block.id}
@@ -96,6 +105,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
       )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
+        backgroundAlt={content.backgroundAlt}
         style={style} 
         project={project} 
         isStatic={isStatic} 

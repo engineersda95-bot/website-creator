@@ -59,41 +59,60 @@ export function resolveImageUrl(
 
 /**
  * Converts a base64 image (PNG, JPG, etc) to a WebP optimized Blob.
+ * Automatically downscales images larger than MAX_DIMENSION and uses
+ * progressive quality reduction to keep the output comfortably under 2MB.
  * If conversion fails or is not supported, it returns the original info.
  */
 export async function optimizeImageToWebP(
   base64: string, 
-  quality: number = 0.8
+  quality: number = 0.82
 ): Promise<{ blob: Blob; extension: string; size: number }> {
+  const MAX_DIMENSION = 2400; // px – caps both width and height
+  const MAX_SIZE_BYTES = 1.8 * 1024 * 1024; // 1.8 MB safety ceiling
+
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
+      // --- Compute scaled dimensions ---
+      let { width, height } = img;
+      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+        const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      
+      canvas.width = width;
+      canvas.height = height;
+
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         reject(new Error('Could not get canvas context'));
         return;
       }
-      
-      ctx.drawImage(img, 0, 0);
-      
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          reject(new Error('Canvas toBlob failed'));
-          return;
-        }
-        resolve({
-          blob,
-          extension: 'webp',
-          size: blob.size
-        });
-      }, 'image/webp', quality);
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // --- Progressive quality reduction to stay under 2 MB ---
+      const tryEncode = (q: number) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error('Canvas toBlob failed'));
+            return;
+          }
+          if (blob.size > MAX_SIZE_BYTES && q > 0.5) {
+            // Drop quality by 0.1 and retry
+            tryEncode(Math.round((q - 0.1) * 10) / 10);
+          } else {
+            resolve({ blob, extension: 'webp', size: blob.size });
+          }
+        }, 'image/webp', q);
+      };
+
+      tryEncode(quality);
     };
-    
+
     img.onerror = () => reject(new Error('Failed to load image for optimization'));
     img.src = base64;
   });

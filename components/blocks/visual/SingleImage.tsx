@@ -84,6 +84,7 @@ export const SingleImage: React.FC<SingleImageBlockProps> = ({
       )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
+        backgroundAlt={content.backgroundAlt}
         style={style} 
         project={project} 
         isStatic={isStatic} 

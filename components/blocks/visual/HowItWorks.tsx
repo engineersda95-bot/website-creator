@@ -132,6 +132,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
       )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
+        backgroundAlt={(content as any).backgroundAlt}
         style={style} 
         project={project} 
         isStatic={isStatic} 
@@ -181,7 +182,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
                 <ChevronLeft size={24} style={{ color: style.textColor }} />
               </button>
             </div>
-            <div className="absolute top-1/2 right-2 md:right-4 lg:-left-6 -translate-y-1/2 z-30 transition-all duration-300">
+            <div className="absolute top-1/2 right-2 md:right-4 lg:-right-6 -translate-y-1/2 z-30 transition-all duration-300">
               <button 
                 data-arrow="right" 
                 className={cn(

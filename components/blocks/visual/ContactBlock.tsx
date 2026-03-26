@@ -37,12 +37,24 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
     '--block-gap': `${style.gap !== undefined ? style.gap : 64}px`,
   } : {} as React.CSSProperties;
 
+  // Destrutturiamo per evitare conflitti shorthand/longhand (fix console error)
+  const { 
+    padding, paddingLeft, paddingRight, paddingTop, paddingBottom,
+    margin, marginLeft, marginRight, marginTop, marginBottom,
+    background, backgroundColor,
+    ...safeStyle
+  } = style as any;
+
+  const alignment = style.align || 'center';
+
   return (
     <section 
       id={block.id}
-      className={cn("w-full transition-all duration-500 overflow-hidden flex flex-col relative")}
+      className={cn(
+        "w-full transition-all duration-500 overflow-hidden flex flex-col relative",
+        alignment === 'center' ? "mx-auto" : alignment === 'right' ? "ml-auto mr-0" : "ml-0 mr-auto"
+      )}
       style={{
-        ...style as any,
         ...contactStyles,
         background: 'var(--block-bg)',
         color: 'var(--block-color)',
@@ -63,6 +75,7 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
       )}
       <BlockBackground 
         backgroundImage={content.backgroundImage} 
+        backgroundAlt={(content as any).backgroundAlt}
         style={style} 
         project={project} 
         isStatic={isStatic} 
