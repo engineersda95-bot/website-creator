@@ -18,6 +18,12 @@ import { TemplateWireframe, TemplatePreviewModal } from '@/components/editor/Tem
 import { ProjectCard } from '@/components/editor/cards/ProjectCard';
 import { ProjectQuickEditModal } from '@/components/editor/modals/ProjectQuickEditModal';
 
+const FontLoader = React.memo(({ font }: { font: string }) => {
+  const googleFontUrl = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap`;
+  return <link rel="stylesheet" href={googleFontUrl} />;
+});
+FontLoader.displayName = 'FontLoader';
+
 const TEMPLATE_OPTIONS = [
   { id: 'blank', name: 'Foglio bianco', desc: 'Parti da zero', icon: FileText, color: 'bg-zinc-100 text-zinc-500' },
   { id: 'RISTORANTE', name: 'Ristorante', desc: 'Menu, recensioni, prenotazioni', icon: Utensils, color: 'bg-orange-50 text-orange-600' },
@@ -164,7 +170,8 @@ export function ProjectListClient({
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <FontLoader font="DM Sans" />
       {/* Header */}
       <header className="bg-white border-b border-zinc-200/80 sticky top-0 z-10">
         <div className="max-w-[1440px] mx-auto px-6 h-14 flex items-center justify-between">

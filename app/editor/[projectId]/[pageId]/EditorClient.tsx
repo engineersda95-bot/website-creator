@@ -133,8 +133,9 @@ export function EditorClient({
   }
 
   return (
-    <div className="flex h-screen bg-zinc-100 overflow-hidden" style={{ fontFamily: `'${font}', sans-serif` }}>
+    <div className="flex h-screen bg-zinc-100 overflow-hidden font-sans" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <FontLoader font={font} />
+      <FontLoader font="DM Sans" />
       <BlockSidebar />
 
       <div className="flex-1 min-w-0 z-10 relative flex flex-col h-full">

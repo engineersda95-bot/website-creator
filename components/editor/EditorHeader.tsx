@@ -74,7 +74,7 @@ export function EditorHeader({
             pages={targetPages}
             projectId={initialProject.id}
             initialPageId={initialPageId}
-            fontFamily={`'${font}', sans-serif`}
+            fontFamily="'DM Sans', sans-serif"
           />
         </nav>
 
