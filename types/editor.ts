@@ -18,7 +18,8 @@ export type BlockType =
   'logos' |
   'cards' |
   'benefits' |
-  'how-it-works';
+  'how-it-works' |
+  'pdf';
 
 export interface Block {
   id: string;

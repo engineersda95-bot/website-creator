@@ -93,8 +93,9 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
                   return (
                     <ItemTitleTag
                       style={{
-                        fontSize: style.questionSize ? `${style.questionSize}px` : `var(--global-${style.itemTitleTag || 'h3'}-fs)`,
-                        fontWeight: style.questionBold ? '700' : 'bold',
+                        fontSize: 'var(--item-title-fs)',
+                        fontWeight: 'var(--item-title-fw)',
+                        fontStyle: 'var(--item-title-is)',
                         color: blockColor,
                         textAlign: 'left'
                       }}

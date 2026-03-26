@@ -43,7 +43,7 @@ export function getBaseStyleVars(style: any, block: any, project?: Project, view
     '--title-fs': (() => {
       const size = val('titleSize', null);
       if (size !== null) return toPx(size);
-      const tag = val('titleTag', 'h2');
+      const tag = val('titleTag', block.type === 'hero' ? 'h1' : 'h2');
       if (tag === 'h1') return 'var(--global-h1-fs)';
       if (tag === 'h2') return 'var(--global-h2-fs)';
       if (tag === 'h3') return 'var(--global-h3-fs)';
@@ -52,12 +52,26 @@ export function getBaseStyleVars(style: any, block: any, project?: Project, view
       if (tag === 'h6') return 'var(--global-h6-fs)';
       return 'var(--global-body-fs)';
     })(),
+    '--item-title-fs': (() => {
+       const size = val('cardTitleSize', val('itemTitleSize', null));
+       if (size !== null) return toPx(size);
+       const tag = val('itemTitleTag', 'h3');
+       if (tag === 'h1') return 'var(--global-h1-fs)';
+       if (tag === 'h2') return 'var(--global-h2-fs)';
+       if (tag === 'h3') return 'var(--global-h3-fs)';
+       if (tag === 'h4') return 'var(--global-h4-fs)';
+       if (tag === 'h5') return 'var(--global-h5-fs)';
+       if (tag === 'h6') return 'var(--global-h6-fs)';
+       return 'var(--global-body-fs)';
+    })(),
     '--subtitle-fs': toPx(val('subtitleSize', '1.25rem')),
     '--title-fw': val('titleBold', false) ? '700' : '400',
     '--title-fs-style': val('titleItalic', false) ? 'italic' : 'normal',
     '--title-ls': toPx(val('letterSpacing', '0px')),
     '--title-lh': (num('lineHeight', 1.2)).toString(),
     '--title-upper': val('titleUppercase', false) ? 'uppercase' : 'none',
+    '--item-title-fw': val('cardTitleBold', val('itemTitleBold', false)) ? '700' : '400',
+    '--item-title-is': val('cardTitleItalic', val('itemTitleItalic', false)) ? 'italic' : 'normal',
     '--subtitle-fw': val('subtitleBold', false) ? '700' : '500',
     '--subtitle-fs-style': val('subtitleItalic', false) ? 'italic' : 'normal',
     '--subtitle-upper': val('subtitleUppercase', false) ? 'uppercase' : 'none',

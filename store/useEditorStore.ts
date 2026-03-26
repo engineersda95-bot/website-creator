@@ -479,7 +479,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       id: uuidv4(),
       type,
       content: defaultContent,
-      style: defaultStyle,
+      style: {
+        ...defaultStyle,
+        // Ensure tags are explicitly set to their values if they come from defaults
+        titleTag: defaultStyle.titleTag || (type === 'hero' ? 'h1' : 'h2'),
+        ...(defaultStyle.itemTitleTag ? { itemTitleTag: defaultStyle.itemTitleTag } : {})
+      },
       responsiveStyles: defaultResponsiveStyles || {}
     };
 

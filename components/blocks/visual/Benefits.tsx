@@ -108,8 +108,9 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
             <BenefitTitleTag 
               className="mb-3 tracking-tight transition-all duration-300"
               style={{
-                fontSize: style.itemTitleSize ? `${style.itemTitleSize}px` : `var(--global-${style.itemTitleTag || 'h3'}-fs)`,
-                fontWeight: style.itemTitleBold ? '700' : 'bold',
+                fontSize: 'var(--item-title-fs)',
+                fontWeight: 'var(--item-title-fw)',
+                fontStyle: 'var(--item-title-is)',
               }}
               dangerouslySetInnerHTML={{ __html: formatRichText(item.title || 'Vantaggio') }}
             />

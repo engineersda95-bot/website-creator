@@ -44,9 +44,9 @@ export const Logos: React.FC<any> = ({
             <TitleTag 
               className="text-center mb-12 tracking-tight"
               style={{ 
-                fontSize: style.titleSize ? `${style.titleSize}px` : 'var(--global-h2-fs)',
-                fontWeight: style.titleBold ? '700' : 'var(--title-fw)' as any,
-                fontStyle: style.titleItalic ? 'italic' : 'var(--title-fs-style)' as any,
+                fontSize: 'var(--title-fs)',
+                fontWeight: 'var(--title-fw)' as any,
+                fontStyle: 'var(--title-fs-style)' as any,
                 textTransform: 'var(--title-upper)' as any,
                 lineHeight: '1.2'
               }}

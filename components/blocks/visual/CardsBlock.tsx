@@ -136,9 +136,9 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
               <ItemTitleTag 
                 className="mb-2 tracking-tight transition-all duration-500 leading-tight"
                 style={{ 
-                  fontSize: style.cardTitleSize ? `${style.cardTitleSize}px` : 'var(--global-h3-fs)',
-                  fontWeight: style.cardTitleBold ? '700' : '400',
-                  fontStyle: style.cardTitleItalic ? 'italic' : 'normal',
+                  fontSize: 'var(--item-title-fs)',
+                  fontWeight: 'var(--item-title-fw)',
+                  fontStyle: 'var(--item-title-is)',
                 }}
                 dangerouslySetInnerHTML={{ __html: formatRichText(item.title || 'Titolo Card') }}
               />

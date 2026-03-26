@@ -17,6 +17,7 @@ import { logosDefinition } from '@/components/blocks/visual/Logos.definition';
 import { benefitsDefinition } from '@/components/blocks/visual/Benefits.definition';
 import { howItWorksDefinition } from '@/components/blocks/visual/HowItWorks.definition';
 import { singleImageDefinition } from '@/components/blocks/visual/SingleImage.definition';
+import { pdfDefinition } from '@/components/blocks/visual/PdfBlock.definition';
 
 export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   hero: heroDefinition,
@@ -34,6 +35,7 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   benefits: benefitsDefinition,
   'how-it-works': howItWorksDefinition,
   image: singleImageDefinition,
+  pdf: pdfDefinition,
   
   // Placeholders for unimplemented/transitioning blocks
   map: { type: 'map', label: 'Mappa', icon: MapPin, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
