@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Globe, Clock, Settings as SettingsIcon, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { LANGUAGES } from '@/lib/editor-constants';
 
 interface ProjectCardProps {
   project: any;
@@ -13,6 +14,9 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, formatDate, onEdit, onDelete }: ProjectCardProps) {
+  const projectLang = project.settings?.language || 'it';
+  const language = LANGUAGES.find(l => l.value === projectLang);
+
   return (
     <div
       className="group relative bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md hover:border-zinc-300 transition-all"
@@ -45,6 +49,13 @@ export function ProjectCard({ project, formatDate, onEdit, onDelete }: ProjectCa
       </Link>
       <div className="px-4 py-2.5 border-t border-zinc-100 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
+          {language && (
+            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-50 border border-zinc-100 rounded-md">
+              <span className="text-[14px] leading-none" title={language.label}>
+                {language.flag}
+              </span>
+            </div>
+          )}
           <button
             onClick={() => onEdit(project.id)}
             className="p-1.5 text-zinc-400 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors"

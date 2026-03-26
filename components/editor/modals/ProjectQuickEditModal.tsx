@@ -85,7 +85,7 @@ export function ProjectQuickEditModal({ projectId, project, onClose, onSave }: P
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Lingua</label>
               <select value={lang} onChange={e => setLang(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm">
-                {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+                {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.flag} {l.label}</option>)}
               </select>
             </div>
           </div>

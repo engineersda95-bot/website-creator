@@ -12,11 +12,11 @@ export const BUSINESS_TYPES = [
 ];
 
 export const LANGUAGES = [
-   { label: 'Italiano', value: 'it' },
-   { label: 'English', value: 'en' },
-   { label: 'Français', value: 'fr' },
-   { label: 'Español', value: 'es' },
-   { label: 'Deutsch', value: 'de' },
+   { label: 'Italiano', value: 'it', flag: '🇮🇹' },
+   { label: 'English', value: 'en', flag: '🇬🇧' },
+   { label: 'Français', value: 'fr', flag: '🇫🇷' },
+   { label: 'Español', value: 'es', flag: '🇪🇸' },
+   { label: 'Deutsch', value: 'de', flag: '🇩🇪' },
 ];
 
 export const PRICE_RANGES = [

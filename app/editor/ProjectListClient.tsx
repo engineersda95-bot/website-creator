@@ -265,7 +265,7 @@ export function ProjectListClient({
                         value={businessLanguage}
                         onChange={(e) => setBusinessLanguage(e.target.value)}
                       >
-                        {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+                        {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.flag} {l.label}</option>)}
                       </select>
                     </div>
                   </div>
