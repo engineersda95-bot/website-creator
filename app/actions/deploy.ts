@@ -39,9 +39,10 @@ export async function deployToCloudflare(projectId: string) {
       .from('projects')
       .select('*')
       .eq('id', projectId)
+      .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
       .single();
 
-    if (projectError || !project) throw new Error('Could not find project to deploy');
+    if (projectError || !project) throw new Error('Could not find project to deploy or unauthorized access');
 
     const projectName = project.subdomain;
     const isFirstPublish = !project.live_url;
