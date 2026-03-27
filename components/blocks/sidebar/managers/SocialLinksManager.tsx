@@ -28,6 +28,7 @@ export function SocialLinksManager({ links = [], onChange }: SocialLinksManagerP
                   }}>
                      <option value="instagram">Instagram</option>
                      <option value="facebook">Facebook</option>
+                     <option value="whatsapp">WhatsApp</option>
                      <option value="x">X / Twitter</option>
                      <option value="linkedin">LinkedIn</option>
                      <option value="mail">Mail</option>

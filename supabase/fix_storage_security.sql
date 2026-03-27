@@ -15,8 +15,15 @@ CREATE POLICY "User can upload project assets" ON storage.objects
 FOR INSERT TO authenticated 
 WITH CHECK (
   bucket_id = 'project-assets' AND
-  (storage.foldername(name))[1] IN (
-    SELECT id::text FROM public.projects WHERE user_id = auth.uid()
+  (
+    (storage.foldername(name))[1] IN (
+      SELECT id::text FROM public.projects WHERE user_id = auth.uid()
+    )
+    OR
+    (
+      (storage.foldername(name))[1] = 'ai-temp' AND 
+      (storage.foldername(name))[2] = auth.uid()::text
+    )
   )
 );
 
@@ -26,8 +33,15 @@ CREATE POLICY "User can update project assets" ON storage.objects
 FOR UPDATE TO authenticated 
 USING (
   bucket_id = 'project-assets' AND
-  (storage.foldername(name))[1] IN (
-    SELECT id::text FROM public.projects WHERE user_id = auth.uid()
+  (
+    (storage.foldername(name))[1] IN (
+      SELECT id::text FROM public.projects WHERE user_id = auth.uid()
+    )
+    OR
+    (
+      (storage.foldername(name))[1] = 'ai-temp' AND 
+      (storage.foldername(name))[2] = auth.uid()::text
+    )
   )
 );
 
@@ -37,7 +51,14 @@ CREATE POLICY "User can delete project assets" ON storage.objects
 FOR DELETE TO authenticated 
 USING (
   bucket_id = 'project-assets' AND
-  (storage.foldername(name))[1] IN (
-    SELECT id::text FROM public.projects WHERE user_id = auth.uid()
+  (
+    (storage.foldername(name))[1] IN (
+      SELECT id::text FROM public.projects WHERE user_id = auth.uid()
+    )
+    OR
+    (
+      (storage.foldername(name))[1] = 'ai-temp' AND 
+      (storage.foldername(name))[2] = auth.uid()::text
+    )
   )
 );

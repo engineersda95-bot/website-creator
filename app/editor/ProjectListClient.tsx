@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   Plus, Globe, Clock, FileText, X, Utensils, Briefcase, Rocket,
   Trash2, Eye, Scissors, Dumbbell, Store, Stethoscope, Hotel, Camera,
-  Settings as SettingsIcon, Image as ImageIcon
+  Settings as SettingsIcon, Image as ImageIcon, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserMenu } from '@/components/auth/UserMenu';
@@ -17,6 +17,7 @@ import { getBlocksFromTemplate, TEMPLATES, TEMPLATE_SETTINGS, TEMPLATE_PAGES } f
 import { TemplateWireframe, TemplatePreviewModal } from '@/components/editor/TemplatePreview';
 import { ProjectCard } from '@/components/editor/cards/ProjectCard';
 import { ProjectQuickEditModal } from '@/components/editor/modals/ProjectQuickEditModal';
+import { AIGeneratorModal } from '@/components/editor/modals/AIGeneratorModal';
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
   const googleFontUrl = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap`;
@@ -50,6 +51,7 @@ export function ProjectListClient({
   const { setUser, initialize } = useEditorStore();
   const [projects, setProjects] = useState(initialProjects);
   const [showCreate, setShowCreate] = useState(false);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [newName, setNewName] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('blank');
 
@@ -165,6 +167,55 @@ export function ProjectListClient({
     setIsCreating(false);
   };
 
+  const handleCreateProjectFromAI = async (aiData: any) => {
+    setIsCreating(true);
+    setShowAIGenerator(false);
+
+    const projId = uuidv4();
+    const cleanBusinessName = (aiData.businessName || 'Nuovo Sito IA').trim();
+    // Subdomain from business name
+    const subdomain = cleanBusinessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + projId.substring(0, 6);
+
+    const { data: newProj, error: pError } = await supabase
+      .from('projects')
+      .insert({
+        id: projId,
+        user_id: initialUser.id,
+        name: cleanBusinessName,
+        subdomain,
+        settings: aiData.settings,
+      })
+      .select()
+      .single();
+
+    if (pError) {
+      console.error('[AI Create] Project error:', pError);
+      setIsCreating(false);
+      return;
+    }
+
+    if (newProj) {
+      const pagesToInsert = aiData.pages.map((p: any) => ({
+        id: p.id || uuidv4(),
+        project_id: projId,
+        title: p.slug === 'home' ? 'Home' : p.title,
+        slug: p.slug,
+        blocks: p.blocks,
+        seo: p.seo || { title: p.title, description: '' },
+        language: 'it', // AI uses default IT for now
+      }));
+
+      const { error: pgError } = await supabase.from('pages').insert(pagesToInsert);
+      if (pgError) console.error('[AI Create] Pages error:', pgError);
+
+      setProjects([newProj, ...projects]);
+      setShowCreate(false);
+      router.push(`/editor/${projId}`);
+    }
+
+    setIsCreating(false);
+  };
+
   const formatDate = (d: string) => {
     try { return new Date(d).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' }); }
     catch { return ''; }
@@ -197,13 +248,25 @@ export function ProjectListClient({
               {projects.length === 0 ? 'Crea il tuo primo sito per iniziare' : `${projects.length} ${projects.length === 1 ? 'sito' : 'siti'}`}
             </p>
           </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all active:scale-[0.97]"
-          >
-            <Plus size={16} />
-            Nuovo sito
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowAIGenerator(true)}
+              className="group flex items-center gap-2.5 px-6 py-2.5 text-sm font-black bg-gradient-to-r from-zinc-900 via-indigo-950 to-zinc-950 text-white rounded-xl hover:shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all active:scale-[0.97] border border-zinc-800 shadow-xl"
+            >
+              <div className="relative">
+                <Sparkles size={16} className="text-indigo-400 group-hover:rotate-12 transition-transform" />
+                <div className="absolute inset-0 bg-indigo-400/20 blur-md rounded-full animate-pulse" />
+              </div>
+              Crea con IA
+            </button>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-white text-zinc-900 border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-all active:scale-[0.97] shadow-sm"
+            >
+              <Plus size={16} />
+              Nuovo sito
+            </button>
+          </div>
         </div>
 
         {/* Create project modal */}
@@ -239,10 +302,10 @@ export function ProjectListClient({
                             <t.icon size={16} />
                           </div>
                           <div className="min-w-0 pr-6">
-                            <div className="text-[13px] font-bold text-zinc-900 truncate">{t.name}</div>
-                            <div className="text-[10px] text-zinc-400 truncate tracking-tight">{t.desc}</div>
+                            <div className={cn("text-[13px] font-bold truncate", t.id === 'ai' ? "text-white" : "text-zinc-900")}>{t.name}</div>
+                            <div className={cn("text-[10px] truncate tracking-tight", t.id === 'ai' ? "text-zinc-400" : "text-zinc-400")}>{t.desc}</div>
                           </div>
-                          {t.id !== 'blank' && (
+                          {t.id !== 'blank' && t.id !== 'ai' && (
                             <button
                               onClick={(e) => { e.stopPropagation(); setPreviewTemplateId(t.id); }}
                               className="absolute top-1/2 -translate-y-1/2 right-2 p-1.5 bg-white border border-zinc-100 rounded-lg text-zinc-400 hover:text-blue-500 hover:border-blue-100 transition-all opacity-0 group-hover:opacity-100"
@@ -480,18 +543,27 @@ export function ProjectListClient({
         />
       )}
 
-      {/* Quick Edit Modal */}
-      {editingProjectId && (
-        <ProjectQuickEditModal
-          projectId={editingProjectId}
-          project={projects.find(p => p.id === editingProjectId)}
-          onClose={() => setEditingProjectId(null)}
-          onSave={(updatedProj: any) => {
-            setProjects(projects.map(p => p.id === updatedProj.id ? updatedProj : p));
-            setEditingProjectId(null);
-          }}
-        />
-      )}
+        {/* Quick Edit Modal */}
+        {editingProjectId && (
+          <ProjectQuickEditModal
+            projectId={editingProjectId}
+            project={projects.find(p => p.id === editingProjectId)}
+            onClose={() => setEditingProjectId(null)}
+            onSave={(updatedProj: any) => {
+              setProjects(projects.map(p => p.id === updatedProj.id ? updatedProj : p));
+              setEditingProjectId(null);
+            }}
+          />
+        )}
+
+        {/* AI Generator Modal */}
+        {showAIGenerator && (
+          <AIGeneratorModal
+            user={initialUser}
+            onClose={() => setShowAIGenerator(false)}
+            onSuccess={handleCreateProjectFromAI}
+          />
+        )}
     </div>
   );
 }
