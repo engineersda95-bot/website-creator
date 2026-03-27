@@ -110,6 +110,12 @@ body {
 .rt-content u { text-decoration: underline; }
 .rt-content a { color: inherit; text-decoration: underline; cursor: pointer; }
 
+/* In editor preview, links should not be clickable to avoid accidental navigation */
+#editor-content a {
+  pointer-events: none !important;
+}
+
+
 /* TipTap Editor Specifics */
 .ProseMirror { outline: none !important; }
 .ProseMirror p.is-editor-empty:first-child::before {

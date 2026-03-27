@@ -92,6 +92,27 @@ export const EditorCanvas: React.FC = () => {
   const currentScale = zoom / 100;
   React.useEffect(() => { setIsMounted(true); }, []);
 
+  // Prevent navigation for all links inside the editor canvas
+  React.useEffect(() => {
+    const handleCaptureClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+      
+      if (link && document.getElementById('editor-content')?.contains(link)) {
+        // Allow clicks on links that are part of the editor UI (insertion menu, etc.)
+        if (link.closest('.insert-menu') || link.closest('.block-controls') || link.closest('.help-center')) {
+          return;
+        }
+
+        // Prevent navigation but allow selection by not stopping propagation
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('click', handleCaptureClick, true);
+    return () => document.removeEventListener('click', handleCaptureClick, true);
+  }, []);
+
   if (!isMounted) return <div className="flex-1 bg-zinc-100" />;
 
   if (!currentPage) return (
@@ -153,6 +174,7 @@ export const EditorCanvas: React.FC = () => {
           .canvas-desktop { width: 1280px; }
           .canvas-tablet { width: 768px; }
           .canvas-mobile { width: 390px; }
+          #editor-content a { pointer-events: none !important; }
         `}</style>
 
         <main

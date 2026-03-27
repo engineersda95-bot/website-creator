@@ -55,6 +55,7 @@ export function RichEditor({ label, value, onChange, placeholder }: RichEditorPr
       Color,
       Link.configure({
         openOnClick: false,
+        autolink: false,
         HTMLAttributes: {
           class: 'text-blue-500 underline cursor-pointer',
         },
@@ -66,7 +67,11 @@ export function RichEditor({ label, value, onChange, placeholder }: RichEditorPr
     content: value,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      const html = editor.getHTML();
+      if (html !== value) {
+         // TipTap can trigger onUpdate during setup; setTimeout ensures we don't update state while rendering.
+         setTimeout(() => onChange(html), 0);
+      }
     },
     editorProps: {
       attributes: {

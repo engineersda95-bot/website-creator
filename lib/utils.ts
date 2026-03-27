@@ -8,73 +8,69 @@ export function cn(...inputs: ClassValue[]) {
 export const formatRichText = (text: string = '') => {
   if (!text) return '';
 
-  // TipTap generated content usually starts with <p> or another tag.
-  // We check if it looks like HTML. If so, we return it as is.
-  // We also check for our custom [youtube:...] pattern which might be in legacy or new content.
+  const youtubeTransform = (t: string) => t.replace(/\[youtube:(.*?)\]/g, '<div class="relative pb-[56.25%] h-0 my-8 rounded-2xl overflow-hidden shadow-xl"><iframe src="https://www.youtube.com/embed/$1" class="absolute top-0 left-0 w-full h-full" frameborder="0" allowfullscreen></iframe></div>');
+  
+  const linkTransform = (t: string) => t.replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"([^>]*)>/gi, (match, href, rest) => {
+    if (rest.includes('target=')) return match;
+
+    // Consistency with formatLink: ensure relative links have a leading slash
+    let cleanHref = href;
+    if (!href.startsWith('http') && !href.startsWith('/') && !href.startsWith('#') && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
+      cleanHref = `/${href}`;
+    }
+
+    const isAbsolute = cleanHref.startsWith('http') || cleanHref.startsWith('mailto:') || cleanHref.startsWith('tel:');
+    if (isAbsolute) {
+      return `<a href="${cleanHref}" target="_blank" rel="noopener noreferrer"${rest}>`;
+    }
+    return `<a href="${cleanHref}"${rest}>`;
+  });
+
   const hasHtml = /<[a-z][\s\S]*>/i.test(text);
 
   if (hasHtml) {
-    // Even if it's HTML, we might need to swap our custom youtube tag if it was manually typed
-    return text.replace(/\[youtube:(.*?)\]/g, '<div class="relative pb-[56.25%] h-0 my-8 rounded-2xl overflow-hidden shadow-xl"><iframe src="https://www.youtube.com/embed/$1" class="absolute top-0 left-0 w-full h-full" frameborder="0" allowfullscreen></iframe></div>');
+    return linkTransform(youtubeTransform(text));
   }
 
   // Legacy Markdown path
-  // Fast path: single-line text (titles, labels) — no <p> wrapping
-  if (!text.includes('\n')) {
-    return text
+  const inline = (t: string) =>
+    youtubeTransform(t
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\[youtube:(.*?)\]/g, '<div class="relative pb-[56.25%] h-0 my-8 rounded-2xl overflow-hidden shadow-xl"><iframe src="https://www.youtube.com/embed/$1" class="absolute top-0 left-0 w-full h-full" frameborder="0" allowfullscreen></iframe></div>');
+      .replace(/\*(.*?)\*/g, '<em>$1</em>'));
+
+  if (!text.includes('\n')) {
+    return linkTransform(inline(text));
   }
 
-  // Multi-line: full block parser with <p>, <ul>, <ol>
   const lines = text.split('\n');
-  const html: string[] = [];
+  const htmlOutput: string[] = [];
   let inUl = false;
   let inOl = false;
 
   const closeLists = () => {
-    if (inUl) { html.push('</ul>'); inUl = false; }
-    if (inOl) { html.push('</ol>'); inOl = false; }
+    if (inUl) { htmlOutput.push('</ul>'); inUl = false; }
+    if (inOl) { htmlOutput.push('</ol>'); inOl = false; }
   };
-
-  const inline = (t: string) =>
-    t
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\[youtube:(.*?)\]/g, '<div class="relative pb-[56.25%] h-0 my-8 rounded-2xl overflow-hidden shadow-xl"><iframe src="https://www.youtube.com/embed/$1" class="absolute top-0 left-0 w-full h-full" frameborder="0" allowfullscreen></iframe></div>');
 
   for (const raw of lines) {
     const line = raw.trim();
-
-    if (!line) {
-      closeLists();
-      continue;
-    }
-
-    // Unordered list
+    if (!line) { closeLists(); continue; }
     if (line.startsWith('- ') || line.startsWith('* ')) {
-      if (inOl) { html.push('</ol>'); inOl = false; }
-      if (!inUl) { html.push('<ul>'); inUl = true; }
-      html.push(`<li>${inline(line.slice(2))}</li>`);
-      continue;
+      if (inOl) { htmlOutput.push('</ol>'); inOl = false; }
+      if (!inUl) { htmlOutput.push('<ul>'); inUl = true; }
+      htmlOutput.push(`<li>${inline(line.slice(2))}</li>`); continue;
     }
-
-    // Ordered list
     const olMatch = line.match(/^(\d+)\.\s+(.*)/);
     if (olMatch) {
-      if (inUl) { html.push('</ul>'); inUl = false; }
-      if (!inOl) { html.push('<ol>'); inOl = true; }
-      html.push(`<li>${inline(olMatch[2])}</li>`);
-      continue;
+      if (inUl) { htmlOutput.push('</ul>'); inUl = false; }
+      if (!inOl) { htmlOutput.push('<ol>'); inOl = true; }
+      htmlOutput.push(`<li>${inline(olMatch[2])}</li>`); continue;
     }
-
     closeLists();
-    html.push(`<p>${inline(line)}</p>`);
+    htmlOutput.push(`<p>${inline(line)}</p>`);
   }
-
   closeLists();
-  return html.join('');
+  return linkTransform(htmlOutput.join(''));
 };
 
 export const toPx = (value: any, defaultValue: string = ''): string => {
