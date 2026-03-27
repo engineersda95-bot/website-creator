@@ -39,6 +39,7 @@ export interface Page {
   slug: string;
   title: string;
   blocks: Block[];
+  language?: string; // e.g. 'it', 'en'
   seo?: {
     title?: string;
     description?: string;
@@ -100,6 +101,8 @@ export interface ProjectSettings {
     mobile?: Partial<ProjectSettings>;
     tablet?: Partial<ProjectSettings>;
   };
+  languages?: string[]; // Supported languages, e.g. ['it', 'en']
+  defaultLanguage?: string; // Main language, e.g. 'it'
   typography?: {
     h1Size?: number;
     h2Size?: number;

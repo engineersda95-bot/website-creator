@@ -1,5 +1,5 @@
 import 'server-only';
-import { Block, Page, Project } from '@/types/editor';
+import { Block, Page, Project, ProjectSettings } from '@/types/editor';
 import React from 'react';
 import { toPx } from '@/lib/utils';
 import { generateBlockCSS } from '@/lib/responsive-utils';
@@ -9,25 +9,47 @@ import { getProjectDomain } from '@/lib/url-utils';
 export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: Project): string {
   const { renderToStaticMarkup } = require('react-dom/server');
   const blocksHtml = page.blocks.map(block => renderBlock(block, allPages, project, renderToStaticMarkup)).join('\n');
-  const font = project?.settings?.fontFamily || 'Outfit';
-  const pColor = project?.settings?.primaryColor || '#3b82f6';
-  const sColor = project?.settings?.secondaryColor || '#10b981';
-  const floating = project?.settings?.floatingCTA;
+  
+  const settings = (project?.settings || {}) as ProjectSettings;
+  const font = settings.fontFamily || 'Outfit';
+  const pColor = settings.primaryColor || '#3b82f6';
+  const sColor = settings.secondaryColor || '#10b981';
+  const floating = settings.floatingCTA;
+  const defLang = settings.defaultLanguage || 'it';
+  const pageLang = page.language || defLang;
 
-  const bDetails = project?.settings?.businessDetails || {};
-  const bType = project?.settings?.businessType || 'LocalBusiness';
+  const bDetails = settings.businessDetails || {};
+  const bType = settings.businessType || 'LocalBusiness';
 
   const baseUrl = getProjectDomain(project);
+  const pagePath = page.slug === 'home' ? '' : `/${page.slug}`;
+  const langSubpath = pageLang === defLang ? '' : `/${pageLang}`;
+  const fullPageUrl = `${baseUrl}${langSubpath}${pagePath}`;
+
+  // Find all variants of this page (including current one)
+  const allVariants = allPages.filter(p => {
+    if (page.slug === 'home' && p.slug === 'home') return true;
+    return p.slug === page.slug;
+  });
+
   return `
 <!DOCTYPE html>
-<html lang="${project?.settings?.language || 'it'}" class="scroll-smooth">
+<html lang="${pageLang}" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="canonical" href="${baseUrl}${page.slug === 'home' ? '' : '/' + page.slug}">
+    <link rel="canonical" href="${fullPageUrl}">
     
-    <title>${page.seo?.title || project?.settings?.metaTitle || page.title}</title>
-    <meta name="description" content="${page.seo?.description || project?.settings?.metaDescription || ''}">
+    ${allVariants.map(v => {
+      const vLang = v.language || defLang;
+      const vSubpath = vLang === defLang ? '' : `/${vLang}`;
+      const vPath = v.slug === 'home' ? '' : `/${v.slug}`;
+      return `<link rel="alternate" hreflang="${vLang}" href="${baseUrl}${vSubpath}${vPath}" />`;
+    }).join('\n    ')}
+    <link rel="alternate" hreflang="x-default" href="${baseUrl}${page.slug === 'home' ? '' : `/${page.slug}`}" />
+
+    <title>${page.seo?.title || settings?.metaTitle || page.title}</title>
+    <meta name="description" content="${page.seo?.description || settings?.metaDescription || ''}">
     <meta name="author" content="${bDetails?.businessName || project?.name || 'Siti Vetrina'}">
     
     <!-- Robots -->
@@ -36,16 +58,15 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     <meta name="bingbot" content="${page.seo?.indexable === false ? 'noindex, nofollow' : 'index, follow'}">
 
     <!-- Open Graph -->
-    <meta property="og:site_name" content="${project?.settings?.metaTitle || 'Sito Vetrina'}">
-    <meta property="og:title" content="${page.seo?.title || project?.settings?.metaTitle || page.title}">
-    <meta property="og:description" content="${page.seo?.description || project?.settings?.metaDescription || ''}">
-    <meta property="og:url" content="${baseUrl}${page.slug === 'home' ? '' : '/' + page.slug}">
+    <meta property="og:site_name" content="${settings?.metaTitle || 'Sito Vetrina'}">
+    <meta property="og:title" content="${page.seo?.title || settings?.metaTitle || page.title}">
+    <meta property="og:description" content="${page.seo?.description || settings?.metaDescription || ''}">
+    <meta property="og:url" content="${fullPageUrl}">
     <meta property="og:type" content="website">
-    <meta property="og:locale" content="${(project?.settings?.language === 'en' ? 'en_US' : project?.settings?.language === 'it' ? 'it_IT' : 'it_IT')}">
+    <meta property="og:locale" content="${(pageLang === 'en' ? 'en_US' : pageLang === 'it' ? 'it_IT' : 'it_IT')}">
     ${(() => {
-      const ogImageUrl = resolveImageUrl(page.seo?.image || project?.settings?.metaImage, project || null, {}, true);
+      const ogImageUrl = resolveImageUrl(page.seo?.image || settings?.metaImage, project || null, {}, true);
       if (!ogImageUrl) return '';
-      // Cache buster to force social crawlers to refresh
       const v = project?.last_published_at ? `?v=${new Date(project.last_published_at).getTime()}` : '';
       const fullOgUrl = ogImageUrl.startsWith('http') ? ogImageUrl : `${baseUrl}${ogImageUrl}${v}`;
       const isPng = fullOgUrl.toLowerCase().includes('.png');
@@ -59,13 +80,13 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="${page.seo?.title || project?.settings?.metaTitle || page.title}">
-    <meta name="twitter:description" content="${page.seo?.description || project?.settings?.metaDescription || ''}">
+    <meta name="twitter:title" content="${page.seo?.title || settings?.metaTitle || page.title}">
+    <meta name="twitter:description" content="${page.seo?.description || settings?.metaDescription || ''}">
     <meta name="twitter:image" content="${fullOgUrl}">
       `;
     })()}
 
-    <link rel="icon" href="${resolveImageUrl(project?.settings?.favicon, project || null, {}, true) || '/favicon.ico'}">
+    <link rel="icon" href="${resolveImageUrl(settings?.favicon, project || null, {}, true) || '/favicon.ico'}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -91,7 +112,7 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
       } : {}),
       ...(bDetails.phone ? { "telephone": bDetails.phone } : {}),
       ...(bDetails.email ? { "email": bDetails.email } : {}),
-      ...(project?.settings?.logo ? { "image": resolveImageUrl(project?.settings?.logo, project || null, {}, true) || "" } : {}),
+      ...(settings?.logo ? { "image": resolveImageUrl(settings?.logo, project || null, {}, true) || "" } : {}),
       ...(bType === 'Restaurant' && bDetails.servesCuisine ? { "servesCuisine": bDetails.servesCuisine } : {})
     }, null, 2)}
     </script>
@@ -104,30 +125,30 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
             --primary: ${pColor};
             --secondary: ${sColor};
             --font-main: '${font}', sans-serif;
-            --global-h1-fs: ${toPx(project?.settings?.typography?.h1Size, '4rem')};
-            --global-h2-fs: ${toPx(project?.settings?.typography?.h2Size, '3rem')};
-            --global-h3-fs: ${toPx(project?.settings?.typography?.h3Size, '2rem')};
-            --global-h4-fs: ${toPx(project?.settings?.typography?.h4Size, '1.5rem')};
-            --global-body-fs: ${toPx(project?.settings?.typography?.bodySize, '1rem')};
+            --global-h1-fs: ${toPx(settings?.typography?.h1Size, '4rem')};
+            --global-h2-fs: ${toPx(settings?.typography?.h2Size, '3rem')};
+            --global-h3-fs: ${toPx(settings?.typography?.h3Size, '2rem')};
+            --global-h4-fs: ${toPx(settings?.typography?.h4Size, '1.5rem')};
+            --global-body-fs: ${toPx(settings?.typography?.bodySize, '1rem')};
         }
-        ${project?.settings?.responsive?.tablet?.typography ? `
+        ${settings?.responsive?.tablet?.typography ? `
         @media (max-width: 1024px) {
             :root {
-                ${project.settings.responsive.tablet.typography.h1Size ? `--global-h1-fs: ${toPx(project.settings.responsive.tablet.typography.h1Size)};` : ''}
-                ${project.settings.responsive.tablet.typography.h2Size ? `--global-h2-fs: ${toPx(project.settings.responsive.tablet.typography.h2Size)};` : ''}
-                ${project.settings.responsive.tablet.typography.h3Size ? `--global-h3-fs: ${toPx(project.settings.responsive.tablet.typography.h3Size)};` : ''}
-                ${project.settings.responsive.tablet.typography.h4Size ? `--global-h4-fs: ${toPx(project.settings.responsive.tablet.typography.h4Size)};` : ''}
-                ${project.settings.responsive.tablet.typography.bodySize ? `--global-body-fs: ${toPx(project.settings.responsive.tablet.typography.bodySize)};` : ''}
+                ${settings.responsive.tablet.typography.h1Size ? `--global-h1-fs: ${toPx(settings.responsive.tablet.typography.h1Size)};` : ''}
+                ${settings.responsive.tablet.typography.h2Size ? `--global-h2-fs: ${toPx(settings.responsive.tablet.typography.h2Size)};` : ''}
+                ${settings.responsive.tablet.typography.h3Size ? `--global-h3-fs: ${toPx(settings.responsive.tablet.typography.h3Size)};` : ''}
+                ${settings.responsive.tablet.typography.h4Size ? `--global-h4-fs: ${toPx(settings.responsive.tablet.typography.h4Size)};` : ''}
+                ${settings.responsive.tablet.typography.bodySize ? `--global-body-fs: ${toPx(settings.responsive.tablet.typography.bodySize)};` : ''}
             }
         }` : ''}
-        ${project?.settings?.responsive?.mobile?.typography ? `
+        ${settings?.responsive?.mobile?.typography ? `
         @media (max-width: 768px) {
             :root {
-                ${project.settings.responsive.mobile.typography.h1Size ? `--global-h1-fs: ${toPx(project.settings.responsive.mobile.typography.h1Size)};` : ''}
-                ${project.settings.responsive.mobile.typography.h2Size ? `--global-h2-fs: ${toPx(project.settings.responsive.mobile.typography.h2Size)};` : ''}
-                ${project.settings.responsive.mobile.typography.h3Size ? `--global-h3-fs: ${toPx(project.settings.responsive.mobile.typography.h3Size)};` : ''}
-                ${project.settings.responsive.mobile.typography.h4Size ? `--global-h4-fs: ${toPx(project.settings.responsive.mobile.typography.h4Size)};` : ''}
-                ${project.settings.responsive.mobile.typography.bodySize ? `--global-body-fs: ${toPx(project.settings.responsive.mobile.typography.bodySize)};` : ''}
+                ${settings.responsive.mobile.typography.h1Size ? `--global-h1-fs: ${toPx(settings.responsive.mobile.typography.h1Size)};` : ''}
+                ${settings.responsive.mobile.typography.h2Size ? `--global-h2-fs: ${toPx(settings.responsive.mobile.typography.h2Size)};` : ''}
+                ${settings.responsive.mobile.typography.h3Size ? `--global-h3-fs: ${toPx(settings.responsive.mobile.typography.h3Size)};` : ''}
+                ${settings.responsive.mobile.typography.h4Size ? `--global-h4-fs: ${toPx(settings.responsive.mobile.typography.h4Size)};` : ''}
+                ${settings.responsive.mobile.typography.bodySize ? `--global-body-fs: ${toPx(settings.responsive.mobile.typography.bodySize)};` : ''}
             }
         }` : ''}
         * { font-family: inherit; }
@@ -156,16 +177,14 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { 
-            background: ${project?.settings?.appearance === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'}; 
+            background: ${settings?.appearance === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'}; 
             border-radius: 10px; 
         }
-        * { scrollbar-width: thin; scrollbar-color: ${project?.settings?.appearance === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'} transparent; }
+        * { scrollbar-width: thin; scrollbar-color: ${settings?.appearance === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'} transparent; }
 
         .no-scrollbar::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
         .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
 
-        /* Rich text reset: neutralize browser default margins on <p>, <ul>, <ol>
-           emitted by formatRichText for multi-line content. */
         .rt-content p { margin: 0; padding: 0; line-height: inherit; }
         .rt-content p + p { margin-top: 0.75em; }
         .rt-content ul, .rt-content ol { margin: 0.5em 0; padding-left: 1.5em; }
@@ -175,7 +194,6 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
         .rt-content strong { font-weight: 700; }
         .rt-content em { font-style: italic; }
 
-        /* Mobile Menu Visibility */
         [data-menu][data-open="true"] {
             opacity: 1 !important;
             transform: translateY(0) !important;
@@ -183,9 +201,9 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
             pointer-events: auto !important;
         }
     </style>
-    ${project?.settings?.customScriptsHead || ''}
+    ${settings?.customScriptsHead || ''}
 </head>
-<body class="antialiased min-h-screen" style="background-color: ${project?.settings?.appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff')}; color: ${project?.settings?.appearance === 'dark' ? (project?.settings?.themeColors?.dark?.text || '#ffffff') : (project?.settings?.themeColors?.light?.text || '#000000')};">
+<body class="antialiased min-h-screen" style="background-color: ${settings?.appearance === 'dark' ? (settings?.themeColors?.dark?.bg || '#0c0c0e') : (settings?.themeColors?.light?.bg || '#ffffff')}; color: ${settings?.appearance === 'dark' ? (settings?.themeColors?.dark?.text || '#ffffff') : (settings?.themeColors?.light?.text || '#000000')};">
     <main>
         ${blocksHtml}
     </main>
@@ -201,7 +219,6 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     ` : ''}
 
     <script>
-      // Navigation Scroll Behavior (Sticky & Transparent)
       const handleScroll = () => {
         const navs = document.querySelectorAll('nav.fixed');
         const scrolled = window.scrollY > 20;
@@ -225,7 +242,6 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
       window.addEventListener('scroll', handleScroll);
       handleScroll();
 
-      // Navigation Mobile Menu Toggle
       document.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-menu-toggle]');
         if (!btn) return;
@@ -241,15 +257,13 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
         btn.setAttribute('data-open', nextState);
       });
     </script>
-    ${project?.settings?.customScriptsBody || ''}
+    ${settings?.customScriptsBody || ''}
 </body>
 </html>
   `.trim();
 }
 
 import { BLOCK_DEFINITIONS } from './block-definitions';
-
-// ... (after generateStaticHtml function)
 
 const StaticRegistry: Record<string, React.FC<any>> = Object.entries(BLOCK_DEFINITIONS).reduce((acc, [type, def]) => {
   if (def.visual) acc[type] = def.visual;
@@ -259,18 +273,12 @@ const StaticRegistry: Record<string, React.FC<any>> = Object.entries(BLOCK_DEFIN
 function renderBlock(block: Block, allPages: Page[], project: Project | undefined, renderToStaticMarkup: any): string {
   const { type, content } = block;
   const blockId = `block-${block.id.substring(0, 8)}`;
-
-  // Generate responsive CSS using the new unified utility
   const responsiveCss = generateBlockCSS(blockId, block, project);
   const styleWrapper = `<style>${responsiveCss}</style>`;
-  const isNav = type === 'navigation';
   const blockWrapper = (inner: string) => `${styleWrapper}<div id="${blockId}" class="w-full transition-all duration-500">${inner}</div>`;
 
   const Component = StaticRegistry[type];
-
-  if (!Component) {
-    return `<!-- Block type ${type} ignored in static generation -->`;
-  }
+  if (!Component) return `<!-- Block type ${type} ignored in static generation -->`;
 
   return blockWrapper(renderToStaticMarkup(
     <Component
@@ -286,23 +294,43 @@ function renderBlock(block: Block, allPages: Page[], project: Project | undefine
 
 export function generateSitemap(pages: Page[], project: Project): string {
   const baseUrl = getProjectDomain(project);
+  const defLang = project.settings?.defaultLanguage || 'it';
   const now = new Date().toISOString().split('T')[0];
 
   const urls = pages
     .filter(page => page?.seo?.indexable !== false)
     .map(page => {
-      const url = page.slug === 'home' ? baseUrl : `${baseUrl}/${page.slug}`;
+      const pageLang = page.language || defLang;
+      const langSubpath = pageLang === defLang ? '' : `/${pageLang}`;
+      const pagePath = page.slug === 'home' ? '' : `/${page.slug}`;
+      const url = `${baseUrl}${langSubpath}${pagePath}`;
+
+      const allVariants = pages.filter(p => {
+        if (page.slug === 'home' && p.slug === 'home') return true;
+        return p.slug === page.slug;
+      });
+      const alternateLinks = allVariants.map(v => {
+        const vLang = v.language || defLang;
+        const vSubpath = vLang === defLang ? '' : `/${vLang}`;
+        const vPath = v.slug === 'home' ? '' : `/${v.slug}`;
+        return `    <xhtml:link rel="alternate" hreflang="${vLang}" href="${baseUrl}${vSubpath}${vPath}" />`;
+      }).join('\n');
+
+      const xDefaultLink = `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${page.slug === 'home' ? '' : `/${page.slug}`}" />`;
+
       return `
   <url>
     <loc>${url}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>${page.slug === 'home' ? '1.0' : '0.8'}</priority>
+${alternateLinks}
+${xDefaultLink}
   </url>`;
     }).join('');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls}
 </urlset>`.trim();
 }

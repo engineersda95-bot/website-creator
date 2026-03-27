@@ -212,6 +212,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       project_id: project.id,
       slug,
       title,
+      language: project.settings?.defaultLanguage || 'it',
       blocks: newBlocks,
       updated_at: new Date().toISOString()
     };
@@ -248,6 +249,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       title: currentPage.title,
       blocks: currentPage.blocks,
       seo: currentPage.seo,
+      language: currentPage.language,
       updated_at: new Date().toISOString()
     }];
 
@@ -271,6 +273,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
             title: p.title,
             blocks: newBlocks,
             seo: p.seo,
+            language: p.language,
             updated_at: new Date().toISOString()
           });
         }
@@ -380,16 +383,26 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   initialize: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    if (get().isInitialized) return;
+    
+    // Check if another call is already in progress (local guard)
+    if ((window as any).__sv_initializing) return;
+    (window as any).__sv_initializing = true;
 
-    // Load copied block from localStorage
-    const saved = localStorage.getItem('sv_copied_block');
-    let copiedBlock = null;
-    if (saved) {
-      try { copiedBlock = JSON.parse(saved); } catch (e) { }
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Load copied block from localStorage
+      const saved = localStorage.getItem('sv_copied_block');
+      let copiedBlock = null;
+      if (saved) {
+        try { copiedBlock = JSON.parse(saved); } catch (e) { }
+      }
+
+      set({ user, isInitialized: true, copiedBlock });
+    } finally {
+      (window as any).__sv_initializing = false;
     }
-
-    set({ user, isInitialized: true, copiedBlock });
   },
 
   setUser: (user) => set({ user }),

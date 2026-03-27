@@ -69,6 +69,8 @@ export async function deployToCloudflare(projectId: string) {
     const assetsToDownload = new Set<string>(); // set of filenames (img_hash.ext)
 
     // First pass: generate HTML and find all relative asset paths
+    const defaultLanguage = project.settings?.defaultLanguage || 'it';
+
     for (const page of pages) {
       const htmlContent = generateStaticHtml(page as Page, pages as any as Page[], project);
       
@@ -79,17 +81,34 @@ export async function deployToCloudflare(projectId: string) {
         assetsToDownload.add(match[1]);
       }
 
+      const pageLang = page.language || defaultLanguage;
+      let targetDir = tempDir;
+
+      // Handle subfolder for non-default languages
+      if (pageLang !== defaultLanguage) {
+        targetDir = path.join(tempDir, pageLang);
+        if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+      }
+
       const filename = page.slug === 'home' ? 'index.html' : `${page.slug}.html`;
-      fs.writeFileSync(path.join(tempDir, filename), htmlContent);
-      console.log(`Generated ${filename}`);
+      fs.writeFileSync(path.join(targetDir, filename), htmlContent);
+      console.log(`Generated ${filename} in ${pageLang}`);
     }
 
-    // 3.1. Generate Sitemap & Robots.txt
+    // 3.1. Generate Sitemap, Robots.txt & _headers (for Cloudflare mime types)
     const sitemapContent = generateSitemap(pages as any as Page[], project);
     const robotsContent = generateRobotsTxt(project, pages as any as Page[]);
+    const headersContent = `
+/sitemap.xml
+  Content-Type: application/xml
+/robots.txt
+  Content-Type: text/plain
+`.trim();
+    
     fs.writeFileSync(path.join(tempDir, 'sitemap.xml'), sitemapContent);
     fs.writeFileSync(path.join(tempDir, 'robots.txt'), robotsContent);
-    console.log('Generated sitemap.xml and robots.txt');
+    fs.writeFileSync(path.join(tempDir, '_headers'), headersContent);
+    console.log('Generated sitemap.xml, robots.txt and _headers');
 
     // Second pass: download unique assets from Supabase Storage
     console.log(`Downloading ${assetsToDownload.size} unique assets from Supabase...`);

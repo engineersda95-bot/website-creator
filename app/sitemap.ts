@@ -12,27 +12,47 @@ const blogSlugs = [
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: BASE_URL,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1,
+  const languages = {
+    it: BASE_URL,
+    en: `${BASE_URL}/en`,
+    'x-default': BASE_URL,
+  };
+
+  const getAlternates = (path: string = '') => ({
+    languages: {
+      it: `${BASE_URL}${path}`,
+      en: `${BASE_URL}/en${path}`,
+      'x-default': `${BASE_URL}${path}`,
     },
-    {
-      url: `${BASE_URL}/blog`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
+  });
+
+  const generateLanguageEntries = (path: string = '', priority: number = 0.8) => {
+    return [
+      {
+        url: `${BASE_URL}${path}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: path === '' ? 1 : priority,
+        alternates: getAlternates(path),
+      },
+      {
+        url: `${BASE_URL}/en${path}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: path === '' ? 1 : priority,
+        alternates: getAlternates(path),
+      },
+    ];
+  };
+
+  const staticPages = [
+    ...generateLanguageEntries(''),
+    ...generateLanguageEntries('/blog', 0.8),
   ];
 
-  const blogPages: MetadataRoute.Sitemap = blogSlugs.map((slug) => ({
-    url: `${BASE_URL}/blog/${slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }));
+  const blogPages = blogSlugs.flatMap((slug) => 
+    generateLanguageEntries(`/blog/${slug}`, 0.6)
+  );
 
   return [...staticPages, ...blogPages];
 }

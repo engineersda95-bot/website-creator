@@ -59,6 +59,11 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://sitivetrina.it",
+    languages: {
+      it: "https://sitivetrina.it",
+      en: "https://sitivetrina.it/en",
+      "x-default": "https://sitivetrina.it",
+    },
   },
 };
 

@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   ArrowLeft, Plus, FileText, ExternalLink, Rocket, Save,
   Loader2, Trash2, LayoutGrid, Clock, Palette, Globe, X,
-  Monitor, Tablet, Smartphone, Check
+  Monitor, Tablet, Smartphone, Check, Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { deployToCloudflare } from '@/app/actions/deploy';
@@ -21,6 +21,9 @@ import { Page } from '@/types/editor';
 import { toast } from '@/components/shared/Toast';
 import { PageCard } from '@/components/editor/cards/PageCard';
 import { PageSeoModal } from '@/components/editor/modals/PageSeoModal';
+import { TranslatePageModal } from '@/components/editor/modals/TranslatePageModal';
+import { LanguageSection } from '@/components/blocks/sidebar/settings/LanguageSection';
+import { AdvancedSection } from '@/components/blocks/sidebar/settings/AdvancedSection';
 
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
@@ -82,8 +85,9 @@ export function ProjectDashboardClient({
   const [newTitle, setNewTitle] = useState('');
   const [newSlug, setNewSlug] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pages' | 'design'>('pages');
+  const [activeTab, setActiveTab] = useState<'pages' | 'design' | 'settings'>('pages');
   const [seoOpenId, setSeoOpenId] = useState<string | null>(null);
+  const [translateOpenId, setTranslateOpenId] = useState<string | null>(null);
 
   const isPublished = !!localProject?.live_url;
 
@@ -120,6 +124,7 @@ export function ProjectDashboardClient({
         project_id: localProject.id,
         title: newTitle.trim(),
         slug,
+        language: localProject.settings?.defaultLanguage || 'it',
         blocks: [],
       })
       .select()
@@ -147,6 +152,46 @@ export function ProjectDashboardClient({
     setPages(pages.map(p => p.id === pageId ? { ...p, seo: newSeo } : p));
     // Persist to DB
     await supabase.from('pages').update({ seo: newSeo }).eq('id', pageId);
+  };
+
+  const handleTranslatePage = async ({ lang, title, slug, seoTitle, seoDescription }: { 
+    lang: string; 
+    title: string; 
+    slug: string;
+    seoTitle?: string;
+    seoDescription?: string;
+  }) => {
+    const sourcePage = pages.find(p => p.id === translateOpenId);
+    if (!sourcePage) return;
+
+    const newPageId = uuidv4();
+    const { data: newPage, error } = await supabase
+      .from('pages')
+      .insert({
+        id: newPageId,
+        project_id: localProject.id,
+        title,
+        slug,
+        language: lang,
+        blocks: sourcePage.blocks.map((b: any) => ({ ...b, id: uuidv4() })), // Proper deep clone with new IDs
+        seo: { 
+          ...sourcePage.seo, 
+          title: seoTitle || title,
+          description: seoDescription || sourcePage.seo?.description || '' 
+        },
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast(`Errore durante la traduzione: ${error.message}`, 'error');
+      throw error;
+    }
+
+    if (newPage) {
+      setPages([...pages, newPage]);
+      toast(`Pagina tradotta in ${lang.toUpperCase()}!`, 'success');
+    }
   };
 
   const handlePublish = async () => {
@@ -270,6 +315,18 @@ export function ProjectDashboardClient({
             <Palette size={15} />
             Design Globale
           </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all -mb-px",
+              activeTab === 'settings'
+                ? "border-zinc-900 text-zinc-900"
+                : "border-transparent text-zinc-400 hover:text-zinc-600"
+            )}
+          >
+            <Settings size={15} />
+            Impostazioni
+          </button>
         </div>
 
         {activeTab === 'pages' ? (
@@ -349,6 +406,7 @@ export function ProjectDashboardClient({
                   projectId={localProject.id}
                   formatDate={formatDate}
                   onOpenSeo={(id) => setSeoOpenId(id)}
+                  onOpenTranslate={(id) => setTranslateOpenId(id)}
                   onDelete={handleDeletePage}
                   onInternalNavigate={handleInternalNavigation}
                 />
@@ -371,9 +429,24 @@ export function ProjectDashboardClient({
                 />
               );
             })()}
+
+            {/* Translate Modal */}
+            {translateOpenId && (() => {
+              const page = pages.find(p => p.id === translateOpenId);
+              if (!page) return null;
+
+              return (
+                <TranslatePageModal
+                  page={page}
+                  project={localProject}
+                  onClose={() => setTranslateOpenId(null)}
+                  onTranslate={handleTranslatePage}
+                />
+              );
+            })()}
           </div>
 
-        ) : (
+        ) : activeTab === 'design' ? (
           /* ── DESIGN TAB ── */
           <div className="max-w-3xl mx-auto">
             {/* STICKY DESIGN HEADER */}
@@ -428,6 +501,46 @@ export function ProjectDashboardClient({
                 viewport={viewport}
                 variant="page"
               />
+            </div>
+          </div>
+        ) : (
+          /* ── SETTINGS TAB ── */
+          <div className="max-w-3xl mx-auto space-y-6">
+            <div className="bg-white border border-zinc-200 rounded-3xl p-8 shadow-sm space-y-8">
+              <div>
+                <h2 className="text-lg font-bold text-zinc-900 leading-none">Impostazioni Progetto</h2>
+                <p className="text-[11px] text-zinc-500 mt-1.5 font-medium">Gestisci le lingue e le opzioni avanzate del tuo sito.</p>
+              </div>
+
+              <div className="pt-4 border-t border-zinc-100">
+                <LanguageSection
+                  project={localProject}
+                  updateProjectSettings={updateProjectSettings}
+                />
+              </div>
+
+              <div className="pt-8 border-t border-zinc-100">
+                <AdvancedSection
+                  project={localProject}
+                  updateProjectSettings={updateProjectSettings}
+                />
+              </div>
+
+              <div className="pt-8 border-t border-zinc-100 flex justify-end">
+                <button
+                  onClick={saveProject}
+                  disabled={!hasUnsavedChanges}
+                  className={cn(
+                    "flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all text-sm font-bold shadow-sm",
+                    hasUnsavedChanges
+                      ? "bg-zinc-900 text-white hover:bg-zinc-800 active:scale-95"
+                      : "bg-zinc-100 text-zinc-400 cursor-default"
+                  )}
+                >
+                  {hasUnsavedChanges ? <Save size={16} /> : <Check size={16} />}
+                  <span>{hasUnsavedChanges ? 'Salva Impostazioni' : 'Impostazioni Salvate'}</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

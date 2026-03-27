@@ -11,7 +11,6 @@ import { SeoSection } from './settings/SeoSection';
 import { ThemeSection } from './settings/ThemeSection';
 import { ButtonDesignSection } from './settings/ButtonDesignSection';
 import { TypographySection } from './settings/TypographySection';
-import { AdvancedSection } from './settings/AdvancedSection';
 
 interface GlobalSettingsProps {
    project: any;
@@ -69,11 +68,6 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
                project={project}
                updateProjectSettings={updateProjectSettings}
                viewport={viewport}
-            />
-
-            <AdvancedSection
-               project={project}
-               updateProjectSettings={updateProjectSettings}
             />
          </div>
       </div>

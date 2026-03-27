@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { FileText, Clock, Globe, Trash2 } from 'lucide-react';
+import { FileText, Clock, Globe, Trash2, Search } from 'lucide-react';
 import { Page } from '@/types/editor';
 
 interface PageCardProps {
@@ -10,11 +10,20 @@ interface PageCardProps {
   projectId: string;
   formatDate: (d: string) => string;
   onOpenSeo: (id: string) => void;
+  onOpenTranslate: (id: string) => void;
   onDelete: (id: string) => void;
   onInternalNavigate: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
-export function PageCard({ page, projectId, formatDate, onOpenSeo, onDelete, onInternalNavigate }: PageCardProps) {
+export function PageCard({ page, projectId, formatDate, onOpenSeo, onOpenTranslate, onDelete, onInternalNavigate }: PageCardProps) {
+  const langEmoji: Record<string, string> = {
+    it: '🇮🇹',
+    en: '🇬🇧',
+    fr: '🇫🇷',
+    de: '🇩🇪',
+    es: '🇪🇸',
+  };
+
   return (
     <div
       className="group relative bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md hover:border-zinc-300 transition-all flex flex-col"
@@ -28,6 +37,11 @@ export function PageCard({ page, projectId, formatDate, onOpenSeo, onDelete, onI
           <div className="w-10 h-10 bg-zinc-50 rounded-lg flex items-center justify-center">
             <FileText size={18} />
           </div>
+          {page.language && (
+            <div className="flex items-center justify-center w-8 h-8 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold text-zinc-600 uppercase">
+              {langEmoji[page.language] || page.language}
+            </div>
+          )}
         </div>
         <h3 className="text-sm font-bold text-zinc-900 transition-colors">
           {page.title}
@@ -46,7 +60,17 @@ export function PageCard({ page, projectId, formatDate, onOpenSeo, onDelete, onI
             className="p-1.5 rounded-md text-zinc-300 hover:text-zinc-500 hover:bg-white transition-all shadow-sm"
             title="Impostazioni SEO"
           >
-            <Globe size={14} />
+            <div className="flex items-center gap-1 px-1">
+              <Search size={14} />
+              <span className="text-[10px] font-bold uppercase">SEO</span>
+            </div>
+          </button>
+          <button
+            onClick={() => onOpenTranslate(page.id)}
+            className="p-1.5 rounded-md text-zinc-300 hover:text-blue-600 hover:bg-white transition-all shadow-sm"
+            title="Traduci"
+          >
+            <Globe fontStyle="italic" size={14} className="scale-x-[-1]" />
           </button>
           {page.slug !== 'home' && (
             <button

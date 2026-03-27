@@ -84,9 +84,19 @@ export function PageSwitcher({ currentPage, pages, projectId, initialPageId, fon
                         /{p.slug}
                       </span>
                     </div>
-                    {isCurrent && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-                    )}
+                    <div className="flex items-center gap-2">
+                      {p.language && (
+                        <span className={cn(
+                          "text-[9px] font-black px-1 py-0.5 rounded uppercase tracking-tighter shrink-0",
+                          isCurrent ? "bg-blue-600 text-white" : "bg-zinc-800 text-zinc-300"
+                        )}>
+                          {p.language}
+                        </span>
+                      )}
+                      {isCurrent && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                      )}
+                    </div>
                   </Link>
                 );
               })}

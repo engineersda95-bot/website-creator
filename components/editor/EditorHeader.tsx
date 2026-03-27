@@ -93,6 +93,12 @@ export function EditorHeader({
           {siteStatus === 'pubblicato' ? 'Online' : siteStatus === 'bozza' ? 'Bozza' : 'Bozza'}
         </div>
 
+        {currentPage?.language && (
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-zinc-900 text-white border border-zinc-900 shadow-sm ml-1">
+            {currentPage.language}
+          </div>
+        )}
+
         {project?.live_url && (
           <a
             href={getProjectDomain(project)}

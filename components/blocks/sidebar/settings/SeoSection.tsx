@@ -32,7 +32,7 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
             <div className="space-y-6">
                <div className="relative">
                   <SimpleInput
-                     label="Meta Title (Default Sito)"
+                     label="Meta Title (Default)"
                      placeholder="Titolo per Google..."
                      value={project?.settings?.metaTitle || ''}
                      onChange={(val) => updateProjectSettings({ metaTitle: val })}
@@ -47,7 +47,7 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
                </div>
 
                <div className="relative">
-                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block pl-1 mb-2">Meta Description (Default Sito)</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block pl-1 mb-2">Meta Description (Default)</label>
                   <textarea
                      className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none shadow-inner resize-none min-h-[100px]"
                      value={project?.settings?.metaDescription || ''}
@@ -161,7 +161,7 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
                         })}
                      />
                   </div>
-                  
+
                   <div className="relative">
                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
                      <input

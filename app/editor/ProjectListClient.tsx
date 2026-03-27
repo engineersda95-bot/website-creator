@@ -62,7 +62,7 @@ export function ProjectListClient({
   const [businessCity, setBusinessCity] = useState('');
   const [businessZIP, setBusinessZIP] = useState('');
   const [businessCountry, setBusinessCountry] = useState('Italia');
-  const [businessLanguage, setBusinessLanguage] = useState('it');
+  const [businessLanguages, setBusinessLanguages] = useState<string[]>(['it']);
   const [servesCuisine, setServesCuisine] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -110,7 +110,8 @@ export function ProjectListClient({
         businessName: businessName || newName.trim(),
         servesCuisine: businessType === 'Restaurant' ? servesCuisine : undefined
       },
-      language: businessLanguage,
+      languages: businessLanguages,
+      defaultLanguage: businessLanguages[0] || 'it',
       metaTitle: (businessName || newName.trim()),
       favicon: logoPath || undefined,
       metaImage: logoPath || undefined,
@@ -265,15 +266,37 @@ export function ProjectListClient({
                         onChange={(e) => setNewName(e.target.value)}
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Lingua Sito</label>
-                      <select
-                        className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
-                        value={businessLanguage}
-                        onChange={(e) => setBusinessLanguage(e.target.value)}
-                      >
-                        {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.flag} {l.label}</option>)}
-                      </select>
+                    <div className="space-y-2">
+                      <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Lingue Supportate</label>
+                      <div className="flex flex-wrap gap-2">
+                        {LANGUAGES.map((l) => {
+                          const isSelected = businessLanguages.includes(l.value);
+                          return (
+                            <button
+                              key={l.value}
+                              onClick={() => {
+                                if (isSelected && businessLanguages.length > 1) {
+                                  setBusinessLanguages(businessLanguages.filter(lang => lang !== l.value));
+                                } else if (!isSelected) {
+                                  setBusinessLanguages([...businessLanguages, l.value]);
+                                }
+                              }}
+                              className={cn(
+                                "flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold transition-all",
+                                isSelected
+                                  ? "bg-zinc-900 border-zinc-900 text-white shadow-sm"
+                                  : "bg-white border-zinc-200 text-zinc-400 hover:border-zinc-300"
+                              )}
+                            >
+                              <span>{l.flag}</span>
+                              <span>{l.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[10px] text-zinc-400 font-medium italic">
+                        La prima lingua selezionata sarà quella predefinita.
+                      </p>
                     </div>
                   </div>
                 </div>
