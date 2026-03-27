@@ -14,6 +14,10 @@ interface HeroProps {
     subtitle: string;
     cta: string;
     ctaUrl?: string;
+    ctaTheme?: 'primary' | 'secondary';
+    cta2?: string;
+    cta2Url?: string;
+    cta2Theme?: 'primary' | 'secondary';
     backgroundImage?: string;
     backgroundAlt?: string;
     sectionId?: string;
@@ -165,7 +169,17 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
               url={content.ctaUrl || (content as any).ctaLink} 
               project={project} 
               viewport={viewport as any} 
-              theme={style.buttonTheme} 
+              theme={content.ctaTheme || style.buttonTheme} 
+              isStatic={isStatic} 
+            />
+          )}
+          {content.cta2 && (
+            <CTA 
+              label={content.cta2} 
+              url={content.cta2Url} 
+              project={project} 
+              viewport={viewport as any} 
+              theme={content.cta2Theme || 'secondary'} 
               isStatic={isStatic} 
             />
           )}

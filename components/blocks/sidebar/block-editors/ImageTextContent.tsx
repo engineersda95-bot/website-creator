@@ -75,6 +75,18 @@ export const ImageTextContent: React.FC<ImageTextContentProps> = ({
             updateContent={updateContent} 
             style={selectedBlock.style}
             updateStyle={updateStyle}
+            label="Pulsante 1"
+         />
+
+         <CTAManager 
+            content={selectedBlock.content} 
+            updateContent={updateContent} 
+            style={selectedBlock.style}
+            updateStyle={updateStyle}
+            label="Pulsante 2"
+            ctaKey="cta2"
+            urlKey="cta2Url"
+            themeKey="cta2Theme"
          />
       </div>
    );

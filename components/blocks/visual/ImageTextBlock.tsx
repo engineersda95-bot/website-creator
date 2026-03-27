@@ -14,6 +14,10 @@ interface ImageTextBlockProps {
     text: string;
     cta?: string;
     ctaUrl?: string;
+    ctaTheme?: 'primary' | 'secondary';
+    cta2?: string;
+    cta2Url?: string;
+    cta2Theme?: 'primary' | 'secondary';
     image?: string;
     alt?: string;
     imageAspectRatio?: string;
@@ -186,23 +190,33 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
               )}
             </div>
 
-            {content.cta && (
-              <div
-                className="pt-4 flex w-full"
-                style={{
-                  justifyContent: 'var(--block-justify)',
-                }}
-              >
+            <div
+              className="pt-4 flex flex-wrap gap-4 w-full"
+              style={{
+                justifyContent: 'var(--block-justify)',
+              }}
+            >
+              {content.cta && (
                 <CTA
                   label={content.cta}
                   url={content.ctaUrl || (content as any).ctaLink}
                   project={project}
                   viewport={viewport as any}
-                  theme={style.buttonTheme}
+                  theme={content.ctaTheme || style.buttonTheme}
                   isStatic={isStatic}
                 />
-              </div>
-            )}
+              )}
+              {content.cta2 && (
+                <CTA
+                  label={content.cta2}
+                  url={content.cta2Url}
+                  project={project}
+                  viewport={viewport as any}
+                  theme={content.cta2Theme || 'secondary'}
+                  isStatic={isStatic}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -79,6 +79,10 @@ export interface CTAManagerProps {
    updateContent: (content: Record<string, any>) => void;
    style?: Record<string, any>;
    updateStyle?: (style: Record<string, any>) => void;
+   label?: string;
+   ctaKey?: string;
+   urlKey?: string;
+   themeKey?: string;
 }
 
 export interface LayoutGridSliderProps extends StyleEditorProps {
