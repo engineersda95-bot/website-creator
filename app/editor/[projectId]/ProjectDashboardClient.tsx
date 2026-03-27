@@ -24,6 +24,7 @@ import { PageSeoModal } from '@/components/editor/modals/PageSeoModal';
 import { TranslatePageModal } from '@/components/editor/modals/TranslatePageModal';
 import { LanguageSection } from '@/components/blocks/sidebar/settings/LanguageSection';
 import { AdvancedSection } from '@/components/blocks/sidebar/settings/AdvancedSection';
+import { DomainSection } from '@/components/blocks/sidebar/settings/DomainSection';
 
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
@@ -521,6 +522,13 @@ export function ProjectDashboardClient({
 
               <div className="pt-8 border-t border-zinc-100">
                 <AdvancedSection
+                  project={localProject}
+                  updateProjectSettings={updateProjectSettings}
+                />
+              </div>
+
+              <div className="pt-8 border-t border-zinc-100">
+                <DomainSection
                   project={localProject}
                   updateProjectSettings={updateProjectSettings}
                 />

@@ -121,8 +121,8 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
           {(() => {
             const TitleTag = (style.titleTag || 'h1') as any;
             return (
-              <TitleTag className={cn(
-                "tracking-tighter leading-[0.9] transition-all duration-500",
+              <div className={cn(
+                "tracking-tighter leading-[0.9] transition-all duration-500 rt-content",
               )} style={{ 
                 fontSize: 'var(--title-fs)',
                 textAlign: 'var(--block-align)' as any,
@@ -130,14 +130,15 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
                 fontStyle: 'var(--title-fs-style)' as any,
                 letterSpacing: 'var(--title-ls)',
                 lineHeight: 'var(--title-lh)',
-                textTransform: 'var(--title-upper)' as any
+                textTransform: 'var(--title-upper)' as any,
+                color: 'inherit',
               }}
               dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
               />
             );
           })()}
-          <p className={cn(
-            "max-w-2xl leading-relaxed transition-all duration-500",
+          <div className={cn(
+            "max-w-2xl leading-relaxed transition-all duration-500 rt-content",
           )} style={{
             fontSize: 'var(--subtitle-fs)',
             textAlign: 'var(--block-align)' as any,
@@ -145,6 +146,7 @@ export const Hero: React.FC<HeroProps> = ({ content, block, project, viewport, i
             fontStyle: 'var(--subtitle-fs-style, normal)' as any,
             marginLeft: 'var(--block-ml-auto)',
             marginRight: 'var(--block-mr-auto)',
+            color: 'inherit',
           }}
           dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
           />

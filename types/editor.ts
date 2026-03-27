@@ -84,6 +84,8 @@ export interface ProjectSettings {
   buttonAnimation?: 'none' | 'move-up' | 'scale';
   customScriptsHead?: string;
   customScriptsBody?: string;
+  customDomain?: string;
+  domainStatus?: 'pending' | 'active' | 'error';
   language?: string; // Global site language (e.g. 'it', 'en')
   businessType?: string; // Schema.org type (e.g. 'LocalBusiness', 'Restaurant')
   businessDetails?: {
@@ -119,6 +121,7 @@ export interface Project {
   user_id: string;
   name: string;
   subdomain: string;
+  custom_domain?: string;
   settings: ProjectSettings;
   live_url?: string;
   last_published_at?: string;

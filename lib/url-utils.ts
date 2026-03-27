@@ -7,6 +7,11 @@ import { Project } from '@/types/editor';
  * 2. project.subdomain + '.pages.dev' (default provider suffix)
  */
 export function getProjectDomain(project?: Project | null): string {
+  if (project?.custom_domain) {
+    const domain = project.custom_domain.replace(/\/$/, '').toLowerCase();
+    return `https://${domain}`;
+  }
+  
   if (project?.live_url) {
     return project.live_url.replace(/\/$/, ''); // Remove trailing slash
   }

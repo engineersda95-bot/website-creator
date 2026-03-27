@@ -337,7 +337,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const versionAtStart = version;
 
     const { error } = await supabase.from('projects')
-        .update({ name: project.name, settings: project.settings })
+        .update({ 
+          name: project.name, 
+          settings: project.settings,
+          custom_domain: project.settings?.customDomain || null
+        })
         .eq('id', project.id);
     
     if (!error) {

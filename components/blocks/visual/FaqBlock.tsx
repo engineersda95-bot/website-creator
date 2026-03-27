@@ -58,8 +58,8 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
           return (
-            <TitleTag
-              className="tracking-tight transition-all duration-500 w-full"
+            <div
+              className="tracking-tight transition-all duration-500 w-full rt-content"
               style={{
                 fontSize: 'var(--title-fs)',
                 fontWeight: 'var(--title-fw)' as any,
@@ -67,7 +67,8 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
                 letterSpacing: 'var(--title-ls)',
                 lineHeight: 'var(--title-lh)',
                 textTransform: 'var(--title-upper)' as any,
-                marginBottom: '0'
+                marginBottom: '0',
+                color: 'inherit'
               }}
               dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
             />
@@ -92,7 +93,7 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
                 {(() => {
                   const ItemTitleTag = (style.itemTitleTag || 'h3') as any;
                   return (
-                    <ItemTitleTag
+                    <div
                       style={{
                         fontSize: 'var(--item-title-fs)',
                         fontWeight: 'var(--item-title-fw)',
@@ -100,7 +101,7 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
                         color: blockColor,
                         textAlign: 'left'
                       }}
-                      className="transition-all opacity-80 group-hover:opacity-100 flex-1 pr-6"
+                      className="transition-all opacity-80 group-hover:opacity-100 flex-1 pr-6 rt-content"
                       dangerouslySetInnerHTML={{ __html: formatRichText(item.question) }}
                     />
                   );

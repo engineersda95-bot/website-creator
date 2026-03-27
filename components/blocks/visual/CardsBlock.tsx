@@ -133,23 +133,25 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
           {(() => {
             const ItemTitleTag = (style.itemTitleTag || 'h3') as any;
             return (
-              <ItemTitleTag 
-                className="mb-2 tracking-tight transition-all duration-500 leading-tight"
+              <div 
+                className="mb-2 tracking-tight transition-all duration-500 leading-tight rt-content"
                 style={{ 
                   fontSize: 'var(--item-title-fs)',
                   fontWeight: 'var(--item-title-fw)',
                   fontStyle: 'var(--item-title-is)',
+                  color: 'inherit'
                 }}
                 dangerouslySetInnerHTML={{ __html: formatRichText(item.title || 'Titolo Card') }}
               />
             );
           })()}
-          <p 
-            className="opacity-70 leading-relaxed transition-all duration-500"
+          <div 
+            className="opacity-70 leading-relaxed transition-all duration-500 rt-content"
             style={{ 
               fontSize: style.cardSubtitleSize ? `${style.cardSubtitleSize}px` : undefined,
               fontWeight: style.cardSubtitleBold ? '700' : '400',
               fontStyle: style.cardSubtitleItalic ? 'italic' : 'normal',
+              color: 'inherit'
             }}
             dangerouslySetInnerHTML={{ __html: formatRichText(item.subtitle || 'Descrizione card.') }}
           />
@@ -198,13 +200,14 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
           return (
-            <TitleTag 
-              className="mb-16 tracking-tighter transition-all duration-500 leading-tight"
+            <div 
+              className="mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content"
               style={{ 
                 fontSize: 'var(--title-fs)',
                 fontWeight: style.titleBold ? '700' : '400',
                 fontStyle: style.titleItalic ? 'italic' : 'normal',
-                textAlign: align as any
+                textAlign: align as any,
+                color: 'inherit'
               }}
               dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
             />

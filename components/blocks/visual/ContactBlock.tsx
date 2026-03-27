@@ -93,23 +93,25 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
           return (
             <div className="w-full flex flex-col" style={{ gap: '1rem', alignItems: 'inherit' }}>
               {content.title && (
-                <TitleTag className="tracking-tighter leading-[0.9]" 
+                <div className="tracking-tighter leading-[0.9] rt-content" 
                     style={{ 
                       fontSize: 'var(--title-fs)', 
                       fontWeight: 'var(--title-fw)' as any,
                       fontStyle: 'var(--title-fs-style)' as any,
-                      textAlign: 'inherit'
+                      textAlign: 'inherit',
+                      color: 'inherit'
                     }} 
                     dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }} 
                 />
               )}
               {content.subtitle && (
-                <p className="opacity-60 leading-relaxed max-w-2xl" 
+                <div className="opacity-60 leading-relaxed max-w-2xl rt-content" 
                    style={{ 
                      fontSize: 'var(--subtitle-fs)',
                      fontWeight: 'var(--subtitle-fw)' as any,
                      fontStyle: 'var(--subtitle-fs-style)' as any,
                      textAlign: 'inherit',
+                     color: 'inherit',
                      // Utilizziamo le variabili responsive per centrare anche in statico
                      marginLeft: 'var(--block-ml-auto)',
                      marginRight: 'var(--block-mr-auto)',

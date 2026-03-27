@@ -8,18 +8,19 @@ import { createClient } from '@/lib/supabase/server';
 import { Page } from '@/types/editor';
 import crypto from 'crypto';
 
+
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4';
 const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
 const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 
 export async function deployToCloudflare(projectId: string) {
   const supabase = await createClient();
-  
+
   const { execSync } = require('child_process');
   const fs = require('fs');
   const path = require('path');
   const os = require('os');
-  
+
   let tempDir;
 
   try {
@@ -58,10 +59,10 @@ export async function deployToCloudflare(projectId: string) {
 
     // 3. Deployment via Wrangler CLI
     console.log(`Deploying ${pages.length} pages for project: ${projectName} via Wrangler...`);
-    
+
     tempDir = path.join(os.tmpdir(), `siti-vetrina-deploy-${Date.now()}`);
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
-    
+
     // 3. Generate HTML for each page and collect assets
     const assetsDir = path.join(tempDir, 'assets');
     if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
@@ -73,7 +74,7 @@ export async function deployToCloudflare(projectId: string) {
 
     for (const page of pages) {
       const htmlContent = generateStaticHtml(page as Page, pages as any as Page[], project);
-      
+
       // Find all /assets/... strings in the HTML (captures the filename)
       const assetRegex = /\/assets\/([^"\s?]+)/g;
       let match;
@@ -104,7 +105,7 @@ export async function deployToCloudflare(projectId: string) {
 /robots.txt
   Content-Type: text/plain
 `.trim();
-    
+
     fs.writeFileSync(path.join(tempDir, 'sitemap.xml'), sitemapContent);
     fs.writeFileSync(path.join(tempDir, 'robots.txt'), robotsContent);
     fs.writeFileSync(path.join(tempDir, '_headers'), headersContent);
@@ -134,29 +135,29 @@ export async function deployToCloudflare(projectId: string) {
     }
 
     const command = `npx --yes wrangler@3 pages deploy "${tempDir}" --project-name="${projectName}" --branch="main"`;
-    
-    const env = { 
-      ...process.env, 
+
+    const env = {
+      ...process.env,
       HOME: '/tmp',
       npm_config_cache: '/tmp/.npm',
       WRANGLER_HOME: '/tmp',
       WRANGLER_CACHE_PATH: '/tmp/wrangler-cache',
       XDG_CONFIG_HOME: '/tmp/.config',
       XDG_CACHE_HOME: '/tmp/.cache',
-      CLOUDFLARE_API_TOKEN: API_TOKEN, 
+      CLOUDFLARE_API_TOKEN: API_TOKEN,
       CLOUDFLARE_ACCOUNT_ID: ACCOUNT_ID,
       WRANGLER_SKIP_UPDATE_CHECK: '1'
     };
 
-    const output = execSync(command, { 
+    const output = execSync(command, {
       cwd: '/tmp', // Executing from /tmp allows wrangler to ignore the read-only /var/task folder
       env: {
         ...env,
         WRANGLER_SEND_METRICS: 'false',
         WRANGLER_SEND_TELEMETRY: 'false',
         WRANGLER_LOG_PATH: '/tmp/wrangler-deploy.log',
-      }, 
-      encoding: 'utf-8' 
+      },
+      encoding: 'utf-8'
     });
     console.log('Wrangler Output:', output);
 
@@ -174,7 +175,7 @@ export async function deployToCloudflare(projectId: string) {
     const updateData: any = {
       last_published_at: new Date().toISOString()
     };
-    
+
     if (isFirstPublish) {
       updateData.live_url = finalUrl;
     }
@@ -188,7 +189,14 @@ export async function deployToCloudflare(projectId: string) {
       console.warn('Could not update project with deployment info:', updateError.message);
     }
 
-    // 5. Cleanup old history silently
+    // 5. Custom Domain support (Sync always to handle removals too)
+    try {
+      await syncCustomDomains(projectName, project.settings?.customDomain);
+    } catch (e) {
+      console.warn('Could not sync custom domain to Cloudflare:', e);
+    }
+
+    // 6. Cleanup old history silently
     cleanupOldDeployments(projectName).catch(e => console.error('Cleanup failed:', e));
 
     return { success: true, url: finalUrl };
@@ -198,7 +206,7 @@ export async function deployToCloudflare(projectId: string) {
     return { success: false, error: errorMsg };
   } finally {
     if (tempDir && fs.existsSync(tempDir)) {
-      try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch {}
+      try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch { }
     }
   }
 }
@@ -211,7 +219,7 @@ async function ensureCloudflareProject(name: string) {
   if (res.status === 404) {
     const createRes = await fetch(`${CLOUDFLARE_API_BASE}/accounts/${ACCOUNT_ID}/pages/projects`, {
       method: 'POST',
-      headers: { 
+      headers: {
         Authorization: `Bearer ${API_TOKEN}`,
         'Content-Type': 'application/json'
       },
@@ -230,12 +238,55 @@ async function ensureCloudflareProject(name: string) {
   }
   return null;
 }
+async function syncCustomDomains(projectName: string, currentDomain?: string) {
+  try {
+    // 1. Get existing domains
+    const res = await fetch(`${CLOUDFLARE_API_BASE}/accounts/${ACCOUNT_ID}/pages/projects/${projectName}/domains`, {
+      headers: { Authorization: `Bearer ${API_TOKEN}` }
+    });
+
+    if (!res.ok) return;
+    const { result } = await res.json();
+    const existingDomains = (result || []).map((d: any) => d.name);
+
+    // 2. Determine what should be there
+    const desiredDomains = currentDomain ? [currentDomain, `www.${currentDomain}`] : [];
+
+    // 3. Add missing ones
+    for (const d of desiredDomains) {
+      if (!existingDomains.includes(d)) {
+        await fetch(`${CLOUDFLARE_API_BASE}/accounts/${ACCOUNT_ID}/pages/projects/${projectName}/domains`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${API_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name: d })
+        });
+      }
+    }
+
+    // 4. Remove extra ones (those not in desiredDomains and actually custom)
+    // Pages projects always have their .pages.dev domain which isn't in this listUsually
+    for (const d of existingDomains) {
+      if (!desiredDomains.includes(d)) {
+        await fetch(`${CLOUDFLARE_API_BASE}/accounts/${ACCOUNT_ID}/pages/projects/${projectName}/domains/${d}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${API_TOKEN}` }
+        });
+      }
+    }
+  } catch (err) {
+    console.error('[syncCustomDomains] Proxy error:', err);
+  }
+}
+
 async function cleanupOldDeployments(projectName: string) {
   try {
     const res = await fetch(`${CLOUDFLARE_API_BASE}/accounts/${ACCOUNT_ID}/pages/projects/${projectName}/deployments`, {
       headers: { Authorization: `Bearer ${API_TOKEN}` }
     });
-    
+
     if (!res.ok) return;
 
     const { result } = await res.json();
@@ -245,12 +296,12 @@ async function cleanupOldDeployments(projectName: string) {
     const toDelete = result.slice(5);
 
     console.log(`Cleaning up ${toDelete.length} old deployments for ${projectName}...`);
-    
+
     for (const deploy of toDelete) {
-        await fetch(`${CLOUDFLARE_API_BASE}/accounts/${ACCOUNT_ID}/pages/projects/${projectName}/deployments/${deploy.id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${API_TOKEN}` }
-        });
+      await fetch(`${CLOUDFLARE_API_BASE}/accounts/${ACCOUNT_ID}/pages/projects/${projectName}/deployments/${deploy.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${API_TOKEN}` }
+      });
     }
   } catch (err) {
     console.warn('Cleanup error:', err);

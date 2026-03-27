@@ -82,14 +82,40 @@ body {
   scrollbar-width: none !important;
 }
 
-/* Rich text: reset browser defaults for <p>, <ul>, <ol> from formatRichText (multi-line).
+/* Rich text: reset browser defaults for <p>, <ul>, <ol> from formatRichText or TipTap.
    Mirrors generate-static.tsx so editor preview = published site. */
 .rt-content p { margin: 0; padding: 0; line-height: inherit; }
-.rt-content p + p { margin-top: 0.75em; }
+.rt-content p + p { margin-top: 0.5em; }
+.rt-content p:empty { display: none !important; }
+
+/* Editor only: keep empty paragraphs visible to allow clicking/selection */
+.ProseMirror.rt-content p { min-height: 1em; }
+
 .rt-content ul,
-.rt-content ol { margin: 0.5em 0; padding-left: 1.5em; }
-.rt-content li { margin: 0.25em 0; }
-.rt-content ul { list-style-type: disc; }
-.rt-content ol { list-style-type: decimal; }
+.rt-content ol { margin: 0.5em 0 !important; padding: 0 !important; display: block !important; list-style-position: inside !important; }
+.rt-content li { margin: 0.4em 0 !important; display: list-item !important; }
+.rt-content li > p { display: inline !important; }
+.rt-content ul { list-style-type: disc !important; }
+.rt-content ol { list-style-type: decimal !important; }
+.rt-content ul ul, .rt-content ul ol, .rt-content ol ul, .rt-content ol ol { margin: 0.25em 0 !important; padding-left: 1.5rem !important; list-style-position: outside !important; }
+
+/* Editor Specifics: use outside to avoid selection/typing issues while editing */
+.ProseMirror.rt-content ul,
+.ProseMirror.rt-content ol {
+  list-style-position: outside !important;
+  padding-left: 1.5rem !important;
+}
 .rt-content strong { font-weight: 700; }
 .rt-content em { font-style: italic; }
+.rt-content u { text-decoration: underline; }
+.rt-content a { color: inherit; text-decoration: underline; cursor: pointer; }
+
+/* TipTap Editor Specifics */
+.ProseMirror { outline: none !important; }
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+}

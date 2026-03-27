@@ -105,20 +105,21 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
         {(() => {
           const BenefitTitleTag = (style.itemTitleTag || 'h3') as any;
           return (
-            <BenefitTitleTag 
-              className="mb-3 tracking-tight transition-all duration-300"
+            <div 
+              className="mb-3 tracking-tight transition-all duration-300 rt-content"
               style={{
                 fontSize: 'var(--item-title-fs)',
                 fontWeight: 'var(--item-title-fw)',
                 fontStyle: 'var(--item-title-is)',
+                color: 'inherit'
               }}
               dangerouslySetInnerHTML={{ __html: formatRichText(item.title || 'Vantaggio') }}
             />
           );
         })()}
-        <p 
-          className="opacity-70 leading-relaxed transition-all duration-300"
-          style={itemSubtitleStyle}
+        <div 
+          className="opacity-70 leading-relaxed transition-all duration-300 rt-content"
+          style={{ ...itemSubtitleStyle, color: 'inherit' }}
           dangerouslySetInnerHTML={{ __html: formatRichText(item.description || 'Spiegazione del vantaggio.') }}
         />
       </div>
@@ -144,25 +145,27 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
             {content.title && (() => {
               const TitleTag = (style.titleTag || 'h2') as any;
               return (
-                <TitleTag 
-                  className="mb-4 tracking-tighter transition-all duration-500 leading-tight"
+                <div 
+                  className="mb-4 tracking-tighter transition-all duration-500 leading-tight rt-content"
                   style={{ 
                     fontSize: 'var(--title-fs)',
                     fontWeight: style.titleBold ? '700' : '400',
                     fontStyle: style.titleItalic ? 'italic' : 'normal',
+                    color: 'inherit'
                   }}
                   dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
                 />
               );
             })()}
             {content.subtitle && (
-              <p 
-                className="opacity-70 max-w-2xl mx-auto leading-relaxed transition-all duration-500"
+              <div 
+                className="opacity-70 max-w-2xl mx-auto leading-relaxed transition-all duration-500 rt-content"
                 style={{ 
                   fontSize: style.subtitleSize ? `${style.subtitleSize}px` : (isMobile ? '18px' : '20px'),
                   fontWeight: style.subtitleBold ? '700' : '400',
                   marginRight: align === 'right' ? '0' : align === 'center' ? 'auto' : 'unset',
                   marginLeft: align === 'left' ? '0' : align === 'center' ? 'auto' : 'unset',
+                  color: 'inherit'
                 }}
                 dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
               />

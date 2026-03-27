@@ -72,13 +72,14 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
           return (
-            <TitleTag 
-              className="mb-6 tracking-tighter transition-all duration-500 leading-tight"
+            <div 
+              className="mb-6 tracking-tighter transition-all duration-500 leading-tight rt-content"
               style={{ 
                 fontSize: 'var(--title-fs)',
                 fontWeight: style.titleBold ? '700' : '400',
                 fontStyle: style.titleItalic ? 'italic' : 'normal',
-                textAlign: align as any
+                textAlign: align as any,
+                color: 'inherit'
               }}
               dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
             />
@@ -86,16 +87,17 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
         })()}
 
         {content.subtitle && (
-          <p 
+          <div 
             className={cn(
-               "mb-16 opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap px-4",
+               "mb-16 opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap px-4 rt-content",
                align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto"
             )}
             style={{ 
               fontSize: 'var(--subtitle-fs)',
               fontWeight: style.subtitleBold ? '700' : '400',
               fontStyle: style.subtitleItalic ? 'italic' : 'normal',
-              textAlign: align as any
+              textAlign: align as any,
+              color: 'inherit'
             }}
             dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
           />
@@ -141,31 +143,34 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
                   )}
 
                   <div className="mb-8">
-                    <h3 
-                      className="transition-all duration-500 uppercase tracking-[0.2em] mb-4 opacity-50"
+                    <div 
+                      className="transition-all duration-500 uppercase tracking-[0.2em] mb-4 opacity-50 rt-content"
                       style={{ 
                         fontSize: 'var(--plan-name-fs)', 
                         fontWeight: 'var(--plan-name-fw)', 
-                        fontStyle: 'var(--plan-name-is)' 
+                        fontStyle: 'var(--plan-name-is)',
+                        color: 'inherit'
                       }}
                       dangerouslySetInnerHTML={{ __html: formatRichText(item.name || 'Piano') }}
                     />
                     <div className="flex items-baseline gap-1">
-                      <span 
-                        className="transition-all duration-500 tracking-tighter"
+                      <div 
+                        className="transition-all duration-500 tracking-tighter rt-content"
                         style={{ 
                           fontSize: 'var(--price-fs)', 
                           fontWeight: 'var(--price-fw)', 
-                          fontStyle: 'var(--price-is)' 
+                          fontStyle: 'var(--price-is)',
+                          color: 'inherit'
                         }}
                         dangerouslySetInnerHTML={{ __html: formatRichText(item.price || '0€') }}
                       />
-                      <span 
-                        className="transition-all duration-500 opacity-50"
+                      <div 
+                        className="transition-all duration-500 opacity-50 rt-content"
                         style={{ 
                           fontSize: 'var(--period-fs)', 
                           fontWeight: 'var(--period-fw)', 
-                          fontStyle: 'var(--period-is)' 
+                          fontStyle: 'var(--period-is)',
+                          color: 'inherit'
                         }}
                         dangerouslySetInnerHTML={{ __html: formatRichText(item.period || '') }}
                       />
@@ -181,12 +186,13 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
                         >
                           <Check size={12} strokeWidth={3} />
                         </div>
-                        <span 
-                          className="transition-all duration-500 leading-[1.6]"
+                        <div 
+                          className="transition-all duration-500 leading-[1.6] rt-content"
                           style={{
                             fontSize: 'var(--features-fs)',
                             fontWeight: 'var(--features-fw)',
-                            fontStyle: 'var(--features-is)'
+                            fontStyle: 'var(--features-is)',
+                            color: 'inherit'
                           }}
                           dangerouslySetInnerHTML={{ __html: formatRichText(feature) }} 
                         />

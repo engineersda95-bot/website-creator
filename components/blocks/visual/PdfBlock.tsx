@@ -107,16 +107,16 @@ export const PdfBlock = ({ block, project, isStatic, viewport }: any) => {
         {(title || subtitle) && (
           <div className="mb-12 last:mb-0 flex flex-col w-full" style={{ alignItems: 'var(--block-items)' as any }}>
             {title && (
-              <h2 
+              <div 
                 style={titleStyle} 
-                className="mb-4 w-full"
+                className="mb-4 w-full rt-content"
                 dangerouslySetInnerHTML={{ __html: formatRichText(title) }}
               />
             )}
             {subtitle && (
-              <p 
+              <div 
                 style={subtitleStyle} 
-                className="max-w-2xl"
+                className="max-w-2xl rt-content"
                 dangerouslySetInnerHTML={{ __html: formatRichText(subtitle) }}
               />
             )}

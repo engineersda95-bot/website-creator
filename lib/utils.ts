@@ -8,7 +8,18 @@ export function cn(...inputs: ClassValue[]) {
 export const formatRichText = (text: string = '') => {
   if (!text) return '';
 
-  // Fast path: single-line text (titles, labels) — no <p> wrapping to avoid browser margin side effects
+  // TipTap generated content usually starts with <p> or another tag.
+  // We check if it looks like HTML. If so, we return it as is.
+  // We also check for our custom [youtube:...] pattern which might be in legacy or new content.
+  const hasHtml = /<[a-z][\s\S]*>/i.test(text);
+
+  if (hasHtml) {
+    // Even if it's HTML, we might need to swap our custom youtube tag if it was manually typed
+    return text.replace(/\[youtube:(.*?)\]/g, '<div class="relative pb-[56.25%] h-0 my-8 rounded-2xl overflow-hidden shadow-xl"><iframe src="https://www.youtube.com/embed/$1" class="absolute top-0 left-0 w-full h-full" frameborder="0" allowfullscreen></iframe></div>');
+  }
+
+  // Legacy Markdown path
+  // Fast path: single-line text (titles, labels) — no <p> wrapping
   if (!text.includes('\n')) {
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')

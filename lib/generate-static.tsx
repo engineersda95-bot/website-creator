@@ -186,13 +186,18 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
         .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
 
         .rt-content p { margin: 0; padding: 0; line-height: inherit; }
-        .rt-content p + p { margin-top: 0.75em; }
-        .rt-content ul, .rt-content ol { margin: 0.5em 0; padding-left: 1.5em; }
-        .rt-content li { margin: 0.25em 0; }
-        .rt-content ul { list-style-type: disc; }
-        .rt-content ol { list-style-type: decimal; }
+        .rt-content p + p { margin-top: 0.5em; }
+        .rt-content p:empty { display: none !important; }
+        .rt-content ul, .rt-content ol { margin: 0.4em 0 !important; padding: 0 !important; list-style-position: inside !important; display: block !important; }
+        .rt-content li { margin: 0.25em 0 !important; display: list-item !important; }
+        .rt-content li > p { display: inline !important; }
+        .rt-content ul { list-style-type: disc !important; }
+        .rt-content ol { list-style-type: decimal !important; }
+        .rt-content ul ul, .rt-content ul ol, .rt-content ol ul, .rt-content ol ol { margin: 0.25em 0 !important; }
         .rt-content strong { font-weight: 700; }
         .rt-content em { font-style: italic; }
+        .rt-content u { text-decoration: underline; }
+        .rt-content a { color: inherit; text-decoration: underline; }
 
         [data-menu][data-open="true"] {
             opacity: 1 !important;
@@ -275,7 +280,7 @@ function renderBlock(block: Block, allPages: Page[], project: Project | undefine
   const blockId = `block-${block.id.substring(0, 8)}`;
   const responsiveCss = generateBlockCSS(blockId, block, project);
   const styleWrapper = `<style>${responsiveCss}</style>`;
-  const blockWrapper = (inner: string) => `${styleWrapper}<div id="${blockId}" class="w-full transition-all duration-500">${inner}</div>`;
+  const blockWrapper = (inner: string) => `${styleWrapper}<div id="${blockId}" class="transition-all duration-500">${inner}</div>`;
 
   const Component = StaticRegistry[type];
   if (!Component) return `<!-- Block type ${type} ignored in static generation -->`;

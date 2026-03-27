@@ -107,19 +107,21 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
 
         {/* Content */}
         <div className="flex-1">
-          <ItemTitleTag 
-            className="mb-2 tracking-tight transition-all duration-300" 
+          <div 
+            className="mb-2 tracking-tight transition-all duration-300 rt-content" 
             style={{
               fontSize: 'var(--item-title-fs)',
               fontWeight: 'var(--item-title-fw)',
               fontStyle: 'var(--item-title-is)',
+              color: 'inherit'
             }}
-          >
-            {item.title || `Step ${index + 1}`}
-          </ItemTitleTag>
-          <p className="opacity-70 leading-relaxed transition-all duration-300" style={descStyles}>
-            {item.description || 'Descrizione del passaggio.'}
-          </p>
+            dangerouslySetInnerHTML={{ __html: formatRichText(item.title || `Step ${index + 1}`) }}
+          />
+          <div 
+            className="opacity-70 leading-relaxed transition-all duration-300 rt-content" 
+            style={{ ...descStyles, color: 'inherit' }}
+            dangerouslySetInnerHTML={{ __html: formatRichText(item.description || 'Descrizione del passaggio.') }}
+          />
         </div>
       </div>
     );
@@ -142,15 +144,16 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
           return (
-            <TitleTag 
+            <div 
               className={cn(
-                  "mb-16 tracking-tighter transition-all duration-500 leading-tight",
+                  "mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content",
                   align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left"
               )}
               style={{ 
                 fontSize: 'var(--title-fs)',
                 fontWeight: style.titleBold ? '700' : '400',
                 fontStyle: style.titleItalic ? 'italic' : 'normal',
+                color: 'inherit'
               }}
               dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
             />

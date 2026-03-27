@@ -151,8 +151,8 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
               {content.title && (() => {
                 const TitleTag = (style.titleTag || 'h2') as any;
                 return (
-                  <TitleTag
-                    className="tracking-tighter transition-all duration-500 leading-[1.1]"
+                  <div
+                    className="tracking-tighter transition-all duration-500 leading-[1.1] rt-content"
                     style={{
                       fontSize: 'var(--title-fs)',
                       fontWeight: 'var(--title-fw)' as any,
@@ -160,7 +160,8 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                       letterSpacing: 'var(--title-ls)',
                       lineHeight: 'var(--title-lh)',
                       textTransform: 'var(--title-upper)' as any,
-                      textAlign: 'inherit'
+                      textAlign: 'inherit',
+                      color: 'inherit'
                     }}
                     dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
                   />
@@ -178,6 +179,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                     textAlign: 'inherit',
                     marginLeft: 'var(--block-ml-auto)',
                     marginRight: 'var(--block-mr-auto)',
+                    color: 'inherit'
                   }}
                   dangerouslySetInnerHTML={{ __html: formatRichText(content.text) }}
                 />
