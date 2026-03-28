@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Palette, Layout, Type, Settings as SettingsIcon, Mic, MicOff, Plus, Loader2, Sparkles, Wand2, Info, Image as ImageIcon, AlertCircle, X, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { Palette, Layout, Type, Settings as SettingsIcon, Mic, MicOff, Plus, Loader2, Sparkles, Wand2, Info, Image as ImageIcon, AlertCircle, X, ChevronRight, ChevronLeft, Check, Trash2, Sun, Moon, ChevronDown, ChevronUp, Settings } from 'lucide-react';
 import { FontManager } from '../../blocks/sidebar/ui/FontManager';
 import { cn } from '@/lib/utils';
 import { BUSINESS_TYPES } from '@/lib/editor-constants';
@@ -68,13 +68,7 @@ const SUGGESTED_PAGES: Record<string, { name: string; description: string }[]> =
   ],
 };
 
-const SITE_OBJECTIVES = [
-  { value: 'book', label: 'Prenotare un appuntamento' },
-  { value: 'contact', label: 'Contattarmi (chiamata/email)' },
-  { value: 'quote', label: 'Richiedere un preventivo' },
-  { value: 'buy', label: 'Acquistare un prodotto/servizio' },
-  { value: 'info', label: 'Informarsi sulla mia attività' },
-];
+// Removed SITE_OBJECTIVES select options as it's now a free-text input
 
 const TONE_OPTIONS = [
   { value: 'professional', label: 'Professionale' },
@@ -104,10 +98,10 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const [linkedin, setLinkedin] = useState('');
 
   const [description, setDescription] = useState('Un accogliente ristorante italiano specializzato in piatti tipici della tradizione milanese, con ingredienti a km zero e un\'atmosfera familiare.');
-  const [siteObjective, setSiteObjective] = useState('contact');
+  const [siteObjective, setSiteObjective] = useState('');
   const [useAnchorNav, setUseAnchorNav] = useState(true);
   const [tone, setTone] = useState('professional');
-  const [strengths, setStrengths] = useState(['', '', '']);
+  const [strengths, setStrengths] = useState<string[]>(['']);
   const [extraPages, setExtraPages] = useState<{ name: string; description: string }[]>([]);
   const [pagesInitialized, setPagesInitialized] = useState(false);
   const [lastValidatedPages, setLastValidatedPages] = useState<string | null>(null);
@@ -130,6 +124,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const [appearance, setAppearance] = useState<'light' | 'dark' | 'auto'>('auto');
   const [primaryColor, setPrimaryColor] = useState<string | null>(null);
   const [secondaryColor, setSecondaryColor] = useState<string | null>(null);
+  const [textColor, setTextColor] = useState<string | null>(null);
   const [fontFamily, setFontFamily] = useState<string | null>(null);
 
   const inputClass = "w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all placeholder:text-zinc-300";
@@ -236,8 +231,8 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
 
   const handleValidationAnswer = (id: string, value: string) => {
     const q = validationQuestions.find(v => v.id === id);
-    if (q) {
-      setDescription(prev => (prev + '\n\n- ' + q.question + ': ' + value));
+    if (id && value.trim()) {
+      setDescription(prev => (prev + '\n\n- ' + (q?.question ?? 'Risposta') + ': ' + value));
       const remaining = validationQuestions.filter(v => v.id !== id);
       setValidationQuestions(remaining);
       if (remaining.length === 0) {
@@ -337,6 +332,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
         socials: socials.length > 0 ? socials : undefined,
         primaryColor: primaryColor || undefined,
         secondaryColor: secondaryColor || undefined,
+        textColor: textColor || undefined,
         fontFamily: fontFamily || undefined,
         appearance: appearance === 'auto' ? undefined : appearance,
         siteObjective,
@@ -373,7 +369,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const handleNextStep = async () => {
     setError(null);
     if (stepIndex === 2) {
-      // Auto-save page if fields are filled (add or update)
+      // Auto-save page if fields are filled (add or update) 
       const pagesToValidate = [...extraPages];
       if (newPageName.trim() && newPageDesc.trim()) {
         if (editingPageIdx !== null) {
@@ -386,8 +382,9 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
         setNewPageDesc('');
         setEditingPageIdx(null);
       }
+
       // Skip validation if pages haven't changed since last run
-      const pagesHash = JSON.stringify(pagesToValidate) + description;
+      const pagesHash = businessName + businessType + JSON.stringify(pagesToValidate) + description;
       if (lastValidatedPages === pagesHash) {
         setStepIndex(3);
         return;
@@ -736,10 +733,13 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
               {/* Obiettivo + Tono */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Obiettivo del sito</label>
-                  <select value={siteObjective} onChange={e => setSiteObjective(e.target.value)} className={inputClass}>
-                    {SITE_OBJECTIVES.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                  </select>
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Obiettivo del sito <span className="font-normal normal-case text-zinc-300">(opzionale)</span></label>
+                  <input 
+                    value={siteObjective} 
+                    onChange={e => setSiteObjective(e.target.value)} 
+                    placeholder="Es: Ricevere prenotazioni, Contatti WhatsApp..." 
+                    className={inputClass} 
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Tono di voce</label>
@@ -763,24 +763,42 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
               </div>
 
               {/* Punti di forza */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   Perché scegliere te? <span className="font-normal normal-case text-zinc-300">(opzionale)</span>
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-2">
                   {strengths.map((s, i) => (
-                    <input
-                      key={i}
-                      value={s}
-                      onChange={e => {
-                        const updated = [...strengths];
-                        updated[i] = e.target.value;
-                        setStrengths(updated);
-                      }}
-                      placeholder={['Es: Ingredienti a Km 0', 'Es: 20 anni di esperienza', 'Es: Consegna gratuita'][i]}
-                      className={inputClass}
-                    />
+                    <div key={i} className="flex gap-2 animate-in fade-in slide-in-from-right-2 duration-200">
+                      <input
+                        value={s}
+                        onChange={e => {
+                          const updated = [...strengths];
+                          updated[i] = e.target.value;
+                          setStrengths(updated);
+                        }}
+                        placeholder={['Es: Ingredienti a Km 0', 'Es: 20 anni di esperienza', 'Es: Consegna gratuita'][i] || "Es: Qualità certificata..."}
+                        className={inputClass}
+                      />
+                      {strengths.length > 1 && (
+                        <button
+                          onClick={() => setStrengths(strengths.filter((_, idx) => idx !== i))}
+                          className="p-2.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-zinc-100"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                   ))}
+                  {strengths.length < 6 && (
+                    <button
+                      onClick={() => setStrengths([...strengths, ''])}
+                      className="flex items-center gap-2 px-3 py-2 text-[11px] font-bold text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 rounded-xl transition-all border border-dashed border-zinc-200"
+                    >
+                      <Plus size={12} />
+                      Aggiungi punto di forza
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -830,20 +848,17 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                 </button>
               </div>
 
-              {/* Anchor nav option for single page */}
+              {/* Anchor nav auto-applied for single page — simplified UI */}
               {extraPages.length === 0 && (
-                <label className="flex items-center gap-3 p-3 bg-zinc-50 rounded-xl border border-zinc-100 cursor-pointer hover:border-zinc-200 transition-all">
-                  <input
-                    type="checkbox"
-                    checked={useAnchorNav}
-                    onChange={e => setUseAnchorNav(e.target.checked)}
-                    className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
-                  />
-                  <div>
-                    <div className="text-[12px] font-semibold text-zinc-800">Menu di navigazione con ancore</div>
-                    <div className="text-[10px] text-zinc-400">Aggiunge un menu fisso che scorre verso le sezioni della pagina (Chi siamo, Servizi, Contatti...)</div>
+                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 flex items-center gap-3">
+                  <div className="p-1.5 bg-white rounded-lg shadow-sm border border-emerald-100">
+                    <Check className="text-emerald-500" size={14} />
                   </div>
-                </label>
+                  <div>
+                    <div className="text-[11px] font-bold text-emerald-800 uppercase tracking-tight">Navigazione ottimizzata</div>
+                    <div className="text-[10px] text-emerald-600/80">Menu a scorrimento automatico abilitato per pagina singola.</div>
+                  </div>
+                </div>
               )}
 
               {/* Page list */}
@@ -934,128 +949,144 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
             </div>
           )}
 
-          {/* Step 3: Stile */}
+          {/* Step 3: Stile & Riferimenti */}
           {stepIndex === 3 && (
-            <div className="space-y-5 animate-in fade-in slide-in-from-right-2 duration-200">
-              {/* Tema */}
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Tema</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {([
-                    { value: 'auto' as const, label: 'IA Decide', preview: 'bg-gradient-to-br from-white to-zinc-900' },
-                    { value: 'light' as const, label: 'Chiaro', preview: 'bg-white' },
-                    { value: 'dark' as const, label: 'Scuro', preview: 'bg-zinc-900' },
-                  ]).map(t => (
-                    <button
-                      key={t.value}
-                      onClick={() => setAppearance(t.value)}
-                      className={cn(
-                        "p-3 rounded-xl border-2 transition-all text-center",
-                        appearance === t.value
-                          ? "border-zinc-900 shadow-sm"
-                          : "border-zinc-100 hover:border-zinc-300"
-                      )}
-                    >
-                      <div className={cn("w-full h-8 rounded-lg mb-2 border border-zinc-200", t.preview)} />
-                      <div className="text-[11px] font-semibold text-zinc-700">{t.label}</div>
-                    </button>
-                  ))}
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-200">
+              {/* Immagine di Riferimento (Principale) */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest pl-1">Ispirazione Stile</label>
+                  <span className="text-[10px] text-zinc-400">Massimo 5 file</span>
                 </div>
-              </div>
-
-              {/* Colori */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Colore Primario</label>
-                  <div className="flex items-center gap-2 px-3 py-2 border border-zinc-200 rounded-xl">
+                
+                <div className="grid grid-cols-1 gap-4">
+                  <label className="relative group cursor-pointer">
                     <input
-                      type="color"
-                      value={primaryColor || '#3b82f6'}
-                      onChange={e => setPrimaryColor(e.target.value)}
-                      className="w-8 h-8 rounded-lg overflow-hidden cursor-pointer border-none bg-transparent shrink-0"
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
                     />
-                    <div className="flex-1 min-w-0">
-                      {primaryColor ? (
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] font-mono font-semibold text-zinc-600">{primaryColor}</span>
-                          <button onClick={() => setPrimaryColor(null)} className="text-zinc-300 hover:text-zinc-500"><X size={11} /></button>
-                        </div>
-                      ) : (
-                        <span className="text-[11px] text-zinc-400 italic">Scelto dall&apos;IA</span>
-                      )}
+                    <div className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-zinc-200 rounded-2xl bg-zinc-50/50 group-hover:bg-white group-hover:border-zinc-900 transition-all text-center">
+                      <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-zinc-100 flex items-center justify-center text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                        <ImageIcon size={24} />
+                      </div>
+                      <div>
+                        <div className="text-[13px] font-black text-zinc-900 uppercase tracking-tight">Trascina o Clicca</div>
+                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Carica immagini di riferimento per lo stile</div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Colore Sfondo</label>
-                  <div className="flex items-center gap-2 px-3 py-2 border border-zinc-200 rounded-xl">
-                    <input
-                      type="color"
-                      value={secondaryColor || '#ffffff'}
-                      onChange={e => setSecondaryColor(e.target.value)}
-                      className="w-8 h-8 rounded-lg overflow-hidden cursor-pointer border-none bg-transparent shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      {secondaryColor ? (
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] font-mono font-semibold text-zinc-600">{secondaryColor}</span>
-                          <button onClick={() => setSecondaryColor(null)} className="text-zinc-300 hover:text-zinc-500"><X size={11} /></button>
+                  </label>
+
+                  {screenshotUrls.length > 0 && (
+                    <div className="grid grid-cols-5 gap-2">
+                      {screenshotUrls.map((url, i) => (
+                        <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-zinc-200 group/img shadow-sm animate-in zoom-in-50 duration-200">
+                          <img src={url} alt="Reference" className="w-full h-full object-cover" />
+                          <button
+                            onClick={() => setScreenshotUrls(prev => prev.filter((_, idx) => idx !== i))}
+                            className="absolute top-1 right-1 p-1 bg-white/90 border border-zinc-100 rounded-lg text-red-500 opacity-0 group-hover/img:opacity-100 transition-opacity"
+                          >
+                            <X size={10} />
+                          </button>
                         </div>
-                      ) : (
-                        <span className="text-[11px] text-zinc-400 italic">Scelto dall&apos;IA</span>
-                      )}
+                      ))}
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
-              {/* Font */}
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Font</label>
-                {fontFamily === null ? (
-                  <button
-                    onClick={() => setFontFamily('Inter')}
-                    className="w-full px-3.5 py-2.5 bg-white border border-zinc-200 rounded-xl text-[11px] text-zinc-400 text-left hover:border-zinc-300 transition-all italic"
-                  >
-                    Scelto dall&apos;IA — clicca per personalizzare
-                  </button>
-                ) : (
-                  <div className="relative group/font">
-                    <FontManager value={fontFamily} onChange={setFontFamily} label="Font Principale" />
-                    <button onClick={() => setFontFamily(null)} className="absolute top-0 right-1 p-1 text-zinc-300 hover:text-zinc-900 transition-all" title="Reset">
-                      <X size={12} />
-                    </button>
+              {/* Comandi Avanzati */}
+              <div className="pt-4 border-t border-zinc-100">
+                <button
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="flex items-center justify-between w-full p-3 hover:bg-zinc-50 rounded-xl transition-all group"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={cn("p-1.5 rounded-lg border transition-all", showAdvanced ? "bg-zinc-900 text-white border-zinc-900" : "bg-white text-zinc-400 border-zinc-100 group-hover:border-zinc-200")}>
+                      <Settings size={14} />
+                    </div>
+                    <span className="text-[11px] font-black text-zinc-500 uppercase tracking-widest">Comandi Avanzati</span>
                   </div>
-                )}
-              </div>
+                  {showAdvanced ? <ChevronUp size={14} className="text-zinc-400" /> : <ChevronDown size={14} className="text-zinc-400" />}
+                </button>
 
-              {/* Screenshots */}
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
-                  Screenshot di riferimento <span className="font-normal normal-case text-zinc-300">(opzionale)</span>
-                </label>
-                <div className="bg-zinc-50 border-2 border-dashed border-zinc-200 rounded-xl p-4 text-center group hover:border-zinc-300 transition-all relative overflow-hidden">
-                  <input type="file" multiple accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
-                  <div className="flex items-center justify-center gap-2">
-                    <ImageIcon className="text-zinc-300" size={16} />
-                    <div className="text-[11px] text-zinc-500">Carica immagini da cui estrarre stile</div>
-                  </div>
-                </div>
-                {screenshotUrls.length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {screenshotUrls.map((s, i) => (
-                      <div key={i} className="relative w-14 h-14 rounded-lg overflow-hidden border border-zinc-200 group/thumb">
-                        <img src={s} className="w-full h-full object-cover" alt={`Preview ${i}`} />
-                        <button onClick={() => removeScreenshot(i)} className="absolute top-0.5 right-0.5 p-0.5 bg-black/50 text-white rounded opacity-0 group-hover/thumb:opacity-100 transition-opacity">
-                          <X size={8} />
+                {showAdvanced && (
+                  <div className="mt-6 space-y-10 pl-1 animate-in slide-in-from-top-4 duration-300">
+                    {/* Tema */}
+                    <div className="space-y-4">
+                      <label className="block text-[11px] font-black text-zinc-400 uppercase tracking-widest pl-1">Aspetto del sito</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => setAppearance(appearance === 'light' ? 'auto' : 'light')}
+                          className={cn("py-6 flex flex-col items-center gap-2 text-[12px] font-bold border-2 rounded-2xl transition-all", appearance === 'light' ? "bg-zinc-900 text-white border-zinc-900 shadow-xl scale-[1.05]" : "bg-white text-zinc-400 border-zinc-100 hover:border-zinc-200")}
+                        >
+                          <Sun size={20} />
+                          <span className="uppercase">Chiaro</span>
+                        </button>
+                        <button
+                          onClick={() => setAppearance(appearance === 'dark' ? 'auto' : 'dark')}
+                          className={cn("py-6 flex flex-col items-center gap-2 text-[12px] font-bold border-2 rounded-2xl transition-all", appearance === 'dark' ? "bg-zinc-900 text-white border-zinc-900 shadow-xl scale-[1.05]" : "bg-white text-zinc-400 border-zinc-100 hover:border-zinc-200")}
+                        >
+                          <Moon size={20} />
+                          <span className="uppercase">Scuro</span>
                         </button>
                       </div>
-                    ))}
+                      {appearance === 'auto' && (
+                        <div className="text-[10px] text-zinc-400 italic text-center">Nessun tema forzato: l'IA deciderà in base alle tue immagini.</div>
+                      )}
+                    </div>
+
+                    {/* Colori Brand */}
+                    <div className="space-y-4 pt-4 border-t border-zinc-50">
+                      <label className="block text-[11px] font-black text-zinc-400 uppercase tracking-widest pl-1">Personalizza Colori</label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Sfondo</label>
+                          <div className="flex items-center gap-3 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all">
+                            <input type="color" className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none" value={secondaryColor || '#ffffff'} onChange={e => setSecondaryColor(e.target.value)} />
+                            <div className="flex-1 min-w-0">
+                               {secondaryColor ? <span className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-tighter">{secondaryColor}</span> : <span className="text-[10px] text-zinc-400 italic">Predefinito</span>}
+                            </div>
+                            {secondaryColor && <button onClick={() => setSecondaryColor(null)} className="text-zinc-300 hover:text-red-500"><X size={12} /></button>}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Testo</label>
+                          <div className="flex items-center gap-3 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all">
+                            <input type="color" className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none" value={textColor || '#000000'} onChange={e => setTextColor(e.target.value)} />
+                            <div className="flex-1 min-w-0">
+                               {textColor ? <span className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-tighter">{textColor}</span> : <span className="text-[10px] text-zinc-400 italic">Auto</span>}
+                            </div>
+                            {textColor && <button onClick={() => setTextColor(null)} className="text-zinc-300 hover:text-red-500"><X size={12} /></button>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-zinc-400 bg-amber-50/50 p-2.5 rounded-lg border border-amber-100/50">
+                         <Info size={10} className="inline mr-1 text-amber-500" />
+                         Se imposti entrambi, i bottoni saranno automaticamente invertiti per il massimo contrasto.
+                      </div>
+                    </div>
+
+                    {/* Tipografia */}
+                    <div className="space-y-4 pt-4 border-t border-zinc-50">
+                      <label className="block text-[11px] font-black text-zinc-400 uppercase tracking-widest pl-1">Tipografia</label>
+                      <div className="relative group/font">
+                        <FontManager value={fontFamily || 'Outfit'} onChange={setFontFamily} />
+                        {fontFamily && (
+                          <button onClick={() => setFontFamily(null)} className="absolute top-1.5 right-1.5 p-1 bg-white border border-zinc-100 rounded-lg text-zinc-300 hover:text-red-500 transition-all z-10 shadow-sm" title="Reset Font">
+                            <X size={10} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
-              {/* Padding for font dropdown overflow */}
-              {fontFamily !== null && <div className="h-32" />}
+
+              {/* Espaziatore per evitare che il dropdown del font venga tagliato */}
+              {fontFamily !== null && <div className="h-48" />}
             </div>
           )}
         </div>

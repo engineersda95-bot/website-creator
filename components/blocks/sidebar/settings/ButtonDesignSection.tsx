@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { MousePointer2 } from 'lucide-react';
+import { MousePointer2, MousePointerClick } from 'lucide-react';
 import { SectionHeader } from '../ui/SectionHeader';
 import { ProjectSettings } from '@/types/editor';
+import { t } from '@/lib/i18n';
 
 interface ButtonDesignSectionProps {
    project: any;
@@ -16,6 +17,7 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
    updateProjectSettings,
    viewport
 }) => {
+   const lang = project?.settings?.defaultLanguage || 'it';
    const desktopSettings = (project?.settings || {}) as ProjectSettings;
    const isDesktop = viewport === 'desktop';
    const currentViewport = viewport as 'tablet' | 'mobile';
@@ -47,12 +49,12 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
 
    return (
       <section className="pt-8 border-t border-zinc-100 animate-in fade-in slide-in-from-right-4 duration-500 delay-150">
-         <SectionHeader icon={MousePointer2} title="Stile Bottoni" colorClass="text-indigo-500" />
+         <SectionHeader icon={MousePointer2} title={t('button_design', lang)} colorClass="text-indigo-500" />
          <div className="space-y-8 mt-6">
             <div className="space-y-8">
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-4">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Arrotondamento</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('radius', lang)}</label>
                      <input
                         type="number"
                         className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none"
@@ -62,52 +64,52 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
                      />
                   </div>
                   <div className="space-y-4">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Ombra</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('shadow', lang)}</label>
                      <select
                         className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none"
                         value={getValue('buttonShadow')}
                         onChange={(e) => updateGlobal({ buttonShadow: e.target.value as any })}
                      >
-                        {!isDesktop && <option value="">Eredita ({desktopSettings.buttonShadow || 'Nessuna'})</option>}
-                        <option value="none">Nessuna</option>
-                        <option value="S">Piccola</option>
-                        <option value="M">Media</option>
-                        <option value="L">Grande</option>
+                        {!isDesktop && <option value="">{lang === 'en' ? 'Inherit' : 'Eredita'} ({desktopSettings.buttonShadow || (lang === 'en' ? 'None' : 'Nessuna')})</option>}
+                        <option value="none">{t('none', lang)}</option>
+                        <option value="S">{t('small', lang)}</option>
+                        <option value="M">{t('medium', lang)}</option>
+                        <option value="L">{t('large', lang)}</option>
                      </select>
                   </div>
                </div>
 
                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-50">
                   <div className="space-y-4">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Padding Oriz.</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('padding_x', lang)}</label>
                      <input type="number" className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none" value={getValue('buttonPaddingX')} placeholder={getPlaceholder('buttonPaddingX', 32)} onChange={(e) => updateGlobal({ buttonPaddingX: parseInt(e.target.value) || 0 })} />
                   </div>
                   <div className="space-y-4">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Padding Vert.</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('padding_y', lang)}</label>
                      <input type="number" className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none" value={getValue('buttonPaddingY')} placeholder={getPlaceholder('buttonPaddingY', 12)} onChange={(e) => updateGlobal({ buttonPaddingY: parseInt(e.target.value) || 0 })} />
                   </div>
                </div>
 
                <div className="space-y-4">
-                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Dimensione Font</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('font_size', lang)}</label>
                   <input type="number" className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none" value={getValue('buttonFontSize')} placeholder={getPlaceholder('buttonFontSize', 16)} onChange={(e) => updateGlobal({ buttonFontSize: parseInt(e.target.value) || 0 })} />
                </div>
 
                <div className="space-y-4">
-                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Animazione Hover</label>
+                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('animation', lang)}</label>
                   <select
                      className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none"
                      value={getValue('buttonAnimation') || 'none'}
                      onChange={(e) => updateGlobal({ buttonAnimation: e.target.value as any })}
                   >
-                     <option value="none">Nessuna</option>
-                     <option value="move-up">Spostamento in su</option>
-                     <option value="scale">Ingrandimento</option>
+                     <option value="none">{t('none', lang)}</option>
+                     <option value="move-up">{lang === 'en' ? 'Move Up' : 'Spostamento in su'}</option>
+                     <option value="scale">{lang === 'en' ? 'Scaling' : 'Ingrandimento'}</option>
                   </select>
                </div>
 
                <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                  <label className="text-[12px] font-bold text-zinc-900 uppercase tracking-widest cursor-pointer" htmlFor="btn-caps">Tutto Maiuscolo</label>
+                  <label className="text-[12px] font-bold text-zinc-900 uppercase tracking-widest cursor-pointer" htmlFor="btn-caps">{t('uppercase', lang)}</label>
                   <input
                      id="btn-caps"
                      type="checkbox"

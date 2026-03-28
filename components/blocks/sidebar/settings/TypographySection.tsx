@@ -7,6 +7,7 @@ import { SimpleSlider } from '../ui/SimpleSlider';
 import { ProjectSettings } from '@/types/editor';
 import { useEditorStore } from '@/store/useEditorStore';
 import { FontManager } from '../ui/FontManager';
+import { t } from '@/lib/i18n';
 
 interface TypographySectionProps {
    project: any;
@@ -18,6 +19,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
    updateProjectSettings
 }) => {
    const viewport = useEditorStore((state: any) => state.viewport);
+   const lang = project?.settings?.defaultLanguage || 'it';
    
    // Handle responsive settings
    const isDesktop = viewport === 'desktop';
@@ -41,19 +43,20 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
 
    return (
       <section className="pt-8 border-t border-zinc-100 animate-in fade-in slide-in-from-right-4 duration-500 delay-75">
-         <SectionHeader icon={Type} title={`Tipografia ${!isDesktop ? `(${viewport.toUpperCase()})` : ''}`} colorClass="text-indigo-500" />
+         <SectionHeader icon={Type} title={`${t('typography', lang)} ${!isDesktop ? `(${viewport.toUpperCase()})` : ''}`} colorClass="text-indigo-500" />
          
          <div className="space-y-8">
             <div className="space-y-4">
                <FontManager 
                   value={project?.settings?.fontFamily || 'Outfit'} 
                   onChange={(val: string) => updateProjectSettings({ fontFamily: val })} 
+                  label={t('font_family', lang)}
                />
             </div>
 
             <div className="space-y-6 pt-6 border-t border-zinc-50">
                <label className="text-[11px] font-black text-zinc-300 uppercase tracking-[0.2em] block mb-2">
-                  Dimensioni Default {!isDesktop ? `SEO (${viewport})` : ''}
+                  {t('default_sizes', lang)} {!isDesktop ? `SEO (${viewport})` : ''}
                </label>
                
                <SimpleSlider 

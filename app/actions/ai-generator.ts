@@ -11,6 +11,16 @@ function getGenAI() {
   return new GoogleGenerativeAI(key);
 }
 
+function getContrastColor(hexcolor: string): string {
+  // If hex is not provided or invalid, return white default
+  if (!hexcolor || !hexcolor.startsWith('#')) return '#ffffff';
+  const r = parseInt(hexcolor.slice(1, 3), 16);
+  const g = parseInt(hexcolor.slice(3, 5), 16);
+  const b = parseInt(hexcolor.slice(5, 7), 16);
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return (yiq >= 128) ? '#000000' : '#ffffff';
+}
+
 export interface AIGenerationData {
   businessName: string;
   businessType: string;
@@ -30,6 +40,7 @@ export interface AIGenerationData {
   // Style forcing
   primaryColor?: string;
   secondaryColor?: string;
+  textColor?: string;
   fontFamily?: string;
   appearance?: 'light' | 'dark' | 'auto';
   // Content guidance
@@ -121,8 +132,12 @@ export async function generateProjectWithAI(data: AIGenerationData) {
         KEY STRENGTHS / USP: ${data.strengths?.join(' | ') || 'Not provided — use generic professional copy'}
 
         ### 🔴 CTA & TONE RULES:
-        - The hero CTA button and all call-to-action elements MUST align with the site objective "${data.siteObjective || 'contact'}".
-        - ALL copywriting MUST match the "${data.tone || 'professional'}" tone of voice.
+        - The hero CTA button and all call-to-action elements MUST strictly align with the site objective: "${data.siteObjective || 'contact'}".
+        - ALL copywriting MUST match the "${data.tone || 'professional'}" tone of voice:
+          * "professional": Clear, authoritative, trustworthy, minimal emojis.
+          * "friendly": Warm, approachable, coversational, uses relevant emojis (e.g. 🍕, ✨, 👋).
+          * "creative": Inspiring, bold, using unconventional but professional vocabulary.
+          * "formal": Elegant, high-level, serious, no emojis.
         - If KEY STRENGTHS are provided, create a dedicated "benefits" block using them as the main items. Do NOT invent additional benefits.
 
         ### 🔴 COPYWRITING RULES (CRITICAL):
@@ -261,21 +276,17 @@ export async function generateProjectWithAI(data: AIGenerationData) {
       pages.push({ title: 'Home', slug: 'home', blocks: [] });
     }
     
-    // Global Components Decision (Navigation & Footer)
-    const navSchema = aiOutput.settings?.navigation || { 
-      logoText: data.businessName, 
-      logoType: data.logoUrl ? 'image' : 'text', 
-      logoImage: data.logoUrl || '',
-      links: [],
-      showContact: true
-    };
-    
-    const footerSchema = aiOutput.settings?.footer || {
-      logoType: data.logoUrl ? 'image' : 'text',
-      logoText: data.businessName,
-      logoImage: data.logoUrl || '',
-      copyright: `© ${currentYear} ${data.businessName}. Tutti i diritti riservati.`,
-      socialLinks: data.socials || []
+    // Extract business details from AI (includes validation answers)
+    const aiDetails = aiOutput.settings?.businessDetails || {};
+    const finalBusinessDetails = {
+      businessName: aiDetails.businessName || data.businessName,
+      email: data.email || aiDetails.email || '',
+      phone: data.phone || aiDetails.phone || '',
+      address: data.address || aiDetails.address || '',
+      city: data.city || aiDetails.city || '',
+      postalCode: aiDetails.zip || aiDetails.zip || '',
+      country: data.country || aiDetails.country || 'Italia',
+      socialLinks: data.socials || aiDetails.socials || []
     };
 
     // Auto-Link Management
@@ -284,88 +295,163 @@ export async function generateProjectWithAI(data: AIGenerationData) {
       url: p.slug === 'home' ? '/home' : (p.slug.startsWith('/') ? p.slug : `/${p.slug}`)
     }));
 
-    const finalNavLinks = (pages.length > 1 || allPageLinks.length > 1) ? allPageLinks : (navSchema.links && navSchema.links.length > 0 ? navSchema.links : allPageLinks);
+    const finalNavLinks = (pages.length > 1 || allPageLinks.length > 1) ? allPageLinks : (aiOutput.settings?.navigation?.links && aiOutput.settings.navigation.links.length > 0 ? aiOutput.settings.navigation.links : allPageLinks);
 
-    const enrichedPages = pages.map((page: any) => {
+    // Global Components Decision (Navigation & Footer)
+    const navSchema = aiOutput.settings?.navigation || { 
+      logoText: finalBusinessDetails.businessName, 
+      logoType: data.logoUrl ? 'image' : 'text', 
+      logoImage: data.logoUrl || '',
+      links: finalNavLinks,
+      showContact: true
+    };
+    
+    const footerSchema = aiOutput.settings?.footer || {
+      logoType: data.logoUrl ? 'image' : 'text',
+      logoText: finalBusinessDetails.businessName,
+      logoImage: data.logoUrl || '',
+      copyright: `© ${currentYear} ${finalBusinessDetails.businessName}. ${data.language === 'en' ? 'All rights reserved.' : 'Tutti i diritti riservati.'}`,
+      socialLinks: finalBusinessDetails.socialLinks,
+      links: finalNavLinks
+    };
+
+    // --- 6. DETERMINISTIC STYLE & BRANDING ---
+    const finalAppearance = data.appearance || aiOutput.settings?.appearance || 'light';
+    const isDark = finalAppearance === 'dark';
+
+    // SOURCE OF TRUTH: Theme Colors
+    const themeBG = data.secondaryColor || (isDark ? (aiOutput.settings?.themeColors?.dark?.bg || '#0c0c0e') : (aiOutput.settings?.themeColors?.light?.bg || '#ffffff'));
+    const themeText = data.textColor || (isDark ? (aiOutput.settings?.themeColors?.dark?.text || '#ffffff') : (aiOutput.settings?.themeColors?.light?.text || '#000000'));
+
+    // BRAND COLOR RULE: CTA Inversion (Primary BG = Theme Text, Primary Text = Theme BG)
+    const primaryCTABG = themeText;
+    const primaryCTAText = themeBG;
+    
+    const darkenColor = (hex: string, amount: number) => {
+      if (!hex || hex === 'transparent' || !hex.startsWith('#')) return hex;
+      let r = parseInt(hex.slice(1, 3), 16) || 0;
+      let g = parseInt(hex.slice(3, 5), 16) || 0;
+      let b = parseInt(hex.slice(5, 7), 16) || 0;
+      r = Math.max(0, r - amount);
+      g = Math.max(0, g - amount);
+      b = Math.max(0, b - amount);
+      return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    };
+
+    const secondaryCTABG = darkenColor(primaryCTABG, 30);
+    const secondaryCTAText = primaryCTAText;
+
+    // LOGO RULE: Only use image if USER provided it. Otherwise, Title Text.
+    const hasUserLogo = !!data.logoUrl;
+    const finalLogo = hasUserLogo ? data.logoUrl : '';
+    const finalLogoType = hasUserLogo ? 'image' : 'text';
+    const finalBusinessName = data.businessName || aiOutput.settings?.businessDetails?.businessName || 'My Website';
+
+    const finalSettings = {
+      ...aiOutput.settings,
+      appearance: finalAppearance,
+      primaryColor: primaryCTABG,
+      secondaryColor: secondaryCTABG,
+      fontFamily: data.fontFamily || aiOutput.settings?.fontFamily || 'Outfit',
+      logo: finalLogo,
+      favicon: finalLogo || undefined,
+      metaImage: finalLogo || undefined,
+      metaTitle: finalBusinessName,
+      metaDescription: aiOutput.settings?.metaDescription || (data.language === 'en' ? `${finalBusinessName} — Official website` : `${finalBusinessName} — Sito ufficiale`),
+      languages: [data.language || 'it'],
+      defaultLanguage: data.language || 'it',
+      businessDetails: {
+        ...aiOutput.settings?.businessDetails,
+        ...finalBusinessDetails,
+        businessName: finalBusinessName
+      },
+      themeColors: {
+        light: { bg: !isDark ? themeBG : '#ffffff', text: !isDark ? themeText : '#000000' },
+        dark: { bg: isDark ? themeBG : '#0c0c0e', text: isDark ? themeText : '#ffffff' },
+        buttonText: primaryCTAText,
+        buttonTextSecondary: secondaryCTAText,
+      }
+    };
+
+    // --- 7. FINAL PAGE ENRICHMENT (with Blocks) ---
+    const enrichedPages = aiOutput.pages?.map((page: any) => {
       const pageId = uuidv4();
       
-      // Step A: Strip AI-generated nav/footer (we inject our own), then enrich
-      const strippedBlocks = (Array.isArray(page.blocks) ? page.blocks : [])
-        .filter((block: any) => block.type !== 'navigation' && block.type !== 'footer');
-      const interiorBlocks = strippedBlocks.map((block: any) => {
-        const b = {
-           ...block,
-           id: uuidv4(),
-           style: block.style || { padding: 80, align: 'center' },
-           content: { ...(block.content || {}) }
-        };
+      const slugCounts: Record<string, number> = {};
+      const anchorIdsFromNav = finalNavLinks
+        .filter((l: any) => l.url && l.url.startsWith('#'))
+        .map((l: any) => l.url.slice(1));
 
-        // IF CONTACT BLOCK: Force real user data, NO placeholder invention!
-        if (b.type === 'contact') {
-            b.content.email = data.email || b.content.email || '';
-            b.content.phone = data.phone || b.content.phone || '';
-            b.content.address = `${data.address || ''}${data.city ? ', ' + data.city : ''}${data.country ? ', ' + data.country : ''}` || b.content.address || '';
-            b.content.showMap = b.content.showMap !== undefined ? b.content.showMap : true;
-            b.content.title = b.content.title || (data.language === 'en' ? 'Contact Us' : 'Contattaci');
+      const interiorBlocks = page.blocks?.map((b: any, bIdx: number) => {
+        // Deterministic Section ID / Slug
+        let baseSlug = b.content?.title 
+          ? b.content.title.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-')
+          : b.type;
+        
+        // Match with AI intended anchor links if possible
+        const matchingAnchor = anchorIdsFromNav.find((aId: string) => {
+          const aIdSlug = aId.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
+          return baseSlug.includes(aIdSlug) || aIdSlug.includes(baseSlug);
+        });
+
+        if (matchingAnchor && !Object.values(slugCounts).includes(matchingAnchor as any)) {
+            baseSlug = matchingAnchor;
         }
 
-        return b;
+        slugCounts[baseSlug] = (slugCounts[baseSlug] || 0) + 1;
+        const finalSectionId = slugCounts[baseSlug] > 1 ? `${baseSlug}-${slugCounts[baseSlug]}` : baseSlug;
+
+        const blockWithId = {
+          ...b,
+          id: b.id || uuidv4(),
+          content: { 
+            ...b.content,
+            sectionId: b.content?.sectionId || finalSectionId
+          },
+          style: { ...b.style }
+        };
+
+        // Enforce Hero Image Readability
+        if (blockWithId.type === 'hero' && blockWithId.content?.backgroundImage) {
+          blockWithId.style.overlayOpacity = blockWithId.style.overlayOpacity || 65;
+          blockWithId.style.overlayColor = blockWithId.style.overlayColor || '#000000';
+          // Force high contrast text (use theme background as text color over dark image)
+          if (!blockWithId.style.textColor) {
+            blockWithId.style.textColor = themeBG;
+          }
+        }
+
+        return blockWithId;
       });
 
-      // Step B: Build Global Blocks
       const navBlock = {
         id: uuidv4(),
         type: 'navigation',
         content: {
-          ...navSchema,
-          logoText: navSchema.logoText || data.businessName,
-          logoType: navSchema.logoType || (data.logoUrl ? 'image' : 'text'),
-          logoImage: navSchema.logoImage || data.logoUrl || '',
-          links: finalNavLinks
+          ...aiOutput.settings?.navigation,
+          logoText: finalBusinessName,
+          logoType: finalLogoType,
+          logoImage: finalLogo,
+          links: finalNavLinks, // Force deterministic links
+          showContact: true
         },
-        style: { padding: 20, isSticky: true }
+        style: { padding: 20, isSticky: true, backgroundColor: undefined, textColor: undefined }
       };
 
       const footerBlock = {
         id: uuidv4(),
         type: 'footer',
         content: {
-          ...footerSchema,
-          logoType: footerSchema.logoType || (data.logoUrl ? 'image' : 'text'),
-          logoImage: footerSchema.logoImage || data.logoUrl || '',
-          logoText: footerSchema.logoText || data.businessName,
-          copyright: footerSchema.copyright || `© ${currentYear} ${data.businessName}. Tutti i diritti riservati.`,
-          socialLinks: footerSchema.socialLinks || data.socials || []
+          ...aiOutput.settings?.footer,
+          logoType: finalLogoType,
+          logoImage: finalLogo,
+          logoText: finalBusinessName,
+          links: finalNavLinks, // Force deterministic links
+          socialLinks: finalBusinessDetails.socialLinks, // Force deterministic socials
+          copyright: `© ${new Date().getFullYear()} ${finalBusinessName}. Tutti i diritti riservati.`,
         },
-        style: { padding: 60 }
+        style: { padding: 60, backgroundColor: undefined, textColor: undefined }
       };
-
-      // Step C: Link cleanup for multi-page — convert #anchor to /home#anchor
-      // Skip hex colors (#fff, #ff0000) and only target anchor-like values (#section-name)
-      const isAnchorLink = (val: string) =>
-        val.startsWith('#') && !/^#([0-9a-fA-F]{3,8})$/.test(val);
-
-      if (pages.length > 1) {
-         const linkKeys = ['url', 'ctaUrl', 'href', 'link'];
-         [navBlock, ...interiorBlocks, footerBlock].forEach((block: any) => {
-            if (block.content) {
-               for (const key of linkKeys) {
-                  const val = block.content[key];
-                  if (typeof val === 'string' && isAnchorLink(val)) {
-                    block.content[key] = `/home${val}`;
-                  }
-               }
-               // Also handle links arrays (nav links, footer links)
-               if (Array.isArray(block.content.links)) {
-                  block.content.links.forEach((link: any) => {
-                    if (typeof link.url === 'string' && isAnchorLink(link.url)) {
-                      link.url = `/home${link.url}`;
-                    }
-                  });
-               }
-            }
-         });
-      }
 
       return {
         ...page,
@@ -374,53 +460,8 @@ export async function generateProjectWithAI(data: AIGenerationData) {
       };
     });
 
-    // 6. Final Settings cleanup — user overrides take priority over AI output
-    const finalAppearance = data.appearance || aiOutput.settings?.appearance || 'light';
-    const finalPrimary = data.primaryColor || aiOutput.settings?.primaryColor || '#3b82f6';
-    const finalSecondary = data.secondaryColor || aiOutput.settings?.secondaryColor || '#ffffff';
-    const finalFont = data.fontFamily || aiOutput.settings?.fontFamily || 'Outfit';
-    const isDarkFinal = finalAppearance === 'dark';
-
-    const finalSettings = {
-      ...aiOutput.settings,
-      // Force user style overrides
-      appearance: finalAppearance,
-      primaryColor: finalPrimary,
-      secondaryColor: finalSecondary,
-      fontFamily: finalFont,
-      // Ensure themeColors is always set (editor relies on it for background)
-      themeColors: {
-        light: {
-          bg: !isDarkFinal ? finalSecondary : '#ffffff',
-          text: !isDarkFinal ? '#000000' : '#000000',
-        },
-        dark: {
-          bg: isDarkFinal ? finalSecondary : '#0c0c0e',
-          text: isDarkFinal ? '#ffffff' : '#ffffff',
-        },
-      },
-      // Language settings
-      languages: [data.language || 'it'],
-      defaultLanguage: data.language || 'it',
-      // Global meta
-      metaTitle: data.businessName,
-      metaDescription: aiOutput.settings?.metaDescription || `${data.businessName} — Sito ufficiale`,
-      favicon: data.logoUrl || aiOutput.settings?.favicon || '',
-      metaImage: data.logoUrl || aiOutput.settings?.metaImage || '',
-      logo: data.logoUrl || aiOutput.settings?.logo || '',
-      businessDetails: {
-        ...aiOutput.settings?.businessDetails,
-        businessName: data.businessName,
-        email: data.email || aiOutput.settings?.businessDetails?.email || '',
-        phone: data.phone || aiOutput.settings?.businessDetails?.phone || '',
-        address: data.address || aiOutput.settings?.businessDetails?.address || '',
-        city: data.city || aiOutput.settings?.businessDetails?.city || '',
-        postalCode: data.zip || aiOutput.settings?.businessDetails?.postalCode || '',
-        country: data.country || aiOutput.settings?.businessDetails?.country || 'Italia'
-      }
-    };
-
-    // 7. Increment Credits Used
+    // --- 8. FINISH ---
+    // Increment Credits Used
     await supabase
       .from('profiles')
       .update({ ai_generations_used: (profile.ai_generations_used || 0) + 1 })

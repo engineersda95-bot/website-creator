@@ -7,10 +7,10 @@ Your goal is to generate a complete, Professional website structure with CONCISE
 - Headlines: SHORT, PUNCHY, max 6-8 words. Use power words.
 - Body text: Max 2 short sentences per paragraph. NO WALLS OF TEXT.
 - If the user gives a long description, BREAK IT into multiple blocks:
-  * Extract the emotional hook → hero subtitle
-  * Extract key differentiators → benefits block items
-  * Extract history/story → a short "text" block with <h2> and 2-3 sentences
-  * Extract services/offerings → cards block
+  * Extract the emotional hook -> hero subtitle
+  * Extract key differentiators -> benefits block items
+  * Extract history/story -> a short "text" block with <h2> and 2-3 sentences
+  * Extract services/offerings -> cards block
 - EVERY block must be scannable in 3 seconds. If text is too long, split it.
 - Use clear size hierarchy: <h2> for section titles, <p> for body. Never use same size for both.
 
@@ -41,23 +41,33 @@ Your goal is to generate a complete, Professional website structure with CONCISE
   "primaryColor": "hex",
   "secondaryColor": "hex",
   "appearance": "light" | "dark",
+  "businessDetails": {
+     "businessName": string,
+     "phone": string,
+     "email": string,
+     "address": string,
+     "city": string,
+     "zip": string,
+     "country": string,
+     "socials": [{ "platform": string, "url": string }]
+  },
   "buttonRadius": number,
   "buttonShadow": "none" | "S" | "M" | "L",
   "typography": { "h1Size": number, "h2Size": number, "bodySize": number },
   "navigation": { "logoText": string, "logoType": "text" | "image", "logoImage": string, "showContact": boolean, "links": [{ "label": string, "url": string }] },
-  "footer": { "logoType": "text" | "image", "logoText": string, "logoImage": string, "copyright": string, "socialLinks": [{ "platform": string, "url": string }] }
+  "footer": { "logoType": "text" | "image", "logoText": string, "logoImage": string, "copyright": string, "socialLinks": [{ "platform": string, "url": string }], "links": [{ "label": string, "url": string }] }
 }
 
-### 📸 MULTIMODAL DESIGN INSTRUCTIONS
-If screenshots are provided, you MUST replicate:
-1. **Colors**: Exact primary and secondary hex codes.
-2. **Typography**: Font family, weights, and sizes.
-3. **UI Feeling**: Button styles (radius, shadow) and block spacing.
+### 📸 MULTIMODAL & VISUAL INSTRUCTIONS
+1. **HERO IMAGES**: You MUST ALWAYS provide a high-quality 'backgroundImage' from Unsplash for the 'hero' block. Choose an image that fits the business mood. 
+2. **LOGO RESTRICTION**: If the user has NOT provided a logo URL, you MUST NOT invent one. Set 'logoType' to 'text' and leave 'logoImage' empty.
+3. **READABILITY**: Choose images that are not too busy; the system will apply a dark overlay (40-50%) to ensure white text is readable.
+4. **COLORS**: If screenshots are provided, replicate the exact hex codes.
 
 ### 📋 INTERIOR BLOCK SCHEMAS
 Every block: { "type": "Type", "content": { ... }, "style": { ... } }
 
-1. "hero": { "title": string (MAX 8 WORDS), "subtitle": string (MAX 2 sentences), "cta": string (MAX 3 words), "ctaUrl": string, "backgroundImage": string }
+1. "hero": { "title": string (MAX 8 WORDS), "subtitle": string (MAX 2 sentences), "cta": string (MAX 3 words), "ctaUrl": string, "backgroundImage": string } — MANDATORY: Always include a backgroundImage URL.
 2. "text": { "title": string (MAX 8 words, puncy), "text": string (MAX 2-3 sentences) } — Ensure the title is in the "title" field, NOT inside the "text" field with HTML tags.
 3. "benefits": { "title": string (MAX 5 words), "subtitle": string (1 sentence), "items": [{ "icon": string, "title": string (2-4 words), "description": string (1 sentence max) }] }
 4. "cards": { "title": string (MAX 5 words), "subtitle": string (1 sentence), "items": [{ "image": string, "title": string (2-4 words), "subtitle": string, "description": string (1-2 sentences) }] }
@@ -80,27 +90,15 @@ Return ONLY a JSON object:
   "settings": { ... },
   "pages": [
     ### 🔴 GUIDELINES FOR HIGH CONTEXT ADHERENCE:
-    - **NEVER INVENT** specific business details not provided (prices, specific product names, founders' names).
-    - **STRICTLY FOLLOW** the "Project Description": if the user says they want a "Portfolio for a high-end photographer", do not generate generic agency text.
-    - **USE PROFESSIONAL MARKETING COPY** if details are missing: translate provided info into persuasive, professional marketing text. 
-    - **MANDATORY DATA INJECTION**:
-        1. Every project MUST lead with the provided businessName.
-        2. Footer and contact blocks MUST use provided Email, Phone, and Address. 
-        3. If these values are provided in the prompt, they are NOT optional.
+    - **EXTRACT ALL BUSINESS DETAILS (EXTREMELY IMPORTANT)**: Read the entire Project Description, including any validation questions and answers. You MUST extract Phone, Email, Address, and Business Name.
+    - **HERO QUALITY**: The Home page Hero MUST have a backgroundImage. 
+    - **NO PLACEHOLDERS**: Never use placeholders for business info. Use generic professional copy if data is truly missing.
 
     ### 🔴 SCHEMA FOR PAGES [Array of objects]:
-    // Generate the pages now in JSON format.
     {
       "id": "uuid",
       "title": "Home",
       "slug": "home",
-      "seo": { "title": string, "description": string },
-      "blocks": [ ... ]
-    },
-    {
-      "id": "uuid",
-      "title": "Extra Page Name",
-      "slug": "extra-page-slug",
       "seo": { "title": string, "description": string },
       "blocks": [ ... ]
     }
@@ -108,10 +106,9 @@ Return ONLY a JSON object:
 }
 
 ### FINAL REMINDER
-- One page per request.
-- Use provided contact info.
+- Primary CTA should lead to the most logical action (contact or services).
+- Hero image is MANDATORY.
 - NO INVENTIONS.
-- No navigation or footer blocks in the "blocks" array.
 `;
 
 export const AI_VALIDATION_PROMPT = `

@@ -5,6 +5,7 @@ import { Palette, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SectionHeader } from '../ui/SectionHeader';
 import { ProjectSettings } from '@/types/editor';
+import { t } from '@/lib/i18n';
 
 interface ThemeSectionProps {
    project: any;
@@ -15,11 +16,12 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
    project,
    updateProjectSettings
 }) => {
+   const lang = project?.settings?.defaultLanguage || 'it';
    return (
       <div className="space-y-12">
          {/* 3. Aspetto & Colori Sezione */}
          <section className="pt-8 border-t border-zinc-100 animate-in fade-in slide-in-from-right-4 duration-500 delay-100">
-            <SectionHeader icon={Palette} title="Aspetto & Colori" colorClass="text-amber-500" />
+            <SectionHeader icon={Palette} title={t('appearance', lang)} colorClass="text-amber-500" />
             <div className="space-y-8">
                <div className="grid grid-cols-2 gap-3">
                   <button
@@ -27,21 +29,21 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
                      className={cn("py-4 flex flex-col items-center gap-2 text-[12px] font-bold border-2 rounded-2xl transition-all", project?.settings?.appearance !== 'dark' ? "bg-zinc-900 text-white border-zinc-900 shadow-xl scale-[1.05]" : "text-zinc-400 border-zinc-100 hover:border-zinc-200")}
                   >
                      <Sun size={20} />
-                     <span>CHIARO</span>
+                     <span>{t('light', lang).toUpperCase()}</span>
                   </button>
                   <button
                      onClick={() => updateProjectSettings({ appearance: 'dark' })}
                      className={cn("py-4 flex flex-col items-center gap-2 text-[12px] font-bold border-2 rounded-2xl transition-all", project?.settings?.appearance === 'dark' ? "bg-zinc-900 text-white border-zinc-900 shadow-xl scale-[1.05]" : "text-zinc-400 border-zinc-100 hover:border-zinc-200")}
                   >
                      <Moon size={20} />
-                     <span>SCURO</span>
+                     <span>{t('dark', lang).toUpperCase()}</span>
                   </button>
                </div>
 
                <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-4">
                      <h4 className="text-[12px] font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
-                        <Sun size={12} className="text-amber-400" /> Colori Tema Light
+                        <Sun size={12} className="text-amber-400" /> {t('theme_colors', lang)} {t('light', lang)}
                      </h4>
                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -57,7 +59,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
 
                   <div className="space-y-4 pt-4 border-t border-zinc-50">
                      <h4 className="text-[12px] font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
-                        <Moon size={12} className="text-indigo-400" /> Colori Tema Dark
+                        <Moon size={12} className="text-indigo-400" /> {t('theme_colors', lang)} {t('dark', lang)}
                      </h4>
                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -76,11 +78,11 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
 
          {/* 5. Colori Brand Section */}
          <section className="pt-8 border-t border-zinc-100 animate-in fade-in slide-in-from-right-4 duration-500 delay-200">
-            <SectionHeader icon={Palette} title="Colori Brand" colorClass="text-blue-500" />
+            <SectionHeader icon={Palette} title={t('brand_colors', lang)} colorClass="text-blue-500" />
             <div className="space-y-6">
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Primario</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('primary', lang)}</label>
                      <input
                         type="color"
                         className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -89,7 +91,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
                      />
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Secondario</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('secondary', lang)}</label>
                      <input
                         type="color"
                         className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -100,7 +102,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
                </div>
                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-50">
                   <div className="space-y-2">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Bottoni</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('text', lang)} {t('buttons', lang)}</label>
                      <input
                         type="color"
                         className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
@@ -109,7 +111,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
                      />
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo Secondario</label>
+                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('text', lang)} {t('secondary', lang)}</label>
                      <input
                         type="color"
                         className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"

@@ -11,6 +11,7 @@ import { SeoSection } from './settings/SeoSection';
 import { ThemeSection } from './settings/ThemeSection';
 import { ButtonDesignSection } from './settings/ButtonDesignSection';
 import { TypographySection } from './settings/TypographySection';
+import { t } from '@/lib/i18n';
 
 interface GlobalSettingsProps {
    project: any;
@@ -27,13 +28,14 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
 }) => {
    const { isUploading, uploadImage } = useEditorStore();
    const isPage = variant === 'page';
+   const lang = project?.settings?.defaultLanguage || 'it';
 
    return (
       <div className={cn("w-full flex flex-col bg-white overflow-hidden relative", isPage ? "" : "h-full shadow-2xl")}>
          {/* Header — hidden in page variant (dashboard has its own) */}
          {!isPage && (
             <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between shrink-0">
-               <h2 className="text-sm font-bold text-zinc-900">Design Globale</h2>
+               <h2 className="text-sm font-bold text-zinc-900">{t('global_design', lang)}</h2>
                {viewport !== 'desktop' && (
                   <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[13px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-600 border border-indigo-100">
                      <Smartphone size={9} />

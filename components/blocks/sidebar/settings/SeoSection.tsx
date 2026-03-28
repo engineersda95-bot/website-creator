@@ -11,6 +11,8 @@ import { SimpleInput } from '../ui/SimpleInput';
 import { ProjectSettings, Page } from '@/types/editor';
 import { BUSINESS_TYPES, LANGUAGES } from '@/lib/editor-constants';
 
+import { t } from '@/lib/i18n';
+
 interface SeoSectionProps {
    project: any;
    updateProjectSettings: (settings: Partial<ProjectSettings>) => void;
@@ -24,10 +26,11 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
    isUploading,
    uploadImage
 }) => {
+   const lang = project?.settings?.defaultLanguage || 'it';
    return (
       <section className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-10">
          <div className="space-y-8">
-            <SectionHeader icon={Globe} title="SEO & Social Globali" colorClass="text-teal-500" />
+            <SectionHeader icon={Globe} title={t('seo_social', lang)} colorClass="text-teal-500" />
 
             <div className="space-y-6">
                <div className="relative">
@@ -78,22 +81,7 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
          {/* Global Project SEO */}
          <div className="space-y-8 pt-10 border-t border-zinc-100">
             <SectionHeader icon={Languages} title="Impostazioni Globali" colorClass="text-indigo-500" />
-
             <div className="space-y-6">
-               {/* Language Selection */}
-               <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block pl-1">Lingua Sito</label>
-                  <select
-                     className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none cursor-pointer"
-                     value={project?.settings?.language || 'it'}
-                     onChange={(e) => updateProjectSettings({ language: e.target.value })}
-                  >
-                     {LANGUAGES.map(lang => (
-                        <option key={lang.value} value={lang.value}>{lang.label}</option>
-                     ))}
-                  </select>
-               </div>
-
                <ImageUpload
                   label="Favicon Globale (1:1)"
                   value={resolveImageUrl(project?.settings?.favicon, project, useEditorStore.getState().imageMemoryCache)}
