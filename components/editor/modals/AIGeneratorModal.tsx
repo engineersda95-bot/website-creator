@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Palette, Layout, Type, Settings as SettingsIcon, Mic, MicOff, Plus, Loader2, Sparkles, Wand2, Info, Image as ImageIcon, CheckCircle2, AlertCircle, X, ChevronRight, ChevronLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { Palette, Layout, Type, Settings as SettingsIcon, Mic, MicOff, Plus, Loader2, Sparkles, Wand2, Info, Image as ImageIcon, AlertCircle, X, ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import { FontManager } from '../../blocks/sidebar/ui/FontManager';
 import { cn } from '@/lib/utils';
 import { BUSINESS_TYPES } from '@/lib/editor-constants';
@@ -14,12 +14,79 @@ interface AIGeneratorModalProps {
   user: any;
 }
 
-type Step = 'intro' | 'info' | 'description' | 'extra-pages' | 'validation' | 'style' | 'generating';
+const STEP_LABELS = ['Info', 'Descrizione', 'Pagine', 'Stile'];
+
+const SUGGESTED_PAGES: Record<string, { name: string; description: string }[]> = {
+  LocalBusiness: [
+    { name: 'Chi Siamo', description: 'Storia, mission e valori dell\'attività' },
+    { name: 'Servizi', description: 'Lista dei servizi offerti con descrizioni' },
+    { name: 'Contatti', description: 'Modulo contatto, mappa e informazioni' },
+  ],
+  HomeAndConstructionBusiness: [
+    { name: 'Servizi', description: 'Tipologie di interventi e manutenzioni offerte' },
+    { name: 'Lavori Realizzati', description: 'Galleria di progetti completati con descrizioni' },
+    { name: 'Contatti', description: 'Form per richiesta preventivo e contatti diretti' },
+  ],
+  Restaurant: [
+    { name: 'Menu', description: 'Piatti, bevande e prezzi organizzati per categorie' },
+    { name: 'Chi Siamo', description: 'La storia del locale, lo chef e la filosofia' },
+    { name: 'Contatti', description: 'Orari, mappa, prenotazioni e contatti' },
+  ],
+  HealthAndBeautyBusiness: [
+    { name: 'Trattamenti', description: 'Lista servizi e trattamenti con descrizioni' },
+    { name: 'Il Team', description: 'Professionisti, specializzazioni e qualifiche' },
+    { name: 'Prenota', description: 'Prenotazione appuntamento e contatti' },
+  ],
+  ProfessionalService: [
+    { name: 'Servizi', description: 'Aree di competenza e servizi offerti' },
+    { name: 'Chi Sono', description: 'Esperienza, qualifiche e approccio professionale' },
+    { name: 'Contatti', description: 'Form contatto e modalità di consulenza' },
+  ],
+  EducationalOrganization: [
+    { name: 'Corsi', description: 'Catalogo corsi con programmi e durata' },
+    { name: 'Docenti', description: 'Team di insegnanti e le loro competenze' },
+    { name: 'Iscrizioni', description: 'Modalità di iscrizione e contatti' },
+  ],
+  SportsActivityLocation: [
+    { name: 'Corsi & Attività', description: 'Programma attività, orari e livelli' },
+    { name: 'Abbonamenti', description: 'Piani, prezzi e vantaggi per ogni abbonamento' },
+    { name: 'Contatti', description: 'Dove siamo, orari e form di contatto' },
+  ],
+  TravelAgency: [
+    { name: 'Destinazioni', description: 'Mete proposte con descrizioni e pacchetti' },
+    { name: 'Servizi', description: 'Tipologie di viaggio e servizi inclusi' },
+    { name: 'Prenota', description: 'Form di prenotazione e richiesta preventivo' },
+  ],
+  Store: [
+    { name: 'Prodotti', description: 'Catalogo prodotti organizzato per categorie' },
+    { name: 'Chi Siamo', description: 'Storia del negozio e i nostri valori' },
+    { name: 'Contatti', description: 'Dove trovarci, orari e assistenza clienti' },
+  ],
+  Organization: [
+    { name: 'Chi Siamo', description: 'Mission, storia e il team' },
+    { name: 'Contatti', description: 'Modulo contatto e informazioni' },
+  ],
+};
+
+const SITE_OBJECTIVES = [
+  { value: 'book', label: 'Prenotare un appuntamento' },
+  { value: 'contact', label: 'Contattarmi (chiamata/email)' },
+  { value: 'quote', label: 'Richiedere un preventivo' },
+  { value: 'buy', label: 'Acquistare un prodotto/servizio' },
+  { value: 'info', label: 'Informarsi sulla mia attività' },
+];
+
+const TONE_OPTIONS = [
+  { value: 'professional', label: 'Professionale' },
+  { value: 'friendly', label: 'Amichevole' },
+  { value: 'formal', label: 'Formale' },
+  { value: 'creative', label: 'Creativo' },
+];
 
 export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalProps) {
-  const [step, setStep] = useState<Step>('intro');
+  const [stepIndex, setStepIndex] = useState(0);
   const [language, setLanguage] = useState('it');
-  
+
   // Form State
   const [businessName, setBusinessName] = useState('Ristorante da Mario');
   const [businessType, setBusinessType] = useState('LocalBusiness');
@@ -35,20 +102,26 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const [whatsapp, setWhatsapp] = useState('');
   const [twitter, setTwitter] = useState('');
   const [linkedin, setLinkedin] = useState('');
-  
+
   const [description, setDescription] = useState('Un accogliente ristorante italiano specializzato in piatti tipici della tradizione milanese, con ingredienti a km zero e un\'atmosfera familiare.');
+  const [siteObjective, setSiteObjective] = useState('contact');
+  const [useAnchorNav, setUseAnchorNav] = useState(true);
+  const [tone, setTone] = useState('professional');
+  const [strengths, setStrengths] = useState(['', '', '']);
   const [extraPages, setExtraPages] = useState<{ name: string; description: string }[]>([]);
+  const [pagesInitialized, setPagesInitialized] = useState(false);
+  const [lastValidatedPages, setLastValidatedPages] = useState<string | null>(null);
   const [newPageName, setNewPageName] = useState('');
   const [newPageDesc, setNewPageDesc] = useState('');
   const [screenshotUrls, setScreenshotUrls] = useState<string[]>([]);
-  
+
   const [isUploading, setIsUploading] = useState(false);
-  
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [isValidating, setIsValidating] = useState(false);
   const [validationQuestions, setValidationQuestions] = useState<any[]>([]);
+  const [showValidation, setShowValidation] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
 
@@ -59,16 +132,24 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const [secondaryColor, setSecondaryColor] = useState<string | null>(null);
   const [fontFamily, setFontFamily] = useState<string | null>(null);
 
+  const inputClass = "w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all placeholder:text-zinc-300";
+
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_SCREENSHOTS = 5;
 
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        setError('Il logo non può superare i 5MB.');
+        return;
+      }
       setIsUploading(true);
       const ext = file.name.split('.').pop();
       const filename = `logo-${Date.now()}.${ext}`;
       const path = `ai-temp/${user.id}/${filename}`;
-      
-      const { data, error } = await supabase.storage
+
+      const { data } = await supabase.storage
         .from('project-assets')
         .upload(path, file);
 
@@ -86,12 +167,22 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    const incoming = Array.from(files);
+    if (screenshotUrls.length + incoming.length > MAX_SCREENSHOTS) {
+      setError(`Massimo ${MAX_SCREENSHOTS} screenshot.`);
+      return;
+    }
+
     setIsUploading(true);
-    for (const file of Array.from(files)) {
+    for (const file of incoming) {
+      if (file.size > MAX_FILE_SIZE) {
+        setError(`"${file.name}" supera i 5MB e verrà saltato.`);
+        continue;
+      }
       const ext = file.name.split('.').pop();
       const filename = `screenshot-${Date.now()}-${Math.random().toString(36).substring(2, 5)}.${ext}`;
       const path = `ai-temp/${user.id}/${filename}`;
-      
+
       const { data } = await supabase.storage
         .from('project-assets')
         .upload(path, file);
@@ -131,46 +222,27 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
       });
 
       if (result.isReady || !result.questions || result.questions.length === 0) {
-        setStep('style');
+        setStepIndex(3);
       } else {
         setValidationQuestions(result.questions);
-        setStep('validation');
+        setShowValidation(true);
       }
-    } catch (err) {
-      console.error('Validation error:', err);
-      setStep('style'); // Fallback
+    } catch (err: any) {
+      setError(err?.message || 'Errore durante la validazione IA.');
     } finally {
       setIsValidating(false);
     }
   };
 
-  const handleNextStep = async () => {
-    if (step === 'intro') setStep('info');
-    else if (step === 'info') setStep('description');
-    else if (step === 'description') setStep('extra-pages');
-    else if (step === 'extra-pages') {
-      // UX Improvement: If user entered data but forgot to click 'Add', do it for them
-      if (newPageName.trim() && newPageDesc.trim()) {
-        const updatedPages = [...extraPages, { name: newPageName.trim(), description: newPageDesc.trim() }];
-        setExtraPages(updatedPages);
-        setNewPageName('');
-        setNewPageDesc('');
-        await runValidation(updatedPages);
-      } else {
-        await runValidation(extraPages);
-      }
-    }
-    else if (step === 'validation') setStep('style');
-  };
-
   const handleValidationAnswer = (id: string, value: string) => {
-    // Append answer to description to give context to Gemini
     const q = validationQuestions.find(v => v.id === id);
     if (q) {
       setDescription(prev => (prev + '\n\n- ' + q.question + ': ' + value));
-      setValidationQuestions(prev => prev.filter(v => v.id !== id));
-      if (validationQuestions.length === 1) {
-        setStep('style');
+      const remaining = validationQuestions.filter(v => v.id !== id);
+      setValidationQuestions(remaining);
+      if (remaining.length === 0) {
+        setShowValidation(false);
+        setStepIndex(3);
       }
     }
   };
@@ -208,7 +280,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
           interimTranscript += event.results[i][0].transcript;
         }
       }
-      
+
       const newTranscription = (finalTranscript + interimTranscript).trim();
       if (newTranscription) {
         const fullText = initialText ? (initialText + ' ' + newTranscription) : newTranscription;
@@ -224,12 +296,18 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const handleStartGeneration = async () => {
     setError(null);
     setIsGenerating(true);
-    setStep('generating');
-    
-    // Simulate progress phases
+
     const interval = setInterval(() => {
       setProgress(p => (p < 90 ? p + Math.random() * 10 : p));
     }, 2000);
+
+    // Timeout: 90 secondi max
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      setError('La generazione sta impiegando troppo tempo. Riprova.');
+      setIsGenerating(false);
+      setProgress(0);
+    }, 90000);
 
     try {
       const socials = [
@@ -239,6 +317,8 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
         { platform: 'x', url: twitter },
         { platform: 'linkedin', url: linkedin }
       ].filter(s => s.url);
+
+      const filledStrengths = strengths.filter(s => s.trim());
 
       const result = await generateProjectWithAI({
         businessName,
@@ -258,707 +338,788 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
         primaryColor: primaryColor || undefined,
         secondaryColor: secondaryColor || undefined,
         fontFamily: fontFamily || undefined,
-        appearance: appearance === 'auto' ? undefined : appearance
+        appearance: appearance === 'auto' ? undefined : appearance,
+        siteObjective,
+        tone,
+        strengths: filledStrengths.length > 0 ? filledStrengths : undefined,
+        useAnchorNav: extraPages.length === 0 ? useAnchorNav : undefined,
       });
 
+      clearTimeout(timeout);
       clearInterval(interval);
       if (result.success) {
         setProgress(100);
         setTimeout(() => {
           onSuccess({
             ...result.data,
-            businessName // Pass business name back for project naming
+            businessName,
+            language
           });
         }, 800);
       } else {
         setError(result.error || 'Errore imprevisto');
-        setStep('style');
         setIsGenerating(false);
+        setProgress(0);
       }
     } catch (err: any) {
+      clearTimeout(timeout);
       clearInterval(interval);
       setError(err.message || 'Errore tecnico');
-      setStep('style');
       setIsGenerating(false);
+      setProgress(0);
     }
   };
 
+  const handleNextStep = async () => {
+    setError(null);
+    if (stepIndex === 2) {
+      // Auto-save page if fields are filled (add or update)
+      const pagesToValidate = [...extraPages];
+      if (newPageName.trim() && newPageDesc.trim()) {
+        if (editingPageIdx !== null) {
+          pagesToValidate[editingPageIdx] = { name: newPageName.trim(), description: newPageDesc.trim() };
+        } else {
+          pagesToValidate.push({ name: newPageName.trim(), description: newPageDesc.trim() });
+        }
+        setExtraPages(pagesToValidate);
+        setNewPageName('');
+        setNewPageDesc('');
+        setEditingPageIdx(null);
+      }
+      // Skip validation if pages haven't changed since last run
+      const pagesHash = JSON.stringify(pagesToValidate) + description;
+      if (lastValidatedPages === pagesHash) {
+        setStepIndex(3);
+        return;
+      }
+      setLastValidatedPages(pagesHash);
+      await runValidation(pagesToValidate);
+    } else {
+      setStepIndex(stepIndex + 1);
+    }
+  };
+
+  const [editingPageIdx, setEditingPageIdx] = useState<number | null>(null);
+
   const addPage = () => {
     if (newPageName.trim() && newPageDesc.trim()) {
-      setExtraPages([...extraPages, { name: newPageName.trim(), description: newPageDesc.trim() }]);
+      if (editingPageIdx !== null) {
+        // Update existing page
+        const updated = [...extraPages];
+        updated[editingPageIdx] = { name: newPageName.trim(), description: newPageDesc.trim() };
+        setExtraPages(updated);
+        setEditingPageIdx(null);
+      } else {
+        setExtraPages([...extraPages, { name: newPageName.trim(), description: newPageDesc.trim() }]);
+      }
       setNewPageName('');
       setNewPageDesc('');
     }
   };
 
+  const editPage = (idx: number) => {
+    setNewPageName(extraPages[idx].name);
+    setNewPageDesc(extraPages[idx].description);
+    setEditingPageIdx(idx);
+  };
+
+  const cancelEditPage = () => {
+    setNewPageName('');
+    setNewPageDesc('');
+    setEditingPageIdx(null);
+  };
+
   const removePage = (idx: number) => {
     setExtraPages(extraPages.filter((_, i) => i !== idx));
+    if (editingPageIdx === idx) cancelEditPage();
   };
 
   const removeScreenshot = (idx: number) => {
     setScreenshotUrls(screenshotUrls.filter((_, i) => i !== idx));
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-      <div className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm" onClick={onClose} />
-      
-      <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-300 border border-zinc-200 h-full max-h-[90vh] overflow-visible">
-        
-        {/* Header */}
-        <div className="px-8 py-6 flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-zinc-900 flex items-center justify-center shadow-lg shadow-zinc-200">
-              <Sparkles className="text-white" size={20} />
-            </div>
-            <div>
-              <h2 className="text-lg font-black text-zinc-900 tracking-tight">Crea con IA</h2>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Generatore Magico</span>
+  const canGoNext = () => {
+    if (stepIndex === 0) return !!businessName.trim();
+    if (stepIndex === 1) return description.length >= 10;
+    return true;
+  };
+
+  // Generating screen
+  if (isGenerating) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+        <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200">
+          <div className="px-6 py-5 flex items-center justify-between border-b border-zinc-100">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Sparkles size={18} className="text-indigo-500" />
+                <div className="absolute inset-0 bg-indigo-400/20 blur-md rounded-full animate-pulse" />
               </div>
+              <h2 className="text-lg font-bold text-zinc-900">Generazione in corso</h2>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-zinc-100 rounded-xl transition-all text-zinc-400 hover:text-zinc-600 active:scale-90">
-            <X size={20} />
+
+          <div className="p-6 py-16 space-y-10">
+            <div className="text-center space-y-4">
+              <div className="relative inline-block">
+                <div className="w-20 h-20 rounded-2xl bg-zinc-50 border border-zinc-100 flex items-center justify-center animate-pulse">
+                  <Wand2 size={32} className="text-zinc-900 animate-bounce" />
+                </div>
+                <div className="absolute -top-2 -right-2 p-1.5 bg-zinc-900 text-white rounded-xl shadow-lg border-4 border-white">
+                  <Sparkles size={12} />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-zinc-900">Creazione della Magia...</h3>
+                <p className="text-sm text-zinc-400 mt-1">L'IA sta scrivendo i testi e progettando il layout.</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 max-w-sm mx-auto">
+              <div className="h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-zinc-900 rounded-full transition-all duration-500 relative overflow-hidden"
+                  style={{ width: `${progress}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+                </div>
+              </div>
+              <div className="flex justify-between items-center text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                <span>
+                  {progress < 30 ? 'Analisi contesto...' :
+                   progress < 60 ? 'Progettazione layout...' :
+                   progress < 90 ? 'Stesura contenuti...' : 'Finalizzazione...'}
+                </span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2">
+                <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={14} />
+                <div className="text-xs text-red-600 font-medium">{error}</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+          }
+          .animate-shimmer {
+            animation: shimmer 2s infinite linear;
+          }
+        `}} />
+      </div>
+    );
+  }
+
+  // Validation overlay
+  if (showValidation && validationQuestions.length > 0) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+        <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200">
+          <div className="px-6 py-5 flex items-center justify-between border-b border-zinc-100">
+            <h2 className="text-lg font-bold text-zinc-900">Un paio di domande...</h2>
+            <button onClick={() => { setShowValidation(false); setStepIndex(3); }} className="p-1.5 hover:bg-zinc-100 rounded-md transition-colors text-zinc-400">
+              <X size={16} />
+            </button>
+          </div>
+          <div className="p-6 space-y-5">
+            <p className="text-xs text-zinc-400">Per un risultato perfetto abbiamo bisogno di qualche dettaglio in più.</p>
+            {validationQuestions.map((q, i) => (
+              <div key={q.id || `q-${i}`} className="space-y-1.5 animate-in fade-in slide-in-from-right-2 duration-200" style={{ animationDelay: `${i * 80}ms` }}>
+                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">{q.question || q.text}</label>
+                <input
+                  autoFocus={i === 0}
+                  placeholder={q.placeholder || "Scrivi qui la risposta..."}
+                  className={inputClass}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleValidationAnswer(q.id || `q-${i}`, (e.target as HTMLInputElement).value);
+                    }
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between bg-white">
+            <button onClick={() => { setShowValidation(false); setStepIndex(1); }} className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500 hover:text-zinc-700 transition-colors">
+              <ChevronLeft size={14} />
+              Modifica
+            </button>
+            <button onClick={() => { setShowValidation(false); setStepIndex(3); }} className="flex items-center gap-1.5 px-5 py-2 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all">
+              Salta e continua
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200">
+        {/* Header with step indicator */}
+        <div className="px-6 py-5 flex items-center justify-between border-b border-zinc-100">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Sparkles size={16} className="text-indigo-500" />
+                <div className="absolute inset-0 bg-indigo-400/20 blur-md rounded-full animate-pulse" />
+              </div>
+              <h2 className="text-lg font-bold text-zinc-900">Crea con IA</h2>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {STEP_LABELS.map((label, i) => (
+                <div key={label} className="flex items-center gap-1.5">
+                  {i > 0 && <div className={cn("w-4 h-px", i <= stepIndex ? "bg-zinc-900" : "bg-zinc-200")} />}
+                  <div className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all",
+                    i < stepIndex ? "bg-emerald-50 text-emerald-600" :
+                    i === stepIndex ? "bg-zinc-900 text-white" :
+                    "bg-zinc-100 text-zinc-400"
+                  )}>
+                    {i < stepIndex ? <Check size={10} /> : <span>{i + 1}</span>}
+                    <span className="hidden sm:inline">{label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-zinc-100 rounded-md transition-colors text-zinc-400">
+            <X size={16} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-8 overflow-x-visible">
-          
-          {step === 'intro' && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="text-center space-y-4 py-4">
-                <div className="inline-flex p-4 rounded-3xl bg-zinc-50 border border-zinc-100 mb-2">
-                   <Wand2 className="text-zinc-900" size={32} />
-                </div>
-                <h3 className="text-2xl font-black text-zinc-900">Il tuo sito pronto in 60 secondi</h3>
-                <p className="text-zinc-500 text-sm max-w-sm mx-auto leading-relaxed">
-                  Descrivi la tua attività e la nostra IA genererà struttura, testi e design su misura per te.
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                  { icon: Type, title: "Testi Professionali", desc: "Copywriting ottimizzato per la conversione" },
-                  { icon: Layout, title: "Struttura Multi-page", desc: "Fino a 5 pagine generate istantaneamente" },
-                  { icon: Palette, title: "Design Personalizzato", desc: "Colori e font estratti dai tuoi screenshot" }
-                ].map((feature, i) => (
-                  <div key={i} className="p-5 rounded-2xl border border-zinc-100 bg-white shadow-sm hover:shadow-md transition-shadow">
-                    <feature.icon className="text-zinc-400 mb-3" size={20} />
-                    <h4 className="text-[12px] font-bold text-zinc-900 uppercase tracking-wider mb-1">{feature.title}</h4>
-                    <p className="text-[11px] text-zinc-400 leading-tight">{feature.desc}</p>
-                  </div>
-                ))}
-              </div>
+        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar overflow-x-visible">
 
-              <div className="pt-4">
-                <button 
-                  onClick={() => setStep('info')}
-                  className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 group hover:bg-zinc-800 transition-all shadow-xl shadow-zinc-200 active:scale-[0.98]"
-                >
-                  Inizia la Generazione
-                  <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === 'info' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1 px-1">Nome dell'Attività</label>
-                    <input 
-                      autoFocus
-                      value={businessName}
-                      onChange={e => setBusinessName(e.target.value)}
-                      placeholder="Es: Pizzeria da Mario"
-                      className="w-full px-5 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:bg-white focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5 outline-none transition-all font-bold text-zinc-900"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1 px-1">Lingua Generazione</label>
-                    <select 
-                      value={language}
-                      onChange={e => setLanguage(e.target.value)}
-                      className="w-full px-5 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:bg-white focus:border-zinc-900 outline-none transition-all font-bold text-zinc-900 appearance-none cursor-pointer"
-                    >
-                      <option value="it">🇮🇹 Italiano</option>
-                      <option value="en">🇺🇸 English</option>
-                      <option value="es">🇪🇸 Español</option>
-                      <option value="fr">🇫🇷 Français</option>
-                      <option value="de">🇩🇪 Deutsch</option>
-                    </select>
-                  </div>
+          {/* Step 0: Info */}
+          {stepIndex === 0 && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-200">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Nome dell'Attività</label>
+                  <input
+                    autoFocus
+                    value={businessName}
+                    onChange={e => setBusinessName(e.target.value)}
+                    placeholder="Es: Pizzeria da Mario"
+                    className={inputClass}
+                  />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Settore</label>
-                  <select 
-                    value={businessType}
-                    onChange={e => setBusinessType(e.target.value)}
-                    className="w-full px-5 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:bg-white focus:border-zinc-900 outline-none transition-all font-bold text-zinc-900 appearance-none cursor-pointer"
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Lingua Generazione</label>
+                  <select
+                    value={language}
+                    onChange={e => setLanguage(e.target.value)}
+                    className={inputClass}
                   >
-                    {BUSINESS_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    <option value="it">🇮🇹 Italiano</option>
+                    <option value="en">🇺🇸 English</option>
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="de">🇩🇪 Deutsch</option>
                   </select>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Email</label>
-                    <input 
-                      value={businessEmail}
-                      onChange={e => setBusinessEmail(e.target.value)}
-                      placeholder="info@azienda.it"
-                      className="w-full px-5 py-3.5 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm focus:bg-white focus:border-zinc-900 outline-none transition-all font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Telefono</label>
-                    <input 
-                      value={businessPhone}
-                      onChange={e => setBusinessPhone(e.target.value)}
-                      placeholder="+39 012 3456789"
-                      className="w-full px-5 py-3.5 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm focus:bg-white focus:border-zinc-900 outline-none transition-all font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1">Indirizzo Sede (Opzionale)</label>
-                    <input 
-                      value={businessAddress}
-                      onChange={e => setBusinessAddress(e.target.value)}
-                      placeholder="Via Roma 123"
-                      className="w-full px-5 py-3.5 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm focus:bg-white focus:border-zinc-900 outline-none transition-all font-bold"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-1">
-                      <input 
-                        value={businessZip}
-                        onChange={e => setBusinessZip(e.target.value)}
-                        placeholder="CAP"
-                        className="w-full px-5 py-3.5 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm focus:bg-white focus:border-zinc-900 outline-none transition-all font-bold"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <input 
-                        value={businessCity}
-                        onChange={e => setBusinessCity(e.target.value)}
-                        placeholder="Città"
-                        className="w-full px-5 py-3.5 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm focus:bg-white focus:border-zinc-900 outline-none transition-all font-bold"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1 px-1">Social Links (Opzionale)</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    <input value={instagram} onChange={e => setInstagram(e.target.value)} placeholder="Instagram URL" className="px-4 py-2.5 bg-zinc-50 border border-zinc-100 rounded-xl text-[11px] focus:bg-white outline-none font-bold" />
-                    <input value={facebook} onChange={e => setFacebook(e.target.value)} placeholder="Facebook URL" className="px-4 py-2.5 bg-zinc-50 border border-zinc-100 rounded-xl text-[11px] focus:bg-white outline-none font-bold" />
-                    <input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="WhatsApp" className="px-4 py-2.5 bg-zinc-50 border border-zinc-100 rounded-xl text-[11px] focus:bg-white outline-none font-bold" />
-                    <input value={twitter} onChange={e => setTwitter(e.target.value)} placeholder="X (Twitter) URL" className="px-4 py-2.5 bg-zinc-50 border border-zinc-100 rounded-xl text-[11px] focus:bg-white outline-none font-bold" />
-                    <input value={linkedin} onChange={e => setLinkedin(e.target.value)} placeholder="LinkedIn URL" className="px-4 py-2.5 bg-zinc-50 border border-zinc-100 rounded-xl text-[11px] focus:bg-white outline-none font-bold" />
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1 italic">Logo aziendale (Opzionale)</label>
-                  <div className="flex items-center gap-4 p-4 bg-zinc-50 border border-zinc-100 rounded-3xl group hover:border-zinc-200 transition-all relative cursor-pointer overflow-hidden">
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleLogoChange}
-                      className="absolute inset-0 opacity-0 cursor-pointer z-10" 
-                    />
-                    <div className="w-16 h-16 rounded-2xl bg-white border border-zinc-100 shadow-sm flex items-center justify-center shrink-0 overflow-hidden">
-                      {isUploading ? (
-                        <Loader2 className="animate-spin text-zinc-300" size={24} />
-                      ) : businessLogoUrl ? (
-                        <img src={businessLogoUrl} className="w-full h-full object-contain" alt="Logo preview" />
-                      ) : (
-                        <ImageIcon className="text-zinc-200" size={24} />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[12px] font-bold text-zinc-900 group-hover:text-zinc-600">Carica il tuo logo</div>
-                      <div className="text-[10px] text-zinc-400">Dimensione consigliata: 512x512px</div>
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              <div className="pt-6 flex gap-3">
-                 <button onClick={() => setStep('intro')} className="flex-1 py-4 bg-zinc-100 text-zinc-500 rounded-2xl font-bold hover:bg-zinc-200 transition-all">
-                    Indietro
-                 </button>
-                 <button 
-                   disabled={!businessName.trim()}
-                   onClick={handleNextStep} 
-                   className="flex-[2] py-4 bg-zinc-900 text-white rounded-2xl font-bold hover:bg-zinc-800 transition-all disabled:opacity-50"
-                 >
-                    Prossimo
-                 </button>
-              </div>
-            </div>
-          )}
-
-          {step === 'description' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-               <div>
-                  <div className="flex items-center justify-between mb-2 px-1">
-                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest">Descrizione del Progetto</label>
-                    <div className="group relative">
-                      <Info size={14} className="text-zinc-300 cursor-help hover:text-zinc-500 transition-colors" />
-                      <div className="absolute bottom-full right-0 mb-3 w-64 p-4 bg-zinc-900 text-white text-[11px] rounded-2xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-10 leading-relaxed italic border border-zinc-800">
-                        Raccontaci cosa vuoi mettere in evidenza (es: per un ristorante parla del menu, orari, location e CTA principale come prenotazioni). Più dettagli dai, migliore sarà il risultato.
-                      </div>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <textarea 
-                      autoFocus
-                      value={description}
-                      onChange={e => setDescription(e.target.value)}
-                      placeholder="Descrivi cosa fa la tua attività, i punti di forza, i prodotti principali e l'obiettivo del sito..."
-                      className="w-full h-48 px-6 py-5 bg-zinc-50 border border-zinc-100 rounded-2xl focus:bg-white focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5 outline-none transition-all font-medium text-zinc-900 resize-none leading-relaxed"
-                    />
-                    <button 
-                      onClick={() => toggleListening('description')}
-                      className={cn(
-                        "absolute bottom-4 right-4 p-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2",
-                        isListening ? "bg-red-500 text-white animate-pulse scale-110" : "bg-white text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 border border-zinc-100"
-                      )}
-                      title={isListening ? "Ferma ascolto" : "Dettatura vocale"}
-                    >
-                      {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-                      {isListening && <span className="text-[10px] font-black uppercase tracking-tighter">Ascolto...</span>}
-                    </button>
-                  </div>
-                  <div className="flex justify-between items-center mt-2 px-1">
-                     <span className="text-[10px] text-zinc-400 font-bold italic">Min. 50 caratteri consigliati</span>
-                     <span className={cn("text-[10px] font-black tracking-widest", description.length < 50 ? "text-amber-500" : "text-emerald-500")}>
-                       {description.length} caratteri
-                     </span>
-                  </div>
-               </div>
-
-               <div className="pt-2 flex gap-3">
-                 <button onClick={() => setStep('info')} className="flex-1 py-4 bg-zinc-100 text-zinc-500 rounded-2xl font-bold hover:bg-zinc-200 transition-all">
-                    Indietro
-                 </button>
-                 <button 
-                   disabled={description.length < 10}
-                   onClick={handleNextStep} 
-                   className="flex-[2] py-4 bg-zinc-900 text-white rounded-2xl font-bold hover:bg-zinc-800 transition-all disabled:opacity-50"
-                 >
-                    Prossimo Step
-                 </button>
-              </div>
-            </div>
-          )}
-
-          {step === 'style' && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-              {/* Screenshots Upload */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 px-1">
-                  <Palette size={14} className="text-zinc-400" />
-                  <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest italic">Personalizza lo stile (Opzionale)</label>
-                </div>
-                
-                <div className="bg-zinc-50 border-2 border-dashed border-zinc-200 rounded-3xl p-6 text-center group hover:border-zinc-400 transition-all relative overflow-hidden">
-                  <input 
-                    type="file" 
-                    multiple 
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                  />
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="p-3 bg-white rounded-2xl shadow-sm border border-zinc-100 group-hover:scale-110 transition-transform">
-                      <ImageIcon className="text-zinc-300" size={24} />
-                    </div>
-                    <div>
-                      <h5 className="text-[12px] font-bold text-zinc-800">Carica screenshot di riferimento</h5>
-                      <p className="text-[10px] text-zinc-400">L'IA estrarrà colori, font e layout da questi file</p>
-                    </div>
-                  </div>
-                </div>
-
-                {screenshotUrls.length > 0 && (
-                  <div className="flex flex-wrap gap-3 pt-2">
-                    {screenshotUrls.map((s, i) => (
-                      <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-zinc-200 shadow-sm group/thumb">
-                        <img src={s} className="w-full h-full object-cover" alt={`Preview ${i}`} />
-                        <button 
-                          onClick={() => removeScreenshot(i)}
-                          className="absolute top-1 right-1 p-1 bg-black/50 text-white rounded-md opacity-0 group-hover/thumb:opacity-100 transition-opacity"
-                        >
-                          <X size={10} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-
-              {/* Advanced Settings */}
-              <div className="border border-zinc-100 rounded-3xl overflow-hidden mt-4">
-                <button 
-                  onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="w-full px-6 py-4 flex items-center justify-between bg-zinc-50/50 hover:bg-zinc-50 transition-colors"
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Settore</label>
+                <select
+                  value={businessType}
+                  onChange={e => setBusinessType(e.target.value)}
+                  className={inputClass}
                 >
-                  <div className="flex items-center gap-2">
-                    <SettingsIcon size={14} className="text-zinc-400" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Impostazioni Avanzate Stile</span>
-                  </div>
-                  <Plus size={14} className={cn("text-zinc-400 transition-transform duration-300", showAdvanced && "rotate-45")} />
-                </button>
-
-                {showAdvanced && (
-                  <div className="p-6 bg-white space-y-6 border-t border-zinc-100 animate-in slide-in-from-top-2 duration-300">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Tema</label>
-                        <select 
-                          value={appearance}
-                          onChange={e => setAppearance(e.target.value as any)}
-                          className="w-full px-4 py-3 bg-zinc-50 border border-zinc-100 rounded-2xl text-xs font-bold outline-none focus:border-zinc-900 transition-all cursor-pointer"
-                        >
-                          <option value="auto">🤖 IA Decide (Auto)</option>
-                          <option value="light">☀️ Chiaro</option>
-                          <option value="dark">🌙 Scuro</option>
-                        </select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Colore Primario</label>
-                        {primaryColor === null ? (
-                          <button 
-                            onClick={() => setPrimaryColor('#000000')}
-                            className="w-full px-4 py-3 bg-zinc-50 border border-zinc-100 rounded-2xl text-[11px] font-bold text-zinc-400 text-left hover:border-zinc-300 transition-all italic"
-                          >
-                            Consigliato dall'IA - Scegli per forzare
-                          </button>
-                        ) : (
-                          <div className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-100 rounded-2xl group/color">
-                            <input 
-                              type="color" 
-                              value={primaryColor} 
-                              onChange={e => setPrimaryColor(e.target.value)}
-                              className="w-8 h-8 rounded-lg overflow-hidden cursor-pointer border-none bg-transparent"
-                            />
-                            <input 
-                              type="text" 
-                              value={primaryColor}
-                              onChange={e => setPrimaryColor(e.target.value)}
-                              className="flex-1 bg-transparent text-[11px] font-mono font-bold text-zinc-600 outline-none"
-                            />
-                            <button onClick={() => setPrimaryColor(null)} className="p-1 opacity-0 group-hover/color:opacity-100 transition-opacity">
-                              <X size={12} className="text-zinc-300" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Colore Sfondo/Sec.</label>
-                        {secondaryColor === null ? (
-                          <button 
-                            onClick={() => setSecondaryColor('#ffffff')}
-                            className="w-full px-4 py-3 bg-zinc-50 border border-zinc-100 rounded-2xl text-[11px] font-bold text-zinc-400 text-left hover:border-zinc-300 transition-all italic"
-                          >
-                            Consigliato dall'IA - Scegli per forzare
-                          </button>
-                        ) : (
-                          <div className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-100 rounded-2xl group/color">
-                            <input 
-                              type="color" 
-                              value={secondaryColor} 
-                              onChange={e => setSecondaryColor(e.target.value)}
-                              className="w-8 h-8 rounded-lg overflow-hidden cursor-pointer border-none bg-transparent"
-                            />
-                            <input 
-                              type="text" 
-                              value={secondaryColor}
-                              onChange={e => setSecondaryColor(e.target.value)}
-                              className="flex-1 bg-transparent text-[11px] font-mono font-bold text-zinc-600 outline-none"
-                            />
-                            <button onClick={() => setSecondaryColor(null)} className="p-1 opacity-0 group-hover/color:opacity-100 transition-opacity">
-                              <X size={12} className="text-zinc-300" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Font Principale</label>
-                        {fontFamily === null ? (
-                          <button 
-                            onClick={() => setFontFamily('Inter')}
-                            className="w-full px-4 py-3 bg-zinc-50 border border-zinc-100 rounded-2xl text-[11px] font-bold text-zinc-400 text-left hover:border-zinc-300 transition-all italic"
-                          >
-                            Scelta dall'IA - Clicca per selezionare
-                          </button>
-                        ) : (
-                          <div className="relative group/font">
-                            <FontManager 
-                              value={fontFamily}
-                              onChange={setFontFamily}
-                              label="Font Principale"
-                            />
-                            <button 
-                              onClick={() => setFontFamily(null)} 
-                              className="absolute top-0 right-1 p-1 text-zinc-300 hover:text-zinc-900 transition-all"
-                              title="Reset all'IA"
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {/* Padding per evitare che il dropdown tagli */}
-                    <div className="h-40" />
-                  </div>
-                )}
+                  {BUSINESS_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
               </div>
 
-              <div className="pt-2 flex gap-3">
-                 <button onClick={() => setStep('extra-pages')} className="flex-1 py-4 bg-zinc-100 text-zinc-500 rounded-2xl font-bold hover:bg-zinc-200 transition-all font-black text-[12px] uppercase">
-                    Indietro
-                 </button>
-                 <button 
-                   onClick={handleStartGeneration} 
-                   className="flex-[2] py-4 bg-zinc-900 text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all shadow-xl shadow-zinc-200 active:scale-95 group"
-                 >
-                    <Sparkles className="group-hover:rotate-12 transition-transform" size={18} />
-                    Genera con IA
-                 </button>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Email</label>
+                  <input value={businessEmail} onChange={e => setBusinessEmail(e.target.value)} placeholder="info@azienda.it" className={inputClass} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Telefono</label>
+                  <input value={businessPhone} onChange={e => setBusinessPhone(e.target.value)} placeholder="+39 012 3456789" className={inputClass} />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <input value={businessAddress} onChange={e => setBusinessAddress(e.target.value)} placeholder="Via e Numero" className={inputClass} />
+                <div className="grid grid-cols-2 gap-3">
+                  <input value={businessCity} onChange={e => setBusinessCity(e.target.value)} placeholder="Città" className={inputClass} />
+                  <input value={businessZip} onChange={e => setBusinessZip(e.target.value)} placeholder="CAP" className={inputClass} />
+                </div>
+                <input value={businessCountry} onChange={e => setBusinessCountry(e.target.value)} placeholder="Paese" className={inputClass} />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Social Links (Opzionale)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input value={instagram} onChange={e => setInstagram(e.target.value)} placeholder="Instagram URL" className={inputClass} />
+                  <input value={facebook} onChange={e => setFacebook(e.target.value)} placeholder="Facebook URL" className={inputClass} />
+                  <input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="WhatsApp" className={inputClass} />
+                  <input value={twitter} onChange={e => setTwitter(e.target.value)} placeholder="X (Twitter) URL" className={inputClass} />
+                  <input value={linkedin} onChange={e => setLinkedin(e.target.value)} placeholder="LinkedIn URL" className={inputClass} />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 p-3 bg-zinc-50 rounded-xl border border-zinc-100">
+                <div className="relative group/logo w-16 h-16 rounded-lg bg-white border border-zinc-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                  {isUploading ? (
+                    <Loader2 className="animate-spin text-zinc-300" size={24} />
+                  ) : businessLogoUrl ? (
+                    <img src={businessLogoUrl} className="w-full h-full object-contain" alt="Logo preview" />
+                  ) : (
+                    <ImageIcon className="text-zinc-200" size={24} />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[12px] font-bold text-zinc-900">Logo aziendale</div>
+                  <div className="text-[10px] text-zinc-400">Clicca per caricare</div>
+                </div>
               </div>
             </div>
           )}
 
-          {step === 'extra-pages' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 px-1">
-                  <Layout size={14} className="text-zinc-400" />
-                  <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest italic">Pagine Aggiuntive</label>
-                </div>
-
-                <div className="space-y-3">
-                  <input 
-                    value={newPageName}
-                    onChange={e => setNewPageName(e.target.value)}
-                    placeholder="Nome della pagina (es: Servizi, Portfolio...)"
-                    className="w-full px-5 py-3.5 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm focus:bg-white focus:border-zinc-900 outline-none transition-all font-bold"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addPage();
-                      }
-                    }}
-                  />
-                  <div className="relative">
-                    <textarea 
-                      value={newPageDesc}
-                      onChange={e => setNewPageDesc(e.target.value)}
-                      placeholder="Descrivi l'obiettivo di questa pagina..."
-                      className="w-full px-5 py-3.5 bg-zinc-50 border border-zinc-100 rounded-2xl text-xs focus:bg-white focus:border-zinc-900 outline-none transition-all font-medium h-32 resize-none"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          addPage();
-                        }
-                      }}
-                    />
-                    <button 
-                      onClick={() => toggleListening('extra')}
-                      className={cn(
-                        "absolute bottom-4 right-4 p-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2",
-                        isListening ? "bg-red-500 text-white animate-pulse" : "bg-white text-zinc-400 hover:text-zinc-900 border border-zinc-100"
-                      )}
-                    >
-                      {isListening ? <MicOff size={16} /> : <Mic size={16} />}
-                    </button>
+          {/* Step 1: Descrizione */}
+          {stepIndex === 1 && (
+            <div className="space-y-5 animate-in fade-in slide-in-from-right-2 duration-200">
+              {/* Descrizione */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Descrivi la tua attività</label>
+                  <div className="group relative">
+                    <Info size={13} className="text-zinc-300 cursor-help hover:text-zinc-500 transition-colors" />
+                    <div className="absolute bottom-full right-0 mb-2 w-56 p-3 bg-zinc-900 text-white text-[10px] rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-10 leading-relaxed">
+                      Raccontaci cosa fai, cosa offri e cosa ti rende unico. Più dettagli dai, migliore sarà il risultato.
+                    </div>
                   </div>
-                  <button 
-                    disabled={!newPageName.trim() || !newPageDesc.trim()}
-                    onClick={addPage}
-                    className="w-full py-3 bg-zinc-900/5 hover:bg-zinc-900/10 text-zinc-900 rounded-2xl font-bold transition-all disabled:opacity-50 text-[11px] uppercase tracking-widest flex items-center justify-center gap-2"
+                </div>
+                <div className="relative">
+                  <textarea
+                    autoFocus
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    placeholder="Es: Siamo un ristorante a conduzione familiare specializzato in cucina tradizionale milanese..."
+                    className="w-full h-28 px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all placeholder:text-zinc-300 resize-none leading-relaxed"
+                  />
+                  <button
+                    onClick={() => toggleListening('description')}
+                    className={cn(
+                      "absolute bottom-3 right-3 p-2 rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5",
+                      isListening ? "bg-red-500 text-white animate-pulse" : "bg-white text-zinc-400 hover:text-zinc-900 border border-zinc-200"
+                    )}
+                    title={isListening ? "Ferma ascolto" : "Dettatura vocale"}
                   >
-                    <Plus size={14} />
-                    Aggiungi Pagina
+                    {isListening ? <MicOff size={14} /> : <Mic size={14} />}
+                    {isListening && <span className="text-[9px] font-bold uppercase">Ascolto...</span>}
                   </button>
                 </div>
+              </div>
 
-                {extraPages.length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-1">
+              {/* Obiettivo + Tono */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Obiettivo del sito</label>
+                  <select value={siteObjective} onChange={e => setSiteObjective(e.target.value)} className={inputClass}>
+                    {SITE_OBJECTIVES.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Tono di voce</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {TONE_OPTIONS.map(t => (
+                      <button
+                        key={t.value}
+                        onClick={() => setTone(t.value)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition-all",
+                          tone === t.value
+                            ? "bg-zinc-900 border-zinc-900 text-white"
+                            : "bg-white border-zinc-200 text-zinc-400 hover:border-zinc-300"
+                        )}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Punti di forza */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  Perché scegliere te? <span className="font-normal normal-case text-zinc-300">(opzionale)</span>
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {strengths.map((s, i) => (
+                    <input
+                      key={i}
+                      value={s}
+                      onChange={e => {
+                        const updated = [...strengths];
+                        updated[i] = e.target.value;
+                        setStrengths(updated);
+                      }}
+                      placeholder={['Es: Ingredienti a Km 0', 'Es: 20 anni di esperienza', 'Es: Consegna gratuita'][i]}
+                      className={inputClass}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Pagine */}
+          {stepIndex === 2 && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-200">
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Struttura del sito</label>
+              </div>
+
+              {/* Single vs Multi page toggle */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => { setExtraPages([]); cancelEditPage(); }}
+                  className={cn(
+                    "p-4 rounded-xl border-2 transition-all text-left space-y-2",
+                    extraPages.length === 0
+                      ? "border-zinc-900 bg-zinc-50 shadow-sm"
+                      : "border-zinc-100 hover:border-zinc-300"
+                  )}
+                >
+                  <div className="text-[12px] font-semibold text-zinc-800">Pagina singola</div>
+                  <div className="text-[10px] text-zinc-400 leading-relaxed">
+                    Tutto in una pagina scorrevole. Perfetta per landing page, portfolio e attività semplici. Veloce da creare, facile da navigare.
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    if (extraPages.length === 0) {
+                      const suggested = SUGGESTED_PAGES[businessType] || SUGGESTED_PAGES.LocalBusiness;
+                      setExtraPages(suggested.map(p => ({ ...p })));
+                    }
+                  }}
+                  className={cn(
+                    "p-4 rounded-xl border-2 transition-all text-left space-y-2",
+                    extraPages.length > 0
+                      ? "border-zinc-900 bg-zinc-50 shadow-sm"
+                      : "border-zinc-100 hover:border-zinc-300"
+                  )}
+                >
+                  <div className="text-[12px] font-semibold text-zinc-800">Multi-pagina</div>
+                  <div className="text-[10px] text-zinc-400 leading-relaxed">
+                    Ogni sezione ha la sua pagina dedicata. Ideale per attività con molti servizi, menu, team o contenuti da approfondire.
+                  </div>
+                </button>
+              </div>
+
+              {/* Anchor nav option for single page */}
+              {extraPages.length === 0 && (
+                <label className="flex items-center gap-3 p-3 bg-zinc-50 rounded-xl border border-zinc-100 cursor-pointer hover:border-zinc-200 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={useAnchorNav}
+                    onChange={e => setUseAnchorNav(e.target.checked)}
+                    className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+                  />
+                  <div>
+                    <div className="text-[12px] font-semibold text-zinc-800">Menu di navigazione con ancore</div>
+                    <div className="text-[10px] text-zinc-400">Aggiunge un menu fisso che scorre verso le sezioni della pagina (Chi siamo, Servizi, Contatti...)</div>
+                  </div>
+                </label>
+              )}
+
+              {/* Page list */}
+              {extraPages.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider">Home + {extraPages.length} {extraPages.length === 1 ? 'pagina' : 'pagine'}</div>
+                  <div className="space-y-1">
                     {extraPages.map((p, i) => (
-                      <div key={i} className="flex items-center gap-2 pl-3 pr-2 py-1.5 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest group/page" title={p.description}>
-                        <span>{p.name}</span>
-                        <button onClick={() => removePage(i)} className="p-0.5 hover:bg-white/20 rounded-full transition-colors">
-                          <X size={10} />
+                      <div
+                        key={i}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all group",
+                          editingPageIdx === i
+                            ? "bg-blue-50 border border-blue-200"
+                            : "bg-zinc-50 border border-zinc-100 hover:border-zinc-200"
+                        )}
+                        onClick={() => editPage(i)}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className={cn("text-[12px] font-semibold", editingPageIdx === i ? "text-blue-700" : "text-zinc-800")}>{p.name}</div>
+                          <div className="text-[10px] text-zinc-400 truncate">{p.description}</div>
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removePage(i); }}
+                          className="p-1 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Add/Edit page form — only in multi-page mode */}
+              {extraPages.length > 0 && <div className="space-y-2 pt-1">
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-zinc-100" />
+                  <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider">
+                    {editingPageIdx !== null ? 'Modifica pagina' : 'Aggiungi pagina'}
+                  </span>
+                  <div className="h-px flex-1 bg-zinc-100" />
+                </div>
+                <input
+                  value={newPageName}
+                  onChange={e => setNewPageName(e.target.value)}
+                  placeholder="Nome della pagina (es: Servizi, Portfolio...)"
+                  className={inputClass}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPage(); } }}
+                />
+                <div className="relative">
+                  <textarea
+                    value={newPageDesc}
+                    onChange={e => setNewPageDesc(e.target.value)}
+                    placeholder="Descrivi cosa vuoi in questa pagina..."
+                    className="w-full h-20 px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all placeholder:text-zinc-300 resize-none"
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addPage(); } }}
+                  />
+                  <button
+                    onClick={() => toggleListening('extra')}
+                    className={cn(
+                      "absolute bottom-2 right-2 p-1.5 rounded-lg transition-all shadow-sm flex items-center justify-center",
+                      isListening ? "bg-red-500 text-white animate-pulse" : "bg-white text-zinc-400 hover:text-zinc-900 border border-zinc-200"
+                    )}
+                  >
+                    {isListening ? <MicOff size={12} /> : <Mic size={12} />}
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    disabled={!newPageName.trim() || !newPageDesc.trim()}
+                    onClick={addPage}
+                    className="flex-1 py-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-600 border border-zinc-200 rounded-xl text-xs font-semibold transition-all disabled:opacity-40 flex items-center justify-center gap-1.5"
+                  >
+                    <Plus size={13} />
+                    {editingPageIdx !== null ? 'Salva Modifica' : 'Aggiungi Pagina'}
+                  </button>
+                  {editingPageIdx !== null && (
+                    <button
+                      onClick={cancelEditPage}
+                      className="px-4 py-2 text-xs text-zinc-400 hover:text-zinc-600 border border-zinc-200 rounded-xl transition-colors"
+                    >
+                      Annulla
+                    </button>
+                  )}
+                </div>
+              </div>}
+            </div>
+          )}
+
+          {/* Step 3: Stile */}
+          {stepIndex === 3 && (
+            <div className="space-y-5 animate-in fade-in slide-in-from-right-2 duration-200">
+              {/* Tema */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Tema</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { value: 'auto' as const, label: 'IA Decide', preview: 'bg-gradient-to-br from-white to-zinc-900' },
+                    { value: 'light' as const, label: 'Chiaro', preview: 'bg-white' },
+                    { value: 'dark' as const, label: 'Scuro', preview: 'bg-zinc-900' },
+                  ]).map(t => (
+                    <button
+                      key={t.value}
+                      onClick={() => setAppearance(t.value)}
+                      className={cn(
+                        "p-3 rounded-xl border-2 transition-all text-center",
+                        appearance === t.value
+                          ? "border-zinc-900 shadow-sm"
+                          : "border-zinc-100 hover:border-zinc-300"
+                      )}
+                    >
+                      <div className={cn("w-full h-8 rounded-lg mb-2 border border-zinc-200", t.preview)} />
+                      <div className="text-[11px] font-semibold text-zinc-700">{t.label}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Colori */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Colore Primario</label>
+                  <div className="flex items-center gap-2 px-3 py-2 border border-zinc-200 rounded-xl">
+                    <input
+                      type="color"
+                      value={primaryColor || '#3b82f6'}
+                      onChange={e => setPrimaryColor(e.target.value)}
+                      className="w-8 h-8 rounded-lg overflow-hidden cursor-pointer border-none bg-transparent shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      {primaryColor ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] font-mono font-semibold text-zinc-600">{primaryColor}</span>
+                          <button onClick={() => setPrimaryColor(null)} className="text-zinc-300 hover:text-zinc-500"><X size={11} /></button>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-zinc-400 italic">Scelto dall&apos;IA</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Colore Sfondo</label>
+                  <div className="flex items-center gap-2 px-3 py-2 border border-zinc-200 rounded-xl">
+                    <input
+                      type="color"
+                      value={secondaryColor || '#ffffff'}
+                      onChange={e => setSecondaryColor(e.target.value)}
+                      className="w-8 h-8 rounded-lg overflow-hidden cursor-pointer border-none bg-transparent shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      {secondaryColor ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] font-mono font-semibold text-zinc-600">{secondaryColor}</span>
+                          <button onClick={() => setSecondaryColor(null)} className="text-zinc-300 hover:text-zinc-500"><X size={11} /></button>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-zinc-400 italic">Scelto dall&apos;IA</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Font */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Font</label>
+                {fontFamily === null ? (
+                  <button
+                    onClick={() => setFontFamily('Inter')}
+                    className="w-full px-3.5 py-2.5 bg-white border border-zinc-200 rounded-xl text-[11px] text-zinc-400 text-left hover:border-zinc-300 transition-all italic"
+                  >
+                    Scelto dall&apos;IA — clicca per personalizzare
+                  </button>
+                ) : (
+                  <div className="relative group/font">
+                    <FontManager value={fontFamily} onChange={setFontFamily} label="Font Principale" />
+                    <button onClick={() => setFontFamily(null)} className="absolute top-0 right-1 p-1 text-zinc-300 hover:text-zinc-900 transition-all" title="Reset">
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Screenshots */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  Screenshot di riferimento <span className="font-normal normal-case text-zinc-300">(opzionale)</span>
+                </label>
+                <div className="bg-zinc-50 border-2 border-dashed border-zinc-200 rounded-xl p-4 text-center group hover:border-zinc-300 transition-all relative overflow-hidden">
+                  <input type="file" multiple accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                  <div className="flex items-center justify-center gap-2">
+                    <ImageIcon className="text-zinc-300" size={16} />
+                    <div className="text-[11px] text-zinc-500">Carica immagini da cui estrarre stile</div>
+                  </div>
+                </div>
+                {screenshotUrls.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {screenshotUrls.map((s, i) => (
+                      <div key={i} className="relative w-14 h-14 rounded-lg overflow-hidden border border-zinc-200 group/thumb">
+                        <img src={s} className="w-full h-full object-cover" alt={`Preview ${i}`} />
+                        <button onClick={() => removeScreenshot(i)} className="absolute top-0.5 right-0.5 p-0.5 bg-black/50 text-white rounded opacity-0 group-hover/thumb:opacity-100 transition-opacity">
+                          <X size={8} />
                         </button>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-
-              <div className="pt-2 flex gap-3">
-                 <button onClick={() => setStep('description')} className="flex-1 py-4 bg-zinc-100 text-zinc-500 rounded-2xl font-bold hover:bg-zinc-200 transition-all font-black text-[12px] uppercase">
-                    Indietro
-                 </button>
-                 <button 
-                   disabled={isValidating}
-                   onClick={handleNextStep} 
-                   className="flex-[2] py-4 bg-zinc-900 text-white rounded-2xl font-bold hover:bg-zinc-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                 >
-                    {isValidating ? (
-                      <>
-                        <Loader2 className="animate-spin" size={18} />
-                        Analisi...
-                      </>
-                    ) : 'Analizza e Continua'}
-                 </button>
-              </div>
+              {/* Padding for font dropdown overflow */}
+              {fontFamily !== null && <div className="h-32" />}
             </div>
           )}
-
-          {step === 'validation' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="space-y-2">
-                <h3 className="text-xl font-black text-zinc-900 italic">Un paio di domande...</h3>
-                <p className="text-zinc-400 text-xs font-medium">Abbiamo analizzato la tua richiesta. Per un risultato perfetto abbiamo bisogno di qualche dettaglio in più.</p>
-              </div>
-
-              <div className="space-y-6 pt-2">
-                {validationQuestions.map((q, i) => (
-                  <div key={q.id || `q-${i}`} className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${i * 100}ms` }}>
-                    <label className="block text-[11px] font-black text-zinc-900 uppercase tracking-wider px-1">
-                      {q.question || q.text || `Domanda per ${businessName}`}
-                    </label>
-                    <input 
-                      autoFocus={i === 0}
-                      placeholder={q.placeholder || "Scrivi qui la risposta..."}
-                      className="w-full px-5 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:bg-white focus:border-zinc-900 outline-none transition-all font-bold text-zinc-900"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleValidationAnswer(q.id || `q-${i}`, (e.target as HTMLInputElement).value);
-                        }
-                      }}
-                    />
-                  </div>
-                ))}
-                {(!validationQuestions || validationQuestions.length === 0) && (
-                   <div className="p-12 text-center text-zinc-400 text-sm italic py-8 bg-zinc-50 rounded-3xl border border-zinc-100 animate-pulse">
-                      Abbiamo tutto! Clicca su continua per procedere...
-                      {setTimeout(() => setStep('style'), 1500) && null}
-                   </div>
-                )}
-              </div>
-
-              <div className="pt-4 flex gap-3">
-                 <button onClick={() => setStep('description')} className="flex-1 py-4 bg-zinc-100 text-zinc-500 rounded-2xl font-bold hover:bg-zinc-200 transition-all font-black text-[12px] uppercase tracking-widest">
-                    Modifica
-                 </button>
-                 <button 
-                   onClick={() => setStep('style')} 
-                   className="flex-[2] py-4 bg-zinc-900 text-white rounded-2xl font-black hover:bg-zinc-800 transition-all text-[12px] uppercase tracking-widest"
-                 >
-                    Salta e Continua
-                 </button>
-              </div>
-            </div>
-          )}
-
-          {step === 'generating' && (
-            <div className="py-12 space-y-12 animate-in fade-in zoom-in-95 duration-500">
-               <div className="text-center space-y-6">
-                  <div className="relative inline-block">
-                    <div className="w-24 h-24 rounded-[2.5rem] bg-zinc-50 border border-zinc-100 flex items-center justify-center animate-pulse">
-                        <Wand2 size={40} className="text-zinc-900 animate-bounce" />
-                    </div>
-                    <div className="absolute -top-2 -right-2 p-2 bg-zinc-900 text-white rounded-2xl shadow-lg border-4 border-white">
-                      <Sparkles size={16} />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h3 className="text-2xl font-black text-zinc-900 italic">Creazione della Magia...</h3>
-                    <p className="text-zinc-400 text-sm font-medium">L'IA sta scrivendo i testi e progettando il layout.</p>
-                  </div>
-               </div>
-
-               <div className="space-y-4 max-w-sm mx-auto">
-                  <div className="h-3 bg-zinc-100 rounded-full overflow-hidden p-0.5 border border-zinc-200/50 shadow-inner">
-                    <div 
-                      className="h-full bg-zinc-900 rounded-full transition-all duration-500 relative overflow-hidden" 
-                      style={{ width: `${progress}%` }}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 italic">
-                    <span>
-                       {progress < 30 ? 'Analisi contesto...' : 
-                        progress < 60 ? 'Progettazione layout...' : 
-                        progress < 90 ? 'Stesura contenuti...' : 'Finalizzazione...'}
-                    </span>
-                    <span>{Math.round(progress)}%</span>
-                  </div>
-               </div>
-
-               {error && (
-                 <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={16} />
-                    <div className="text-xs text-red-600 font-medium leading-relaxed">{error}</div>
-                 </div>
-               )}
-            </div>
-          )}
-
         </div>
-        
-        {/* Footer (Steps Indicator) */}
-        {!isGenerating && (
-          <div className="px-8 py-4 border-t border-zinc-100 bg-zinc-50/30 flex items-center justify-between">
-            <div className="flex gap-2">
-              {(['intro', 'info', 'description', 'extra-pages', 'validation', 'style'] as Step[]).map((s, i) => (
-                <div 
-                  key={s} 
-                  className={cn(
-                    "h-1.5 rounded-full transition-all duration-500",
-                    step === s ? "w-8 bg-zinc-900" : "w-1.5 bg-zinc-200"
-                  )} 
-                />
-              ))}
-            </div>
-            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest italic">
-               SitiVetrina v2.5 AI
-            </div>
+
+        {/* Error banner */}
+        {error && (
+          <div className="mx-6 mb-0 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2">
+            <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={14} />
+            <div className="text-xs text-red-600 font-medium flex-1">{error}</div>
+            <button onClick={() => setError(null)} className="text-red-300 hover:text-red-500 shrink-0"><X size={12} /></button>
           </div>
         )}
+
+        {/* Footer with navigation */}
+        <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between bg-white">
+          <div>
+            {stepIndex > 0 ? (
+              <button
+                onClick={() => setStepIndex(stepIndex - 1)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500 hover:text-zinc-700 transition-colors"
+              >
+                <ChevronLeft size={14} />
+                Indietro
+              </button>
+            ) : (
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm text-zinc-500 hover:text-zinc-700 transition-colors"
+              >
+                Annulla
+              </button>
+            )}
+          </div>
+          <div>
+            {stepIndex < 3 ? (
+              <button
+                onClick={handleNextStep}
+                disabled={!canGoNext() || isValidating}
+                className="flex items-center gap-1.5 px-5 py-2 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all disabled:opacity-50"
+              >
+                {isValidating ? (
+                  <>
+                    <Loader2 className="animate-spin" size={14} />
+                    Analisi...
+                  </>
+                ) : (
+                  <>
+                    Avanti
+                    <ChevronRight size={14} />
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={handleStartGeneration}
+                className="flex items-center gap-1.5 px-5 py-2 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all"
+              >
+                <Sparkles size={14} />
+                Genera con IA
+              </button>
+            )}
+          </div>
+        </div>
       </div>
-      
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        .animate-shimmer {
-          animation: shimmer 2s infinite linear;
-        }
-      `}} />
     </div>
   );
 }

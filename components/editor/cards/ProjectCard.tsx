@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { Globe, Clock, Settings as SettingsIcon, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { LANGUAGES } from '@/lib/editor-constants';
+import { LANGUAGES } from "@/lib/editor-constants";
+import { getProjectDomain } from "@/lib/url-utils";
+import { cn } from "@/lib/utils";
+import { Clock, Globe, Settings as SettingsIcon, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 interface ProjectCardProps {
   project: any;
@@ -13,27 +13,34 @@ interface ProjectCardProps {
   onDelete: (id: string, name: string) => Promise<void>;
 }
 
-export function ProjectCard({ project, formatDate, onEdit, onDelete }: ProjectCardProps) {
-  const projectLangs = project.settings?.languages || [project.settings?.language || project.settings?.defaultLanguage || 'it'];
-  const languages = projectLangs.map((code: string) => LANGUAGES.find(l => l.value === code)).filter(Boolean);
+export function ProjectCard({
+  project,
+  formatDate,
+  onEdit,
+  onDelete,
+}: ProjectCardProps) {
+  const projectLangs = project.settings?.languages || [
+    project.settings?.language || project.settings?.defaultLanguage || "it",
+  ];
+  const languages = projectLangs
+    .map((code: string) => LANGUAGES.find((l) => l.value === code))
+    .filter(Boolean);
+  const liveUrl = project.live_url ? getProjectDomain(project) : "";
 
   return (
-    <div
-      className="group relative bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md hover:border-zinc-300 transition-all"
-    >
+    <div className="group relative bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md hover:border-zinc-300 transition-all">
       <Link href={`/editor/${project.id}`} className="block">
-        <div className="h-32 bg-gradient-to-br from-zinc-50 to-zinc-100 flex items-center justify-center">
-          <Globe size={28} className="text-zinc-200" />
-        </div>
         <div className="p-4 pb-2">
           <div className="flex items-center justify-between mb-1">
             <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-blue-600 transition-colors">
               {project.name}
             </h3>
-            <div className={cn(
-              "w-2 h-2 rounded-full",
-              project.live_url ? "bg-emerald-500" : "bg-zinc-300"
-            )} />
+            <div
+              className={cn(
+                "w-2 h-2 rounded-full",
+                project.live_url ? "bg-emerald-500" : "bg-zinc-300",
+              )}
+            />
           </div>
           <p className="text-xs text-zinc-400 flex items-center gap-3">
             <span className="flex items-center gap-1">
@@ -50,7 +57,10 @@ export function ProjectCard({ project, formatDate, onEdit, onDelete }: ProjectCa
       <div className="px-4 py-2.5 border-t border-zinc-100 flex items-center justify-between">
         <div className="flex items-center gap-1">
           {languages.map((lang: any) => (
-            <div key={lang.value} className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-50 border border-zinc-100 rounded-md">
+            <div
+              key={lang.value}
+              className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-50 border border-zinc-100 rounded-md"
+            >
               <span className="text-[14px] leading-none" title={lang.label}>
                 {lang.flag}
               </span>

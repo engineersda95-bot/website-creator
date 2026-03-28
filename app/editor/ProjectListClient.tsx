@@ -8,7 +8,8 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   Plus, Globe, Clock, FileText, X, Utensils, Briefcase, Rocket,
   Trash2, Eye, Scissors, Dumbbell, Store, Stethoscope, Hotel, Camera,
-  Settings as SettingsIcon, Image as ImageIcon, Sparkles
+  Settings as SettingsIcon, Image as ImageIcon, Sparkles,
+  ChevronRight, ChevronLeft, Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserMenu } from '@/components/auth/UserMenu';
@@ -69,6 +70,7 @@ export function ProjectListClient({
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
+  const [createStep, setCreateStep] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
@@ -201,8 +203,11 @@ export function ProjectListClient({
         title: p.slug === 'home' ? 'Home' : p.title,
         slug: p.slug,
         blocks: p.blocks,
-        seo: p.seo || { title: p.title, description: '' },
-        language: 'it', // AI uses default IT for now
+        seo: {
+          title: p.seo?.title || `${p.title} — ${aiData.businessName}`,
+          description: p.seo?.description || `${p.title} di ${aiData.businessName}`,
+        },
+        language: aiData.language || 'it',
       }));
 
       const { error: pgError } = await supabase.from('pages').insert(pagesToInsert);
@@ -269,23 +274,71 @@ export function ProjectListClient({
           </div>
         </div>
 
-        {/* Create project modal */}
+        {/* Create project modal — Stepped wizard */}
         {showCreate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCreate(false)} />
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowCreate(false); setCreateStep(0); }} />
             <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200">
+              {/* Header with step indicator */}
               <div className="px-6 py-5 flex items-center justify-between border-b border-zinc-100">
-                <h2 className="text-lg font-bold text-zinc-900">Crea nuovo sito</h2>
-                <button onClick={() => setShowCreate(false)} className="p-1.5 hover:bg-zinc-100 rounded-md transition-colors text-zinc-400">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-lg font-bold text-zinc-900">Crea nuovo sito</h2>
+                  <div className="flex items-center gap-1.5">
+                    {['Template', 'Progetto', 'Attività'].map((label, i) => (
+                      <div key={label} className="flex items-center gap-1.5">
+                        {i > 0 && <div className={cn("w-4 h-px", i <= createStep ? "bg-zinc-900" : "bg-zinc-200")} />}
+                        <div className={cn(
+                          "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all",
+                          i < createStep ? "bg-emerald-50 text-emerald-600" :
+                          i === createStep ? "bg-zinc-900 text-white" :
+                          "bg-zinc-100 text-zinc-400"
+                        )}>
+                          {i < createStep ? <Check size={10} /> : <span>{i + 1}</span>}
+                          <span className="hidden sm:inline">{label}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <button onClick={() => { setShowCreate(false); setCreateStep(0); }} className="p-1.5 hover:bg-zinc-100 rounded-md transition-colors text-zinc-400">
                   <X size={16} />
                 </button>
               </div>
 
               <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
-                {/* Nome Sito & Template Section */}
-                <div className="space-y-4">
-                  <div>
+                {/* Step 0: Template */}
+                {createStep === 0 && (
+                  <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-200">
                     <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Punto di partenza</label>
+
+                    {/* AI Card */}
+                    <button
+                      type="button"
+                      onClick={() => { setShowCreate(false); setCreateStep(0); setShowAIGenerator(true); }}
+                      className="group w-full relative p-4 rounded-xl border-2 border-transparent bg-gradient-to-r from-zinc-900 via-indigo-950 to-zinc-950 text-left overflow-hidden transition-all hover:shadow-[0_0_24px_rgba(79,70,229,0.25)] hover:scale-[1.01] active:scale-[0.99]"
+                    >
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(99,102,241,0.15),transparent_60%)]" />
+                      <div className="relative flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-400/20 flex items-center justify-center shrink-0">
+                          <div className="relative">
+                            <Sparkles size={18} className="text-indigo-400 group-hover:rotate-12 transition-transform" />
+                            <div className="absolute inset-0 bg-indigo-400/30 blur-md rounded-full animate-pulse" />
+                          </div>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[13px] font-black text-white">Crea con Intelligenza Artificiale</div>
+                          <div className="text-[11px] text-zinc-400">Descrivi la tua attività e l'IA genera il sito completo in pochi secondi</div>
+                        </div>
+                        <ChevronRight size={16} className="text-zinc-500 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all shrink-0 ml-auto" />
+                      </div>
+                    </button>
+
+                    <div className="flex items-center gap-3">
+                      <div className="h-px flex-1 bg-zinc-100" />
+                      <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">oppure scegli un template</span>
+                      <div className="h-px flex-1 bg-zinc-100" />
+                    </div>
+
                     <div className="grid grid-cols-2 gap-2">
                       {TEMPLATE_OPTIONS.map((t) => (
                         <div
@@ -318,8 +371,11 @@ export function ProjectListClient({
                       ))}
                     </div>
                   </div>
+                )}
 
-                  <div className="grid grid-cols-2 gap-4">
+                {/* Step 1: Nome + Lingue */}
+                {createStep === 1 && (
+                  <div className="space-y-5 animate-in fade-in slide-in-from-right-2 duration-200">
                     <div className="space-y-1.5">
                       <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Nome del Progetto</label>
                       <input
@@ -327,6 +383,7 @@ export function ProjectListClient({
                         placeholder="Es. Progetto Pizzeria"
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
+                        autoFocus
                       />
                     </div>
                     <div className="space-y-2">
@@ -362,135 +419,163 @@ export function ProjectListClient({
                       </p>
                     </div>
                   </div>
-                </div>
+                )}
 
-                <div className="h-px bg-zinc-100" />
-
-                {/* Business Details Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Dati Attività (Consigliato)</label>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <input
-                        className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
-                        placeholder="Nome Pubblico Azienda"
-                        value={businessName}
-                        onChange={(e) => setBusinessName(e.target.value)}
-                      />
+                {/* Step 2: Business Details */}
+                {createStep === 2 && (
+                  <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-200">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Dati Attività (Consigliato)</label>
                     </div>
-                    <div className="space-y-1.5">
-                      <select
-                        className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
-                        value={businessType}
-                        onChange={(e) => setBusinessType(e.target.value)}
-                      >
-                        {BUSINESS_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                      </select>
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1">
-                    {businessType === 'Restaurant' && (
-                      <div className="space-y-1.5 animation-in slide-in-from-top-1 duration-200">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
                         <input
                           className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
-                          placeholder="Tipo di Cucina (es: Pizza, Mediterranea)"
-                          value={servesCuisine}
-                          onChange={(e) => setServesCuisine(e.target.value)}
+                          placeholder="Nome Pubblico Azienda"
+                          value={businessName}
+                          onChange={(e) => setBusinessName(e.target.value)}
+                          autoFocus
                         />
                       </div>
-                    )}
-                  </div>
+                      <div className="space-y-1.5">
+                        <select
+                          className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
+                          value={businessType}
+                          onChange={(e) => setBusinessType(e.target.value)}
+                        >
+                          {BUSINESS_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                        </select>
+                      </div>
+                    </div>
 
-                  <div className="space-y-3">
-                    <input
-                      className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
-                      placeholder="Via e Numero"
-                      value={businessAddress}
-                      onChange={(e) => setBusinessAddress(e.target.value)}
-                    />
-                    <div className="grid grid-cols-2 gap-3">
-                       <input
+                    <div className="grid grid-cols-1">
+                      {businessType === 'Restaurant' && (
+                        <div className="space-y-1.5 animation-in slide-in-from-top-1 duration-200">
+                          <input
+                            className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
+                            placeholder="Tipo di Cucina (es: Pizza, Mediterranea)"
+                            value={servesCuisine}
+                            onChange={(e) => setServesCuisine(e.target.value)}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-3">
+                      <input
                         className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
-                        placeholder="Città"
-                        value={businessCity}
-                        onChange={(e) => setBusinessCity(e.target.value)}
+                        placeholder="Via e Numero"
+                        value={businessAddress}
+                        onChange={(e) => setBusinessAddress(e.target.value)}
+                      />
+                      <div className="grid grid-cols-2 gap-3">
+                         <input
+                          className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
+                          placeholder="Città"
+                          value={businessCity}
+                          onChange={(e) => setBusinessCity(e.target.value)}
+                        />
+                        <input
+                          className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
+                          placeholder="CAP"
+                          value={businessZIP}
+                          onChange={(e) => setBusinessZIP(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <input
+                        className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
+                        placeholder="Paese"
+                        value={businessCountry}
+                        onChange={(e) => setBusinessCountry(e.target.value)}
                       />
                       <input
                         className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
-                        placeholder="CAP"
-                        value={businessZIP}
-                        onChange={(e) => setBusinessZIP(e.target.value)}
+                        placeholder="Email"
+                        value={businessEmail}
+                        onChange={(e) => setBusinessEmail(e.target.value)}
+                      />
+                      <input
+                        className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
+                        placeholder="Telefono"
+                        value={businessPhone}
+                        onChange={(e) => setBusinessPhone(e.target.value)}
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-3 gap-3 pb-2">
-                    <input
-                      className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
-                      placeholder="Paese"
-                      value={businessCountry}
-                      onChange={(e) => setBusinessCountry(e.target.value)}
-                    />
-                    <input
-                      className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
-                      placeholder="Email"
-                      value={businessEmail}
-                      onChange={(e) => setBusinessEmail(e.target.value)}
-                    />
-                    <input
-                      className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all"
-                      placeholder="Telefono"
-                      value={businessPhone}
-                      onChange={(e) => setBusinessPhone(e.target.value)}
-                    />
+                    <div className="flex items-center gap-4 p-3 bg-zinc-50 rounded-xl border border-zinc-100">
+                      <div className="relative group/logo w-16 h-16 rounded-lg bg-white border border-zinc-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                        {logoPreview ? (
+                          <img src={logoPreview} className="w-full h-full object-contain" alt="Logo preview" />
+                        ) : (
+                          <ImageIcon className="text-zinc-200" size={24} />
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setLogoFile(file);
+                              setLogoPreview(URL.createObjectURL(file));
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[12px] font-bold text-zinc-900">Logo aziendale</div>
+                        <div className="text-[10px] text-zinc-400">Clicca per caricare</div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-4 p-3 bg-zinc-50 rounded-xl border border-zinc-100">
-                  <div className="relative group/logo w-16 h-16 rounded-lg bg-white border border-zinc-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
-                    {logoPreview ? (
-                      <img src={logoPreview} className="w-full h-full object-contain" alt="Logo preview" />
-                    ) : (
-                      <ImageIcon className="text-zinc-200" size={24} />
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setLogoFile(file);
-                          setLogoPreview(URL.createObjectURL(file));
-                        }
-                      }}
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[12px] font-bold text-zinc-900">Logo aziendale</div>
-                    <div className="text-[10px] text-zinc-400">Clicca per caricare</div>
-                  </div>
-                </div>
+                )}
               </div>
 
-              <div className="px-6 py-4 border-t border-zinc-100 flex justify-end gap-2 bg-white">
-                <button
-                  onClick={() => setShowCreate(false)}
-                  className="px-4 py-2 text-sm text-zinc-500 hover:text-zinc-700 transition-colors"
-                >
-                  Annulla
-                </button>
-                <button
-                  onClick={handleCreateProject}
-                  disabled={!newName.trim() || isCreating}
-                  className="px-5 py-2 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all disabled:opacity-50"
-                >
-                  {isCreating ? 'Creazione...' : 'Crea sito'}
-                </button>
+              {/* Footer with navigation */}
+              <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between bg-white">
+                <div>
+                  {createStep > 0 ? (
+                    <button
+                      onClick={() => setCreateStep(createStep - 1)}
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500 hover:text-zinc-700 transition-colors"
+                    >
+                      <ChevronLeft size={14} />
+                      Indietro
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setShowCreate(false); setCreateStep(0); }}
+                      className="px-4 py-2 text-sm text-zinc-500 hover:text-zinc-700 transition-colors"
+                    >
+                      Annulla
+                    </button>
+                  )}
+                </div>
+                <div>
+                  {createStep < 2 ? (
+                    <button
+                      onClick={() => setCreateStep(createStep + 1)}
+                      disabled={createStep === 1 && !newName.trim()}
+                      className="flex items-center gap-1.5 px-5 py-2 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all disabled:opacity-50"
+                    >
+                      Avanti
+                      <ChevronRight size={14} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleCreateProject}
+                      disabled={!newName.trim() || isCreating}
+                      className="flex items-center gap-1.5 px-5 py-2 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all disabled:opacity-50"
+                    >
+                      {isCreating ? 'Creazione...' : 'Crea sito'}
+                      {!isCreating && <Check size={14} />}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
