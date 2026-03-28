@@ -19,6 +19,7 @@ import { howItWorksDefinition } from '@/components/blocks/visual/HowItWorks.defi
 import { singleImageDefinition } from '@/components/blocks/visual/SingleImage.definition';
 import { pdfDefinition } from '@/components/blocks/visual/PdfBlock.definition';
 import { pricingDefinition } from '@/components/blocks/visual/PricingBlock.definition';
+import { galleryDefinition } from '@/components/blocks/visual/GalleryBlock.definition';
 
 export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   hero: heroDefinition,
@@ -38,11 +39,11 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   image: singleImageDefinition,
   pdf: pdfDefinition,
   pricing: pricingDefinition,
+  gallery: galleryDefinition,
   
   // Placeholders for unimplemented/transitioning blocks
   map: { type: 'map', label: 'Mappa', icon: MapPin, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
   features: { type: 'features', label: 'Caratteristiche', icon: LayoutTemplate, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
-  gallery: { type: 'gallery', label: 'Galleria', icon: LayoutTemplate, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
   reviews: { type: 'reviews', label: 'Recensioni', icon: FileText, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
   'product-carousel': { type: 'product-carousel', label: 'Prodotti', icon: ShoppingBag, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
 };
