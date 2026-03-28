@@ -63,20 +63,13 @@ export const FooterContent: React.FC<FooterContentProps> = ({
                            altValue={selectedBlock.content.logoAlt ?? ''}
                            onAltChange={(alt) => updateContent({ logoAlt: alt })}
                            onFilenameSelect={(name) => {
-                             if (!selectedBlock.content.logoAlt) updateContent({ logoAlt: name });
+                              if (!selectedBlock.content.logoAlt) updateContent({ logoAlt: name });
                            }}
                         />
                      </>
                   )}
 
                   <div className="pt-2">
-                     <SimpleInput
-                        label="Titolo Link Rapidi"
-                        value={selectedBlock.content.linksTitle}
-                        onChange={(val: string) => updateContent({ linksTitle: val })}
-                        placeholder="Link Rapidi"
-                     />
-                     <div className="h-6" />
 
                      <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block mb-2 px-1">Descrizione</label>
                      <RichTextarea
@@ -108,6 +101,13 @@ export const FooterContent: React.FC<FooterContentProps> = ({
             links={selectedBlock.content.links || []}
             onChange={(links) => updateContent({ links })}
          />
+         <SimpleInput
+            label="Titolo Link Rapidi (Opzionale)"
+            value={selectedBlock.content.linksTitle}
+            onChange={(val: string) => updateContent({ linksTitle: val })}
+            placeholder="Esempio: Link Rapidi"
+         />
+         <div className="h-6" />
       </div>
    );
 };

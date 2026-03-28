@@ -58,7 +58,7 @@ If screenshots are provided, you MUST replicate:
 Every block: { "type": "Type", "content": { ... }, "style": { ... } }
 
 1. "hero": { "title": string (MAX 8 WORDS), "subtitle": string (MAX 2 sentences), "cta": string (MAX 3 words), "ctaUrl": string, "backgroundImage": string }
-2. "text": { "text": string } — Use HTML: <h2> for title (SHORT), <p> for body (MAX 3 sentences). NEVER put more than 3 sentences in one text block. Split into multiple blocks instead.
+2. "text": { "title": string (MAX 8 words, puncy), "text": string (MAX 2-3 sentences) } — Ensure the title is in the "title" field, NOT inside the "text" field with HTML tags.
 3. "benefits": { "title": string (MAX 5 words), "subtitle": string (1 sentence), "items": [{ "icon": string, "title": string (2-4 words), "description": string (1 sentence max) }] }
 4. "cards": { "title": string (MAX 5 words), "subtitle": string (1 sentence), "items": [{ "image": string, "title": string (2-4 words), "subtitle": string, "description": string (1-2 sentences) }] }
 5. "how-it-works": { "title": string, "items": [{ "title": string (2-4 words), "description": string (1 sentence), "stepNumber": number }] }

@@ -56,7 +56,7 @@ export const BlockBackground: React.FC<BlockBackgroundProps> = ({
           filter: `brightness(${style.brightness !== undefined ? style.brightness : 100}%) blur(${style.blur || 0}px)`
         } as any} 
       />
-      {!style.overlayDisabled && (
+      {backgroundImage && !style.overlayDisabled && (
         <div 
           className="absolute inset-0 z-[1] transition-all duration-500 pointer-events-none" 
           style={{ 

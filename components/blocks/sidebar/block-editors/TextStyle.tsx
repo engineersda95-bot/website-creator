@@ -27,7 +27,7 @@ export const TextStyle: React.FC<TextStyleProps> = ({
          </section>
 
          <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
-      <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
+         <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
          <BackgroundManager 
             selectedBlock={selectedBlock} 
@@ -39,25 +39,39 @@ export const TextStyle: React.FC<TextStyleProps> = ({
          <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
          <section className="pt-8 border-t border-zinc-100">
-            <SectionHeader icon={Type} title="Stile Testi" />
+            <SectionHeader icon={Type} title="Stile Titolo" />
             <TypographyFields 
-               label="Dimensione Titolo / Testo" 
+               label="Dimensione Titolo" 
                sizeKey="titleSize" 
                boldKey="titleBold" 
                italicKey="titleItalic" 
                tagKey="titleTag"
                showTagSelector={true}
-               defaultTag="div"
+               defaultTag="h2"
+               getStyleValue={getStyleValue} 
+               updateStyle={updateStyle} 
+               defaultValue={42} 
+            />
+         </section>
+
+         <section className="pt-8 border-t border-zinc-100">
+            <SectionHeader icon={Type} title="Stile Corpo Testo" />
+            <TypographyFields 
+               label="Dimensione Testo" 
+               sizeKey="contentSize" 
+               boldKey="contentBold" 
+               italicKey="contentItalic" 
                getStyleValue={getStyleValue} 
                updateStyle={updateStyle} 
                defaultValue={18} 
             />
          </section>
-        <AnchorManager 
-        selectedBlock={selectedBlock} 
-        updateContent={updateContent} 
-      />
-    </div>
+
+         <AnchorManager 
+            selectedBlock={selectedBlock} 
+            updateContent={updateContent} 
+         />
+      </div>
    );
 };
 

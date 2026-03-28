@@ -7,6 +7,7 @@ import { BlockBackground } from '@/components/shared/BlockBackground';
 
 interface TextBlockProps {
   content: {
+    title?: string;
     text: string;
     backgroundImage?: string;
     sectionId?: string;
@@ -20,10 +21,10 @@ interface TextBlockProps {
 }
 
 export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache }) => {
-  const { style, alignClass } = getBlockStyles(block, project, viewport || 'desktop');
+  const { style } = getBlockStyles(block, project, viewport || 'desktop');
 
   return (
-      <section
+    <section
       className={cn("w-full transition-all duration-500 overflow-hidden relative")}
       style={{
         background: 'var(--block-bg)',
@@ -52,21 +53,40 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
           marginRight: 'var(--block-mr-auto)',
           gap: 'var(--block-gap)',
           alignItems: 'var(--block-items)' as any,
+          maxWidth: 'var(--block-max-width)',
         }}
       >
+        {content.title && (() => {
+          const TitleTag = (style.titleTag || 'h2') as any;
+          return (
+            <TitleTag
+              className={cn(
+                "tracking-tighter transition-all duration-500 rt-content",
+              )}
+              style={{
+                fontSize: 'var(--title-fs)',
+                fontWeight: 'var(--title-fw)' as any,
+                fontStyle: 'var(--title-fs-style)' as any,
+                lineHeight: 'var(--title-lh)',
+                textAlign: 'var(--block-align)' as any,
+                color: 'inherit',
+              }}
+              dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+            />
+          );
+        })()}
+
         <div
           className={cn(
             "rt-content max-w-none transition-all duration-500",
           )}
           style={{
-            fontSize: 'var(--title-fs)',
+            fontSize: 'var(--content-fs)',
+            fontWeight: 'var(--content-fw)' as any,
+            fontStyle: 'var(--content-fst)' as any,
             color: 'inherit',
-            fontWeight: 'var(--title-fw)' as any,
-            lineHeight: 'var(--title-lh)',
             textAlign: 'var(--block-align)' as any,
-            fontStyle: 'var(--title-fs-style)' as any,
-            marginLeft: 'var(--block-ml-auto)',
-            marginRight: 'var(--block-mr-auto)',
+            lineHeight: '1.6',
           }}
           dangerouslySetInnerHTML={{ __html: formatRichText(content.text) }}
         />

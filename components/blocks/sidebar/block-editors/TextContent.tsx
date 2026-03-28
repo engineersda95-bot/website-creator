@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { RichTextarea } from '../SharedSidebarComponents';
+import { RichTextarea, SimpleInput } from '../SharedSidebarComponents';
 
 interface TextContentProps {
    selectedBlock: any;
@@ -14,12 +14,23 @@ export const TextContent: React.FC<TextContentProps> = ({
 }) => {
    return (
       <div className="space-y-4">
-         <RichTextarea
-            placeholder="Inserisci il tuo testo..."
-            value={selectedBlock.content.text || ''}
-            onChange={(val) => updateContent({ text: val })}
-         />
-    </div>
+         <div className="space-y-2">
+            <SimpleInput
+               label="Titolo (Opzionale)"
+               placeholder="Inserisci il titolo..."
+               value={selectedBlock.content.title || ''}
+               onChange={(val) => updateContent({ title: val })}
+            />
+         </div>
+         <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Corpo del Testo</label>
+            <RichTextarea
+               placeholder="Inserisci il tuo testo..."
+               value={selectedBlock.content.text || ''}
+               onChange={(val) => updateContent({ text: val })}
+            />
+         </div>
+      </div>
    );
 };
 

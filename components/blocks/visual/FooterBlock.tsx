@@ -85,104 +85,112 @@ export const FooterBlock: React.FC<FooterProps> = ({
          url: p.slug === 'home' ? '/' : `/${p.slug}`
        }));
 
-   const isCentered = style.align === 'center';
+    const alignValue = (style.align || 'center').toLowerCase();
+    const isCentered = alignValue === 'center' || alignValue === 'centrale';
 
-   return (
-      <footer
-         className={cn("w-full transition-all duration-300 mx-auto overflow-hidden relative")}
-         style={{
-            background: 'var(--block-bg)',
-            color: 'var(--block-color)',
-            paddingTop: 'var(--block-pt)',
-            paddingBottom: 'var(--block-pb)',
-          }}
-      >
-         {/* Pattern Layer */}
-         {style.patternType && style.patternType !== 'none' && (
-           <div 
-             className="absolute inset-0 pointer-events-none z-0 background-pattern"
-             style={BACKGROUND_PATTERNS.find(p => p.id === style.patternType)?.getStyle(
-               style.patternColor || '#ffffff',
-               style.patternOpacity || 10,
-               style.patternScale || 40
-             )}
-           />
-         )}
-         <div className={cn(
-            "w-full mx-auto flex flex-col gap-12",
-         )} style={{
-            maxWidth: 'var(--block-max-width)',
-            paddingLeft: 'var(--block-px)',
-            paddingRight: 'var(--block-px)',
-            alignItems: 'var(--block-items)' as any,
-            textAlign: 'var(--block-align)' as any
-         }}>
-            {isCentered ? (
-               /* CENTERED LAYOUT (Stacked) */
-               <div className="flex flex-col items-center gap-10 w-full relative z-10">
-                  <div className="flex flex-col items-center gap-6 w-full max-w-2xl text-center">
-                    {content.showLogo !== false && (
-                        <div className="flex flex-col items-center gap-3">
-                          {(content.logoType === 'image' || content.logoType === 'both') && displayLogoImage && (
-                              <SitiImage 
-                                src={displayLogoImage} 
-                                project={project}
-                                isStatic={isStatic}
-                                imageMemoryCache={imageMemoryCache}
-                                alt={content.logoAlt || content.logoText || 'Logo'} 
-                                style={{ height: 'var(--logo-fs)', width: 'auto' }} 
-                                className="object-contain shrink-0" 
-                              />
-                          )}
-                          {content.logoType !== 'image' && (
-                              <div className="font-black tracking-tighter" style={{ fontSize: 'var(--logo-text-fs)', color: 'inherit', fontWeight: 'var(--logo-fw)' as any, fontStyle: 'var(--logo-fst)' as any }}>
-                                {content.logoText || (project?.name ? project.name : 'SitiVetrina')}
-                              </div>
-                            )}
-                        </div>
+    return (
+       <footer
+          className={cn("w-full transition-all duration-300 mx-auto overflow-hidden relative")}
+          style={{
+             background: 'var(--block-bg)',
+             color: 'var(--block-color)',
+             paddingTop: 'var(--block-pt)',
+             paddingBottom: 'var(--block-pb)',
+           }}
+       >
+          {/* Pattern Layer */}
+          {style.patternType && style.patternType !== 'none' && (
+            <div 
+              className="absolute inset-0 pointer-events-none z-0 background-pattern"
+              style={BACKGROUND_PATTERNS.find(p => p.id === style.patternType)?.getStyle(
+                style.patternColor || '#ffffff',
+                style.patternOpacity || 10,
+                style.patternScale || 40
+              )}
+            />
+          )}
+          <div className={cn(
+             "w-full mx-auto flex flex-col gap-12",
+          )} style={{
+             maxWidth: 'var(--block-max-width)',
+             paddingLeft: 'var(--block-px)',
+             paddingRight: 'var(--block-px)',
+             alignItems: (isCentered ? 'center' : (alignValue === 'right' ? 'flex-end' : 'flex-start')) as any,
+             textAlign: (isCentered ? 'center' : (alignValue === 'right' ? 'right' : 'left')) as any
+          }}>
+             {isCentered ? (
+                /* CENTERED LAYOUT (Stacked) */
+                <div className="flex flex-col items-center gap-10 w-full relative z-10">
+                   <div className="flex flex-col items-center gap-6 w-full max-w-2xl text-center">
+                     {content.showLogo !== false && (
+                         <div className="flex flex-col items-center gap-3">
+                           {(content.logoType === 'image' || content.logoType === 'both') && displayLogoImage && (
+                               <SitiImage 
+                                 src={displayLogoImage} 
+                                 project={project}
+                                 isStatic={isStatic}
+                                 imageMemoryCache={imageMemoryCache}
+                                 alt={content.logoAlt || content.logoText || 'Logo'} 
+                                 style={{ height: 'var(--logo-fs)', width: 'auto' }} 
+                                 className="object-contain shrink-0" 
+                               />
+                           )}
+                           {content.logoType !== 'image' && (
+                               <div className="font-black tracking-tighter" style={{ fontSize: 'var(--logo-text-fs)', color: 'inherit', fontWeight: 'var(--logo-fw)' as any, fontStyle: 'var(--logo-fst)' as any }}>
+                                 {content.logoText || (project?.name ? project.name : 'SitiVetrina')}
+                               </div>
+                             )}
+                         </div>
+                       )}
+
+                       {content.description && (
+                         <div 
+                           className="rt-content opacity-70"
+                           style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
+                           dangerouslySetInnerHTML={{ __html: formatRichText(content.description) }}
+                         />
+                       )}
+                   </div>
+
+                   <div className="flex flex-col items-center gap-6 pt-4">
+                     {content.socialLinks && content.socialLinks.length > 0 && (
+                         <div className="flex gap-8 items-center justify-center">
+                           {content.socialLinks.map((social, i) => {
+                               const Icon = SOCIAL_ICONS[social.platform.toLowerCase()] || Mail;
+                               return (
+                                 <a key={i} {...formatLink(social.url, isStatic)} className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit">
+                                     <Icon 
+                                       width="var(--social-icon-size, 20px)" 
+                                       height="var(--social-icon-size, 20px)" 
+                                       style={{ width: 'var(--social-icon-size, 20px)', height: 'var(--social-icon-size, 20px)' }}
+                                     />
+                                 </a>
+                               );
+                           })}
+                         </div>
+                       )}
+
+                       <p className="opacity-50 text-[10px] tracking-widest uppercase font-bold text-center" style={{ fontSize: 'var(--copyright-fs)', fontWeight: 'var(--copyright-fw)' as any, fontStyle: 'var(--copyright-fst)' as any }}>
+                         {content.copyright || `© ${new Date().getFullYear()} ${project?.name || 'SitiVetrina'}`}
+                       </p>
+                   </div>
+
+                   <div className="flex flex-col items-center gap-6 w-full max-w-2xl text-center pt-4">
+                      {content.linksTitle && (
+                        <h4 className="tracking-widest opacity-30" style={{ fontSize: 'var(--links-title-fs)', fontWeight: 'var(--links-title-fw)' as any, fontStyle: 'var(--links-title-fst)' as any }}>
+                          {content.linksTitle}
+                        </h4>
                       )}
-
-                      {content.description && (
-                        <div 
-                          className="rt-content opacity-70"
-                          style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
-                          dangerouslySetInnerHTML={{ __html: formatRichText(content.description) }}
-                        />
-                      )}
-                  </div>
-
-                  <div className="flex flex-col items-center gap-6 pt-4">
-                    {content.socialLinks && content.socialLinks.length > 0 && (
-                        <div className="flex gap-8 items-center justify-center">
-                          {content.socialLinks.map((social, i) => {
-                              const Icon = SOCIAL_ICONS[social.platform.toLowerCase()] || Mail;
-                              return (
-                                <a key={i} {...formatLink(social.url, isStatic)} className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit">
-                                    <Icon 
-                                      width="var(--social-icon-size, 20px)" 
-                                      height="var(--social-icon-size, 20px)" 
-                                      style={{ width: 'var(--social-icon-size, 20px)', height: 'var(--social-icon-size, 20px)' }}
-                                    />
-                                </a>
-                              );
-                          })}
-                        </div>
-                      )}
-
-                      <p className="opacity-50 text-[10px] tracking-widest uppercase font-bold text-center" style={{ fontSize: 'var(--copyright-fs)', fontWeight: 'var(--copyright-fw)' as any, fontStyle: 'var(--copyright-fst)' as any }}>
-                        {content.copyright || `© ${new Date().getFullYear()} ${project?.name || 'SitiVetrina'}`}
-                      </p>
-                  </div>
-
-                  <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 list-none p-0 m-0 pt-4">
-                     {links.map((link, i) => (
-                        <li key={i}>
-                           <a {...formatLink(link.url, isStatic)} className="opacity-70 hover:opacity-100 transition-opacity no-underline text-inherit font-medium border-b border-transparent hover:border-current pb-1" style={{ fontSize: 'var(--base-fs)' }}>
-                              {link.label}
-                           </a>
-                        </li>
-                     ))}
-                  </ul>
+                      <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 list-none p-0 m-0">
+                        {links.map((link, i) => (
+                            <li key={i}>
+                              <a {...formatLink(link.url, isStatic)} className="opacity-70 hover:opacity-100 transition-opacity no-underline text-inherit font-medium border-b border-transparent hover:border-current pb-1" style={{ fontSize: 'var(--base-fs)' }}>
+                                  {link.label}
+                              </a>
+                            </li>
+                        ))}
+                      </ul>
+                   </div>
                 </div>
             ) : (
                /* STACKED LAYOUT (Left/Right) */
@@ -251,9 +259,11 @@ export const FooterBlock: React.FC<FooterProps> = ({
                     "w-full space-y-8 flex flex-col",
                     style.align === 'right' ? "items-end" : "items-start"
                   )}>
-                      <h4 className="tracking-widest opacity-30" style={{ fontSize: 'var(--links-title-fs)', fontWeight: 'var(--links-title-fw)' as any, fontStyle: 'var(--links-title-fst)' as any }}>
-                        {content.linksTitle || 'Link Rapidi'}
-                     </h4>
+                      {content.linksTitle && (
+                        <h4 className="tracking-widest opacity-30" style={{ fontSize: 'var(--links-title-fs)', fontWeight: 'var(--links-title-fw)' as any, fontStyle: 'var(--links-title-fst)' as any }}>
+                          {content.linksTitle}
+                        </h4>
+                      )}
                      <ul className={cn("flex flex-col gap-4 list-none p-0 m-0 w-full", style.align === 'right' ? "items-end text-right" : "items-start text-left")}>
                         {links.map((link, i) => (
                            <li key={i} className="w-full">
