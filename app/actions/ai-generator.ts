@@ -26,8 +26,8 @@ export interface AIGenerationData {
   businessType: string;
   description: string;
   extraPages?: { name: string; description: string }[];
-  logoUrl?: string; 
-  screenshotUrls?: string[]; 
+  logoUrl?: string;
+  screenshotUrls?: string[];
   language?: string;
   // Contact & Social
   email?: string;
@@ -119,7 +119,8 @@ export async function generateProjectWithAI(data: AIGenerationData) {
     const currentYear = new Date().getFullYear();
     const promptParts: any[] = [
       { text: AI_WEBSITE_GENERATOR_SYSTEM_PROMPT },
-      { text: `
+      {
+        text: `
         USER INPUT:
         Current Year: ${currentYear}
         Business Name: ${data.businessName}
@@ -133,11 +134,7 @@ export async function generateProjectWithAI(data: AIGenerationData) {
 
         ### 🔴 CTA & TONE RULES:
         - The hero CTA button and all call-to-action elements MUST strictly align with the site objective: "${data.siteObjective || 'contact'}".
-        - ALL copywriting MUST match the "${data.tone || 'professional'}" tone of voice:
-          * "professional": Clear, authoritative, trustworthy, minimal emojis.
-          * "friendly": Warm, approachable, coversational, uses relevant emojis (e.g. 🍕, ✨, 👋).
-          * "creative": Inspiring, bold, using unconventional but professional vocabulary.
-          * "formal": Elegant, high-level, serious, no emojis.
+        - ALL copywriting MUST match the "${data.tone || 'professional'}" tone of voice.
         - If KEY STRENGTHS are provided, create a dedicated "benefits" block using them as the main items. Do NOT invent additional benefits.
 
         ### 🔴 COPYWRITING RULES (CRITICAL):
@@ -275,7 +272,7 @@ export async function generateProjectWithAI(data: AIGenerationData) {
     if (pages.length === 0) {
       pages.push({ title: 'Home', slug: 'home', blocks: [] });
     }
-    
+
     // Extract business details from AI (includes validation answers)
     const aiDetails = aiOutput.settings?.businessDetails || {};
     const finalBusinessDetails = {
@@ -298,14 +295,14 @@ export async function generateProjectWithAI(data: AIGenerationData) {
     const finalNavLinks = (pages.length > 1 || allPageLinks.length > 1) ? allPageLinks : (aiOutput.settings?.navigation?.links && aiOutput.settings.navigation.links.length > 0 ? aiOutput.settings.navigation.links : allPageLinks);
 
     // Global Components Decision (Navigation & Footer)
-    const navSchema = aiOutput.settings?.navigation || { 
-      logoText: finalBusinessDetails.businessName, 
-      logoType: data.logoUrl ? 'image' : 'text', 
+    const navSchema = aiOutput.settings?.navigation || {
+      logoText: finalBusinessDetails.businessName,
+      logoType: data.logoUrl ? 'image' : 'text',
       logoImage: data.logoUrl || '',
       links: finalNavLinks,
       showContact: true
     };
-    
+
     const footerSchema = aiOutput.settings?.footer || {
       logoType: data.logoUrl ? 'image' : 'text',
       logoText: finalBusinessDetails.businessName,
@@ -326,7 +323,7 @@ export async function generateProjectWithAI(data: AIGenerationData) {
     // BRAND COLOR RULE: CTA Inversion (Primary BG = Theme Text, Primary Text = Theme BG)
     const primaryCTABG = themeText;
     const primaryCTAText = themeBG;
-    
+
     const darkenColor = (hex: string, amount: number) => {
       if (!hex || hex === 'transparent' || !hex.startsWith('#')) return hex;
       let r = parseInt(hex.slice(1, 3), 16) || 0;
@@ -376,7 +373,7 @@ export async function generateProjectWithAI(data: AIGenerationData) {
     // --- 7. FINAL PAGE ENRICHMENT (with Blocks) ---
     const enrichedPages = aiOutput.pages?.map((page: any) => {
       const pageId = uuidv4();
-      
+
       const slugCounts: Record<string, number> = {};
       const anchorIdsFromNav = finalNavLinks
         .filter((l: any) => l.url && l.url.startsWith('#'))
@@ -384,10 +381,10 @@ export async function generateProjectWithAI(data: AIGenerationData) {
 
       const interiorBlocks = page.blocks?.map((b: any, bIdx: number) => {
         // Deterministic Section ID / Slug
-        let baseSlug = b.content?.title 
+        let baseSlug = b.content?.title
           ? b.content.title.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-')
           : b.type;
-        
+
         // Match with AI intended anchor links if possible
         const matchingAnchor = anchorIdsFromNav.find((aId: string) => {
           const aIdSlug = aId.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
@@ -395,7 +392,7 @@ export async function generateProjectWithAI(data: AIGenerationData) {
         });
 
         if (matchingAnchor && !Object.values(slugCounts).includes(matchingAnchor as any)) {
-            baseSlug = matchingAnchor;
+          baseSlug = matchingAnchor;
         }
 
         slugCounts[baseSlug] = (slugCounts[baseSlug] || 0) + 1;
@@ -404,7 +401,7 @@ export async function generateProjectWithAI(data: AIGenerationData) {
         const blockWithId = {
           ...b,
           id: b.id || uuidv4(),
-          content: { 
+          content: {
             ...b.content,
             sectionId: b.content?.sectionId || finalSectionId
           },
@@ -466,9 +463,9 @@ export async function generateProjectWithAI(data: AIGenerationData) {
       .from('profiles')
       .update({ ai_generations_used: (profile.ai_generations_used || 0) + 1 })
       .eq('id', user.id);
- 
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       data: {
         settings: finalSettings,
         pages: enrichedPages
@@ -540,11 +537,11 @@ export async function validateProjectDescription(data: {
       throw primaryErr;
     }
   } catch (error: any) {
-      console.error('[AI Validation] Error:', error);
-      const status = error?.status || error?.response?.status;
-      if (status === 401) {
-        throw new Error('Servizio IA non disponibile. Controlla la configurazione API.');
-      }
-      return { isReady: true, questions: [] };
+    console.error('[AI Validation] Error:', error);
+    const status = error?.status || error?.response?.status;
+    if (status === 401) {
+      throw new Error('Servizio IA non disponibile. Controlla la configurazione API.');
+    }
+    return { isReady: true, questions: [] };
   }
 }
