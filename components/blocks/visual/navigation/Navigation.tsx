@@ -139,8 +139,9 @@ export const Navigation: React.FC<NavigationProps> = ({
         (style.isTransparent && !isEditing) ? "absolute top-0 left-0 right-0" : ""
       )}
       style={{ 
-        background: style.isTransparent ? 'transparent' : bgColor, 
         color: 'var(--block-color)',
+        '--block-bg': bg || '#ffffff',
+        '--scrolled-opacity': ((style.scrolledOpacity ?? 100) / 100).toString(),
         paddingTop: 'var(--nav-padding)',
         paddingBottom: 'var(--nav-padding)',
         marginLeft: 'var(--block-ml)',
@@ -148,12 +149,20 @@ export const Navigation: React.FC<NavigationProps> = ({
         marginTop: style.isSticky ? 0 : 'var(--block-mt)',
         marginBottom: 'var(--block-mb)',
         width: 'var(--block-width)'
-      }}
+      } as React.CSSProperties}
     >
+      {/* Background Layer (Handles sticky background and blur) */}
+      <div 
+        data-nav-bg
+        className="absolute inset-0 z-0 pointer-events-none transition-all duration-300"
+        style={{
+          background: style.isTransparent ? 'transparent' : bgColor,
+        }}
+      />
       {/* Pattern Layer */}
       {style.patternType && style.patternType !== 'none' && (
         <div 
-          className="absolute inset-0 pointer-events-none z-0 background-pattern"
+          className="absolute inset-0 pointer-events-none z-[1] background-pattern"
           style={BACKGROUND_PATTERNS.find(p => p.id === style.patternType)?.getStyle(
             style.patternColor || '#ffffff',
             style.patternOpacity || 10,
@@ -162,7 +171,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         />
       )}
       <div 
-        className="relative z-[1] mx-auto flex items-center justify-between transition-all duration-300 w-full"
+        className="relative z-[2] mx-auto flex items-center justify-between transition-all duration-300 w-full"
         style={{ 
           paddingLeft: 'var(--nav-hpadding)',
           paddingRight: 'var(--nav-hpadding)'
@@ -318,6 +327,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             const isTransparent = nav.getAttribute('data-transparent') === 'true';
 
             const update = (scrolled) => {
+              const navBg = nav.querySelector('[data-nav-bg]');
               const bg = getComputedStyle(nav).getPropertyValue('--block-bg').trim() || '#ffffff';
               const opacity = getComputedStyle(nav).getPropertyValue('--scrolled-opacity') || '1';
               
@@ -335,20 +345,22 @@ export const Navigation: React.FC<NavigationProps> = ({
               if (scrolled && isSticky) {
                 nav.style.position = 'fixed';
                 nav.style.top = '0';
-                nav.style.background = 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
+                if (navBg) {
+                  navBg.style.background = 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
+                  navBg.style.backdropFilter = 'blur(10px)';
+                }
                 nav.style.boxShadow = '0 10px 30px -10px rgba(0,0,0,0.1)';
-                nav.style.backdropFilter = 'blur(10px)';
               } else {
                 if (isTransparent) {
                   nav.style.position = 'absolute';
-                  nav.style.background = 'transparent';
+                  if (navBg) navBg.style.background = 'transparent';
                 } else {
                   nav.style.position = isSticky ? 'sticky' : 'relative';
-                  nav.style.background = 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
+                  if (navBg) navBg.style.background = 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
                 }
                 nav.style.top = '0';
                 nav.style.boxShadow = 'none';
-                nav.style.backdropFilter = 'none';
+                if (navBg) navBg.style.backdropFilter = 'none';
               }
               nav.style.paddingTop = 'var(--nav-padding)';
               nav.style.paddingBottom = 'var(--nav-padding)';

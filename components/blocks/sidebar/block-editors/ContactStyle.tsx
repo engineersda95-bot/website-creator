@@ -14,8 +14,6 @@ export function ContactStyle({ selectedBlock, updateContent, updateStyle, getSty
         <LayoutFields
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
-          paddingLabel="Padding Sezione"
-          hPaddingLabel="Margini Laterali"
         />
         <div className="mt-8 space-y-8">
           <SimpleSlider
@@ -43,22 +41,22 @@ export function ContactStyle({ selectedBlock, updateContent, updateStyle, getSty
         <div className="space-y-8">
           <TypographyFields
             label="Titolo Principale"
-            sizeKey="titleSize" 
-            boldKey="titleBold" 
+            sizeKey="titleSize"
+            boldKey="titleBold"
             italicKey="titleItalic"
             tagKey="titleTag"
             showTagSelector={true}
             defaultTag="h2"
-            getStyleValue={getStyleValue} 
+            getStyleValue={getStyleValue}
             updateStyle={updateStyle}
           />
           <TypographyFields
             label="Sottotitolo"
-            sizeKey="subtitleSize" 
-            boldKey="subtitleBold" 
+            sizeKey="subtitleSize"
+            boldKey="subtitleBold"
             italicKey="subtitleItalic"
-            getStyleValue={getStyleValue} 
-            updateStyle={updateStyle} 
+            getStyleValue={getStyleValue}
+            updateStyle={updateStyle}
             defaultValue={18}
           />
 
@@ -72,23 +70,23 @@ export function ContactStyle({ selectedBlock, updateContent, updateStyle, getSty
 
             <TypographyFields
               label="Etichette (E-mail, Tel...)"
-              sizeKey="itemTitleSize" 
+              sizeKey="itemTitleSize"
               boldKey="itemTitleBold"
               italicKey="itemTitleItalic"
               tagKey="itemTitleTag"
               showTagSelector={true}
               defaultTag="h3"
-              getStyleValue={getStyleValue} 
-              updateStyle={updateStyle} 
+              getStyleValue={getStyleValue}
+              updateStyle={updateStyle}
               defaultValue={9}
             />
             <TypographyFields
               label="Dati Contatto"
-              sizeKey="contactValueSize" 
+              sizeKey="contactValueSize"
               boldKey="contactValueBold"
               italicKey="contactValueItalic"
-              getStyleValue={getStyleValue} 
-              updateStyle={updateStyle} 
+              getStyleValue={getStyleValue}
+              updateStyle={updateStyle}
               defaultValue={18}
             />
           </div>
@@ -103,11 +101,11 @@ export function ContactStyle({ selectedBlock, updateContent, updateStyle, getSty
           project={project}
         />
         <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
-        <BackgroundManager 
-          selectedBlock={selectedBlock} 
-          updateContent={updateContent} 
-          updateStyle={updateStyle} 
-          getStyleValue={getStyleValue} 
+        <BackgroundManager
+          selectedBlock={selectedBlock}
+          updateContent={updateContent}
+          updateStyle={updateStyle}
+          getStyleValue={getStyleValue}
         />
       </section>
 
@@ -119,9 +117,9 @@ export function ContactStyle({ selectedBlock, updateContent, updateStyle, getSty
         />
       </section>
 
-      <AnchorManager 
-        selectedBlock={selectedBlock} 
-        updateContent={updateContent} 
+      <AnchorManager
+        selectedBlock={selectedBlock}
+        updateContent={updateContent}
       />
     </div>
   );
