@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { BUSINESS_TYPES } from '@/lib/editor-constants';
 import { generateProjectWithAI, validateProjectDescription } from '@/app/actions/ai-generator';
 import { supabase } from '@/lib/supabase';
+import { toast } from '@/components/shared/Toast';
 
 interface AIGeneratorModalProps {
   onClose: () => void;
@@ -251,7 +252,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Il tuo browser non supporta il riconoscimento vocale.");
+      toast("Il tuo browser non supporta il riconoscimento vocale.", 'error');
       return;
     }
 
@@ -561,7 +562,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
       <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200">
         {/* Header with step indicator */}
         <div className="px-6 py-5 flex items-center justify-between border-b border-zinc-100">

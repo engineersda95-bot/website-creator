@@ -3,6 +3,7 @@
 import React, { useRef } from 'react';
 import { FileText, Upload, X, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from '@/components/shared/Toast';
 
 interface PdfUploadProps {
   value?: string;
@@ -24,12 +25,12 @@ export const PdfUpload: React.FC<PdfUploadProps> = ({
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
-      alert("Il file deve essere un PDF");
+      toast("Il file deve essere un PDF", 'error');
       return;
     }
 
     if (file.size > 15 * 1024 * 1024) { // 15MB for PDFs
-      alert("Il file è troppo grande (max 15MB)");
+      toast("Il file è troppo grande (max 15MB)", 'error');
       return;
     }
 

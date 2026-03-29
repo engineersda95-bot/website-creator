@@ -19,6 +19,7 @@ import { TemplateWireframe, TemplatePreviewModal } from '@/components/editor/Tem
 import { ProjectCard } from '@/components/editor/cards/ProjectCard';
 import { ProjectQuickEditModal } from '@/components/editor/modals/ProjectQuickEditModal';
 import { AIGeneratorModal } from '@/components/editor/modals/AIGeneratorModal';
+import { confirm } from '@/components/shared/ConfirmDialog';
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
   const googleFontUrl = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap`;
@@ -610,7 +611,7 @@ export function ProjectListClient({
                 onEdit={(id) => setEditingProjectId(id)}
                 isDeleting={deletingId === proj.id}
                 onDelete={async (id, name) => {
-                  if (!confirm(`Vuoi eliminare "${name}"? Tutti i dati verranno persi.`)) return;
+                  if (!await confirm({ title: 'Elimina sito', message: `Vuoi eliminare "${name}"? Tutti i dati verranno persi.`, confirmLabel: 'Elimina', variant: 'danger' })) return;
                   setDeletingId(id);
                   await supabase.from('pages').delete().eq('project_id', id);
                   await supabase.from('projects').delete().eq('id', id);

@@ -6,6 +6,7 @@ import { FileText, Plus, ChevronRight, Layout, Trash2, Settings as SettingsIcon,
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '../shared/ImageUpload';
 import { resolveImageUrl } from '@/lib/image-utils';
+import { confirm } from '@/components/shared/ConfirmDialog';
 
 export const PageManager: React.FC = () => {
   const {
@@ -70,7 +71,7 @@ export const PageManager: React.FC = () => {
               <div className="flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
                 {page.slug !== 'home' && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); if (confirm('Vuoi davvero eliminare questa pagina?')) deletePage(page.id); }}
+                    onClick={async (e) => { e.stopPropagation(); if (await confirm({ title: 'Elimina pagina', message: 'Vuoi davvero eliminare questa pagina?', confirmLabel: 'Elimina', variant: 'danger' })) deletePage(page.id); }}
                     className="p-1 hover:bg-red-50 text-red-500 rounded transition-colors"
                   >
                     <Trash2 size={14} />

@@ -25,6 +25,7 @@ import { TranslatePageModal } from '@/components/editor/modals/TranslatePageModa
 import { LanguageSection } from '@/components/blocks/sidebar/settings/LanguageSection';
 import { AdvancedSection } from '@/components/blocks/sidebar/settings/AdvancedSection';
 import { DomainSection } from '@/components/blocks/sidebar/settings/DomainSection';
+import { confirm } from '@/components/shared/ConfirmDialog';
 
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
@@ -72,10 +73,12 @@ export function ProjectDashboardClient({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
-  const handleInternalNavigation = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleInternalNavigation = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (hasUnsavedChanges) {
-      if (!confirm('Hai delle modifiche non salvate nel Design Globale. Sei sicuro di voler lasciare la pagina e perdere le modifiche?')) {
-        e.preventDefault();
+      e.preventDefault();
+      if (await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate nel Design Globale. Sei sicuro di voler lasciare la pagina?', confirmLabel: 'Lascia', variant: 'danger' })) {
+        const href = e.currentTarget.getAttribute('href');
+        if (href) window.location.href = href;
       }
     }
   };
@@ -142,7 +145,7 @@ export function ProjectDashboardClient({
   };
 
   const handleDeletePage = async (pageId: string) => {
-    if (!confirm('Vuoi eliminare questa pagina?')) return;
+    if (!await confirm({ title: 'Elimina pagina', message: 'Vuoi eliminare questa pagina?', confirmLabel: 'Elimina', variant: 'danger' })) return;
     setDeletingPageId(pageId);
     await supabase.from('pages').delete().eq('id', pageId);
     setPages(pages.filter(p => p.id !== pageId));
@@ -218,7 +221,7 @@ export function ProjectDashboardClient({
   };
 
   const handleDeleteProject = async () => {
-    if (!confirm(`Vuoi davvero eliminare "${localProject.name}"? Tutte le pagine e i dati verranno persi definitivamente.`)) return;
+    if (!await confirm({ title: 'Elimina progetto', message: `Vuoi davvero eliminare "${localProject.name}"? Tutte le pagine e i dati verranno persi definitivamente.`, confirmLabel: 'Elimina definitivamente', variant: 'danger' })) return;
     setIsDeletingProject(true);
     await supabase.from('pages').delete().eq('project_id', localProject.id);
     await supabase.from('projects').delete().eq('id', localProject.id);

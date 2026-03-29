@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Globe, Plus, Trash2, Check } from 'lucide-react';
 import { ProjectSettings } from '@/types/editor';
 import { cn } from '@/lib/utils';
+import { toast } from '@/components/shared/Toast';
 
 interface LanguageSectionProps {
   project: any;
@@ -37,7 +38,7 @@ export const LanguageSection: React.FC<LanguageSectionProps> = ({
 
   const handleRemoveLanguage = (code: string) => {
     if (code === defaultLanguage) {
-      alert("Non puoi rimuovere la lingua predefinita.");
+      toast("Non puoi rimuovere la lingua predefinita.", 'error');
       return;
     }
     updateProjectSettings({

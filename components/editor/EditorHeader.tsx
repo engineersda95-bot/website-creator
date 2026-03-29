@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { PageSwitcher } from '@/components/editor/PageSwitcher';
 import { getProjectDomain } from '@/lib/url-utils';
+import { confirm } from '@/components/shared/ConfirmDialog';
 
 interface EditorHeaderProps {
   project: any;
@@ -45,11 +46,14 @@ export function EditorHeader({
       <div className="flex items-center gap-2">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1 text-sm">
-          <Link 
-            href="/editor" 
-            onClick={(e) => {
-              if (hasUnsavedChanges && !confirm('Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?')) {
+          <Link
+            href="/editor"
+            onClick={async (e) => {
+              if (hasUnsavedChanges) {
                 e.preventDefault();
+                if (await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?', confirmLabel: 'Abbandona', variant: 'danger' })) {
+                  window.location.href = '/editor';
+                }
               }
             }}
             className="text-zinc-400 hover:text-zinc-600 transition-colors font-medium text-[13px]"
@@ -59,9 +63,12 @@ export function EditorHeader({
           <ChevronRight size={12} className="text-zinc-300" />
           <Link
             href={`/editor/${initialProject?.id}`}
-            onClick={(e) => {
-              if (hasUnsavedChanges && !confirm('Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?')) {
+            onClick={async (e) => {
+              if (hasUnsavedChanges) {
                 e.preventDefault();
+                if (await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?', confirmLabel: 'Abbandona', variant: 'danger' })) {
+                  window.location.href = `/editor/${initialProject?.id}`;
+                }
               }
             }}
             className="text-zinc-400 hover:text-zinc-600 transition-colors font-medium max-w-[120px] truncate text-[13px]"

@@ -6,6 +6,7 @@ import { SectionHeader, SimpleInput } from '../SharedSidebarComponents';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { useEditorStore } from '@/store/useEditorStore';
 import { resolveImageUrl } from '@/lib/image-utils';
+import { toast } from '@/components/shared/Toast';
 
 interface GalleryContentProps {
   selectedBlock: any;
@@ -32,7 +33,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
 
   const addImage = () => {
     if (images.length >= 15) {
-      alert("Il limite massimo consigliato è di 15 immagini per galleria.");
+      toast("Il limite massimo consigliato è di 15 immagini per galleria.", 'info');
       return;
     }
     updateContent((prev: any) => ({

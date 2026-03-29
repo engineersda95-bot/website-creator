@@ -12,7 +12,7 @@ import { Loader2, Save, ExternalLink, Rocket, Check, ChevronRight } from 'lucide
 import { UserMenu } from '@/components/auth/UserMenu';
 import { cn } from '@/lib/utils';
 import { getProjectDomain } from '@/lib/url-utils';
-import { ToastContainer, toast } from '@/components/shared/Toast';
+import { toast } from '@/components/shared/Toast';
 import { OnboardingTour } from '@/components/editor/OnboardingTour';
 import { PageSwitcher } from '@/components/editor/PageSwitcher';
 import { EditorHeader } from '@/components/editor/EditorHeader';
@@ -169,7 +169,6 @@ export function EditorClient({
       </div>
 
       <ConfigSidebar />
-      <ToastContainer />
       <OnboardingTour />
     </div>
   );

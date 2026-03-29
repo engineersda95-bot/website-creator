@@ -5,6 +5,7 @@ import { Globe, AlertCircle, Copy, HelpCircle, Check, Trash2 } from 'lucide-reac
 import { SectionHeader } from '../ui/SectionHeader';
 import { ProjectSettings } from '@/types/editor';
 import { toast } from '@/components/shared/Toast';
+import { confirm } from '@/components/shared/ConfirmDialog';
 
 interface DomainSectionProps {
    project: any;
@@ -79,8 +80,8 @@ export const DomainSection: React.FC<DomainSectionProps> = ({
 
                      {project?.settings?.customDomain && (
                         <button
-                           onClick={() => {
-                              if (confirm('Vuoi davvero rimuovere il dominio personalizzato? Il sito tornerà ad essere visibile solo sul sottodominio gratuito.')) {
+                           onClick={async () => {
+                              if (await confirm({ title: 'Rimuovi dominio', message: 'Vuoi davvero rimuovere il dominio personalizzato? Il sito tornerà visibile solo sul sottodominio gratuito.', confirmLabel: 'Rimuovi', variant: 'danger' })) {
                                  setDomain('');
                                  updateProjectSettings({
                                     customDomain: '',

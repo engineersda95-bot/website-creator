@@ -3,6 +3,7 @@
 import React, { useRef } from 'react';
 import { Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from '@/components/shared/Toast';
 
 interface ImageUploadProps {
   value?: string;
@@ -52,7 +53,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      alert("L'immagine è troppo grande (max 10MB)");
+      toast("L'immagine è troppo grande (max 10MB)", 'error');
       return;
     }
 

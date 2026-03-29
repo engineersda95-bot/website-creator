@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Page } from '@/types/editor';
 import { useEditorStore } from '@/store/useEditorStore';
 import { useRouter } from 'next/navigation';
+import { confirm } from '@/components/shared/ConfirmDialog';
 
 interface PageSwitcherProps {
   currentPage: Page | null;
@@ -21,7 +22,7 @@ export function PageSwitcher({ currentPage, pages, projectId, initialPageId, fon
   const { hasUnsavedChanges } = useEditorStore();
   const router = useRouter();
 
-  const handlePageClick = (e: React.MouseEvent, targetPageId: string) => {
+  const handlePageClick = async (e: React.MouseEvent, targetPageId: string) => {
     if (targetPageId === initialPageId) {
       e.preventDefault();
       setIsOpen(false);
@@ -29,8 +30,11 @@ export function PageSwitcher({ currentPage, pages, projectId, initialPageId, fon
     }
 
     if (hasUnsavedChanges) {
-      if (!confirm('Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?')) {
-        e.preventDefault();
+      e.preventDefault();
+      if (!await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?', confirmLabel: 'Abbandona', variant: 'danger' })) {
+        setIsOpen(false);
+      } else {
+        router.push(`/editor/${projectId}/${targetPageId}`);
         setIsOpen(false);
       }
     }

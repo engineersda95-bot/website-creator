@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
 import { LogOut, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { confirm } from '@/components/shared/ConfirmDialog';
 
 export const UserMenu: React.FC = () => {
   const { user, logout } = useEditorStore();
@@ -47,7 +48,7 @@ export const UserMenu: React.FC = () => {
             <button
               onClick={async () => { 
                 if (useEditorStore.getState().hasUnsavedChanges) {
-                  if (!confirm('Hai delle modifiche non salvate. Vuoi uscire e perdere le modifiche?')) {
+                  if (!await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate. Vuoi uscire e perdere le modifiche?', confirmLabel: 'Esci', variant: 'danger' })) {
                     return;
                   }
                 }
