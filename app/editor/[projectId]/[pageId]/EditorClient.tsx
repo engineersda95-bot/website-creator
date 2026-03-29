@@ -90,11 +90,15 @@ export function EditorClient({
   // Warn on unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) { e.preventDefault(); e.returnValue = ''; }
+      // Check the latest state from the store directly because the local variable might be stale during rapid state changes/navigation
+      if (useEditorStore.getState().hasUnsavedChanges) { 
+        e.preventDefault(); 
+        e.returnValue = ''; 
+      }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedChanges]);
+  }, []); // Re-render logic is no longer needed since we check getState() directly
 
   const handlePublish = async () => {
     if (!project || !currentPage) return;

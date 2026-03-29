@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ChevronRight, Save, Check, Rocket, Loader2, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useEditorStore } from '@/store/useEditorStore';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { PageSwitcher } from '@/components/editor/PageSwitcher';
 import { getProjectDomain } from '@/lib/url-utils';
@@ -52,6 +53,7 @@ export function EditorHeader({
               if (hasUnsavedChanges) {
                 e.preventDefault();
                 if (await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?', confirmLabel: 'Abbandona', variant: 'danger' })) {
+                  useEditorStore.getState().setUnsavedChanges(false);
                   window.location.href = '/editor';
                 }
               }
@@ -67,6 +69,7 @@ export function EditorHeader({
               if (hasUnsavedChanges) {
                 e.preventDefault();
                 if (await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?', confirmLabel: 'Abbandona', variant: 'danger' })) {
+                  useEditorStore.getState().setUnsavedChanges(false);
                   window.location.href = `/editor/${initialProject?.id}`;
                 }
               }

@@ -53,6 +53,7 @@ export const UserMenu: React.FC = () => {
                   }
                 }
                 await logout(); 
+                useEditorStore.getState().setUnsavedChanges(false);
                 window.location.href = '/login'; 
               }}
               className="w-full px-4 py-2.5 text-left text-sm text-zinc-600 hover:bg-red-50 hover:text-red-700 flex items-center gap-2.5 transition-colors"

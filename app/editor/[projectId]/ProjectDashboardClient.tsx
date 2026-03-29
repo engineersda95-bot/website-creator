@@ -63,7 +63,7 @@ export function ProjectDashboardClient({
   // Warn about unsaved changes when closing the tab
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
+      if (useEditorStore.getState().hasUnsavedChanges) {
         e.preventDefault();
         e.returnValue = '';
         return '';
@@ -71,14 +71,17 @@ export function ProjectDashboardClient({
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedChanges]);
+  }, []); // Re-render logic is no longer needed since we check getState() directly
 
   const handleInternalNavigation = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (hasUnsavedChanges) {
+      const href = e.currentTarget.getAttribute('href');
       e.preventDefault();
       if (await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate nel Design Globale. Sei sicuro di voler lasciare la pagina?', confirmLabel: 'Lascia', variant: 'danger' })) {
-        const href = e.currentTarget.getAttribute('href');
-        if (href) window.location.href = href;
+        if (href) {
+          useEditorStore.getState().setUnsavedChanges(false);
+          window.location.href = href;
+        }
       }
     }
   };
