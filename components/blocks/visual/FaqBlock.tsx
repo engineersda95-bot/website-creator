@@ -114,7 +114,7 @@ const AccordionVariant: React.FC<{ items: FAQBlockProps['content']['items']; blo
       ))}
     </div>
     <style>{`
-      #${CSS.escape(blockId)} details summary::-webkit-details-marker { display: none; }
+      #${blockId.replace(/([^\w-])/g, '\\\\$1')} details summary::-webkit-details-marker { display: none; }
     `}</style>
   </>
 );
@@ -158,8 +158,8 @@ const ClassicVariant: React.FC<{ items: FAQBlockProps['content']['items']; block
       ))}
     </div>
     <style>{`
-      #${CSS.escape(blockId)} details summary::-webkit-details-marker { display: none; }
-      #${CSS.escape(blockId)} details[open] { background: color-mix(in srgb, currentColor 3%, transparent); }
+      #${blockId.replace(/([^\w-])/g, '\\\\$1')} details summary::-webkit-details-marker { display: none; }
+      #${blockId.replace(/([^\w-])/g, '\\\\$1')} details[open] { background: color-mix(in srgb, currentColor 3%, transparent); }
     `}</style>
   </>
 );
