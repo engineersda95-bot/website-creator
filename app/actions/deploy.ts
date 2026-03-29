@@ -80,7 +80,10 @@ export async function deployToCloudflare(projectId: string) {
       const assetRegex = /\/assets\/([^"\s?]+)/g;
       let match;
       while ((match = assetRegex.exec(htmlContent)) !== null) {
-        assetsToDownload.add(match[1]);
+        const assetName = match[1];
+        if (assetName !== 'styles.css') {
+          assetsToDownload.add(assetName);
+        }
       }
 
       const pageLang = page.language || defaultLanguage;
@@ -133,6 +136,28 @@ export async function deployToCloudflare(projectId: string) {
       } catch (e: any) {
         console.error(`Failed to download ${assetFilename}:`, e.message);
       }
+    }
+
+    // 3.2. Generate static Tailwind CSS
+    console.log('Generating production Tailwind CSS...');
+    // We create the input file in the project root so Tailwind can resolve its modules correctly
+    const rootInputCssPath = path.join(process.cwd(), `tailwind-input-${projectId}.css`);
+    const inputCssContent = `@import "tailwindcss";\n@source "${tempDir.replace(/\\/g, '/')}/**/*.html";`;
+    fs.writeFileSync(rootInputCssPath, inputCssContent);
+    
+    try {
+      // Run from project root so it can resolve 'tailwindcss' package
+      execSync(`npx --yes @tailwindcss/cli -i "${rootInputCssPath}" -o "${path.join(assetsDir, 'styles.css')}"`, { 
+        env: { ...process.env, HOME: '/tmp' },
+        encoding: 'utf-8' 
+      });
+      console.log('Tailwind CSS generated successfully');
+    } catch (e: any) {
+      console.warn('Tailwind CSS generation failed:', e.message);
+      fs.writeFileSync(path.join(assetsDir, 'styles.css'), '/* Tailwind generation failed */');
+    } finally {
+      // Cleanup the temporary root file
+      if (fs.existsSync(rootInputCssPath)) fs.unlinkSync(rootInputCssPath);
     }
 
     const command = `npx --yes wrangler@3 pages deploy "${tempDir}" --project-name="${projectName}" --branch="main"`;

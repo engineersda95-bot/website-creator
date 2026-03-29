@@ -119,7 +119,7 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
       `;
     })()}
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/styles.css">
     <style>
         :root {
             --primary: ${pColor};
