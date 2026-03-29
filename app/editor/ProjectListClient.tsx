@@ -363,10 +363,10 @@ export function ProjectListClient({
                           {t.id !== 'blank' && t.id !== 'ai' && (
                             <button
                               onClick={(e) => { e.stopPropagation(); setPreviewTemplateId(t.id); }}
-                              className="absolute top-1/2 -translate-y-1/2 right-2 p-1.5 bg-white border border-zinc-100 rounded-lg text-zinc-400 hover:text-blue-500 hover:border-blue-100 transition-all opacity-0 group-hover:opacity-100"
-                              title="Anteprima"
+                              className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center gap-1 px-2 py-1 bg-zinc-100 hover:bg-blue-50 border border-zinc-200 hover:border-blue-200 rounded-lg text-[10px] font-semibold text-zinc-500 hover:text-blue-600 transition-all"
                             >
-                              <Eye size={12} />
+                              <Eye size={11} />
+                              Preview
                             </button>
                           )}
                         </div>
