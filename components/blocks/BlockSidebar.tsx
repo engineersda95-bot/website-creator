@@ -3,7 +3,7 @@
 import React from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
 import { cn } from '@/lib/utils';
-import { BlockType } from '@/types/editor';
+import type { BlockType } from '@/types/editor';
 import {
   Square,
   Type,
@@ -24,11 +24,31 @@ import {
   Minus
 } from 'lucide-react';
 import { getBlockLibrary } from '@/lib/block-definitions';
+import { BlockDefinition, BlockVariant } from '@/types/block-definition';
+import { VariantPicker } from '@/components/editor/VariantPicker';
 
 export const BlockSidebar: React.FC = () => {
   const { addBlock, currentPage, selectedBlockId, selectBlock, leftSidebarCollapsed, setLeftSidebarCollapsed } = useEditorStore();
-  
+  const [variantPicker, setVariantPicker] = React.useState<BlockDefinition | null>(null);
+
   const blockLibrary = getBlockLibrary();
+
+  const handleAddBlock = (blockDef: BlockDefinition) => {
+    if (blockDef.variants && blockDef.variants.length > 0) {
+      setVariantPicker(blockDef);
+    } else {
+      addBlock(blockDef.type);
+    }
+  };
+
+  const handleVariantSelect = (variant: BlockVariant) => {
+    if (!variantPicker) return;
+    addBlock(variantPicker.type, undefined, {
+      content: { variant: variant.id, ...(variant.contentOverride || {}) },
+      style: variant.styleOverride,
+    });
+    setVariantPicker(null);
+  };
 
   const blockIcons: Record<string, any> = {
     hero: Square,
@@ -48,6 +68,7 @@ export const BlockSidebar: React.FC = () => {
   };
 
   return (
+    <>
     <aside data-tour="block-sidebar" className={cn(
       "shrink-0 bg-white border-r border-zinc-200/80 flex flex-col h-full z-20 transition-all duration-300 relative",
       leftSidebarCollapsed ? "w-12" : "w-[17rem]"
@@ -127,11 +148,14 @@ export const BlockSidebar: React.FC = () => {
                 {blockLibrary.map((block) => (
                   <button
                     key={block.type}
-                    onClick={() => addBlock(block.type)}
-                    className="flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border border-zinc-100 hover:border-zinc-300 hover:bg-zinc-50 transition-all group text-center"
+                    onClick={() => handleAddBlock(block)}
+                    className="flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border border-zinc-100 hover:border-zinc-300 hover:bg-zinc-50 transition-all group text-center relative"
                   >
                     <block.icon size={18} className="text-zinc-400 group-hover:text-zinc-700 transition-colors" />
                     <span className="text-[11px] font-medium text-zinc-500 group-hover:text-zinc-700 leading-tight">{block.label}</span>
+                    {block.variants && block.variants.length > 0 && (
+                      <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-400" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -147,5 +171,15 @@ export const BlockSidebar: React.FC = () => {
         </div>
       </div>
     </aside>
+
+    {variantPicker && variantPicker.variants && (
+      <VariantPicker
+        blockLabel={variantPicker.label}
+        variants={variantPicker.variants}
+        onSelect={handleVariantSelect}
+        onClose={() => setVariantPicker(null)}
+      />
+    )}
+    </>
   );
 };

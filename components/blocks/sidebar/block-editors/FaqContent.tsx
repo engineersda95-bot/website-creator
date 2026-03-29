@@ -2,8 +2,15 @@
 
 import React from 'react';
 import { SimpleInput, SectionHeader } from '../SharedSidebarComponents';
-import { HelpCircle, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { HelpCircle, Plus, Trash2, ChevronDown, ChevronUp, List, Square, Columns, Hash } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const FAQ_VARIANTS = [
+  { id: 'accordion', label: 'Minimal', icon: List },
+  { id: 'classic', label: 'Classico', icon: Square },
+  { id: 'side-by-side', label: 'Affiancato', icon: Columns },
+  { id: 'numbered', label: 'Numerato', icon: Hash },
+];
 
 interface FAQListManagerProps {
   items: Array<{ question: string; answer: string }>;
@@ -124,13 +131,35 @@ export const FAQContent: React.FC<FAQContentProps> = ({
   return (
     <div className="space-y-8">
       <SectionHeader icon={HelpCircle} title="Contenuto FAQ" />
-      
+
+      {/* Variant selector */}
+      <div className="space-y-2">
+        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Stile</label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {FAQ_VARIANTS.map((v) => (
+            <button
+              key={v.id}
+              onClick={() => updateContent({ variant: v.id })}
+              className={cn(
+                "flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-[9px] font-medium transition-all",
+                (selectedBlock.content.variant || 'accordion') === v.id
+                  ? "border-zinc-900 bg-zinc-900 text-white"
+                  : "border-zinc-100 text-zinc-400 hover:border-zinc-300"
+              )}
+            >
+              <v.icon size={14} />
+              {v.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="space-y-6">
-        <SimpleInput 
+        <SimpleInput
           label="Titolo Sezione"
-          placeholder="es: Domande Frequenti" 
-          value={selectedBlock.content.title || ''} 
-          onChange={(val) => updateContent({ title: val })} 
+          placeholder="es: Domande Frequenti"
+          value={selectedBlock.content.title || ''}
+          onChange={(val) => updateContent({ title: val })}
         />
       </div>
 

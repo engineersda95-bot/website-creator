@@ -49,7 +49,7 @@ interface EditorState {
   redo: () => void;
 
   // Block Actions
-  addBlock: (type: BlockType, atIndex?: number) => void;
+  addBlock: (type: BlockType, atIndex?: number, overrides?: { content?: any; style?: any }) => void;
   updateBlock: (id: string, content: any, style?: any) => void;
   updateBlockStyle: (id: string, style: any) => void;
   removeBlock: (id: string) => void;
@@ -446,7 +446,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     triggerAutoSave(get, set);
   },
 
-  addBlock: (type, atIndex) => {
+  addBlock: (type, atIndex, overrides) => {
     const { project, currentPage, projectPages } = get();
     if (!project || !currentPage) return;
 
@@ -495,12 +495,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const newBlock: Block = {
       id: uuidv4(),
       type,
-      content: defaultContent,
+      content: { ...defaultContent, ...(overrides?.content || {}) },
       style: {
         ...defaultStyle,
         // Ensure tags are explicitly set to their values if they come from defaults
         titleTag: defaultStyle.titleTag || (type === 'hero' ? 'h1' : 'h2'),
-        ...(defaultStyle.itemTitleTag ? { itemTitleTag: defaultStyle.itemTitleTag } : {})
+        ...(defaultStyle.itemTitleTag ? { itemTitleTag: defaultStyle.itemTitleTag } : {}),
+        ...(overrides?.style || {})
       },
       responsiveStyles: defaultResponsiveStyles || {}
     };

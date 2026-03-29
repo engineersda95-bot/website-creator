@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { FileText, Clock, Globe, Trash2, Search } from 'lucide-react';
+import { FileText, Clock, Globe, Loader2, Trash2, Search } from 'lucide-react';
 import { Page } from '@/types/editor';
 
 interface PageCardProps {
@@ -12,10 +12,11 @@ interface PageCardProps {
   onOpenSeo: (id: string) => void;
   onOpenTranslate: (id: string) => void;
   onDelete: (id: string) => void;
+  isDeleting?: boolean;
   onInternalNavigate: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
-export function PageCard({ page, projectId, formatDate, onOpenSeo, onOpenTranslate, onDelete, onInternalNavigate }: PageCardProps) {
+export function PageCard({ page, projectId, formatDate, onOpenSeo, onOpenTranslate, onDelete, isDeleting, onInternalNavigate }: PageCardProps) {
   const langEmoji: Record<string, string> = {
     it: '🇮🇹',
     en: '🇬🇧',
@@ -26,7 +27,7 @@ export function PageCard({ page, projectId, formatDate, onOpenSeo, onOpenTransla
 
   return (
     <div
-      className="group relative bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md hover:border-zinc-300 transition-all flex flex-col"
+      className={`group relative bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md hover:border-zinc-300 transition-all flex flex-col ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
     >
       <Link 
         href={`/editor/${projectId}/${page.id}`} 
@@ -75,9 +76,10 @@ export function PageCard({ page, projectId, formatDate, onOpenSeo, onOpenTransla
           {page.slug !== 'home' && (
             <button
               onClick={() => onDelete(page.id)}
-              className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-white rounded-md transition-all shadow-sm"
+              disabled={isDeleting}
+              className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-white rounded-md transition-all shadow-sm disabled:opacity-50"
             >
-              <Trash2 size={14} />
+              {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
             </button>
           )}
         </div>

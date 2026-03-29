@@ -72,6 +72,7 @@ export function ProjectListClient({
 
   const [createStep, setCreateStep] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
 
@@ -607,11 +608,14 @@ export function ProjectListClient({
                 project={proj}
                 formatDate={formatDate}
                 onEdit={(id) => setEditingProjectId(id)}
+                isDeleting={deletingId === proj.id}
                 onDelete={async (id, name) => {
                   if (!confirm(`Vuoi eliminare "${name}"? Tutti i dati verranno persi.`)) return;
+                  setDeletingId(id);
                   await supabase.from('pages').delete().eq('project_id', id);
                   await supabase.from('projects').delete().eq('id', id);
                   setProjects(projects.filter(p => p.id !== id));
+                  setDeletingId(null);
                 }}
               />
             ))}

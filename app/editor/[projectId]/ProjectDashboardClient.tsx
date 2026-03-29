@@ -86,6 +86,8 @@ export function ProjectDashboardClient({
   const [newTitle, setNewTitle] = useState('');
   const [newSlug, setNewSlug] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
+  const [deletingPageId, setDeletingPageId] = useState<string | null>(null);
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
   const [activeTab, setActiveTab] = useState<'pages' | 'design' | 'settings'>('pages');
   const [seoOpenId, setSeoOpenId] = useState<string | null>(null);
   const [translateOpenId, setTranslateOpenId] = useState<string | null>(null);
@@ -141,8 +143,10 @@ export function ProjectDashboardClient({
 
   const handleDeletePage = async (pageId: string) => {
     if (!confirm('Vuoi eliminare questa pagina?')) return;
+    setDeletingPageId(pageId);
     await supabase.from('pages').delete().eq('id', pageId);
     setPages(pages.filter(p => p.id !== pageId));
+    setDeletingPageId(null);
   };
 
   const handleUpdatePageSEO = async (pageId: string, seo: { title?: string; description?: string; image?: string }) => {
@@ -215,7 +219,7 @@ export function ProjectDashboardClient({
 
   const handleDeleteProject = async () => {
     if (!confirm(`Vuoi davvero eliminare "${localProject.name}"? Tutte le pagine e i dati verranno persi definitivamente.`)) return;
-    // Delete pages first, then project
+    setIsDeletingProject(true);
     await supabase.from('pages').delete().eq('project_id', localProject.id);
     await supabase.from('projects').delete().eq('id', localProject.id);
     router.push('/editor');
@@ -272,10 +276,11 @@ export function ProjectDashboardClient({
             )}
             <button
               onClick={handleDeleteProject}
-              className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              disabled={isDeletingProject}
+              className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
               title="Elimina sito"
             >
-              <Trash2 size={16} />
+              {isDeletingProject ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
             </button>
             <button
               onClick={handlePublish}
@@ -409,6 +414,7 @@ export function ProjectDashboardClient({
                   onOpenSeo={(id) => setSeoOpenId(id)}
                   onOpenTranslate={(id) => setTranslateOpenId(id)}
                   onDelete={handleDeletePage}
+                  isDeleting={deletingPageId === page.id}
                   onInternalNavigate={handleInternalNavigation}
                 />
               ))}
