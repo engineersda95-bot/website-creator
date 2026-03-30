@@ -141,22 +141,6 @@ export async function deployToCloudflare(projectId: string) {
     // 3.2. Generate static Tailwind CSS
     console.log('Generating production Tailwind CSS...');
     
-    // Create a symlink to node_modules in the temp dir so Tailwind can resolve imports correctly
-    const targetNodeModules = path.join(tempDir, 'node_modules');
-    if (!fs.existsSync(targetNodeModules)) {
-      try {
-        // Use 'junction' on Windows, 'dir' on others for better compatibility
-        const type = process.platform === 'win32' ? 'junction' : 'dir';
-        fs.symlinkSync(path.join(process.cwd(), 'node_modules'), targetNodeModules, type);
-      } catch (e: any) {
-        console.warn('Could not create node_modules symlink:', e.message);
-      }
-    }
-
-    const rootInputCssPath = path.join(tempDir, `tailwind-input-${projectId}.css`);
-    const inputCssContent = `@import "tailwindcss";\n@source "${tempDir.replace(/\\/g, '/')}/**/*.html";`;
-    fs.writeFileSync(rootInputCssPath, inputCssContent);
-    
     const commonEnv = {
       ...process.env,
       HOME: '/tmp',
@@ -171,8 +155,12 @@ export async function deployToCloudflare(projectId: string) {
     };
 
     try {
-      // Run from project root so it can resolve 'tailwindcss' package
-      execSync(`npx --yes @tailwindcss/cli -i "${rootInputCssPath}" -o "${path.join(assetsDir, 'styles.css')}"`, { 
+      const inputCssContent = `@import "tailwindcss";\n@source "${tempDir.replace(/\\/g, '/')}/**/*.html";`;
+      
+      // Run Tailwind using STDIN (input) to avoid writing a source file in the project's root (EROFS)
+      // This ensures Tailwind resolves its own package correctly from project's node_modules
+      execSync(`npx --yes @tailwindcss/cli -o "${path.join(assetsDir, 'styles.css')}"`, { 
+        input: inputCssContent,
         env: commonEnv,
         encoding: 'utf-8' 
       });
@@ -180,9 +168,6 @@ export async function deployToCloudflare(projectId: string) {
     } catch (e: any) {
       console.warn('Tailwind CSS generation failed:', e.message);
       fs.writeFileSync(path.join(assetsDir, 'styles.css'), '/* Tailwind generation failed */');
-    } finally {
-      // Cleanup the temporary root file
-      if (fs.existsSync(rootInputCssPath)) fs.unlinkSync(rootInputCssPath);
     }
 
     const command = `npx --yes wrangler@3 pages deploy "${tempDir}" --project-name="${projectName}" --branch="main"`;
