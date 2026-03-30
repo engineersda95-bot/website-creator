@@ -154,23 +154,23 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
         />
       </Section>
 
-      <Section icon={MousePointer} label="Pulsante 1" id="cta" badge={content.cta || 'vuoto'} isOpen={openSection === 'cta'} onToggle={toggleSection}>
+      <Section icon={MousePointer} label="CTA 1" id="cta" badge={content.cta || 'vuoto'} isOpen={openSection === 'cta'} onToggle={toggleSection}>
         <CTAManager
           content={content}
           updateContent={updateContent}
           style={selectedBlock.style}
           updateStyle={updateStyle}
-          label="Pulsante 1"
+          label="CTA 1"
         />
       </Section>
 
-      <Section icon={MousePointer} label="Pulsante 2" id="cta2" badge={content.cta2 || 'nessuno'} isOpen={openSection === 'cta2'} onToggle={toggleSection}>
+      <Section icon={MousePointer} label="CTA 2" id="cta2" badge={content.cta2 || 'nessuno'} isOpen={openSection === 'cta2'} onToggle={toggleSection}>
         <CTAManager
           content={content}
           updateContent={updateContent}
           style={selectedBlock.style}
           updateStyle={updateStyle}
-          label="Pulsante 2"
+          label="CTA 2"
           ctaKey="cta2"
           urlKey="cta2Url"
           themeKey="cta2Theme"

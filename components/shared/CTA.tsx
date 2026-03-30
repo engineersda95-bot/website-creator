@@ -16,7 +16,37 @@ interface CTAProps {
   onClick?: () => void;
   onLabelChange?: (value: string) => void;
   fieldId?: string;
+
+  // Manual Overrides
+  bgColor?: string;
+  textColor?: string;
+  radius?: number;
+  paddingX?: number;
+  paddingY?: number;
+  fontSize?: number;
+  shadow?: 'none' | 'S' | 'M' | 'L';
+  animation?: 'none' | 'move-up' | 'scale';
+  uppercase?: boolean;
 }
+
+export const getCTAOverrides = (content: any, prefix: string, theme?: string) => {
+  // If the theme is not custom, we ignore all manual style overrides
+  const isCustom = theme === 'custom';
+
+  if (!isCustom) return {};
+
+  return {
+    bgColor: content[`${prefix}BgColor`],
+    textColor: content[`${prefix}TextColor`],
+    radius: content[`${prefix}Radius`],
+    paddingX: content[`${prefix}PaddingX`],
+    paddingY: content[`${prefix}PaddingY`],
+    fontSize: content[`${prefix}FontSize`],
+    shadow: content[`${prefix}Shadow`],
+    animation: content[`${prefix}Animation`],
+    uppercase: content[`${prefix}Uppercase`],
+  };
+};
 
 export const CTA: React.FC<CTAProps> = ({
   label,
@@ -30,20 +60,31 @@ export const CTA: React.FC<CTAProps> = ({
   onClick,
   onLabelChange,
   fieldId,
+  // Overrides
+  bgColor,
+  textColor,
+  radius,
+  paddingX,
+  paddingY,
+  fontSize,
+  shadow,
+  animation,
+  uppercase
 }) => {
   if (!label && !onLabelChange) return null;
 
   const projectSettings = (project?.settings || {}) as ProjectSettings;
-  const activeColor = theme === 'secondary'
+  const activeColor = bgColor || (theme === 'secondary'
     ? (projectSettings.secondaryColor || '#10b981')
-    : (projectSettings.primaryColor || '#3b82f6');
+    : (projectSettings.primaryColor || '#3b82f6'));
 
   const buttonStyle = getButtonStyle(
     project,
     activeColor,
     viewport,
     theme,
-    isStatic
+    isStatic,
+    { bgColor, textColor, radius, paddingX, paddingY, fontSize, shadow, uppercase }
   );
 
   const missingLink = onLabelChange && (!url || url === '#');
@@ -51,7 +92,7 @@ export const CTA: React.FC<CTAProps> = ({
   return (
     <a
       {...formatLink(url, isStatic)}
-      className={cn(getButtonClass(project), 'relative', className)}
+      className={cn(getButtonClass(project, animation), 'relative', className)}
       style={{ ...buttonStyle, ...extraStyle }}
       onClick={onClick}
     >

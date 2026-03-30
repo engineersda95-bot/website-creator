@@ -5,7 +5,7 @@ import { Check } from 'lucide-react';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { BlockBackground } from '@/components/shared/BlockBackground';
 import { InlineEditable } from '@/components/shared/InlineEditable';
-import { CTA } from '@/components/shared/CTA';
+import { CTA, getCTAOverrides } from '@/components/shared/CTA';
 
 interface PricingBlockProps {
   block: Block;
@@ -272,9 +272,10 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
                     url={item.buttonUrl || '#'}
                     project={project}
                     viewport={viewport}
-                    theme={isHighlighted ? 'primary' : 'secondary'}
+                    theme={item.buttonTheme || (isHighlighted ? 'primary' : 'secondary')}
                     isStatic={isStatic}
                     className="w-full justify-center py-4 text-center"
+                    {...getCTAOverrides(item, 'buttonText', item.buttonTheme || (isHighlighted ? 'primary' : 'secondary'))}
                   />
                 </div>
               </div>

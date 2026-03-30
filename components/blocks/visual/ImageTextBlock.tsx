@@ -5,7 +5,7 @@ import { cn, formatLink, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
 import { SitiImage } from '@/components/shared/SitiImage';
-import { CTA } from '@/components/shared/CTA';
+import { CTA, getCTAOverrides } from '@/components/shared/CTA';
 import { BlockBackground } from '@/components/shared/BlockBackground';
 import { InlineEditable } from '@/components/shared/InlineEditable';
 
@@ -254,6 +254,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   theme={content.ctaTheme || style.buttonTheme}
                   isStatic={isStatic}
                   onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined}
+                  {...getCTAOverrides(content, 'cta', content.ctaTheme || style.buttonTheme)}
                 />
               )}
               {content.cta2 && (
@@ -265,6 +266,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   theme={content.cta2Theme || 'secondary'}
                   isStatic={isStatic}
                   onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined}
+                  {...getCTAOverrides(content, 'cta2', content.cta2Theme || 'secondary')}
                 />
               )}
             </div>

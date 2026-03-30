@@ -3,6 +3,7 @@ import { Layout, Tag, Plus, Trash2, ArrowUp, ArrowDown, Star } from 'lucide-reac
 import { SectionHeader, SimpleInput, RichTextarea, LayoutGridSlider, ColorManager } from '../SharedSidebarComponents';
 import { useEditorStore } from '@/store/useEditorStore';
 import { cn } from '@/lib/utils';
+import { CTAManager } from '../managers/CTAManager';
 
 interface PricingContentProps {
   selectedBlock: any;
@@ -65,7 +66,7 @@ export const PricingContent: React.FC<PricingContentProps> = ({
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500 pb-20">
-      
+
       {/* 1. Intestazione e Layout */}
       <section>
         <SectionHeader icon={Layout} title="Configurazione" />
@@ -101,19 +102,19 @@ export const PricingContent: React.FC<PricingContentProps> = ({
           {items.map((item: any, index: number) => (
             <div key={index} className="space-y-6 p-6 bg-zinc-50/50 border border-zinc-100 rounded-[2.5rem] relative group/item animate-in slide-in-from-right-2 duration-300">
               <div className="absolute -top-3 -right-3 flex gap-2 opacity-0 group-hover/item:opacity-100 transition-all">
-                <button 
+                <button
                   onClick={() => moveItem(index, 'up')}
                   className="p-2 bg-white border border-zinc-100 rounded-full shadow-sm text-zinc-400 hover:text-zinc-900 transition-colors"
                 >
                   <ArrowUp size={14} />
                 </button>
-                <button 
+                <button
                   onClick={() => moveItem(index, 'down')}
                   className="p-2 bg-white border border-zinc-100 rounded-full shadow-sm text-zinc-400 hover:text-zinc-900 transition-colors"
                 >
                   <ArrowDown size={14} />
                 </button>
-                <button 
+                <button
                   onClick={() => removeItem(index)}
                   className="p-2 bg-white border border-red-100 rounded-full shadow-sm text-red-400 hover:text-red-600 transition-colors"
                 >
@@ -134,8 +135,8 @@ export const PricingContent: React.FC<PricingContentProps> = ({
                   onClick={() => updateItem(index, { isHighlighted: !item.isHighlighted })}
                   className={cn(
                     "mt-6 p-3 rounded-xl border transition-all flex items-center gap-2 font-black text-[10px] uppercase tracking-widest",
-                    item.isHighlighted 
-                      ? "bg-zinc-900 border-zinc-900 text-white shadow-lg" 
+                    item.isHighlighted
+                      ? "bg-zinc-900 border-zinc-900 text-white shadow-lg"
                       : "bg-white border-zinc-200 text-zinc-400 hover:border-zinc-900 hover:text-zinc-900"
                   )}
                 >
@@ -162,7 +163,7 @@ export const PricingContent: React.FC<PricingContentProps> = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1">Caratteristiche</label>
-                  <button 
+                  <button
                     onClick={() => {
                       const features = [...(item.features || []), ''];
                       updateItem(index, { features });
@@ -187,7 +188,7 @@ export const PricingContent: React.FC<PricingContentProps> = ({
                           placeholder="es. Supporto Email..."
                         />
                       </div>
-                      <button 
+                      <button
                         onClick={() => {
                           const newFeatures = item.features.filter((_: any, i: number) => i !== fIdx);
                           updateItem(index, { features: newFeatures });
@@ -201,18 +202,14 @@ export const PricingContent: React.FC<PricingContentProps> = ({
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-zinc-100 space-y-4">
-                <SimpleInput
-                  label="Testo Bottone"
-                  value={item.buttonText || ''}
-                  onChange={(val) => updateItem(index, { buttonText: val })}
-                  placeholder="es. Inizia Ora"
-                />
-                <SimpleInput
-                  label="Link Bottone"
-                  value={item.buttonUrl || ''}
-                  onChange={(val) => updateItem(index, { buttonUrl: val })}
-                  placeholder="URL o Ancora..."
+              <div className="pt-4 border-t border-zinc-100">
+                <CTAManager
+                  content={item}
+                  updateContent={(updates) => updateItem(index, updates)}
+                  label="CTA"
+                  ctaKey="buttonText"
+                  urlKey="buttonUrl"
+                  themeKey="buttonTheme"
                 />
               </div>
             </div>

@@ -5,7 +5,7 @@ import { Project, Page, Block } from '@/types/editor';
 import { MobileMenu } from './MobileMenu';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { SitiImage } from '@/components/shared/SitiImage';
-import { CTA } from '@/components/shared/CTA';
+import { CTA, getCTAOverrides } from '@/components/shared/CTA';
 import { BACKGROUND_PATTERNS } from '@/lib/background-patterns';
 
 export interface NavigationProps {
@@ -21,6 +21,7 @@ export interface NavigationProps {
     links?: { label: string; url: string }[];
     cta?: string;
     ctaUrl?: string;
+    ctaTheme?: 'primary' | 'secondary' | 'custom';
     showContact?: boolean;
     layoutType?: 'standard' | 'hamburger';
   };
@@ -212,8 +213,9 @@ export const Navigation: React.FC<NavigationProps> = ({
               url={ctaUrl} 
               project={project} 
               viewport={(viewport as any) || 'desktop'} 
-              theme={style.buttonTheme || 'primary'} 
+              theme={content.ctaTheme || style.buttonTheme || 'primary'} 
               isStatic={!!(isStatic || !viewport)} 
+              {...getCTAOverrides(content, 'cta', content.ctaTheme || style.buttonTheme || 'primary')}
             />
           )}
         </div>
@@ -284,8 +286,9 @@ export const Navigation: React.FC<NavigationProps> = ({
                           url={ctaUrl} 
                           project={project} 
                           viewport="desktop"
-                          theme={style.buttonTheme || 'primary'} 
+                          theme={content.ctaTheme || style.buttonTheme || 'primary'} 
                           isStatic={true} 
+                          {...getCTAOverrides(content, 'cta', content.ctaTheme || style.buttonTheme || 'primary')}
                         />
                       </div>
                     )}
@@ -314,7 +317,8 @@ export const Navigation: React.FC<NavigationProps> = ({
             isEditing={isEditing}
             isStatic={isStatic}
             layoutType={content.layoutType}
-            buttonTheme={style.buttonTheme}
+            buttonTheme={content.ctaTheme || style.buttonTheme || 'primary'}
+            ctaOverrides={getCTAOverrides(content, 'cta', content.ctaTheme || style.buttonTheme || 'primary')}
           />
         )}
       </div>

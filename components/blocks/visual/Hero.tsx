@@ -5,7 +5,7 @@ import { InlineEditable } from '@/components/shared/InlineEditable';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
 import { SitiImage } from '@/components/shared/SitiImage';
-import { CTA } from '@/components/shared/CTA';
+import { CTA, getCTAOverrides } from '@/components/shared/CTA';
 import { BACKGROUND_PATTERNS } from '@/lib/background-patterns';
 
 interface HeroProps {
@@ -109,10 +109,30 @@ const HeroCTAs: React.FC<{
       } as any}
     >
       {content.cta && (
-        <CTA label={content.cta} url={content.ctaUrl || (content as any).ctaLink} project={project} viewport={viewport as any} theme={content.ctaTheme || style.buttonTheme} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined} fieldId="cta" />
+        <CTA 
+          label={content.cta} 
+          url={content.ctaUrl || (content as any).ctaLink} 
+          project={project} 
+          viewport={viewport as any} 
+          theme={content.ctaTheme || style.buttonTheme} 
+          isStatic={isStatic} 
+          onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined} 
+          fieldId="cta" 
+          {...getCTAOverrides(content, 'cta', content.ctaTheme || style.buttonTheme)}
+        />
       )}
       {content.cta2 && (
-        <CTA label={content.cta2} url={content.cta2Url} project={project} viewport={viewport as any} theme={content.cta2Theme || 'secondary'} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined} fieldId="cta2" />
+        <CTA 
+          label={content.cta2} 
+          url={content.cta2Url} 
+          project={project} 
+          viewport={viewport as any} 
+          theme={content.cta2Theme || 'secondary'} 
+          isStatic={isStatic} 
+          onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined} 
+          fieldId="cta2" 
+          {...getCTAOverrides(content, 'cta2', content.cta2Theme || 'secondary')}
+        />
       )}
     </div>
   </div>

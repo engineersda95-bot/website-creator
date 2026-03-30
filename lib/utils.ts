@@ -80,7 +80,14 @@ export const toPx = (value: any, defaultValue: string = ''): string => {
   return value;
 };
 
-export function getButtonStyle(project: any, activeColor: string, viewportOverride?: 'desktop' | 'tablet' | 'mobile', theme: 'primary' | 'secondary' = 'primary', isStatic: boolean = false) {
+export function getButtonStyle(
+  project: any, 
+  activeColor: string, 
+  viewportOverride?: 'desktop' | 'tablet' | 'mobile', 
+  theme: 'primary' | 'secondary' = 'primary', 
+  isStatic: boolean = false,
+  overrides: Record<string, any> = {}
+) {
   // Se isStatic è true, usiamo direttamente l'override (solitamente mobile per link hamburger) o desktop
   let viewport: 'desktop' | 'tablet' | 'mobile' = viewportOverride || 'desktop';
 
@@ -95,22 +102,36 @@ export function getButtonStyle(project: any, activeColor: string, viewportOverri
     ? (project?.settings?.themeColors?.buttonTextSecondary || project?.settings?.themeColors?.buttonText || '#ffffff')
     : (project?.settings?.themeColors?.buttonText || '#ffffff');
 
-  // Se non abbiamo un viewport forzato, usiamo le variabili CSS per la reattività dinamica (Live Site)
+  // Specific overrides logic
+  const bg = overrides.bgColor || activeColor;
+  const color = overrides.textColor || buttonTextColor;
+  const radius = overrides.radius !== undefined ? toPx(overrides.radius) : `var(--btn-radius, ${toPx(settings.buttonRadius, '24px')})`;
+  const py = overrides.paddingY !== undefined ? toPx(overrides.paddingY) : `var(--btn-py, ${toPx(settings.buttonPaddingY, '12px')})`;
+  const px = overrides.paddingX !== undefined ? toPx(overrides.paddingX) : `var(--btn-px, ${toPx(settings.buttonPaddingX, '32px')})`;
+  const fs = overrides.fontSize !== undefined ? toPx(overrides.fontSize) : `var(--btn-fs, ${toPx(settings.buttonFontSize, '1rem')})`;
+  
+  const shadowValue = overrides.shadow || settings.buttonShadow || 'none';
+  const shadowValueMap = {
+    none: 'none',
+    S: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    M: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+    L: '0 20px 25px -5px rgb(0 0 0 / 0.1)'
+  };
+  const shadow = shadowValueMap[shadowValue as keyof typeof shadowValueMap] || 'none';
+
+  const uppercase = (overrides.uppercase !== undefined || overrides.Uppercase !== undefined)
+    ? ((overrides.uppercase || overrides.Uppercase) ? 'uppercase' : 'none')
+    : `var(--btn-upper, ${settings.buttonUppercase ? 'uppercase' : 'none'})`;
 
   return {
-    backgroundColor: activeColor,
-    color: buttonTextColor,
-    borderRadius: `var(--btn-radius, ${toPx(settings.buttonRadius, '9999px')})`,
-    boxShadow: {
-      none: 'none',
-      S: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-      M: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-      L: '0 20px 25px -5px rgb(0 0 0 / 0.1)'
-    }[settings.buttonShadow as 'none' | 'S' | 'M' | 'L' || 'none'],
+    backgroundColor: bg,
+    color: color,
+    borderRadius: radius,
+    boxShadow: shadow,
     border: settings.buttonBorder ? `${settings.buttonBorderWidth || 1}px solid ${settings.buttonBorderColor || (buttonTextColor + '44')}` : 'none',
-    textTransform: `var(--btn-upper, ${settings.buttonUppercase ? 'uppercase' : 'none'})` as any,
-    padding: `var(--btn-py, ${toPx(settings.buttonPaddingY, '12px')}) var(--btn-px, ${toPx(settings.buttonPaddingX, '32px')})`,
-    fontSize: `var(--btn-fs, ${toPx(settings.buttonFontSize, '1rem')})`,
+    textTransform: uppercase as any,
+    padding: `${py} ${px}`,
+    fontSize: fs,
     width: settings.buttonWidth === 'full' ? '100%' : settings.buttonWidth === 'auto' ? 'auto' : toPx(settings.buttonWidth),
     fontWeight: '700',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -121,9 +142,9 @@ export function getButtonStyle(project: any, activeColor: string, viewportOverri
   };
 }
 
-export function getButtonClass(project: any) {
+export function getButtonClass(project: any, animationOverride?: string) {
   const settings = project?.settings || {};
-  const animation = settings.buttonAnimation || 'none';
+  const animation = animationOverride || settings.buttonAnimation || 'none';
 
   let animClass = '';
   if (animation === 'move-up') {

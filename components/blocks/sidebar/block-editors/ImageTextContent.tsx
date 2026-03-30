@@ -24,33 +24,33 @@ export const ImageTextContent: React.FC<ImageTextContentProps> = ({
    return (
       <div className="space-y-8">
          <div className="space-y-6">
-            <SimpleInput 
+            <SimpleInput
                label="Titolo"
-               placeholder="Inserisci un titolo d'impatto" 
-               value={selectedBlock.content.title || ''} 
-               onChange={(val) => updateContent({ title: val })} 
+               placeholder="Inserisci un titolo d'impatto"
+               value={selectedBlock.content.title || ''}
+               onChange={(val) => updateContent({ title: val })}
             />
-            <RichTextarea 
+            <RichTextarea
                label="Corpo del Testo"
-               placeholder="Descrivi il problema, la soluzione o il chi siamo..." 
-               value={selectedBlock.content.text || ''} 
-               onChange={(val) => updateContent({ text: val })} 
+               placeholder="Descrivi il problema, la soluzione o il chi siamo..."
+               value={selectedBlock.content.text || ''}
+               onChange={(val) => updateContent({ text: val })}
             />
          </div>
 
          <div className="space-y-4 pt-6 border-t border-zinc-100">
             <label className="text-[13px] font-bold text-zinc-400 uppercase tracking-wider block">Immagine Principale</label>
-            <ImageUpload 
+            <ImageUpload
                value={resolveImageUrl(selectedBlock.content.image, project, useEditorStore.getState().imageMemoryCache)}
                onChange={async (val: string, filename?: string) => {
-                 const relativePath = await useEditorStore.getState().uploadImage(val, filename);
-                 updateContent({ image: relativePath });
+                  const relativePath = await useEditorStore.getState().uploadImage(val, filename);
+                  updateContent({ image: relativePath });
                }}
                label="Carica Immagine"
                altValue={selectedBlock.content.alt ?? ''}
                onAltChange={(alt) => updateContent({ alt })}
                onFilenameSelect={(name) => {
-                 if (!selectedBlock.content.alt) updateContent({ alt: name });
+                  if (!selectedBlock.content.alt) updateContent({ alt: name });
                }}
             />
          </div>
@@ -70,20 +70,20 @@ export const ImageTextContent: React.FC<ImageTextContentProps> = ({
             </select>
          </div>
 
-         <CTAManager 
-            content={selectedBlock.content} 
-            updateContent={updateContent} 
+         <CTAManager
+            content={selectedBlock.content}
+            updateContent={updateContent}
             style={selectedBlock.style}
             updateStyle={updateStyle}
-            label="Pulsante 1"
+            label="CTA 1"
          />
 
-         <CTAManager 
-            content={selectedBlock.content} 
-            updateContent={updateContent} 
+         <CTAManager
+            content={selectedBlock.content}
+            updateContent={updateContent}
             style={selectedBlock.style}
             updateStyle={updateStyle}
-            label="Pulsante 2"
+            label="CTA 2"
             ctaKey="cta2"
             urlKey="cta2Url"
             themeKey="cta2Theme"

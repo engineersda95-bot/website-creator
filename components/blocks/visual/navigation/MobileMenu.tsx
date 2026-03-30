@@ -21,6 +21,7 @@ interface MobileMenuProps {
   isStatic?: boolean;
   layoutType?: string;
   buttonTheme?: 'primary' | 'secondary';
+  ctaOverrides?: any;
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({
@@ -37,7 +38,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   isEditing,
   isStatic,
   layoutType,
-  buttonTheme
+  buttonTheme,
+  ctaOverrides
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
@@ -142,6 +144,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                     theme={buttonTheme || 'primary'} 
                     isStatic={isStatic} 
                     onClick={() => setIsMenuOpen(false)}
+                    {...ctaOverrides}
                   />
                 </div>
               )}
