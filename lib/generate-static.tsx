@@ -206,18 +206,6 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
             pointer-events: auto !important;
         }
 
-        /* Image Reveal System */
-        .siti-img-reveal {
-            opacity: 0;
-            transform: scale(1.02);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out, filter 0.8s ease-out;
-            filter: blur(8px);
-        }
-        .siti-img-reveal.loaded {
-            opacity: 1;
-            transform: scale(1);
-            filter: blur(0);
-        }
         .img-ready { background: transparent !important; }
     </style>
     ${settings?.customScriptsHead || ''}
@@ -275,6 +263,9 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
         menu.setAttribute('data-open', nextState);
         btn.setAttribute('data-open', nextState);
       });
+
+      // --- Intelligent Image Reveal System ---
+      const handleStaticReveal = (e) => {
     </script>
     ${settings?.customScriptsBody || ''}
 </body>

@@ -11,8 +11,8 @@ interface SitiImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 }
 
 /**
- * SitiImage: Centralized component for rendering project images.
- * Uses a container-based reveal system to ensure placeholders disappear for PNG transparency.
+ * SitiImage: Standardized image component.
+ * Back to 100% native <img> behavior for maximum raw speed.
  */
 export const SitiImage: React.FC<SitiImageProps> = ({ 
   src, 
@@ -27,18 +27,11 @@ export const SitiImage: React.FC<SitiImageProps> = ({
   const resolved = resolveImageUrl(src, project || null, imageMemoryCache, isStatic);
 
   return (
-    <div className={cn("relative overflow-hidden project-img-placeholder", className)}>
-      <img 
-        src={resolved} 
-        alt={props.alt || ""}
-        data-siti-reveal="true"
-        // SitiImage handles the reveal via a global script that removes the placeholder background
-        className={cn(
-          "siti-img-reveal opacity-0 transition-opacity duration-700 ease-out h-full w-full",
-          className
-        )}
-        {...props} 
-      />
-    </div>
+    <img 
+      src={resolved} 
+      alt={props.alt || ""}
+      className={className}
+      {...props} 
+    />
   );
 };

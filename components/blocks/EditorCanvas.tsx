@@ -113,6 +113,34 @@ export const EditorCanvas: React.FC = () => {
     return () => document.removeEventListener('click', handleCaptureClick, true);
   }, []);
 
+  // Shared Reveal System: Fast & Reliable
+  React.useEffect(() => {
+    const handleReveal = (e: Event) => {
+      const target = e.target as HTMLImageElement;
+      if (target.tagName === 'IMG' && target.hasAttribute('data-siti-reveal')) {
+        target.classList.remove('project-img-placeholder');
+        target.style.background = 'transparent';
+      }
+    };
+
+    document.addEventListener('load', handleReveal, true);
+    
+    const timer = setInterval(() => {
+      const pending = document.querySelectorAll('img[data-siti-reveal].project-img-placeholder');
+      pending.forEach(img => {
+        if ((img as HTMLImageElement).complete) {
+          (img as HTMLElement).classList.remove('project-img-placeholder');
+          (img as HTMLElement).style.background = 'transparent';
+        }
+      });
+    }, 500);
+
+    return () => {
+      document.removeEventListener('load', handleReveal, true);
+      clearInterval(timer);
+    };
+  }, [currentPage?.blocks]);
+
   if (!isMounted) return <div className="flex-1 bg-zinc-100" />;
 
   if (!currentPage) return (
@@ -198,7 +226,6 @@ export const EditorCanvas: React.FC = () => {
             pointer-events: none;
             z-index: 50;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            letter-spacing: 0.02em;
             font-family: system-ui, sans-serif !important;
           }
         `}</style>
