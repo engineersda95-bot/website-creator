@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 const BLOCK_WIREFRAME: Record<string, { label: string; h: string; color: string }> = {
   navigation: { label: 'Nav', h: 'h-4', color: 'bg-zinc-300' },
   hero: { label: 'Hero', h: 'h-16', color: 'bg-blue-200' },
-  benefits: { label: 'Benefici', h: 'h-10', color: 'bg-emerald-100' },
+  benefits: { label: 'Vantaggi', h: 'h-10', color: 'bg-emerald-100' },
   cards: { label: 'Card', h: 'h-12', color: 'bg-amber-100' },
   'image-text': { label: 'Img+Testo', h: 'h-10', color: 'bg-violet-100' },
   quote: { label: 'Recensioni', h: 'h-8', color: 'bg-pink-100' },

@@ -104,15 +104,15 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
         {/* Gallery Title */}
         {content.title && (
           <TitleTag 
-            className="font-heading leading-tight"
-            style={!isStatic ? {
+            className="font-heading leading-tight w-full"
+            style={{
               fontSize: 'var(--title-fs)',
               textAlign: 'var(--block-align)' as any,
               fontWeight: 'var(--title-fw)',
               fontStyle: 'var(--title-fs-style)',
-              color: 'var(--block-color)'
-            } : {
-              textAlign: 'var(--block-align)' as any,
+              lineHeight: 'var(--title-lh)',
+              letterSpacing: 'var(--title-ls)',
+              textTransform: 'var(--title-upper)' as any,
               color: 'var(--block-color)'
             }}
           >

@@ -89,7 +89,13 @@ export const heroDefinition: BlockDefinition = {
     },
   ],
   styleMapper: (style, block, project, viewport) => {
-    const { vars, style: s } = getBaseStyleVars(style, block, project, viewport);
+    const variant = block.content?.variant || 'centered';
+    const effectiveStyle = { ...style };
+    if (effectiveStyle.align === undefined || effectiveStyle.align === null) {
+      effectiveStyle.align = variant === 'split' ? 'left' : 'center';
+    }
+
+    const { vars, style: s } = getBaseStyleVars(effectiveStyle, block, project, viewport);
     const val = (key: string, def: any) => s[key] !== undefined && s[key] !== null ? s[key] : def;
 
     return {

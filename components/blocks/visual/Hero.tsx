@@ -87,7 +87,8 @@ const HeroCTAs: React.FC<{
   justify?: string;
   onInlineEdit?: (field: string, value: string) => void;
 }> = ({ content, style, project, viewport, isStatic, justify, onInlineEdit }) => {
-  const align = style.align || 'center';
+  const variant = content.variant || 'centered';
+  const align = style.align || (variant === 'split' ? 'left' : 'center');
   const ta = justify === 'flex-start' ? 'left' : (align === 'center' ? 'center' : align === 'right' ? 'right' : 'left');
   return (
   <div style={{ textAlign: ta as any, width: '100%' }}><div className="inline-flex flex-wrap gap-4 mt-4">
@@ -234,10 +235,10 @@ const SplitHero: React.FC<HeroProps> = ({ content, block, project, viewport, isS
         {/* Text side */}
         <div
           className="flex flex-col justify-center transition-all duration-500"
-          style={{ paddingTop: 'var(--block-pt)', paddingBottom: 'var(--block-pb)', paddingLeft: 'var(--block-px)', paddingRight: 'var(--block-px)', gap: 'var(--block-gap)', textAlign: 'left' as any, alignItems: 'flex-start' }}
+          style={{ paddingTop: 'var(--block-pt)', paddingBottom: 'var(--block-pb)', paddingLeft: 'var(--block-px)', paddingRight: 'var(--block-px)', gap: 'var(--block-gap)', textAlign: 'var(--block-align)' as any, alignItems: 'var(--block-items)' as any }}
         >
           <HeroText content={content} style={style} subtitleClass="!ml-0 !mr-0" onInlineEdit={onInlineEdit} />
-          <HeroCTAs content={content} style={style} project={project} viewport={viewport} isStatic={isStatic} justify="flex-start" onInlineEdit={onInlineEdit} />
+          <HeroCTAs content={content} style={style} project={project} viewport={viewport} isStatic={isStatic} onInlineEdit={onInlineEdit} />
         </div>
         {/* Image side */}
         {hasBg ? (
