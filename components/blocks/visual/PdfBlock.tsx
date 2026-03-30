@@ -4,8 +4,9 @@ import { cn, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { BlockBackground } from '@/components/shared/BlockBackground';
 import { resolveImageUrl } from '@/lib/image-utils';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 
-export const PdfBlock = ({ block, project, isStatic, viewport }: any) => {
+export const PdfBlock = ({ block, project, isStatic, viewport, onInlineEdit }: any) => {
   const { content } = block;
   const { style, isDark } = getBlockStyles(block, project, viewport);
   
@@ -106,19 +107,41 @@ export const PdfBlock = ({ block, project, isStatic, viewport }: any) => {
       <div className="max-w-[var(--container-width,100%)] mx-auto relative z-10">
         {(title || subtitle) && (
           <div className="mb-12 last:mb-0 flex flex-col w-full" style={{ alignItems: 'var(--block-items)' as any }}>
-            {title && (
-              <div 
-                style={titleStyle} 
-                className="mb-4 w-full rt-content"
-                dangerouslySetInnerHTML={{ __html: formatRichText(title) }}
-              />
+            {(title || onInlineEdit) && (
+              onInlineEdit ? (
+                <InlineEditable
+                  value={title || ''}
+                  onChange={(v) => onInlineEdit('title', v)}
+                  style={titleStyle}
+                  className="mb-4 w-full rt-content"
+                  placeholder="Titolo..."
+                />
+              ) : (
+                <div
+                  style={titleStyle}
+                  className="mb-4 w-full rt-content"
+                  dangerouslySetInnerHTML={{ __html: formatRichText(title) }}
+                />
+              )
             )}
-            {subtitle && (
-              <div 
-                style={subtitleStyle} 
-                className="max-w-2xl rt-content"
-                dangerouslySetInnerHTML={{ __html: formatRichText(subtitle) }}
-              />
+            {(subtitle || onInlineEdit) && (
+              onInlineEdit ? (
+                <InlineEditable
+                  value={subtitle || ''}
+                  onChange={(v) => onInlineEdit('subtitle', v)}
+                  style={subtitleStyle}
+                  className="max-w-2xl rt-content"
+                  placeholder="Sottotitolo..."
+                  richText
+                  multiline
+                />
+              ) : (
+                <div
+                  style={subtitleStyle}
+                  className="max-w-2xl rt-content"
+                  dangerouslySetInnerHTML={{ __html: formatRichText(subtitle) }}
+                />
+              )
             )}
           </div>
         )}

@@ -7,6 +7,7 @@ import { Project, Block } from '@/types/editor';
 import { SitiImage } from '@/components/shared/SitiImage';
 import { CTA } from '@/components/shared/CTA';
 import { BlockBackground } from '@/components/shared/BlockBackground';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 
 interface ImageTextBlockProps {
   content: {
@@ -31,6 +32,7 @@ interface ImageTextBlockProps {
   viewport?: string;
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
 export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
@@ -39,7 +41,8 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
   project,
   viewport,
   isStatic,
-  imageMemoryCache
+  imageMemoryCache,
+  onInlineEdit
 }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
 
@@ -154,7 +157,24 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
             <div className="space-y-4 w-full" style={{ alignItems: 'inherit' }}>
               {content.title && (() => {
                 const TitleTag = (style.titleTag || 'h2') as any;
-                return (
+                return onInlineEdit ? (
+                  <InlineEditable
+                    value={content.title || ''}
+                    onChange={(v) => onInlineEdit('title', v)}
+                    className="tracking-tighter transition-all duration-500 leading-[1.1] rt-content"
+                    style={{
+                      fontSize: 'var(--title-fs)',
+                      fontWeight: 'var(--title-fw)' as any,
+                      fontStyle: 'var(--title-fs-style)' as any,
+                      letterSpacing: 'var(--title-ls)',
+                      lineHeight: 'var(--title-lh)',
+                      textTransform: 'var(--title-upper)' as any,
+                      textAlign: 'inherit',
+                      color: 'inherit'
+                    }}
+                    placeholder="Titolo..."
+                  />
+                ) : (
                   <div
                     className="tracking-tighter transition-all duration-500 leading-[1.1] rt-content"
                     style={{
@@ -171,23 +191,36 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   />
                 );
               })()}
-              {content.text && (
-                <div
-                  className="rt-content max-w-none transition-all duration-500"
-                  style={{
-                    fontSize: style.subtitleSize ? 'var(--subtitle-fs)' : 'var(--global-body-fs)',
-                    fontWeight: 'var(--subtitle-fw)' as any,
-                    fontStyle: 'var(--subtitle-fs-style)' as any,
-                    lineHeight: '1.6',
-                    opacity: 0.9,
-                    textAlign: 'inherit',
-                    marginLeft: 'var(--block-ml-auto)',
-                    marginRight: 'var(--block-mr-auto)',
-                    color: 'inherit'
-                  }}
-                  dangerouslySetInnerHTML={{ __html: formatRichText(content.text) }}
-                />
-              )}
+              {(content.text || onInlineEdit) && (() => {
+                const textStyle = {
+                  fontSize: style.subtitleSize ? 'var(--subtitle-fs)' : 'var(--global-body-fs)',
+                  fontWeight: 'var(--subtitle-fw)' as any,
+                  fontStyle: 'var(--subtitle-fs-style)' as any,
+                  lineHeight: '1.6',
+                  opacity: 0.9,
+                  textAlign: 'inherit' as any,
+                  marginLeft: 'var(--block-ml-auto)',
+                  marginRight: 'var(--block-mr-auto)',
+                  color: 'inherit'
+                };
+                return onInlineEdit ? (
+                  <InlineEditable
+                    value={content.text || ''}
+                    onChange={(v) => onInlineEdit('text', v)}
+                    className="rt-content max-w-none transition-all duration-500 w-full"
+                    style={textStyle}
+                    placeholder="Descrizione..."
+                    multiline
+                    richText
+                  />
+                ) : (
+                  <div
+                    className="rt-content max-w-none transition-all duration-500"
+                    style={textStyle}
+                    dangerouslySetInnerHTML={{ __html: formatRichText(content.text) }}
+                  />
+                );
+              })()}
             </div>
 
             <div
@@ -204,6 +237,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   viewport={viewport as any}
                   theme={content.ctaTheme || style.buttonTheme}
                   isStatic={isStatic}
+                  onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined}
                 />
               )}
               {content.cta2 && (
@@ -214,6 +248,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   viewport={viewport as any}
                   theme={content.cta2Theme || 'secondary'}
                   isStatic={isStatic}
+                  onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined}
                 />
               )}
             </div>

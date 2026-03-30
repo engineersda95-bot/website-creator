@@ -3,6 +3,7 @@ import { Block, Project } from '@/types/editor';
 import { cn, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { BlockBackground } from '@/components/shared/BlockBackground';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface HowItWorksBlockProps {
@@ -11,14 +12,16 @@ interface HowItWorksBlockProps {
   viewport?: 'desktop' | 'tablet' | 'mobile';
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
-export const HowItWorks: React.FC<HowItWorksBlockProps> = ({ 
-  block, 
-  project, 
-  viewport, 
+export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
+  block,
+  project,
+  viewport,
   isStatic,
-  imageMemoryCache
+  imageMemoryCache,
+  onInlineEdit
 }) => {
   const { content } = block;
   const { style, isDark } = getBlockStyles(block, project, viewport);
@@ -201,13 +204,29 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
       <div className="relative z-10 max-w-7xl mx-auto">
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
-          return (
-            <div 
+          return onInlineEdit ? (
+            <InlineEditable
+              value={content.title || ''}
+              onChange={(v) => onInlineEdit('title', v)}
               className={cn(
                   "mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content",
                   align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left"
               )}
-              style={{ 
+              style={{
+                fontSize: 'var(--title-fs)',
+                fontWeight: style.titleBold ? '700' : '400',
+                fontStyle: style.titleItalic ? 'italic' : 'normal',
+                color: 'inherit'
+              }}
+              placeholder="Titolo..."
+            />
+          ) : (
+            <div
+              className={cn(
+                  "mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content",
+                  align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left"
+              )}
+              style={{
                 fontSize: 'var(--title-fs)',
                 fontWeight: style.titleBold ? '700' : '400',
                 fontStyle: style.titleItalic ? 'italic' : 'normal',

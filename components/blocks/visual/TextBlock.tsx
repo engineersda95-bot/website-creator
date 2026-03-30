@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { cn, toPx, formatRichText } from '@/lib/utils';
+import { cn, formatRichText } from '@/lib/utils';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
 import { BlockBackground } from '@/components/shared/BlockBackground';
@@ -18,9 +19,10 @@ interface TextBlockProps {
   viewport?: string;
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
-export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache }) => {
+export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache, onInlineEdit }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
 
   return (
@@ -56,40 +58,63 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
           maxWidth: 'var(--block-max-width)',
         }}
       >
-        {content.title && (() => {
-          const TitleTag = (style.titleTag || 'h2') as any;
-          return (
-            <TitleTag
-              className={cn(
-                "tracking-tighter transition-all duration-500 rt-content",
-              )}
-              style={{
-                fontSize: 'var(--title-fs)',
-                fontWeight: 'var(--title-fw)' as any,
-                fontStyle: 'var(--title-fs-style)' as any,
-                lineHeight: 'var(--title-lh)',
-                textAlign: 'var(--block-align)' as any,
-                color: 'inherit',
-              }}
-              dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+        {(content.title || onInlineEdit) && (() => {
+          const titleStyle = {
+            fontSize: 'var(--title-fs)',
+            fontWeight: 'var(--title-fw)' as any,
+            fontStyle: 'var(--title-fs-style)' as any,
+            lineHeight: 'var(--title-lh)',
+            textAlign: 'var(--block-align)' as any,
+            color: 'inherit',
+          };
+          return onInlineEdit ? (
+            <InlineEditable
+              value={content.title || ''}
+              onChange={(v) => onInlineEdit('title', v)}
+              className="tracking-tighter transition-all duration-500 rt-content w-full"
+              style={titleStyle}
+              placeholder="Titolo..."
+            />
+          ) : (
+            <div
+              className="tracking-tighter transition-all duration-500 rt-content"
+              style={titleStyle}
+              dangerouslySetInnerHTML={{ __html: formatRichText(content.title || '') }}
             />
           );
         })()}
 
-        <div
-          className={cn(
-            "rt-content max-w-none transition-all duration-500",
-          )}
-          style={{
-            fontSize: 'var(--content-fs)',
-            fontWeight: 'var(--content-fw)' as any,
-            fontStyle: 'var(--content-fst)' as any,
-            color: 'inherit',
-            textAlign: 'var(--block-align)' as any,
-            lineHeight: '1.6',
-          }}
-          dangerouslySetInnerHTML={{ __html: formatRichText(content.text) }}
-        />
+        {onInlineEdit ? (
+          <InlineEditable
+            value={content.text}
+            onChange={(v) => onInlineEdit('text', v)}
+            className="rt-content max-w-none transition-all duration-500 w-full"
+            style={{
+              fontSize: 'var(--content-fs)',
+              fontWeight: 'var(--content-fw)' as any,
+              fontStyle: 'var(--content-fst)' as any,
+              color: 'inherit',
+              textAlign: 'var(--block-align)' as any,
+              lineHeight: '1.6',
+            }}
+            placeholder="Testo..."
+            multiline
+            richText
+          />
+        ) : (
+          <div
+            className="rt-content max-w-none transition-all duration-500"
+            style={{
+              fontSize: 'var(--content-fs)',
+              fontWeight: 'var(--content-fw)' as any,
+              fontStyle: 'var(--content-fst)' as any,
+              color: 'inherit',
+              textAlign: 'var(--block-align)' as any,
+              lineHeight: '1.6',
+            }}
+            dangerouslySetInnerHTML={{ __html: formatRichText(content.text) }}
+          />
+        )}
       </div>
     </section>
   );

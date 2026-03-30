@@ -6,6 +6,7 @@ import { Project, Block, Page } from '@/types/editor';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { SitiImage } from '@/components/shared/SitiImage';
 import { BACKGROUND_PATTERNS } from '@/lib/background-patterns';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 import {
    Facebook,
    Instagram,
@@ -62,6 +63,7 @@ interface FooterProps {
    viewport?: string;
    isStatic?: boolean;
    imageMemoryCache?: Record<string, string>;
+   onInlineEdit?: (field: string, value: string) => void;
 }
 
 export const FooterBlock: React.FC<FooterProps> = ({ 
@@ -71,7 +73,8 @@ export const FooterBlock: React.FC<FooterProps> = ({
   allPages,
   viewport,
   isStatic,
-  imageMemoryCache
+  imageMemoryCache,
+  onInlineEdit
 }) => {
    const { style } = getBlockStyles(block, project, viewport || 'desktop');
 
@@ -143,12 +146,24 @@ export const FooterBlock: React.FC<FooterProps> = ({
                          </div>
                        )}
 
-                       {content.description && (
-                         <div 
-                           className="rt-content opacity-70"
-                           style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
-                           dangerouslySetInnerHTML={{ __html: formatRichText(content.description) }}
-                         />
+                       {(content.description || onInlineEdit) && (
+                         onInlineEdit ? (
+                           <InlineEditable
+                             value={content.description || ''}
+                             onChange={(v) => onInlineEdit('description', v)}
+                             className="rt-content opacity-70"
+                             style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
+                             placeholder="Descrizione..."
+                             richText
+                             multiline
+                           />
+                         ) : (
+                           <div
+                             className="rt-content opacity-70"
+                             style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
+                             dangerouslySetInnerHTML={{ __html: formatRichText(content.description) }}
+                           />
+                         )
                        )}
                    </div>
 
@@ -223,12 +238,24 @@ export const FooterBlock: React.FC<FooterProps> = ({
                         </div>
                      )}
 
-                     {content.description && (
-                        <div 
-                          className="rt-content opacity-70 w-full break-words"
-                          style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
-                          dangerouslySetInnerHTML={{ __html: formatRichText(content.description) }}
-                        />
+                     {(content.description || onInlineEdit) && (
+                        onInlineEdit ? (
+                          <InlineEditable
+                            value={content.description || ''}
+                            onChange={(v) => onInlineEdit('description', v)}
+                            className="rt-content opacity-70 w-full break-words"
+                            style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
+                            placeholder="Descrizione..."
+                            richText
+                            multiline
+                          />
+                        ) : (
+                          <div
+                            className="rt-content opacity-70 w-full break-words"
+                            style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
+                            dangerouslySetInnerHTML={{ __html: formatRichText(content.description) }}
+                          />
+                        )
                       )}
                      
                      <div className={cn("flex flex-col gap-6 w-full", style.align === 'right' ? "items-end" : "items-start")}>

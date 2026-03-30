@@ -5,6 +5,7 @@ import { Trash2, ChevronUp, ChevronDown, Copy, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getBlockComponent } from '@/components/blocks/BlockRegistry';
 import { getBlockCSSVariables } from '@/lib/responsive-utils';
+import { useEditorStore } from '@/store/useEditorStore';
 
 interface EditorBlockWrapperProps {
   block: any;
@@ -41,7 +42,12 @@ export const EditorBlockWrapper = React.memo(({
 }: EditorBlockWrapperProps) => {
   const Component = getBlockComponent(block.type);
   const vars = getBlockCSSVariables(block, project, viewport || 'desktop');
+  const updateBlock = useEditorStore(state => state.updateBlock);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const onInlineEdit = React.useCallback((field: string, value: string) => {
+    updateBlock(block.id, { [field]: value });
+  }, [block.id, updateBlock]);
 
   useEffect(() => {
     if (!confirmDelete) return;
@@ -83,6 +89,7 @@ export const EditorBlockWrapper = React.memo(({
         allPages={projectPages}
         viewport={viewport}
         imageMemoryCache={imageMemoryCache}
+        onInlineEdit={onInlineEdit}
       />
 
       {/* Block Controls */}

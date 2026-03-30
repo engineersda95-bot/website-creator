@@ -5,6 +5,7 @@ import { resolveImageUrl } from '@/lib/image-utils';
 import { Star, Quote as QuoteIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { BlockBackground } from '@/components/shared/BlockBackground';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 
 interface QuoteBlockProps {
   block: Block;
@@ -12,9 +13,10 @@ interface QuoteBlockProps {
   viewport?: 'desktop' | 'tablet' | 'mobile';
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
-export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport, isStatic, imageMemoryCache }) => {
+export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport, isStatic, imageMemoryCache, onInlineEdit }) => {
   const { content } = block;
   const variant = content.variant || 'cards';
   const { style, viewport: currentVp, isDark, theme } = getBlockStyles(block, project, viewport);
@@ -140,12 +142,12 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
         return (
           <ItemTitleTag
             style={{ fontSize: 'var(--item-title-fs)', fontWeight: 'var(--item-title-fw)' as any, fontStyle: 'var(--item-title-is)' as any }}
-            className="tracking-tight leading-snug whitespace-normal break-words mb-1"
+            className="tracking-tight leading-snug whitespace-normal break-words mb-1 rt-content"
           >{item.name}</ItemTitleTag>
         );
       })()}
       <p style={{ fontSize: 'var(--review-role-fs)', fontWeight: 'var(--review-role-fw)' as any, fontStyle: 'var(--review-role-is)' as any }}
-        className="opacity-40 uppercase tracking-widest text-[9px] leading-snug whitespace-normal break-words"
+        className="opacity-40 uppercase tracking-widest text-[9px] leading-snug whitespace-normal break-words rt-content"
       >{item.role}</p>
     </div>
   );
@@ -153,7 +155,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
   const QuoteText = ({ item }: { item: any }) => (
     <p
       style={{ fontSize: 'var(--review-fs)', fontWeight: 'var(--review-fw)' as any, fontStyle: 'var(--review-is)' as any, textAlign: align as any }}
-      className="leading-relaxed opacity-80 whitespace-pre-wrap break-words w-full"
+      className="leading-relaxed opacity-80 whitespace-pre-wrap break-words w-full rt-content"
     >{"\u201C"}{item.text}{"\u201D"}</p>
   );
 
@@ -194,7 +196,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
       <QuoteIcon size={48} className="opacity-10 mb-6" />
       <p
         style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.8rem)', fontWeight: 'var(--review-fw)' as any, fontStyle: 'var(--review-is)' as any }}
-        className="leading-[1.6] opacity-80 mb-8 max-w-3xl mx-auto whitespace-pre-wrap break-words"
+        className="leading-[1.6] opacity-80 mb-8 max-w-3xl mx-auto whitespace-pre-wrap break-words rt-content"
       >{item.text}</p>
       <Avatar item={item} />
       <div className="mt-4 text-center">
@@ -247,11 +249,24 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
       <div className="relative z-10 text-left">
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
-          return (
-            <TitleTag 
-              style={{ 
-                fontSize: 'var(--title-fs)', 
-                fontWeight: style.titleBold ? '700' : '400', 
+          return onInlineEdit ? (
+            <InlineEditable
+              value={content.title || ''}
+              onChange={(v) => onInlineEdit('title', v)}
+              className="mb-16 tracking-tighter leading-tight"
+              style={{
+                fontSize: 'var(--title-fs)',
+                fontWeight: style.titleBold ? '700' : '400',
+                fontStyle: style.titleItalic ? 'italic' : 'normal',
+                textAlign: align as any
+              }}
+              placeholder="Titolo..."
+            />
+          ) : (
+            <TitleTag
+              style={{
+                fontSize: 'var(--title-fs)',
+                fontWeight: style.titleBold ? '700' : '400',
                 fontStyle: style.titleItalic ? 'italic' : 'normal',
                 textAlign: align as any
               }}

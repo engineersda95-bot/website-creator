@@ -4,6 +4,7 @@ import { cn, formatRichText } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { BlockBackground } from '@/components/shared/BlockBackground';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 import { CTA } from '@/components/shared/CTA';
 
 interface PricingBlockProps {
@@ -12,14 +13,16 @@ interface PricingBlockProps {
   viewport?: 'desktop' | 'tablet' | 'mobile';
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
-export const PricingBlock: React.FC<PricingBlockProps> = ({ 
-  block, 
-  project, 
-  viewport, 
+export const PricingBlock: React.FC<PricingBlockProps> = ({
+  block,
+  project,
+  viewport,
   isStatic,
-  imageMemoryCache
+  imageMemoryCache,
+  onInlineEdit
 }) => {
   const { content } = block;
   const { style } = getBlockStyles(block, project, viewport);
@@ -71,10 +74,24 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
       <div className="relative z-10">
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
-          return (
-            <div 
+          return onInlineEdit ? (
+            <InlineEditable
+              value={content.title || ''}
+              onChange={(v) => onInlineEdit('title', v)}
               className="mb-6 tracking-tighter transition-all duration-500 leading-tight rt-content"
-              style={{ 
+              style={{
+                fontSize: 'var(--title-fs)',
+                fontWeight: style.titleBold ? '700' : '400',
+                fontStyle: style.titleItalic ? 'italic' : 'normal',
+                textAlign: align as any,
+                color: 'inherit'
+              }}
+              placeholder="Titolo..."
+            />
+          ) : (
+            <div
+              className="mb-6 tracking-tighter transition-all duration-500 leading-tight rt-content"
+              style={{
                 fontSize: 'var(--title-fs)',
                 fontWeight: style.titleBold ? '700' : '400',
                 fontStyle: style.titleItalic ? 'italic' : 'normal',
@@ -87,20 +104,41 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
         })()}
 
         {content.subtitle && (
-          <div 
-            className={cn(
-               "mb-16 opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap px-4 rt-content",
-               align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto"
-            )}
-            style={{ 
-              fontSize: 'var(--subtitle-fs)',
-              fontWeight: style.subtitleBold ? '700' : '400',
-              fontStyle: style.subtitleItalic ? 'italic' : 'normal',
-              textAlign: align as any,
-              color: 'inherit'
-            }}
-            dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
-          />
+          onInlineEdit ? (
+            <InlineEditable
+              value={content.subtitle || ''}
+              onChange={(v) => onInlineEdit('subtitle', v)}
+              className={cn(
+                 "mb-16 opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap px-4 rt-content",
+                 align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto"
+              )}
+              style={{
+                fontSize: 'var(--subtitle-fs)',
+                fontWeight: style.subtitleBold ? '700' : '400',
+                fontStyle: style.subtitleItalic ? 'italic' : 'normal',
+                textAlign: align as any,
+                color: 'inherit'
+              }}
+              placeholder="Sottotitolo..."
+              richText
+              multiline
+            />
+          ) : (
+            <div
+              className={cn(
+                 "mb-16 opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap px-4 rt-content",
+                 align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto"
+              )}
+              style={{
+                fontSize: 'var(--subtitle-fs)',
+                fontWeight: style.subtitleBold ? '700' : '400',
+                fontStyle: style.subtitleItalic ? 'italic' : 'normal',
+                textAlign: align as any,
+                color: 'inherit'
+              }}
+              dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+            />
+          )
         )}
 
         <div 

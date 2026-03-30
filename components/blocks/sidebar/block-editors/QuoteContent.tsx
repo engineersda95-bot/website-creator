@@ -3,7 +3,7 @@
 import React from 'react';
 import { SectionHeader, SimpleInput, LayoutGridSlider } from '../SharedSidebarComponents';
 import { ImageUpload } from '@/components/shared/ImageUpload';
-import { Quote, Plus, Trash2, ChevronDown, ChevronUp, Star, Circle, Square, Layout, Palette, Type, List, MessageCircle, Maximize2 } from 'lucide-react';
+import { Quote, Plus, Trash2, ChevronDown, ChevronUp, Star, Circle, Square, Layout, Palette, Type, List, MessageCircle } from 'lucide-react';
 import { useEditorStore } from '@/store/useEditorStore';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { cn } from '@/lib/utils';
@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 const QUOTE_VARIANTS = [
   { id: 'cards', label: 'Cards', icon: Layout },
   { id: 'minimal', label: 'Minimal', icon: List },
-  { id: 'spotlight', label: 'Spotlight', icon: Maximize2 },
   { id: 'bubble', label: 'Bubble', icon: MessageCircle },
 ];
 
@@ -187,7 +186,7 @@ export const QuoteContent: React.FC<any> = ({
       {/* Variant selector */}
       <div className="space-y-2">
         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Stile</label>
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-3 gap-1.5">
           {QUOTE_VARIANTS.map((v) => (
             <button
               key={v.id}

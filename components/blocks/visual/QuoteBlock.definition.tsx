@@ -44,19 +44,6 @@ const PreviewMinimal: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
-const PreviewSpotlight: React.FC<{ className?: string }> = ({ className }) => (
-  <svg viewBox="0 0 200 120" className={className} fill="none">
-    <rect x="30" y="8" width="28" height="20" rx="5" fill="#f4f4f5" />
-    <text x="44" y="22" textAnchor="middle" fill="#d4d4d8" fontSize="14" fontFamily="serif">{'\u201C'}</text>
-    <rect x="25" y="36" width="150" height="5" rx="2" fill="#a1a1aa" />
-    <rect x="35" y="47" width="130" height="5" rx="2" fill="#a1a1aa" />
-    <rect x="45" y="58" width="110" height="5" rx="2" fill="#a1a1aa" />
-    <circle cx="100" cy="82" r="10" fill="#e4e4e7" />
-    <rect x="78" y="96" width="44" height="5" rx="2" fill="#71717a" />
-    <rect x="82" y="105" width="36" height="3" rx="1" fill="#d4d4d8" />
-  </svg>
-);
-
 const PreviewBubble: React.FC<{ className?: string }> = ({ className }) => (
   <svg viewBox="0 0 200 120" className={className} fill="none">
     <circle cx="22" cy="28" r="10" fill="#e4e4e7" />
@@ -128,13 +115,6 @@ export const quoteDefinition: BlockDefinition = {
       label: 'Minimal',
       description: 'Linea laterale, senza card',
       preview: PreviewMinimal,
-    },
-    {
-      id: 'spotlight',
-      label: 'Spotlight',
-      description: 'Citazione grande centrata',
-      preview: PreviewSpotlight,
-      contentOverride: { layout: 'slider' },
     },
     {
       id: 'bubble',

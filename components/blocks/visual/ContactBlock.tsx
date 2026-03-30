@@ -6,6 +6,7 @@ import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { BlockBackground } from '@/components/shared/BlockBackground';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 
 interface ContactBlockProps {
   content: {
@@ -21,9 +22,10 @@ interface ContactBlockProps {
   project?: Project;
   viewport?: string;
   isStatic?: boolean;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
-export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, project, viewport, isStatic }) => {
+export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, project, viewport, isStatic, onInlineEdit }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
   
   // Mappa visibile se c'è un indirizzo e showMap non è esplicitamente falso
@@ -93,31 +95,66 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
           return (
             <div className="w-full flex flex-col" style={{ gap: '1rem', alignItems: 'inherit' }}>
               {content.title && (
-                <div className="tracking-tighter leading-[0.9] rt-content" 
-                    style={{ 
-                      fontSize: 'var(--title-fs)', 
+                onInlineEdit ? (
+                  <InlineEditable
+                    value={content.title || ''}
+                    onChange={(v) => onInlineEdit('title', v)}
+                    className="tracking-tighter leading-[0.9] rt-content"
+                    style={{
+                      fontSize: 'var(--title-fs)',
                       fontWeight: 'var(--title-fw)' as any,
                       fontStyle: 'var(--title-fs-style)' as any,
                       textAlign: 'inherit',
                       color: 'inherit'
-                    }} 
-                    dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }} 
-                />
+                    }}
+                    placeholder="Titolo..."
+                  />
+                ) : (
+                  <div className="tracking-tighter leading-[0.9] rt-content"
+                      style={{
+                        fontSize: 'var(--title-fs)',
+                        fontWeight: 'var(--title-fw)' as any,
+                        fontStyle: 'var(--title-fs-style)' as any,
+                        textAlign: 'inherit',
+                        color: 'inherit'
+                      }}
+                      dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+                  />
+                )
               )}
               {content.subtitle && (
-                <div className="opacity-60 leading-relaxed max-w-2xl rt-content" 
-                   style={{ 
-                     fontSize: 'var(--subtitle-fs)',
-                     fontWeight: 'var(--subtitle-fw)' as any,
-                     fontStyle: 'var(--subtitle-fs-style)' as any,
-                     textAlign: 'inherit',
-                     color: 'inherit',
-                     // Utilizziamo le variabili responsive per centrare anche in statico
-                     marginLeft: 'var(--block-ml-auto)',
-                     marginRight: 'var(--block-mr-auto)',
-                   }}
-                   dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }} 
-                />
+                onInlineEdit ? (
+                  <InlineEditable
+                    value={content.subtitle || ''}
+                    onChange={(v) => onInlineEdit('subtitle', v)}
+                    className="opacity-60 leading-relaxed max-w-2xl rt-content"
+                    style={{
+                      fontSize: 'var(--subtitle-fs)',
+                      fontWeight: 'var(--subtitle-fw)' as any,
+                      fontStyle: 'var(--subtitle-fs-style)' as any,
+                      textAlign: 'inherit',
+                      color: 'inherit',
+                      marginLeft: 'var(--block-ml-auto)',
+                      marginRight: 'var(--block-mr-auto)',
+                    }}
+                    placeholder="Sottotitolo..."
+                    richText
+                    multiline
+                  />
+                ) : (
+                  <div className="opacity-60 leading-relaxed max-w-2xl rt-content"
+                     style={{
+                       fontSize: 'var(--subtitle-fs)',
+                       fontWeight: 'var(--subtitle-fw)' as any,
+                       fontStyle: 'var(--subtitle-fs-style)' as any,
+                       textAlign: 'inherit',
+                       color: 'inherit',
+                       marginLeft: 'var(--block-ml-auto)',
+                       marginRight: 'var(--block-mr-auto)',
+                     }}
+                     dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+                  />
+                )
               )}
             </div>
           );

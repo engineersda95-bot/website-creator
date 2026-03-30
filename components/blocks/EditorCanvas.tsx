@@ -175,6 +175,32 @@ export const EditorCanvas: React.FC = () => {
           .canvas-tablet { width: 768px; }
           .canvas-mobile { width: 390px; }
           #editor-content a { pointer-events: none !important; }
+          #editor-content a:has([contenteditable]), #editor-content a:has([data-placeholder]) { pointer-events: auto !important; }
+
+          /* Sidebar edit hint on non-inline-editable text */
+          #editor-content .block-wrapper .rt-content:not([contenteditable]) {
+            position: relative;
+            cursor: default;
+          }
+          #editor-content .block-wrapper .rt-content:not([contenteditable]):hover::after {
+            content: 'Modifica dalla sidebar →';
+            position: absolute;
+            top: -1.75rem;
+            right: 0;
+            font-size: 10px;
+            font-weight: 600;
+            color: #3b82f6;
+            background: white;
+            border: 1px solid #dbeafe;
+            padding: 2px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 50;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            letter-spacing: 0.02em;
+            font-family: system-ui, sans-serif !important;
+          }
         `}</style>
 
         <main

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Link } from '@tiptap/extension-link';
@@ -79,6 +79,13 @@ export function RichEditor({ label, value, onChange, placeholder }: RichEditorPr
       },
     },
   });
+
+  // Sync external value changes (e.g. from inline editing on canvas)
+  useEffect(() => {
+    if (editor && !editor.isFocused && value !== editor.getHTML()) {
+      editor.commands.setContent(value, false);
+    }
+  }, [value, editor]);
 
   const setLink = useCallback(() => {
     if (!editor) return;

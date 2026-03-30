@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { cn, toPx, formatRichText } from '@/lib/utils';
+import { cn, formatRichText } from '@/lib/utils';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
 import { SitiImage } from '@/components/shared/SitiImage';
@@ -28,6 +29,7 @@ interface HeroProps {
   viewport?: string;
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
 // ─── Shared background + overlay layer ──────────────────────────────────
@@ -83,16 +85,21 @@ const HeroCTAs: React.FC<{
   viewport?: string;
   isStatic?: boolean;
   justify?: string;
-}> = ({ content, style, project, viewport, isStatic, justify }) => (
-  <div className="flex flex-wrap gap-4 mt-4" style={{ justifyContent: justify || 'var(--block-justify)', alignItems: 'var(--block-items)' }}>
+  onInlineEdit?: (field: string, value: string) => void;
+}> = ({ content, style, project, viewport, isStatic, justify, onInlineEdit }) => {
+  const align = style.align || 'center';
+  const ta = justify === 'flex-start' ? 'left' : (align === 'center' ? 'center' : align === 'right' ? 'right' : 'left');
+  return (
+  <div style={{ textAlign: ta as any, width: '100%' }}><div className="inline-flex flex-wrap gap-4 mt-4">
     {content.cta && (
-      <CTA label={content.cta} url={content.ctaUrl || (content as any).ctaLink} project={project} viewport={viewport as any} theme={content.ctaTheme || style.buttonTheme} isStatic={isStatic} />
+      <CTA label={content.cta} url={content.ctaUrl || (content as any).ctaLink} project={project} viewport={viewport as any} theme={content.ctaTheme || style.buttonTheme} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined} />
     )}
     {content.cta2 && (
-      <CTA label={content.cta2} url={content.cta2Url} project={project} viewport={viewport as any} theme={content.cta2Theme || 'secondary'} isStatic={isStatic} />
+      <CTA label={content.cta2} url={content.cta2Url} project={project} viewport={viewport as any} theme={content.cta2Theme || 'secondary'} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined} />
     )}
-  </div>
-);
+  </div></div>
+  );
+};
 
 // ─── Pattern layer ──────────────────────────────────────────────────────
 const PatternLayer: React.FC<{ style: any }> = ({ style }) => {
@@ -111,44 +118,72 @@ const HeroText: React.FC<{
   content: HeroProps['content'];
   style: any;
   subtitleClass?: string;
-}> = ({ content, style, subtitleClass }) => (
+  onInlineEdit?: (field: string, value: string) => void;
+}> = ({ content, style, subtitleClass, onInlineEdit }) => {
+  const titleStyle = {
+    fontSize: 'var(--title-fs)',
+    textAlign: 'var(--block-align)' as any,
+    fontWeight: 'var(--title-fw)' as any,
+    fontStyle: 'var(--title-fs-style)' as any,
+    letterSpacing: 'var(--title-ls)',
+    lineHeight: 'var(--title-lh)',
+    textTransform: 'var(--title-upper)' as any,
+    color: 'inherit',
+  };
+  const subtitleStyle = {
+    fontSize: 'var(--subtitle-fs)',
+    textAlign: 'var(--block-align)' as any,
+    fontWeight: 'var(--subtitle-fw, 500)' as any,
+    fontStyle: 'var(--subtitle-fs-style, normal)' as any,
+    marginLeft: 'var(--block-ml-auto)',
+    marginRight: 'var(--block-mr-auto)',
+    color: 'inherit',
+  };
+
+  return (
   <div className="space-y-4 w-full flex flex-col" style={{ alignItems: 'var(--block-items)' as any }}>
-    <div
-      className="tracking-tighter leading-[0.9] transition-all duration-500 rt-content"
-      style={{
-        fontSize: 'var(--title-fs)',
-        textAlign: 'var(--block-align)' as any,
-        fontWeight: 'var(--title-fw)' as any,
-        fontStyle: 'var(--title-fs-style)' as any,
-        letterSpacing: 'var(--title-ls)',
-        lineHeight: 'var(--title-lh)',
-        textTransform: 'var(--title-upper)' as any,
-        color: 'inherit',
-      }}
-      dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-    />
-    {content.subtitle && (
+    {onInlineEdit ? (
+      <InlineEditable
+        value={content.title}
+        onChange={(v) => onInlineEdit('title', v)}
+        className="tracking-tighter leading-[0.9] transition-all duration-500 rt-content w-full"
+        style={titleStyle}
+        placeholder="Titolo..."
+      />
+    ) : (
       <div
-        className={cn("max-w-2xl leading-relaxed transition-all duration-500 rt-content", subtitleClass)}
-        style={{
-          fontSize: 'var(--subtitle-fs)',
-          textAlign: 'var(--block-align)' as any,
-          fontWeight: 'var(--subtitle-fw, 500)' as any,
-          fontStyle: 'var(--subtitle-fs-style, normal)' as any,
-          marginLeft: 'var(--block-ml-auto)',
-          marginRight: 'var(--block-mr-auto)',
-          color: 'inherit',
-        }}
-        dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+        className="tracking-tighter leading-[0.9] transition-all duration-500 rt-content"
+        style={titleStyle}
+        dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
       />
     )}
+    {(content.subtitle || onInlineEdit) && (
+      onInlineEdit ? (
+        <InlineEditable
+          value={content.subtitle}
+          onChange={(v) => onInlineEdit('subtitle', v)}
+          className={cn("max-w-2xl leading-relaxed transition-all duration-500 rt-content w-full", subtitleClass)}
+          style={subtitleStyle}
+          placeholder="Sottotitolo..."
+          richText
+          multiline
+        />
+      ) : (
+        <div
+          className={cn("max-w-2xl leading-relaxed transition-all duration-500 rt-content", subtitleClass)}
+          style={subtitleStyle}
+          dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+        />
+      )
+    )}
   </div>
-);
+  );
+};
 
 // ═══════════════════════════════════════════════════════════════════════
 // CENTERED — default (original layout)
 // ═══════════════════════════════════════════════════════════════════════
-const CenteredHero: React.FC<HeroProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache }) => {
+const CenteredHero: React.FC<HeroProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache, onInlineEdit }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
   const hasBg = !!content.backgroundImage;
 
@@ -172,8 +207,8 @@ const CenteredHero: React.FC<HeroProps> = ({ content, block, project, viewport, 
         className={cn("mx-auto relative z-10 w-full flex flex-col transition-all duration-500", hasBg && !style.textColor && "text-white")}
         style={{ gap: 'var(--block-gap)', paddingLeft: 'var(--block-px)', paddingRight: 'var(--block-px)', alignItems: 'var(--block-items)' as any, textAlign: 'var(--block-align)' as any }}
       >
-        <HeroText content={content} style={style} />
-        <HeroCTAs content={content} style={style} project={project} viewport={viewport} isStatic={isStatic} />
+        <HeroText content={content} style={style} onInlineEdit={onInlineEdit} />
+        <HeroCTAs content={content} style={style} project={project} viewport={viewport} isStatic={isStatic} onInlineEdit={onInlineEdit} />
       </div>
     </section>
   );
@@ -182,7 +217,7 @@ const CenteredHero: React.FC<HeroProps> = ({ content, block, project, viewport, 
 // ═══════════════════════════════════════════════════════════════════════
 // SPLIT — text left, image right (50/50)
 // ═══════════════════════════════════════════════════════════════════════
-const SplitHero: React.FC<HeroProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache }) => {
+const SplitHero: React.FC<HeroProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache, onInlineEdit }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
   const hasBg = !!content.backgroundImage;
   const isMobile = viewport === 'mobile';
@@ -201,8 +236,8 @@ const SplitHero: React.FC<HeroProps> = ({ content, block, project, viewport, isS
           className="flex flex-col justify-center transition-all duration-500"
           style={{ paddingTop: 'var(--block-pt)', paddingBottom: 'var(--block-pb)', paddingLeft: 'var(--block-px)', paddingRight: 'var(--block-px)', gap: 'var(--block-gap)', textAlign: 'left' as any, alignItems: 'flex-start' }}
         >
-          <HeroText content={content} style={style} subtitleClass="!ml-0 !mr-0" />
-          <HeroCTAs content={content} style={style} project={project} viewport={viewport} isStatic={isStatic} justify="flex-start" />
+          <HeroText content={content} style={style} subtitleClass="!ml-0 !mr-0" onInlineEdit={onInlineEdit} />
+          <HeroCTAs content={content} style={style} project={project} viewport={viewport} isStatic={isStatic} justify="flex-start" onInlineEdit={onInlineEdit} />
         </div>
         {/* Image side */}
         {hasBg ? (
@@ -229,7 +264,7 @@ const SplitHero: React.FC<HeroProps> = ({ content, block, project, viewport, isS
 // ═══════════════════════════════════════════════════════════════════════
 // STACKED — image top full-width, text below
 // ═══════════════════════════════════════════════════════════════════════
-const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache }) => {
+const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache, onInlineEdit }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
   const hasBg = !!content.backgroundImage;
 
@@ -269,8 +304,8 @@ const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, i
         className="relative z-10 mx-auto w-full flex flex-col transition-all duration-500"
         style={{ paddingTop: hasBg ? 'var(--block-gap)' : 'var(--block-pt)', paddingBottom: 'var(--block-pb)', paddingLeft: 'var(--block-px)', paddingRight: 'var(--block-px)', gap: 'var(--block-gap)', alignItems: 'var(--block-items)' as any, textAlign: 'var(--block-align)' as any }}
       >
-        <HeroText content={content} style={style} />
-        <HeroCTAs content={content} style={style} project={project} viewport={viewport} isStatic={isStatic} />
+        <HeroText content={content} style={style} onInlineEdit={onInlineEdit} />
+        <HeroCTAs content={content} style={style} project={project} viewport={viewport} isStatic={isStatic} onInlineEdit={onInlineEdit} />
       </div>
     </section>
   );

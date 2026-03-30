@@ -5,6 +5,7 @@ import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
 import { Plus, Minus, ChevronDown } from 'lucide-react';
 import { BlockBackground } from '@/components/shared/BlockBackground';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 
 interface FAQBlockProps {
   content: {
@@ -19,6 +20,7 @@ interface FAQBlockProps {
   project?: Project;
   viewport?: string;
   isStatic?: boolean;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
 const FAQWrapper: React.FC<{
@@ -27,8 +29,9 @@ const FAQWrapper: React.FC<{
   style: any;
   project?: Project;
   isStatic?: boolean;
+  onInlineEdit?: (field: string, value: string) => void;
   children: React.ReactNode;
-}> = ({ content, block, style, project, isStatic, children }) => (
+}> = ({ content, block, style, project, isStatic, onInlineEdit, children }) => (
   <section
     id={block.id}
     className="relative transition-all duration-500 overflow-hidden"
@@ -60,19 +63,37 @@ const FAQWrapper: React.FC<{
       }}
     >
       {content.title && (
-        <div
-          className="tracking-tight transition-all duration-500 w-full rt-content"
-          style={{
-            fontSize: 'var(--title-fs)',
-            fontWeight: 'var(--title-fw)' as any,
-            fontStyle: 'var(--title-fs-style)' as any,
-            letterSpacing: 'var(--title-ls)',
-            lineHeight: 'var(--title-lh)',
-            textTransform: 'var(--title-upper)' as any,
-            color: 'inherit'
-          }}
-          dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-        />
+        onInlineEdit ? (
+          <InlineEditable
+            value={content.title || ''}
+            onChange={(v) => onInlineEdit('title', v)}
+            className="tracking-tight transition-all duration-500 w-full rt-content"
+            style={{
+              fontSize: 'var(--title-fs)',
+              fontWeight: 'var(--title-fw)' as any,
+              fontStyle: 'var(--title-fs-style)' as any,
+              letterSpacing: 'var(--title-ls)',
+              lineHeight: 'var(--title-lh)',
+              textTransform: 'var(--title-upper)' as any,
+              color: 'inherit'
+            }}
+            placeholder="Titolo..."
+          />
+        ) : (
+          <div
+            className="tracking-tight transition-all duration-500 w-full rt-content"
+            style={{
+              fontSize: 'var(--title-fs)',
+              fontWeight: 'var(--title-fw)' as any,
+              fontStyle: 'var(--title-fs-style)' as any,
+              letterSpacing: 'var(--title-ls)',
+              lineHeight: 'var(--title-lh)',
+              textTransform: 'var(--title-upper)' as any,
+              color: 'inherit'
+            }}
+            dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+          />
+        )
       )}
       {children}
     </div>
@@ -227,7 +248,7 @@ const NumberedVariant: React.FC<{ items: FAQBlockProps['content']['items']; bloc
 );
 
 // ─── MAIN COMPONENT ────────────────────────────────────────────────────
-export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, viewport, isStatic }) => {
+export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, viewport, isStatic, onInlineEdit }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
   const items = content.items || [];
   const blockColor = 'var(--block-color)';
@@ -235,7 +256,7 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
 
   if (items.length === 0) {
     return (
-      <FAQWrapper content={content} block={block} style={style} project={project} isStatic={isStatic}>
+      <FAQWrapper content={content} block={block} style={style} project={project} isStatic={isStatic} onInlineEdit={onInlineEdit}>
         <div className="p-20 text-center text-zinc-500 font-bold uppercase tracking-widest text-[10px] opacity-20">
           Nessuna domanda aggiunta
         </div>
@@ -244,7 +265,7 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ content, block, project, vie
   }
 
   return (
-    <FAQWrapper content={content} block={block} style={style} project={project} isStatic={isStatic}>
+    <FAQWrapper content={content} block={block} style={style} project={project} isStatic={isStatic} onInlineEdit={onInlineEdit}>
       {variant === 'accordion' && <AccordionVariant items={items} blockColor={blockColor} blockId={block.id} />}
       {variant === 'classic' && <ClassicVariant items={items} blockColor={blockColor} blockId={block.id} />}
       {variant === 'side-by-side' && <SideBySideVariant items={items} blockColor={blockColor} viewport={viewport} />}

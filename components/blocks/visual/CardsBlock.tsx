@@ -6,6 +6,7 @@ import { SitiImage } from '@/components/shared/SitiImage';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { BlockBackground } from '@/components/shared/BlockBackground';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 
 
 interface CardsBlockProps {
@@ -14,14 +15,16 @@ interface CardsBlockProps {
   viewport?: 'desktop' | 'tablet' | 'mobile';
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
-export const CardsBlock: React.FC<CardsBlockProps> = ({ 
-  block, 
-  project, 
-  viewport, 
+export const CardsBlock: React.FC<CardsBlockProps> = ({
+  block,
+  project,
+  viewport,
   isStatic,
-  imageMemoryCache
+  imageMemoryCache,
+  onInlineEdit
 }) => {
 
   const { content } = block;
@@ -199,10 +202,24 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
       <div className="relative z-10">
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
-          return (
-            <div 
+          return onInlineEdit ? (
+            <InlineEditable
+              value={content.title || ''}
+              onChange={(v) => onInlineEdit('title', v)}
               className="mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content"
-              style={{ 
+              style={{
+                fontSize: 'var(--title-fs)',
+                fontWeight: style.titleBold ? '700' : '400',
+                fontStyle: style.titleItalic ? 'italic' : 'normal',
+                textAlign: align as any,
+                color: 'inherit'
+              }}
+              placeholder="Titolo..."
+            />
+          ) : (
+            <div
+              className="mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content"
+              style={{
                 fontSize: 'var(--title-fs)',
                 fontWeight: style.titleBold ? '700' : '400',
                 fontStyle: style.titleItalic ? 'italic' : 'normal',

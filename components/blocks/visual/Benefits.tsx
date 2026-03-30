@@ -3,6 +3,7 @@ import { Block, Project } from '@/types/editor';
 import { cn, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { BlockBackground } from '@/components/shared/BlockBackground';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 import * as LucideIcons from 'lucide-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -12,14 +13,16 @@ interface BenefitsBlockProps {
   viewport?: 'desktop' | 'tablet' | 'mobile';
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
-export const Benefits: React.FC<BenefitsBlockProps> = ({ 
-  block, 
-  project, 
-  viewport, 
+export const Benefits: React.FC<BenefitsBlockProps> = ({
+  block,
+  project,
+  viewport,
   isStatic,
-  imageMemoryCache
+  imageMemoryCache,
+  onInlineEdit
 }) => {
   const { content } = block;
   const { style, isDark } = getBlockStyles(block, project, viewport);
@@ -144,10 +147,23 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
           <div className={cn("mb-16", align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left")}>
             {content.title && (() => {
               const TitleTag = (style.titleTag || 'h2') as any;
-              return (
-                <div 
+              return onInlineEdit ? (
+                <InlineEditable
+                  value={content.title || ''}
+                  onChange={(v) => onInlineEdit('title', v)}
                   className="mb-4 tracking-tighter transition-all duration-500 leading-tight rt-content"
-                  style={{ 
+                  style={{
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: style.titleBold ? '700' : '400',
+                    fontStyle: style.titleItalic ? 'italic' : 'normal',
+                    color: 'inherit'
+                  }}
+                  placeholder="Titolo..."
+                />
+              ) : (
+                <div
+                  className="mb-4 tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  style={{
                     fontSize: 'var(--title-fs)',
                     fontWeight: style.titleBold ? '700' : '400',
                     fontStyle: style.titleItalic ? 'italic' : 'normal',
@@ -158,17 +174,35 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
               );
             })()}
             {content.subtitle && (
-              <div 
-                className="opacity-70 max-w-2xl mx-auto leading-relaxed transition-all duration-500 rt-content"
-                style={{ 
-                  fontSize: style.subtitleSize ? `${style.subtitleSize}px` : (isMobile ? '18px' : '20px'),
-                  fontWeight: style.subtitleBold ? '700' : '400',
-                  marginRight: align === 'right' ? '0' : align === 'center' ? 'auto' : 'unset',
-                  marginLeft: align === 'left' ? '0' : align === 'center' ? 'auto' : 'unset',
-                  color: 'inherit'
-                }}
-                dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
-              />
+              onInlineEdit ? (
+                <InlineEditable
+                  value={content.subtitle || ''}
+                  onChange={(v) => onInlineEdit('subtitle', v)}
+                  className="opacity-70 max-w-2xl mx-auto leading-relaxed transition-all duration-500 rt-content"
+                  style={{
+                    fontSize: style.subtitleSize ? `${style.subtitleSize}px` : (isMobile ? '18px' : '20px'),
+                    fontWeight: style.subtitleBold ? '700' : '400',
+                    marginRight: align === 'right' ? '0' : align === 'center' ? 'auto' : 'unset',
+                    marginLeft: align === 'left' ? '0' : align === 'center' ? 'auto' : 'unset',
+                    color: 'inherit'
+                  }}
+                  placeholder="Sottotitolo..."
+                  richText
+                  multiline
+                />
+              ) : (
+                <div
+                  className="opacity-70 max-w-2xl mx-auto leading-relaxed transition-all duration-500 rt-content"
+                  style={{
+                    fontSize: style.subtitleSize ? `${style.subtitleSize}px` : (isMobile ? '18px' : '20px'),
+                    fontWeight: style.subtitleBold ? '700' : '400',
+                    marginRight: align === 'right' ? '0' : align === 'center' ? 'auto' : 'unset',
+                    marginLeft: align === 'left' ? '0' : align === 'center' ? 'auto' : 'unset',
+                    color: 'inherit'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+                />
+              )
             )}
           </div>
         )}
