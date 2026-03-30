@@ -153,28 +153,41 @@ export async function deployToCloudflare(projectId: string) {
       CLOUDFLARE_ACCOUNT_ID: ACCOUNT_ID,
       WRANGLER_SKIP_UPDATE_CHECK: '1'
     };
-
+    
     try {
-      const binaryPath = '/tmp/tailwindcss-v4-binary';
-      
-      // Download the standalone binary if it doesn't exist (about 10MB)
-      if (!fs.existsSync(binaryPath)) {
-        console.log('Downloading Tailwind v4 standalone binary...');
-        const res = await fetch('https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64');
-        if (!res.ok) throw new Error('Could not download Tailwind binary');
-        const buffer = Buffer.from(await res.arrayBuffer());
-        fs.writeFileSync(binaryPath, buffer);
-        fs.chmodSync(binaryPath, '755');
-      }
-
+      const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
       const inputCssContent = `@import "tailwindcss";\n@source "${tempDir.replace(/\\/g, '/')}/**/*.html";`;
-      
-      // Use the standalone binary: zero Node dependencies, zero node_modules issues
-      execSync(`${binaryPath} -o "${path.join(assetsDir, 'styles.css')}"`, { 
-        input: inputCssContent,
-        env: commonEnv,
-        encoding: 'utf-8' 
-      });
+
+      if (isProduction) {
+        // PRODUCTION (Vercel/Serverless): Use standalone binary to bypass node_modules resolution issues
+        const binaryPath = '/tmp/tailwindcss-v4-binary';
+        if (!fs.existsSync(binaryPath)) {
+          console.log('Downloading Tailwind v4 standalone binary...');
+          const res = await fetch('https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64');
+          if (!res.ok) throw new Error('Could not download Tailwind binary');
+          const buffer = Buffer.from(await res.arrayBuffer());
+          fs.writeFileSync(binaryPath, buffer);
+          fs.chmodSync(binaryPath, '755');
+        }
+
+        execSync(`${binaryPath} -o "${path.join(assetsDir, 'styles.css')}"`, { 
+          input: inputCssContent,
+          env: commonEnv,
+          encoding: 'utf-8' 
+        });
+      } else {
+        // LOCALHOST: Use npx (already installed) and a temporary file in root for perfect resolution
+        const localInputPath = path.join(process.cwd(), `tailwind-input-${projectId}.css`);
+        fs.writeFileSync(localInputPath, inputCssContent);
+        try {
+          execSync(`npx --yes @tailwindcss/cli -i "${localInputPath}" -o "${path.join(assetsDir, 'styles.css')}"`, {
+            env: commonEnv,
+            encoding: 'utf-8'
+          });
+        } finally {
+          if (fs.existsSync(localInputPath)) fs.unlinkSync(localInputPath);
+        }
+      }
       console.log('Tailwind CSS generated successfully');
     } catch (e: any) {
       console.warn('Tailwind CSS generation failed:', e.message);

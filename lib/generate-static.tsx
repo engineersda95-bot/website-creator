@@ -205,6 +205,20 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
             vertical-align: top !important;
             pointer-events: auto !important;
         }
+
+        /* Image Reveal System */
+        .siti-img-reveal {
+            opacity: 0;
+            transform: scale(1.02);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out, filter 0.8s ease-out;
+            filter: blur(8px);
+        }
+        .siti-img-reveal.loaded {
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0);
+        }
+        .img-ready { background: transparent !important; }
     </style>
     ${settings?.customScriptsHead || ''}
 </head>
@@ -244,7 +258,7 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
           }
         });
       };
-      window.addEventListener('scroll', handleScroll);
+      window.addEventListener('load', handleScroll);
       handleScroll();
 
       document.addEventListener('click', (e) => {

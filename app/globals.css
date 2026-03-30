@@ -125,3 +125,29 @@ body {
   pointer-events: none;
   height: 0;
 }
+
+
+/* Image Reveal & Placeholder System (Fail-Safe) */
+@keyframes siti-reveal-anim {
+  from { opacity: 0; transform: scale(1.02); filter: blur(4px); }
+  to { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+@keyframes placeholder-fade {
+  from { background-color: rgba(0, 0, 0, 0.04); }
+  to { background-color: transparent; }
+}
+
+.project-img-placeholder {
+  background-color: rgba(0, 0, 0, 0.04);
+  /* This ensures the placeholder eventually disappears even without JS */
+  animation: placeholder-fade 1.5s ease-out forwards;
+}
+
+.dark .project-img-placeholder {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.siti-img-reveal {
+  animation: siti-reveal-anim 1s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+}

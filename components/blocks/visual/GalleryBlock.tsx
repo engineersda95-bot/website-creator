@@ -39,9 +39,13 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
     if (!img.image) return null;
 
     const aspect = style.imageAspectRatio || 'original';
+    
+    // In masonry (original aspect), we still want a minimum height or a reasonable 
+    // fallback area to prevent the "step" effect before the image is fetched.
     const aspectClass = aspect === '1/1' ? 'aspect-square' : 
                         aspect === '4/3' ? 'aspect-[4/3]' : 
-                        aspect === '16/9' ? 'aspect-video' : 'h-full w-full';
+                        aspect === '16/9' ? 'aspect-video' : 
+                        'min-h-[200px] w-full h-auto'; // Standardized fallback for masonry
 
     return (
       <div 
