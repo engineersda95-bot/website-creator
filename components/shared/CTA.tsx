@@ -15,6 +15,7 @@ interface CTAProps {
   style?: React.CSSProperties;
   onClick?: () => void;
   onLabelChange?: (value: string) => void;
+  fieldId?: string;
 }
 
 export const CTA: React.FC<CTAProps> = ({
@@ -28,6 +29,7 @@ export const CTA: React.FC<CTAProps> = ({
   style: extraStyle,
   onClick,
   onLabelChange,
+  fieldId,
 }) => {
   if (!label && !onLabelChange) return null;
 
@@ -59,6 +61,7 @@ export const CTA: React.FC<CTAProps> = ({
           value={label || ''}
           onChange={onLabelChange}
           placeholder="Bottone..."
+          fieldId={fieldId}
         />
       ) : (
         label

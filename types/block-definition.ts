@@ -23,6 +23,7 @@ export interface BlockDefinition {
     responsiveStyles?: any;
   };
   variants?: BlockVariant[];
+  unifiedEditor?: React.FC<any> | null;
   // Each block can now define its own CSS variable mapping logic
   styleMapper?: (style: any, block: any, project?: Project, viewport?: 'desktop' | 'tablet' | 'mobile') => Record<string, string>;
 }

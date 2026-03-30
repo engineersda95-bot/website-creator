@@ -109,10 +109,10 @@ const HeroCTAs: React.FC<{
       } as any}
     >
       {content.cta && (
-        <CTA label={content.cta} url={content.ctaUrl || (content as any).ctaLink} project={project} viewport={viewport as any} theme={content.ctaTheme || style.buttonTheme} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined} />
+        <CTA label={content.cta} url={content.ctaUrl || (content as any).ctaLink} project={project} viewport={viewport as any} theme={content.ctaTheme || style.buttonTheme} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined} fieldId="cta" />
       )}
       {content.cta2 && (
-        <CTA label={content.cta2} url={content.cta2Url} project={project} viewport={viewport as any} theme={content.cta2Theme || 'secondary'} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined} />
+        <CTA label={content.cta2} url={content.cta2Url} project={project} viewport={viewport as any} theme={content.cta2Theme || 'secondary'} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined} fieldId="cta2" />
       )}
     </div>
   </div>
@@ -182,6 +182,7 @@ const HeroText: React.FC<{
           className="tracking-tighter leading-[0.9] transition-all duration-500 rt-content w-full"
           style={titleStyle}
           placeholder="Titolo..."
+          fieldId="title"
         />
       ) : (
         <div
@@ -211,6 +212,7 @@ const HeroText: React.FC<{
             placeholder="Sottotitolo..."
             richText
             multiline
+            fieldId="subtitle"
           />
         ) : (
           <div

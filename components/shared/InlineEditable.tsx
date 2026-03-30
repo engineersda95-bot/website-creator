@@ -15,6 +15,7 @@ interface InlineEditableProps {
   as?: 'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   placeholder?: string;
   multiline?: boolean;
+  fieldId?: string;
   disabled?: boolean;
   richText?: boolean;
 }
@@ -186,6 +187,7 @@ export const InlineEditable: React.FC<InlineEditableProps> = ({
   multiline = false,
   disabled = false,
   richText = false,
+  fieldId,
 }) => {
   const ref = useRef<HTMLElement>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -202,6 +204,9 @@ export const InlineEditable: React.FC<InlineEditableProps> = ({
   const enterEdit = useCallback(() => {
     if (disabled || isEditing) return;
     setIsEditing(true);
+    if (fieldId) {
+      window.dispatchEvent(new CustomEvent('hero-section-focus', { detail: fieldId }));
+    }
     setTimeout(() => {
       if (!ref.current) return;
       // Switch to raw value for editing
