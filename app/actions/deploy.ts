@@ -139,7 +139,7 @@ export async function deployToCloudflare(projectId: string) {
     }
 
     // 3.2. Generate static Tailwind CSS
-    console.log('Generating production Tailwind CSS...');
+    console.log('Generating production Tailwind CSS via standalone binary...');
     
     const commonEnv = {
       ...process.env,
@@ -155,11 +155,22 @@ export async function deployToCloudflare(projectId: string) {
     };
 
     try {
+      const binaryPath = '/tmp/tailwindcss-v4-binary';
+      
+      // Download the standalone binary if it doesn't exist (about 10MB)
+      if (!fs.existsSync(binaryPath)) {
+        console.log('Downloading Tailwind v4 standalone binary...');
+        const res = await fetch('https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64');
+        if (!res.ok) throw new Error('Could not download Tailwind binary');
+        const buffer = Buffer.from(await res.arrayBuffer());
+        fs.writeFileSync(binaryPath, buffer);
+        fs.chmodSync(binaryPath, '755');
+      }
+
       const inputCssContent = `@import "tailwindcss";\n@source "${tempDir.replace(/\\/g, '/')}/**/*.html";`;
       
-      // Run Tailwind using STDIN (input) to avoid writing a source file in the project's root (EROFS)
-      // This ensures Tailwind resolves its own package correctly from project's node_modules
-      execSync(`npx --yes @tailwindcss/cli -o "${path.join(assetsDir, 'styles.css')}"`, { 
+      // Use the standalone binary: zero Node dependencies, zero node_modules issues
+      execSync(`${binaryPath} -o "${path.join(assetsDir, 'styles.css')}"`, { 
         input: inputCssContent,
         env: commonEnv,
         encoding: 'utf-8' 
