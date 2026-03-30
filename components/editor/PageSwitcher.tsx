@@ -41,18 +41,26 @@ export function PageSwitcher({ currentPage, pages, projectId, initialPageId, fon
   };
 
   return (
-    <div className="relative" style={{ fontFamily }}>
+    <div className="relative" style={{ fontFamily }} data-tour="page-switcher">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-2 py-1 -ml-2 rounded-md hover:bg-zinc-100 transition-colors group"
+        className={cn(
+          "flex items-center gap-2 px-3 py-1.5 -ml-2 rounded-xl transition-all group border",
+          isOpen 
+            ? "bg-white border-zinc-200 shadow-lg scale-[1.02]" 
+            : "bg-zinc-50 border-zinc-100 hover:bg-white hover:border-zinc-200 hover:shadow-md"
+        )}
       >
-        <span className="text-zinc-900 font-bold group-hover:text-blue-600 transition-colors text-[14px]">
-          {currentPage?.title || 'Pagina'}
-        </span>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+          <span className="text-zinc-900 font-black uppercase tracking-tight text-[12px] group-hover:text-blue-600 transition-colors">
+            {currentPage?.title || 'Pagina'}
+          </span>
+        </div>
         <ChevronDown 
           size={14} 
           className={cn(
-            "text-zinc-400 group-hover:text-blue-500 transition-transform duration-200", 
+            "text-zinc-400 group-hover:text-blue-500 transition-transform duration-300", 
             isOpen && "rotate-180"
           )} 
         />

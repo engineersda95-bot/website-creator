@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight, Save, Check, Rocket, Loader2, ExternalLink } from 'lucide-react';
+import { ChevronRight, Save, Check, Rocket, Loader2, ExternalLink, Layout, Grid } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEditorStore } from '@/store/useEditorStore';
 import { UserMenu } from '@/components/auth/UserMenu';
@@ -44,9 +44,9 @@ export function EditorHeader({
   return (
     <header className="h-14 bg-white border-b border-zinc-200/80 flex items-center justify-between px-5 shrink-0 z-[9999] relative">
       {/* Left: breadcrumb + status */}
-      <div className="flex items-center gap-2">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-1 text-sm">
+      <div className="flex items-center gap-3">
+        {/* Breadcrumb - Clean & Minimal */}
+        <nav className="flex items-center gap-1 text-[13px]">
           <Link
             href="/editor"
             onClick={async (e) => {
@@ -58,11 +58,17 @@ export function EditorHeader({
                 }
               }
             }}
-            className="text-zinc-400 hover:text-zinc-600 transition-colors font-medium text-[13px]"
+            className="flex items-center gap-1.5 px-2 py-1 text-zinc-400 hover:text-zinc-900 transition-all font-semibold group"
+            title="Torna all'elenco di tutti i tuoi siti"
           >
-            I miei siti
+            <Grid size={13} className="text-zinc-300 group-hover:text-zinc-500 transition-colors" />
+            <span className="underline underline-offset-4 decoration-transparent group-hover:decoration-zinc-300 transition-all">
+              I miei siti
+            </span>
           </Link>
-          <ChevronRight size={12} className="text-zinc-300" />
+          
+          <ChevronRight size={10} className="text-zinc-300 mx-0.5" />
+          
           <Link
             href={`/editor/${initialProject?.id}`}
             onClick={async (e) => {
@@ -74,11 +80,18 @@ export function EditorHeader({
                 }
               }
             }}
-            className="text-zinc-400 hover:text-zinc-600 transition-colors font-medium max-w-[120px] truncate text-[13px]"
+            className="flex items-center gap-1.5 px-2 py-1 text-zinc-400 hover:text-zinc-900 transition-all font-semibold max-w-[160px] group"
+            title="Gestisci pagine del sito"
+            data-tour="site-name"
           >
-            {targetProject?.name || 'Sito'}
+            <Layout size={13} className="text-zinc-300 group-hover:text-zinc-500 transition-colors" />
+            <span className="truncate underline underline-offset-4 decoration-transparent group-hover:decoration-zinc-300 transition-all">
+              {targetProject?.name || 'Sito'}
+            </span>
           </Link>
-          <ChevronRight size={12} className="text-zinc-300" />
+          
+          <ChevronRight size={10} className="text-zinc-300 mx-1" />
+          
           <PageSwitcher
             currentPage={currentPage}
             pages={targetPages}
@@ -88,19 +101,22 @@ export function EditorHeader({
           />
         </nav>
 
-        <div className={cn(
-          "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ml-2",
-          siteStatus === 'pubblicato'
-            ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-            : siteStatus === 'bozza'
-              ? "bg-amber-50 text-amber-700 border border-amber-200/60"
-              : "bg-zinc-100 text-zinc-500 border border-zinc-200/60"
-        )}>
-          <div className={cn("w-1.5 h-1.5 rounded-full",
-            siteStatus === 'pubblicato' ? "bg-emerald-500" :
-              siteStatus === 'bozza' ? "bg-amber-500" : "bg-zinc-400"
+        <div 
+          data-tour="page-status"
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ml-1 shadow-sm border",
+            siteStatus === 'pubblicato'
+              ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
+              : siteStatus === 'bozza'
+                ? "bg-amber-50 text-amber-700 border-amber-200/60"
+                : "bg-zinc-100 text-zinc-500 border-zinc-200/60"
+          )}
+        >
+          <div className={cn("w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.1)]",
+            siteStatus === 'pubblicato' ? "bg-emerald-500 shadow-emerald-200" :
+              siteStatus === 'bozza' ? "bg-amber-500 shadow-amber-200" : "bg-zinc-400"
           )} />
-          {siteStatus === 'pubblicato' ? 'Online' : siteStatus === 'bozza' ? 'Bozza' : 'Bozza'}
+          {siteStatus === 'pubblicato' ? 'Online' : 'Bozza'}
         </div>
 
         {currentPage?.language && (

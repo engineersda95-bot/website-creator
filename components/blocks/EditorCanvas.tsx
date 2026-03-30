@@ -113,6 +113,13 @@ export const EditorCanvas: React.FC = () => {
     return () => document.removeEventListener('click', handleCaptureClick, true);
   }, []);
 
+  // Listener for 'open-help' event from UserMenu
+  React.useEffect(() => {
+    const handleOpenHelp = () => setIsHelpOpen(true);
+    window.addEventListener('open-help', handleOpenHelp);
+    return () => window.removeEventListener('open-help', handleOpenHelp);
+  }, []);
+
   // Shared Reveal System: Fast & Reliable
   React.useEffect(() => {
     const handleReveal = (e: Event) => {

@@ -21,11 +21,18 @@ const STEPS: TourStep[] = [
     position: 'bottom',
   },
   {
-    target: '[data-tour="page-manager"]',
-    title: 'Gestione Pagine',
-    description: 'Qui gestisci le pagine del sito. Clicca su una pagina per aprirla, usa il "+" per crearne di nuove. L\'icona globo apre le impostazioni SEO.',
+    target: '[data-tour="page-switcher"]',
+    title: 'Cambia Pagina',
+    description: 'Vuoi passare ad un\'altra parte del sito? Clicca sul nome della pagina per vedere l\'elenco completo e muoverti velocemente tra Home, Servizi, Contatti, ecc.',
     icon: <FileText size={18} />,
-    position: 'right',
+    position: 'bottom',
+  },
+  {
+    target: '[data-tour="site-name"]',
+    title: 'Gestione Sito',
+    description: 'Cliccando sul nome del sito puoi accedere alla tua dashboard. Da lì potrai creare nuove pagine, rinominarle o gestire l\'intero progetto in modo granulare.',
+    icon: <FileText size={18} />,
+    position: 'bottom',
   },
   {
     target: '[data-tour="block-sidebar"]',
@@ -136,7 +143,10 @@ export const OnboardingTour: React.FC = () => {
     };
 
     const find = () => {
-      const el = document.querySelector(STEPS[step]?.target);
+      const targetSelector = STEPS[step]?.target;
+      if (!targetSelector) return;
+      
+      const el = document.querySelector(targetSelector);
       if (el) {
         setRect(clampToViewport(el.getBoundingClientRect()));
       } else {
@@ -148,7 +158,9 @@ export const OnboardingTour: React.FC = () => {
     find();
 
     const onResize = () => {
-      const el = document.querySelector(STEPS[step]?.target);
+      const targetSelector = STEPS[step]?.target;
+      if (!targetSelector) return;
+      const el = document.querySelector(targetSelector);
       if (el) setRect(clampToViewport(el.getBoundingClientRect()));
     };
     window.addEventListener('resize', onResize);
