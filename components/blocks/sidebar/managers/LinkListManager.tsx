@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface LinkListManagerProps {
    links: any[];
@@ -10,6 +10,14 @@ interface LinkListManagerProps {
 }
 
 export function LinkListManager({ links = [], onChange, label = "Link Testuali" }: LinkListManagerProps) {
+   const move = (index: number, direction: 'up' | 'down') => {
+      const newLinks = [...links];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= links.length) return;
+      [newLinks[index], newLinks[targetIndex]] = [newLinks[targetIndex], newLinks[index]];
+      onChange(newLinks);
+   };
+
    return (
       <div className="space-y-4 pt-4 border-t border-zinc-100">
          <div className="flex items-center justify-between">
@@ -23,11 +31,27 @@ export function LinkListManager({ links = [], onChange, label = "Link Testuali" 
          </div>
          <div className="space-y-3">
             {links.map((link: any, i: number) => (
-               <div key={i} className="flex gap-2 group animate-in slide-in-from-right-2 duration-200">
-                  <input className="w-[100px] shrink-0 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50" placeholder="Testo" value={link.label} onChange={(e) => {
+               <div key={i} className="flex gap-2 group animate-in slide-in-from-right-2 duration-200 items-center">
+                  <div className="flex flex-col gap-0.5 shrink-0 -ml-1">
+                     <button 
+                        onClick={() => move(i, 'up')}
+                        disabled={i === 0}
+                        className="p-0.5 bg-white border border-zinc-100 rounded-full shadow-sm text-zinc-400 hover:text-zinc-900 disabled:opacity-0 transition-all active:scale-90"
+                     >
+                        <ArrowUp size={12} />
+                     </button>
+                     <button 
+                        onClick={() => move(i, 'down')}
+                        disabled={i === links.length - 1}
+                        className="p-0.5 bg-white border border-zinc-100 rounded-full shadow-sm text-zinc-400 hover:text-zinc-900 disabled:opacity-0 transition-all active:scale-90"
+                     >
+                        <ArrowDown size={12} />
+                     </button>
+                  </div>
+                  <input className="w-[90px] shrink-0 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50 focus:bg-white transition-all font-bold" placeholder="Testo" value={link.label} onChange={(e) => {
                      const nl = [...links]; nl[i].label = e.target.value; onChange(nl);
                   }} />
-                  <input className="flex-1 min-w-0 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50" placeholder="URL..." value={link.url} onChange={(e) => {
+                  <input className="flex-1 min-w-0 p-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50 focus:bg-white transition-all" placeholder="URL..." value={link.url} onChange={(e) => {
                      const nl = [...links]; nl[i].url = e.target.value; onChange(nl);
                   }} />
                   <button onClick={() => onChange(links.filter((_, idx) => idx !== i))} className="p-2 shrink-0 text-zinc-300 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
