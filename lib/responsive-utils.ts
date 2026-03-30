@@ -41,8 +41,8 @@ export function generateBlockCSS(blockId: string, block: Block, project?: Projec
   return `
       #${blockId} {
         ${printVars(desktopVars)}
-        max-width: var(--block-max-width, 100%);
         margin-top: var(--block-mt, 0px);
+
         margin-bottom: var(--block-mb, 0px);
         margin-left: var(--block-ml-auto, 0);
         margin-right: var(--block-mr-auto, 0);

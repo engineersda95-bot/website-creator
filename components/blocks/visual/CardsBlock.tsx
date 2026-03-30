@@ -199,7 +199,9 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
         imageMemoryCache={imageMemoryCache} 
         isStatic={isStatic}
       />
-      <div className="relative z-10">
+      <div 
+        className="relative z-10 w-full mx-auto"
+      >
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
           return onInlineEdit ? (

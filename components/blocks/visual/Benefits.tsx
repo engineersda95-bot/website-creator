@@ -142,7 +142,7 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
         isStatic={isStatic} 
         imageMemoryCache={imageMemoryCache}
       />
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 w-full mx-auto">
         {(content.title || content.subtitle) && (
           <div className={cn("mb-16", align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left")}>
             {content.title && (() => {

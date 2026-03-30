@@ -68,7 +68,6 @@ export const EditorBlockWrapper = React.memo(({
       )}
       style={{
         ...vars,
-        maxWidth: 'var(--block-max-width, 100%)',
         borderRadius: 'var(--block-radius)',
         border: 'var(--block-border-w) solid var(--block-border-c)',
         marginTop: 'var(--block-mt)',
@@ -76,6 +75,7 @@ export const EditorBlockWrapper = React.memo(({
         marginLeft: 'var(--block-ml-auto, 0)',
         marginRight: 'var(--block-mr-auto, 0)',
       } as any}
+
     >
       {isSelected && (
         <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none z-20" />

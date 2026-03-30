@@ -22,7 +22,7 @@ export const Logos: React.FC<any> = ({
         paddingBottom: 'var(--block-pb)',
         paddingLeft: 'var(--block-px)',
         paddingRight: 'var(--block-px)',
-        backgroundColor: 'var(--block-bg)',
+        background: 'var(--block-bg)',
         color: 'var(--block-color)',
       }}
     >

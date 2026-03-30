@@ -40,4 +40,6 @@ export const textDefinition: BlockDefinition = {
       '--content-fst': val('contentItalic', false) ? 'italic' : 'normal',
     };
   }
+
+
 };

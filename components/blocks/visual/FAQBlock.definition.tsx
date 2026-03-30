@@ -142,4 +142,6 @@ export const faqDefinition: BlockDefinition = {
       '--faq-a-fw': val('answerBold', false) ? '600' : '400',
     };
   }
+
+
 };

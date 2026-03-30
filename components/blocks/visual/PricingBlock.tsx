@@ -71,7 +71,9 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
         isStatic={isStatic}
       />
       
-      <div className="relative z-10">
+      <div 
+        className="relative z-10 w-full mx-auto px-0"
+      >
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
           return onInlineEdit ? (
@@ -109,7 +111,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
               value={content.subtitle || ''}
               onChange={(v) => onInlineEdit('subtitle', v)}
               className={cn(
-                 "mb-16 opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap px-4 rt-content",
+                 "mb-16 opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap rt-content",
                  align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto"
               )}
               style={{
@@ -126,7 +128,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
           ) : (
             <div
               className={cn(
-                 "mb-16 opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap px-4 rt-content",
+                 "mb-16 opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap rt-content",
                  align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto"
               )}
               style={{

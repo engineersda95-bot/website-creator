@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { formatRichText } from '@/lib/utils';
+import { formatRichText, cn } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
 import { Plus, Minus, ChevronDown } from 'lucide-react';
@@ -31,74 +31,95 @@ const FAQWrapper: React.FC<{
   isStatic?: boolean;
   onInlineEdit?: (field: string, value: string) => void;
   children: React.ReactNode;
-}> = ({ content, block, style, project, isStatic, onInlineEdit, children }) => (
-  <section
-    id={block.id}
-    className="relative transition-all duration-500 overflow-hidden"
-    style={{
-      background: 'var(--block-bg)',
-      paddingTop: 'var(--block-pt)',
-      paddingBottom: 'var(--block-pb)',
-      paddingLeft: 'var(--block-px)',
-      paddingRight: 'var(--block-px)',
-      color: 'var(--block-color)',
-    }}
-  >
-    {content.sectionId && (
-      <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
-    )}
-    <BlockBackground
-      backgroundImage={content.backgroundImage}
-      backgroundAlt={content.backgroundAlt}
-      style={style}
-      project={project}
-      isStatic={isStatic}
-    />
-    <div
-      className="mx-auto flex flex-col transition-all duration-500 relative z-10"
+}> = ({ content, block, style, project, isStatic, onInlineEdit, children }) => {
+  
+  const hasTitle = content.title && content.title.replace(/<[^>]*>/g, '').trim().length > 0;
+
+  return (
+    <section
+      className={cn("w-full relative transition-all duration-500 overflow-hidden")}
       style={{
-        gap: 'var(--block-gap)',
-        alignItems: 'var(--block-items)' as any,
-        textAlign: 'var(--block-align)' as any,
+        background: 'var(--block-bg)',
+        paddingTop: 'var(--block-pt)',
+        paddingBottom: 'var(--block-pb)',
+        color: 'var(--block-color)',
+        borderRadius: 'var(--block-radius)',
+        borderWidth: 'var(--block-border-w)',
+        borderColor: 'var(--block-border-c)',
       }}
     >
-      {content.title && (
-        onInlineEdit ? (
-          <InlineEditable
-            value={content.title || ''}
-            onChange={(v) => onInlineEdit('title', v)}
-            className="tracking-tight transition-all duration-500 w-full rt-content"
-            style={{
-              fontSize: 'var(--title-fs)',
-              fontWeight: 'var(--title-fw)' as any,
-              fontStyle: 'var(--title-fs-style)' as any,
-              letterSpacing: 'var(--title-ls)',
-              lineHeight: 'var(--title-lh)',
-              textTransform: 'var(--title-upper)' as any,
-              color: 'inherit'
-            }}
-            placeholder="Titolo..."
-          />
-        ) : (
-          <div
-            className="tracking-tight transition-all duration-500 w-full rt-content"
-            style={{
-              fontSize: 'var(--title-fs)',
-              fontWeight: 'var(--title-fw)' as any,
-              fontStyle: 'var(--title-fs-style)' as any,
-              letterSpacing: 'var(--title-ls)',
-              lineHeight: 'var(--title-lh)',
-              textTransform: 'var(--title-upper)' as any,
-              color: 'inherit'
-            }}
-            dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-          />
-        )
+      {/* Anchor for external links */}
+      {(content.sectionId || block.id) && (
+        <span id={content.sectionId || block.id} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
       )}
-      {children}
-    </div>
-  </section>
-);
+
+      <BlockBackground
+        backgroundImage={content.backgroundImage}
+        backgroundAlt={content.backgroundAlt}
+        style={style}
+        project={project}
+        isStatic={isStatic}
+      />
+      <div
+        id={block.id} // EDITOR TARGET - Restricts width only here
+        className="relative z-10 w-full mx-auto flex flex-col transition-all duration-500"
+        style={{
+          paddingLeft: 'var(--block-px)',
+          paddingRight: 'var(--block-px)',
+          maxWidth: 'var(--block-max-width)',
+          alignItems: 'var(--block-items)' as any,
+          textAlign: 'var(--block-align)' as any,
+          margin: '0 auto',
+        }}
+      >
+        {(hasTitle || onInlineEdit) && (
+          <div 
+            className="w-full"
+            style={{ 
+                marginBottom: hasTitle ? 'var(--block-gap)' : '0px',
+                textAlign: 'inherit'
+            }}
+          >
+            {onInlineEdit ? (
+              <InlineEditable
+                value={content.title || ''}
+                onChange={(v) => onInlineEdit('title', v)}
+                className="tracking-tight transition-all duration-500 w-full rt-content"
+                style={{
+                  fontSize: 'var(--title-fs)',
+                  fontWeight: 'var(--title-fw)' as any,
+                  fontStyle: 'var(--title-fs-style)' as any,
+                  letterSpacing: 'var(--title-ls)',
+                  lineHeight: 'var(--title-lh)',
+                  textTransform: 'var(--title-upper)' as any,
+                  color: 'inherit',
+                  textAlign: 'inherit',
+                }}
+                placeholder="Titolo..."
+              />
+            ) : (
+              <div
+                className="tracking-tight transition-all duration-500 w-full rt-content"
+                style={{
+                  fontSize: 'var(--title-fs)',
+                  fontWeight: 'var(--title-fw)' as any,
+                  fontStyle: 'var(--title-fs-style)' as any,
+                  letterSpacing: 'var(--title-ls)',
+                  lineHeight: 'var(--title-lh)',
+                  textTransform: 'var(--title-upper)' as any,
+                  color: 'inherit',
+                  textAlign: 'inherit',
+                }}
+                dangerouslySetInnerHTML={{ __html: formatRichText(content.title || '') }}
+              />
+            )}
+          </div>
+        )}
+        {children}
+      </div>
+    </section>
+  );
+};
 
 // ─── ACCORDION — Stripe/Linear style with +/- icon ─────────────────────
 const AccordionVariant: React.FC<{ items: FAQBlockProps['content']['items']; blockColor: string; blockId: string }> = ({ items, blockColor, blockId }) => (
@@ -225,7 +246,7 @@ const NumberedVariant: React.FC<{ items: FAQBlockProps['content']['items']; bloc
         style={{ borderColor: 'color-mix(in srgb, currentColor 8%, transparent)' }}
       >
         <span
-          className="text-3xl font-black tabular-nums shrink-0 leading-none pt-1"
+          className="text-3xl font-black tabular-nums shrink-0 daily-none pt-1"
           style={{ color: blockColor, opacity: 0.12 }}
         >
           {String(index + 1).padStart(2, '0')}
