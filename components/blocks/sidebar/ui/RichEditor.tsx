@@ -83,7 +83,7 @@ export function RichEditor({ label, value, onChange, placeholder }: RichEditorPr
   // Sync external value changes (e.g. from inline editing on canvas)
   useEffect(() => {
     if (editor && !editor.isFocused && value !== editor.getHTML()) {
-      editor.commands.setContent(value, false);
+      editor.commands.setContent(value, { emitUpdate: false });
     }
   }, [value, editor]);
 
