@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { LayoutFields, ColorManager, SimpleSlider, BackgroundManager, BorderShadowManager, IconManager, SectionHeader, TypographyFields, PatternManager } from '../SharedSidebarComponents';
+import { LayoutFields, ColorManager, SimpleSlider, BackgroundManager, BorderShadowManager, IconManager, SectionHeader, TypographyFields, PatternManager, AnimationManager } from '../SharedSidebarComponents';
 import { Layout, Palette, Image as ImageIcon, Box, Type } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -167,6 +167,8 @@ export const GalleryStyle: React.FC<GalleryStyleProps> = ({
       </section>
 
       <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
+      
+      <AnimationManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
 
       <section className="pt-8 border-t border-zinc-100">
         <BackgroundManager 

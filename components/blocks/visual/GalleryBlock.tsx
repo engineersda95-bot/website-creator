@@ -35,21 +35,28 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
   const isTitleBold = style.titleBold || false;
   const isTitleItalic = style.titleItalic || false;
 
+  const animType = style.animationType || 'none';
+  const animDuration = style.animationDuration || 0.8;
+  const baseDelay = style.animationDelay || 0;
+  const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}` : 'static';
+
   const renderImage = (img: any, index: number, extraClass?: string) => {
     if (!img.image) return null;
 
     const aspect = style.imageAspectRatio || 'original';
-    
-    // In masonry (original aspect), we still want a minimum height or a reasonable 
-    // fallback area to prevent the "step" effect before the image is fetched.
     const aspectClass = aspect === '1/1' ? 'aspect-square' : 
                         aspect === '4/3' ? 'aspect-[4/3]' : 
                         aspect === '16/9' ? 'aspect-video' : 
-                        'min-h-[200px] w-full h-auto'; // Standardized fallback for masonry
+                        'min-h-[200px] w-full h-auto';
+
+    const itemDelay = baseDelay + 0.1 + (index * 0.05);
 
     return (
       <div 
         key={index}
+        data-siti-anim={animType}
+        data-siti-anim-duration={animDuration}
+        data-siti-anim-delay={itemDelay}
         className={cn(
           "group relative overflow-hidden rounded-[var(--image-radius)] w-full block",
           style.imageShadow ? 'shadow-lg' : '',
@@ -57,6 +64,10 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
           extraClass,
           'mb-[var(--gallery-gap)] break-inside-avoid'
         )}
+        style={{
+          '--siti-anim-duration': animDuration + 's',
+          '--siti-anim-delay': itemDelay + 's'
+        } as any}
       >
         <SitiImage
           src={img.image}
@@ -80,6 +91,7 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
 
   return (
     <div 
+      key={animKey}
       className={cn(
         "relative w-full overflow-hidden flex flex-col",
         "pt-[var(--block-pt)] pb-[var(--block-pb)] px-[var(--block-px)]"
@@ -107,21 +119,32 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
       )}>
         {/* Gallery Title */}
         {content.title && (
-          <TitleTag 
-            className="font-heading leading-tight w-full"
+          <div
+            data-siti-anim={animType}
+            data-siti-anim-duration={animDuration}
+            data-siti-anim-delay={baseDelay}
+            className="w-full"
             style={{
-              fontSize: 'var(--title-fs)',
-              textAlign: 'var(--block-align)' as any,
-              fontWeight: 'var(--title-fw)',
-              fontStyle: 'var(--title-fs-style)',
-              lineHeight: 'var(--title-lh)',
-              letterSpacing: 'var(--title-ls)',
-              textTransform: 'var(--title-upper)' as any,
-              color: 'var(--block-color)'
-            }}
+              '--siti-anim-duration': animDuration + 's',
+              '--siti-anim-delay': baseDelay + 's'
+            } as any}
           >
-            {content.title}
-          </TitleTag>
+            <TitleTag 
+              className="font-heading leading-tight w-full"
+              style={{
+                fontSize: 'var(--title-fs)',
+                textAlign: 'var(--block-align)' as any,
+                fontWeight: 'var(--title-fw)',
+                fontStyle: 'var(--title-fs-style)',
+                lineHeight: 'var(--title-lh)',
+                letterSpacing: 'var(--title-ls)',
+                textTransform: 'var(--title-upper)' as any,
+                color: 'var(--block-color)'
+              }}
+            >
+              {content.title}
+            </TitleTag>
+          </div>
         )}
 
         <div 

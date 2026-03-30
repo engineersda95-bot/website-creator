@@ -62,6 +62,9 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
     paddingLeft: 'var(--block-px)',
     paddingRight: 'var(--block-px)',
     color: 'var(--block-color)',
+    maxWidth: 'var(--block-max-width)',
+    marginLeft: 'var(--block-ml-auto, 0)',
+    marginRight: 'var(--block-mr-auto, 0)',
   };
 
   const primaryColor = project.settings.primaryColor || '#000';
@@ -115,8 +118,8 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
         align === 'right' ? "items-end text-right group" :
         "items-start text-left group"
       ) : (
-        align === 'center' ? "flex-col md:flex-row items-center text-center md:text-left gap-6 md:gap-10" :
-        align === 'right' ? "flex-col md:flex-row-reverse items-center md:items-start text-center md:text-right gap-6 md:gap-10" :
+        align === 'center' ? "flex-col md:flex-row items-center text-center md:text-center gap-6 md:gap-10" :
+        align === 'right' ? "flex-col md:flex-row-reverse items-center md:items-end text-center md:text-right gap-6 md:gap-10" :
         "flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 md:gap-10"
       )
     )}>
@@ -132,8 +135,12 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
 
   // ─── MINIMAL variant — big faded number, text beside it ────────────
   const MinimalStep = ({ item, index }: { item: any; index: number }) => (
-    <div className="flex gap-5">
-      <span className="text-4xl font-black tabular-nums shrink-0 leading-none pt-1" style={{ color: 'currentColor', opacity: 0.1 }}>
+    <div className={cn(
+      "flex gap-5 transition-all duration-300",
+      align === 'center' ? "flex-col items-center text-center" : 
+      align === 'right' ? "flex-row-reverse text-right" : "flex-row text-left"
+    )}>
+      <span className="text-4xl font-black tabular-nums shrink-0 leading-none pt-1" style={{ color: style.textColor, opacity: 0.3 }}>
         {String(item.number || index + 1).padStart(2, '0')}
       </span>
       <div className="flex-1 min-w-0">
@@ -145,7 +152,11 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
 
   // ─── TIMELINE variant — dot + line + content ──────────────────────
   const TimelineStep = ({ item, index }: { item: any; index: number }) => (
-    <div className="flex gap-5 relative">
+    <div className={cn(
+      "flex gap-5 relative transition-all duration-300",
+      align === 'center' ? "flex-col items-center text-center" :
+      align === 'right' ? "flex-row-reverse text-right" : "flex-row text-left"
+    )}>
       <div className="flex flex-col items-center shrink-0">
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
@@ -164,10 +175,14 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
 
   // ─── COMPACT variant — small circle + content ─────────────────────
   const CompactStep = ({ item, index }: { item: any; index: number }) => (
-    <div className="flex gap-4">
+    <div className={cn(
+      "flex gap-4 transition-all duration-300",
+      align === 'center' ? "flex-col items-center text-center" :
+      align === 'right' ? "flex-row-reverse text-right" : "flex-row text-left"
+    )}>
       <div
-        className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
-        style={{ background: 'color-mix(in srgb, currentColor 8%, transparent)', color: 'inherit', opacity: 0.6 }}
+        className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 shadow-sm"
+        style={numberStyle}
       >
         {item.number || (index + 1)}
       </div>
@@ -201,7 +216,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
         isStatic={isStatic} 
         imageMemoryCache={imageMemoryCache}
       />
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 w-full">
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
           return onInlineEdit ? (
@@ -240,8 +255,8 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
         {layout === 'linear' ? (
           <div 
             className={cn(
-                "mx-auto flex flex-col items-stretch",
-                align === 'center' ? "max-w-4xl" : "max-w-7xl"
+              "w-full flex flex-col",
+              align === 'center' ? "items-center" : align === 'right' ? "items-end" : "items-start"
             )}
             style={{ gap: 'var(--block-gap, 3rem)' }}
           >
@@ -317,7 +332,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
             style={{ gap: 'var(--block-gap, 3rem)' }}
           >
             {/* Horizontal Line Connections */}
-            {align === 'center' && currentCols > 1 && (
+            {variant === 'cards' && align === 'center' && currentCols > 1 && (
                 <div className="absolute top-[28px] left-[10%] right-[10%] h-px bg-black/5 dark:bg-white/5 hidden md:block" />
             )}
             {items.map((item: any, i: number) => (

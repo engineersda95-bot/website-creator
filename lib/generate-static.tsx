@@ -173,6 +173,28 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
             50% { opacity: 0.5; transform: scale(0.8); }
         }
         .animate-pulse-slow { animation: pulse-white 2s infinite; }
+        
+        /* --- Block Animations --- */
+        [data-siti-anim] {
+            opacity: 0;
+            transition-property: opacity, transform, filter;
+            transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+            transition-duration: var(--siti-anim-duration, 0.8s);
+            transition-delay: var(--siti-anim-delay, 0s);
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+        }
+
+        [data-siti-anim="slide-up"]    { transform: translate3d(0, 30px, 0); }
+        [data-siti-anim="slide-down"]  { transform: translate3d(0, -30px, 0); }
+        [data-siti-anim="slide-left"]  { transform: translate3d(30px, 0, 0); }
+        [data-siti-anim="slide-right"] { transform: translate3d(-30px, 0, 0); }
+        [data-siti-anim="zoom-in"]     { transform: scale3d(0.95, 0.95, 1); }
+
+        [data-siti-anim].siti-anim-active {
+            opacity: 1 !important;
+            transform: translate3d(0, 0, 0) scale3d(1, 1, 1) !important;
+        }
 
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -264,8 +286,32 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
         btn.setAttribute('data-open', nextState);
       });
 
-      // --- Intelligent Image Reveal System ---
-      const handleStaticReveal = (e) => {
+      // --- Intelligent Animation System ---
+      /** @type {IntersectionObserver} */
+      const animObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            // Using requestAnimationFrame to ensure the class is added in the next repaint
+            // for maximum smoothness and to avoid layout thrashing
+            requestAnimationFrame(() => {
+                el.classList.add('siti-anim-active');
+            });
+            animObserver.unobserve(el);
+          }
+        });
+      }, { 
+        threshold: 0.05,
+        rootMargin: '0px 0px -50px 0px' 
+      });
+
+      document.querySelectorAll('[data-siti-anim]').forEach(el => {
+        if (el.getAttribute('data-siti-anim') !== 'none') {
+            animObserver.observe(el);
+        } else {
+            el.classList.add('siti-anim-active');
+        }
+      });
     </script>
     ${settings?.customScriptsBody || ''}
 </body>

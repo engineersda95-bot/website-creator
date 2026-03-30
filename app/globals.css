@@ -151,3 +151,52 @@ body {
 .siti-img-reveal {
   animation: siti-reveal-anim 1s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
 }
+
+/* --- Block Animations --- */
+[data-siti-anim] {
+    opacity: 0;
+}
+
+[data-siti-anim="none"] {
+    opacity: 1 !important;
+}
+
+/* Base keyframes for animations */
+@keyframes siti-anim-slide-up {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes siti-anim-slide-down {
+    from { opacity: 0; transform: translateY(-40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes siti-anim-slide-left {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes siti-anim-slide-right {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes siti-anim-zoom-in {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Editor Preview System */
+/* When in editor, trigger animation using CSS animation on mount (key remount) */
+#editor-content [data-siti-anim] {
+    animation-duration: var(--siti-anim-duration, 0.8s);
+    animation-delay: var(--siti-anim-delay, 0s);
+    animation-fill-mode: forwards;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#editor-content [data-siti-anim="slide-up"]    { animation-name: siti-anim-slide-up; }
+#editor-content [data-siti-anim="slide-down"]  { animation-name: siti-anim-slide-down; }
+#editor-content [data-siti-anim="slide-left"]  { animation-name: siti-anim-slide-left; }
+#editor-content [data-siti-anim="slide-right"] { animation-name: siti-anim-slide-right; }
+#editor-content [data-siti-anim="zoom-in"]     { animation-name: siti-anim-zoom-in; }
+
+/* In the editor, we also need to pass the duration/delay from data attributes to CSS variables 
+   unless we use inline styles. I'll use inline styles for these specific ones. */

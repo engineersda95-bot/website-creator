@@ -55,8 +55,14 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
   const hasImageShadow = style.imageShadow !== false;
   const hasImageHover = style.imageHover !== false;
 
+  const animType = style.animationType || 'none';
+  const animDuration = style.animationDuration || 0.8;
+  const baseDelay = style.animationDelay || 0;
+  const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}` : 'static';
+
   return (
     <section
+      key={animKey}
       id={block.id}
       className={cn(
         "relative overflow-hidden transition-all duration-500",
@@ -101,10 +107,15 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
         >
           {/* Immagine */}
           <div
-            className="w-full shrink-0 order-[var(--image-order)]"
+            className="w-full shrink-0"
+            data-siti-anim={animType} 
+            data-siti-anim-duration={animDuration} 
+            data-siti-anim-delay={baseDelay + 0.1}
             style={{
               order: 'var(--image-order)' as any,
-            }}
+              '--siti-anim-duration': animDuration + 's',
+              '--siti-anim-delay': (baseDelay + 0.1) + 's',
+            } as any}
           >
             <div
               className={cn(
@@ -147,12 +158,17 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
 
           {/* Testo */}
           <div
-            className="flex flex-col space-y-6 order-[var(--text-order)]"
+            className="flex flex-col space-y-6"
+            data-siti-anim={animType} 
+            data-siti-anim-duration={animDuration} 
+            data-siti-anim-delay={baseDelay}
             style={{
               order: 'var(--text-order)' as any,
               textAlign: 'var(--block-align)' as any,
               alignItems: 'var(--block-items)' as any,
-            }}
+              '--siti-anim-duration': animDuration + 's',
+              '--siti-anim-delay': baseDelay + 's',
+            } as any}
           >
             <div className="space-y-4 w-full" style={{ alignItems: 'inherit' }}>
               {content.title && (() => {

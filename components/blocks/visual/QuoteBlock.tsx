@@ -147,7 +147,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
         );
       })()}
       <p style={{ fontSize: 'var(--review-role-fs)', fontWeight: 'var(--review-role-fw)' as any, fontStyle: 'var(--review-role-is)' as any }}
-        className="opacity-40 uppercase tracking-widest text-[9px] leading-snug whitespace-normal break-words rt-content"
+        className="opacity-40 leading-snug whitespace-normal break-words rt-content"
       >{item.role}</p>
     </div>
   );
@@ -180,7 +180,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
     <div className="flex gap-5 w-full">
       <div className="w-1 shrink-0 rounded-full self-stretch" style={{ background: 'color-mix(in srgb, currentColor 15%, transparent)' }} />
       <div className="flex-1 min-w-0 flex flex-col">
-        {visualType === 'stars' && <div className="mb-3"><Stars count={item.stars} /></div>}
+
         <div className="mb-4"><QuoteText item={item} /></div>
         <div className="flex items-center gap-3 mt-auto">
           <Avatar item={item} size={Math.min(avatarSize, 36)} ratio="1/1" />
@@ -210,7 +210,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
   const BubbleContent = ({ item }: { item: any }) => (
     <>
       <div className="flex-1 flex flex-col w-full min-w-0">
-        {visualType === 'stars' && <div className="mb-3"><Stars count={item.stars} /></div>}
+
         <div className="mb-4"><QuoteText item={item} /></div>
       </div>
       <div className="flex items-center gap-3 mt-auto pt-4">

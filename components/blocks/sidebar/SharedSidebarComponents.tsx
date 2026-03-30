@@ -30,4 +30,5 @@ export { ImageStyleFields } from './managers/ImageStyleFields';
 export { LayoutGridSlider } from './managers/LayoutGridSlider';
 export { PatternManager } from './managers/PatternManager';
 export { AnchorManager } from './managers/AnchorManager';
+export { AnimationManager } from './managers/AnimationManager';
 

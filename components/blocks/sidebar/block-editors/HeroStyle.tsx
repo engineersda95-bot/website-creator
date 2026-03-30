@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Layers, Type } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, BackgroundManager, PatternManager, AnchorManager } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, BackgroundManager, PatternManager, AnchorManager, AnimationManager } from '../SharedSidebarComponents';
 import { useEditorStore } from '@/store/useEditorStore';
 import { cn } from '@/lib/utils';
 
@@ -101,6 +101,11 @@ export const HeroStyle: React.FC<HeroStyleProps> = ({
                />
             </div>
          </section>
+
+         <AnimationManager 
+            getStyleValue={getStyleValue} 
+            updateStyle={updateStyle} 
+         />
 
          <AnchorManager 
             selectedBlock={selectedBlock} 

@@ -68,12 +68,13 @@ export const EditorBlockWrapper = React.memo(({
       )}
       style={{
         ...vars,
+        maxWidth: 'var(--block-max-width, 100%)',
         borderRadius: 'var(--block-radius)',
         border: 'var(--block-border-w) solid var(--block-border-c)',
         marginTop: 'var(--block-mt)',
         marginBottom: 'var(--block-mb)',
-        marginLeft: 'var(--block-ml)',
-        marginRight: 'var(--block-mr)',
+        marginLeft: 'var(--block-ml-auto, 0)',
+        marginRight: 'var(--block-mr-auto, 0)',
       } as any}
     >
       {isSelected && (

@@ -85,20 +85,37 @@ const HeroCTAs: React.FC<{
   viewport?: string;
   isStatic?: boolean;
   justify?: string;
+  anim?: { type: string; duration: number; delay: number };
   onInlineEdit?: (field: string, value: string) => void;
-}> = ({ content, style, project, viewport, isStatic, justify, onInlineEdit }) => {
+}> = ({ content, style, project, viewport, isStatic, justify, anim, onInlineEdit }) => {
   const variant = content.variant || 'centered';
   const align = style.align || (variant === 'split' ? 'left' : 'center');
   const ta = justify === 'flex-start' ? 'left' : (align === 'center' ? 'center' : align === 'right' ? 'right' : 'left');
+
+  const animType = anim?.type || 'none';
+  const animDuration = anim?.duration || 0.8;
+  const baseDelay = anim?.delay || 0;
+
   return (
-  <div style={{ textAlign: ta as any, width: '100%' }}><div className="inline-flex flex-wrap gap-4 mt-4">
-    {content.cta && (
-      <CTA label={content.cta} url={content.ctaUrl || (content as any).ctaLink} project={project} viewport={viewport as any} theme={content.ctaTheme || style.buttonTheme} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined} />
-    )}
-    {content.cta2 && (
-      <CTA label={content.cta2} url={content.cta2Url} project={project} viewport={viewport as any} theme={content.cta2Theme || 'secondary'} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined} />
-    )}
-  </div></div>
+  <div style={{ textAlign: ta as any, width: '100%' }}>
+    <div 
+      className="inline-flex flex-wrap gap-4 mt-4"
+      data-siti-anim={animType}
+      data-siti-anim-duration={animDuration}
+      data-siti-anim-delay={baseDelay + 0.3}
+      style={{
+        '--siti-anim-duration': animDuration + 's',
+        '--siti-anim-delay': (baseDelay + 0.3) + 's',
+      } as any}
+    >
+      {content.cta && (
+        <CTA label={content.cta} url={content.ctaUrl || (content as any).ctaLink} project={project} viewport={viewport as any} theme={content.ctaTheme || style.buttonTheme} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined} />
+      )}
+      {content.cta2 && (
+        <CTA label={content.cta2} url={content.cta2Url} project={project} viewport={viewport as any} theme={content.cta2Theme || 'secondary'} isStatic={isStatic} onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined} />
+      )}
+    </div>
+  </div>
   );
 };
 
@@ -119,8 +136,9 @@ const HeroText: React.FC<{
   content: HeroProps['content'];
   style: any;
   subtitleClass?: string;
+  anim?: { type: string; duration: number; delay: number };
   onInlineEdit?: (field: string, value: string) => void;
-}> = ({ content, style, subtitleClass, onInlineEdit }) => {
+}> = ({ content, style, subtitleClass, anim, onInlineEdit }) => {
   const titleStyle = {
     fontSize: 'var(--title-fs)',
     textAlign: 'var(--block-align)' as any,
@@ -141,41 +159,67 @@ const HeroText: React.FC<{
     color: 'inherit',
   };
 
+  const animType = anim?.type || 'none';
+  const animDuration = anim?.duration || 0.8;
+  const baseDelay = anim?.delay || 0;
+
   return (
   <div className="space-y-4 w-full flex flex-col" style={{ alignItems: 'var(--block-items)' as any }}>
-    {onInlineEdit ? (
-      <InlineEditable
-        value={content.title}
-        onChange={(v) => onInlineEdit('title', v)}
-        className="tracking-tighter leading-[0.9] transition-all duration-500 rt-content w-full"
-        style={titleStyle}
-        placeholder="Titolo..."
-      />
-    ) : (
-      <div
-        className="tracking-tighter leading-[0.9] transition-all duration-500 rt-content"
-        style={titleStyle}
-        dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-      />
-    )}
-    {(content.subtitle || onInlineEdit) && (
-      onInlineEdit ? (
+    <div 
+      data-siti-anim={animType} 
+      data-siti-anim-duration={animDuration} 
+      data-siti-anim-delay={baseDelay}
+      className="w-full"
+      style={{
+        '--siti-anim-duration': animDuration + 's',
+        '--siti-anim-delay': baseDelay + 's',
+      } as any}
+    >
+      {onInlineEdit ? (
         <InlineEditable
-          value={content.subtitle}
-          onChange={(v) => onInlineEdit('subtitle', v)}
-          className={cn("max-w-2xl leading-relaxed transition-all duration-500 rt-content w-full", subtitleClass)}
-          style={subtitleStyle}
-          placeholder="Sottotitolo..."
-          richText
-          multiline
+          value={content.title}
+          onChange={(v) => onInlineEdit('title', v)}
+          className="tracking-tighter leading-[0.9] transition-all duration-500 rt-content w-full"
+          style={titleStyle}
+          placeholder="Titolo..."
         />
       ) : (
         <div
-          className={cn("max-w-2xl leading-relaxed transition-all duration-500 rt-content", subtitleClass)}
-          style={subtitleStyle}
-          dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+          className="tracking-tighter leading-[0.9] transition-all duration-500 rt-content"
+          style={titleStyle}
+          dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
         />
-      )
+      )}
+    </div>
+    {(content.subtitle || onInlineEdit) && (
+      <div 
+        data-siti-anim={animType} 
+        data-siti-anim-duration={animDuration} 
+        data-siti-anim-delay={baseDelay + 0.15}
+        className="w-full"
+        style={{
+          '--siti-anim-duration': animDuration + 's',
+          '--siti-anim-delay': (baseDelay + 0.15) + 's',
+        } as any}
+      >
+        {onInlineEdit ? (
+          <InlineEditable
+            value={content.subtitle}
+            onChange={(v) => onInlineEdit('subtitle', v)}
+            className={cn("max-w-2xl leading-relaxed transition-all duration-500 rt-content w-full", subtitleClass)}
+            style={subtitleStyle}
+            placeholder="Sottotitolo..."
+            richText
+            multiline
+          />
+        ) : (
+          <div
+            className={cn("max-w-2xl leading-relaxed transition-all duration-500 rt-content", subtitleClass)}
+            style={subtitleStyle}
+            dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+          />
+        )}
+      </div>
     )}
   </div>
   );
@@ -188,8 +232,17 @@ const CenteredHero: React.FC<HeroProps> = ({ content, block, project, viewport, 
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
   const hasBg = !!content.backgroundImage;
 
+  const anim = {
+    type: style.animationType || 'none',
+    duration: style.animationDuration || 0.8,
+    delay: style.animationDelay || 0
+  };
+
+  const animKey = !isStatic ? `${block.id}-${anim.type}-${anim.duration}` : 'static';
+
   return (
     <section
+      key={animKey}
       id={block.id}
       className="relative flex flex-col overflow-hidden transition-all duration-500"
       style={{
@@ -208,8 +261,8 @@ const CenteredHero: React.FC<HeroProps> = ({ content, block, project, viewport, 
         className={cn("mx-auto relative z-10 w-full flex flex-col transition-all duration-500", hasBg && !style.textColor && "text-white")}
         style={{ gap: 'var(--block-gap)', paddingLeft: 'var(--block-px)', paddingRight: 'var(--block-px)', alignItems: 'var(--block-items)' as any, textAlign: 'var(--block-align)' as any }}
       >
-        <HeroText content={content} style={style} onInlineEdit={onInlineEdit} />
-        <HeroCTAs content={content} style={style} project={project} viewport={viewport} isStatic={isStatic} onInlineEdit={onInlineEdit} />
+        <HeroText content={content} style={style} anim={anim} onInlineEdit={onInlineEdit} />
+        <HeroCTAs content={content} style={style} anim={anim} project={project} viewport={viewport} isStatic={isStatic} onInlineEdit={onInlineEdit} />
       </div>
     </section>
   );
@@ -223,8 +276,17 @@ const SplitHero: React.FC<HeroProps> = ({ content, block, project, viewport, isS
   const hasBg = !!content.backgroundImage;
   const isMobile = viewport === 'mobile';
 
+  const anim = {
+    type: style.animationType || 'none',
+    duration: style.animationDuration || 0.8,
+    delay: style.animationDelay || 0
+  };
+
+  const animKey = !isStatic ? `${block.id}-${anim.type}-${anim.duration}` : 'static';
+
   return (
     <section
+      key={animKey}
       id={block.id}
       className="relative overflow-hidden transition-all duration-500"
       style={{ background: 'var(--block-bg)', color: 'var(--block-color)', minHeight: 'var(--hero-min-height)' }}
@@ -237,8 +299,8 @@ const SplitHero: React.FC<HeroProps> = ({ content, block, project, viewport, isS
           className="flex flex-col justify-center transition-all duration-500"
           style={{ paddingTop: 'var(--block-pt)', paddingBottom: 'var(--block-pb)', paddingLeft: 'var(--block-px)', paddingRight: 'var(--block-px)', gap: 'var(--block-gap)', textAlign: 'var(--block-align)' as any, alignItems: 'var(--block-items)' as any }}
         >
-          <HeroText content={content} style={style} subtitleClass="!ml-0 !mr-0" onInlineEdit={onInlineEdit} />
-          <HeroCTAs content={content} style={style} project={project} viewport={viewport} isStatic={isStatic} onInlineEdit={onInlineEdit} />
+          <HeroText content={content} style={style} subtitleClass="!ml-0 !mr-0" anim={anim} onInlineEdit={onInlineEdit} />
+          <HeroCTAs content={content} style={style} anim={anim} project={project} viewport={viewport} isStatic={isStatic} onInlineEdit={onInlineEdit} />
         </div>
         {/* Image side */}
         {hasBg ? (
@@ -269,8 +331,17 @@ const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, i
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
   const hasBg = !!content.backgroundImage;
 
+  const anim = {
+    type: style.animationType || 'none',
+    duration: style.animationDuration || 0.8,
+    delay: style.animationDelay || 0
+  };
+
+  const animKey = !isStatic ? `${block.id}-${anim.type}-${anim.duration}` : 'static';
+
   return (
     <section
+      key={animKey}
       id={block.id}
       className="relative overflow-hidden transition-all duration-500"
       style={{ background: 'var(--block-bg)', color: 'var(--block-color)' }}
@@ -305,8 +376,8 @@ const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, i
         className="relative z-10 mx-auto w-full flex flex-col transition-all duration-500"
         style={{ paddingTop: hasBg ? 'var(--block-gap)' : 'var(--block-pt)', paddingBottom: 'var(--block-pb)', paddingLeft: 'var(--block-px)', paddingRight: 'var(--block-px)', gap: 'var(--block-gap)', alignItems: 'var(--block-items)' as any, textAlign: 'var(--block-align)' as any }}
       >
-        <HeroText content={content} style={style} onInlineEdit={onInlineEdit} />
-        <HeroCTAs content={content} style={style} project={project} viewport={viewport} isStatic={isStatic} onInlineEdit={onInlineEdit} />
+        <HeroText content={content} style={style} anim={anim} onInlineEdit={onInlineEdit} />
+        <HeroCTAs content={content} style={style} anim={anim} project={project} viewport={viewport} isStatic={isStatic} onInlineEdit={onInlineEdit} />
       </div>
     </section>
   );
@@ -317,6 +388,7 @@ const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, i
 // ═══════════════════════════════════════════════════════════════════════
 export const Hero: React.FC<HeroProps> = (props) => {
   const variant = props.content.variant || 'centered';
+  
   switch (variant) {
     case 'split': return <SplitHero {...props} />;
     case 'stacked': return <StackedHero {...props} />;

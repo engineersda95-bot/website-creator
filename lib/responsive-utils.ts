@@ -39,16 +39,17 @@ export function generateBlockCSS(blockId: string, block: Block, project?: Projec
   const hasBorder = (block.style?.borderWidth || 0) > 0;
 
   return `
-    #${blockId} {
-      ${printVars(desktopVars)}
-      border-radius: var(--block-radius, 0px);
-      border: var(--block-border-w, 0px) ${hasBorder ? 'solid' : 'none'} var(--block-border-c, transparent);
-      margin-top: var(--block-mt, 0px);
-      margin-bottom: var(--block-mb, 0px);
-      margin-left: var(--block-ml, 0px);
-      margin-right: var(--block-mr, 0px);
-      transition: all 0.5s ease;
-    }
+      #${blockId} {
+        ${printVars(desktopVars)}
+        max-width: var(--block-max-width, 100%);
+        margin-top: var(--block-mt, 0px);
+        margin-bottom: var(--block-mb, 0px);
+        margin-left: var(--block-ml-auto, 0);
+        margin-right: var(--block-mr-auto, 0);
+        border-radius: var(--block-radius, 0px);
+        border: var(--block-border-w, 0px) ${hasBorder ? 'solid' : 'none'} var(--block-border-c, transparent);
+        transition: all 0.5s ease;
+      }
     ${urlOverrides}
     @media (max-width: 1024px) {
       #${blockId} {

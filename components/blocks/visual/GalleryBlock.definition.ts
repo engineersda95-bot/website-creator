@@ -37,7 +37,10 @@ export const galleryDefinition: BlockDefinition = {
       patternType: 'none',
       patternColor: '#ffffff',
       patternOpacity: 10,
-      patternScale: 40
+      patternScale: 40,
+      animationType: 'none',
+      animationDuration: 0.8,
+      animationDelay: 0
     },
     responsiveStyles: {
       tablet: { columns: 2, gap: 12 },

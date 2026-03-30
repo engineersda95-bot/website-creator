@@ -164,9 +164,12 @@ export function TemplatePreviewModal({
                     data-anchor={anchorId}
                     style={{
                       ...vars,
+                      maxWidth: 'var(--block-max-width, 100%)',
                       borderRadius: 'var(--block-radius)',
                       marginTop: 'var(--block-mt)',
                       marginBottom: 'var(--block-mb)',
+                      marginLeft: 'var(--block-ml-auto, 0)',
+                      marginRight: 'var(--block-mr-auto, 0)',
                     } as any}
                   >
                     <Component

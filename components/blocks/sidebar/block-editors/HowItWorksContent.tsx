@@ -102,13 +102,41 @@ export const HowItWorksContent: React.FC<HowItWorksContentProps> = ({
             placeholder="Come lavoriamo?"
           />
 
-          <LayoutGridSlider 
-            content={selectedBlock.content}
-            updateContent={updateContent}
-            updateStyle={updateStyle}
-            getStyleValue={getStyleValue}
-            viewport={viewport}
-          />
+          <div className="pt-6 border-t border-zinc-100/50">
+            <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex items-center gap-2 tracking-widest pl-1">
+              <Layout size={12} /> Disposizione
+            </label>
+            <div className="flex border rounded-xl overflow-hidden bg-zinc-50">
+              {[
+                { id: 'grid', label: 'Orizzontale' },
+                { id: 'linear', label: 'Verticale' }
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => updateStyle({ layout: item.id })}
+                  className={cn(
+                    "flex-1 p-2.5 text-[12px] font-black uppercase transition-all",
+                    getStyleValue('layout', 'grid') === item.id 
+                      ? "bg-zinc-900 text-white shadow-lg z-10" 
+                      : "text-zinc-400 hover:text-zinc-600"
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {getStyleValue('layout', 'grid') === 'grid' && (
+            <LayoutGridSlider 
+              content={selectedBlock.content}
+              updateContent={updateContent}
+              updateStyle={updateStyle}
+              getStyleValue={getStyleValue}
+              viewport={viewport}
+            />
+          )}
+
         </div>
       </section>
 
