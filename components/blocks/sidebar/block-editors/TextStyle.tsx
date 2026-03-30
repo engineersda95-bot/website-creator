@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Layers, Type } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, BackgroundManager, PatternManager, AnchorManager } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, BackgroundManager, PatternManager, AnchorManager, AnimationManager } from '../SharedSidebarComponents';
 
 interface TextStyleProps {
    selectedBlock: any;
@@ -66,6 +66,11 @@ export const TextStyle: React.FC<TextStyleProps> = ({
                defaultValue={18} 
             />
          </section>
+
+         <AnimationManager 
+            getStyleValue={getStyleValue} 
+            updateStyle={updateStyle} 
+         />
 
          <AnchorManager 
             selectedBlock={selectedBlock} 

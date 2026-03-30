@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layers, Type, Palette, Star } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, BackgroundManager, PatternManager, AnchorManager } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BorderShadowManager, SimpleSlider, BackgroundManager, PatternManager, AnchorManager, AnimationManager } from '../SharedSidebarComponents';
 
 interface PricingStyleProps {
   selectedBlock: any;
@@ -195,6 +195,11 @@ export const PricingStyle: React.FC<PricingStyleProps> = ({
           </div>
         </div>
       </section>
+      <AnimationManager 
+        getStyleValue={getStyleValue} 
+        updateStyle={updateStyle} 
+      />
+
       <AnchorManager 
         selectedBlock={selectedBlock} 
         updateContent={updateContent} 

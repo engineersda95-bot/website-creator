@@ -49,8 +49,15 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
 
   const alignment = style.align || 'center';
 
+  // Animation attributes
+  const animType = style.animationType || 'none';
+  const animDuration = style.animationDuration || 0.8;
+  const baseDelay = style.animationDelay || 0;
+  const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}-${baseDelay}` : 'static';
+
   return (
     <section 
+      key={animKey}
       id={block.id}
       className={cn(
         "w-full transition-all duration-500 overflow-hidden flex flex-col relative",
@@ -95,22 +102,21 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
           return (
             <div className="w-full flex flex-col" style={{ gap: '1rem', alignItems: 'inherit' }}>
               {content.title && (
-                onInlineEdit ? (
-                  <InlineEditable
-                    value={content.title || ''}
-                    onChange={(v) => onInlineEdit('title', v)}
-                    className="tracking-tighter leading-[0.9] rt-content"
-                    style={{
-                      fontSize: 'var(--title-fs)',
-                      fontWeight: 'var(--title-fw)' as any,
-                      fontStyle: 'var(--title-fs-style)' as any,
-                      textAlign: 'inherit',
-                      color: 'inherit'
-                    }}
-                    placeholder="Titolo..."
-                  />
-                ) : (
-                  <div className="tracking-tighter leading-[0.9] rt-content"
+                <div
+                  data-siti-anim={animType}
+                  data-siti-anim-duration={animDuration}
+                  data-siti-anim-delay={baseDelay}
+                  style={{
+                    '--siti-anim-duration': animDuration + 's',
+                    '--siti-anim-delay': baseDelay + 's'
+                  } as any}
+                  className="w-full"
+                >
+                  {onInlineEdit ? (
+                    <InlineEditable
+                      value={content.title || ''}
+                      onChange={(v) => onInlineEdit('title', v)}
+                      className="tracking-tighter leading-[0.9] rt-content"
                       style={{
                         fontSize: 'var(--title-fs)',
                         fontWeight: 'var(--title-fw)' as any,
@@ -118,43 +124,66 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
                         textAlign: 'inherit',
                         color: 'inherit'
                       }}
-                      dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-                  />
-                )
+                      placeholder="Titolo..."
+                    />
+                  ) : (
+                    <div className="tracking-tighter leading-[0.9] rt-content"
+                        style={{
+                          fontSize: 'var(--title-fs)',
+                          fontWeight: 'var(--title-fw)' as any,
+                          fontStyle: 'var(--title-fs-style)' as any,
+                          textAlign: 'inherit',
+                          color: 'inherit'
+                        }}
+                        dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+                    />
+                  )}
+                </div>
               )}
               {content.subtitle && (
-                onInlineEdit ? (
-                  <InlineEditable
-                    value={content.subtitle || ''}
-                    onChange={(v) => onInlineEdit('subtitle', v)}
-                    className="opacity-60 leading-relaxed max-w-2xl rt-content"
-                    style={{
-                      fontSize: 'var(--subtitle-fs)',
-                      fontWeight: 'var(--subtitle-fw)' as any,
-                      fontStyle: 'var(--subtitle-fs-style)' as any,
-                      textAlign: 'inherit',
-                      color: 'inherit',
-                      marginLeft: 'var(--block-ml-auto)',
-                      marginRight: 'var(--block-mr-auto)',
-                    }}
-                    placeholder="Sottotitolo..."
-                    richText
-                    multiline
-                  />
-                ) : (
-                  <div className="opacity-60 leading-relaxed max-w-2xl rt-content"
-                     style={{
-                       fontSize: 'var(--subtitle-fs)',
-                       fontWeight: 'var(--subtitle-fw)' as any,
-                       fontStyle: 'var(--subtitle-fs-style)' as any,
-                       textAlign: 'inherit',
-                       color: 'inherit',
-                       marginLeft: 'var(--block-ml-auto)',
-                       marginRight: 'var(--block-mr-auto)',
-                     }}
-                     dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
-                  />
-                )
+                <div
+                  data-siti-anim={animType}
+                  data-siti-anim-duration={animDuration}
+                  data-siti-anim-delay={baseDelay + 0.1}
+                  style={{
+                    '--siti-anim-duration': animDuration + 's',
+                    '--siti-anim-delay': (baseDelay + 0.1) + 's'
+                  } as any}
+                  className="w-full"
+                >
+                  {onInlineEdit ? (
+                    <InlineEditable
+                      value={content.subtitle || ''}
+                      onChange={(v) => onInlineEdit('subtitle', v)}
+                      className="opacity-60 leading-relaxed max-w-2xl rt-content"
+                      style={{
+                        fontSize: 'var(--subtitle-fs)',
+                        fontWeight: 'var(--subtitle-fw)' as any,
+                        fontStyle: 'var(--subtitle-fs-style)' as any,
+                        textAlign: 'inherit',
+                        color: 'inherit',
+                        marginLeft: 'var(--block-ml-auto)',
+                        marginRight: 'var(--block-mr-auto)',
+                      }}
+                      placeholder="Sottotitolo..."
+                      richText
+                      multiline
+                    />
+                  ) : (
+                    <div className="opacity-60 leading-relaxed max-w-2xl rt-content"
+                       style={{
+                         fontSize: 'var(--subtitle-fs)',
+                         fontWeight: 'var(--subtitle-fw)' as any,
+                         fontStyle: 'var(--subtitle-fs-style)' as any,
+                         textAlign: 'inherit',
+                         color: 'inherit',
+                         marginLeft: 'var(--block-ml-auto)',
+                         marginRight: 'var(--block-mr-auto)',
+                       }}
+                       dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+                    />
+                  )}
+                </div>
               )}
             </div>
           );
@@ -173,7 +202,16 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
             return (
               <>
                 {content.email && (
-                  <div className="flex items-center gap-4 group">
+                  <div 
+                    className="flex items-center gap-4 group"
+                    data-siti-anim={animType}
+                    data-siti-anim-duration={animDuration}
+                    data-siti-anim-delay={baseDelay + 0.15}
+                    style={{
+                      '--siti-anim-duration': animDuration + 's',
+                      '--siti-anim-delay': (baseDelay + 0.15) + 's'
+                    } as any}
+                  >
                     <div className="flex items-center justify-center shrink-0" style={{ color: 'inherit', width: 'var(--icon-size)', height: 'var(--icon-size)' }}>
                       <Mail size={parseInt(String(style.iconSize || 20))} />
                     </div>
@@ -194,7 +232,16 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
                   </div>
                 )}
                 {content.phone && (
-                  <div className="flex items-center gap-4 group">
+                  <div 
+                    className="flex items-center gap-4 group"
+                    data-siti-anim={animType}
+                    data-siti-anim-duration={animDuration}
+                    data-siti-anim-delay={baseDelay + 0.2}
+                    style={{
+                      '--siti-anim-duration': animDuration + 's',
+                      '--siti-anim-delay': (baseDelay + 0.2) + 's'
+                    } as any}
+                  >
                     <div className="flex items-center justify-center shrink-0" style={{ color: 'inherit', width: 'var(--icon-size)', height: 'var(--icon-size)' }}>
                       <Phone size={parseInt(String(style.iconSize || 20))} />
                     </div>
@@ -215,7 +262,16 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
                   </div>
                 )}
                 {content.address && (
-                  <div className="flex items-center gap-4 group">
+                  <div 
+                    className="flex items-center gap-4 group"
+                    data-siti-anim={animType}
+                    data-siti-anim-duration={animDuration}
+                    data-siti-anim-delay={baseDelay + 0.25}
+                    style={{
+                      '--siti-anim-duration': animDuration + 's',
+                      '--siti-anim-delay': (baseDelay + 0.25) + 's'
+                    } as any}
+                  >
                     <div className="flex items-center justify-center shrink-0" style={{ color: 'inherit', width: 'var(--icon-size)', height: 'var(--icon-size)' }}>
                       <MapPin size={parseInt(String(style.iconSize || 20))} />
                     </div>
@@ -242,13 +298,18 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
         {/* Map Section - Always BELOW and Centered/Aligned */}
         {isMapVisible && mapUrl && (
           <div 
+            data-siti-anim={animType}
+            data-siti-anim-duration={animDuration}
+            data-siti-anim-delay={baseDelay + 0.3}
             className="w-full aspect-video overflow-hidden relative shadow-sm border border-black/5"
             style={{ 
               maxWidth: 'var(--map-width)',
               marginLeft: 'var(--block-ml-auto)',
               marginRight: 'var(--block-mr-auto)',
-              borderRadius: 'var(--block-radius, 24px)'
-            }}
+              borderRadius: 'var(--block-radius, 24px)',
+              '--siti-anim-duration': animDuration + 's',
+              '--siti-anim-delay': (baseDelay + 0.3) + 's'
+            } as any}
           >
             <iframe 
               src={mapUrl} 

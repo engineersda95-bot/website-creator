@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Layers, ImageIcon, Palette } from 'lucide-react';
-import { LayoutFields, ColorManager, SectionHeader, BackgroundManager, PatternManager, BorderShadowManager, SimpleSlider, ImageStyleFields, AnchorManager } from '../SharedSidebarComponents';
+import { LayoutFields, ColorManager, SectionHeader, BackgroundManager, PatternManager, BorderShadowManager, SimpleSlider, ImageStyleFields, AnchorManager, AnimationManager } from '../SharedSidebarComponents';
 import { cn } from '@/lib/utils';
 
 interface SingleImageStyleProps {
@@ -89,6 +89,11 @@ export const SingleImageStyle: React.FC<SingleImageStyleProps> = ({
       />
 
       <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
+      <AnimationManager 
+        getStyleValue={getStyleValue} 
+        updateStyle={updateStyle} 
+      />
+
       <AnchorManager 
         selectedBlock={selectedBlock} 
         updateContent={updateContent} 

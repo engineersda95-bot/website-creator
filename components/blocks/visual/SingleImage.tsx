@@ -48,13 +48,26 @@ export const SingleImage: React.FC<SingleImageBlockProps> = ({
   const hasImageShadow = style.imageShadow !== false && style.imageShadow !== 'none';
   const hasImageHover = style.imageHover !== false;
 
+  // Animation attributes
+  const animType = style.animationType || 'none';
+  const animDuration = style.animationDuration || 0.8;
+  const baseDelay = style.animationDelay || 0;
+  const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}-${baseDelay}` : 'static';
+
   const ImageElement = (
     <div 
       className={cn(
         "relative w-full transition-all duration-700 bg-zinc-100 flex items-center justify-center group/image",
         hasImageShadow && "shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]"
       )}
-      style={imageContainerStyle}
+      style={{
+        ...imageContainerStyle,
+        '--siti-anim-duration': animDuration + 's',
+        '--siti-anim-delay': baseDelay + 's'
+      } as any}
+      data-siti-anim={animType}
+      data-siti-anim-duration={animDuration}
+      data-siti-anim-delay={baseDelay}
     >
       {content.image ? (
         <SitiImage 
@@ -78,7 +91,7 @@ export const SingleImage: React.FC<SingleImageBlockProps> = ({
   );
 
   return (
-    <section id={blockId} className="relative overflow-hidden single-image-block" style={blockStyles}>
+    <section key={animKey} id={blockId} className="relative overflow-hidden single-image-block" style={blockStyles}>
       {content.sectionId && (
         <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
       )}

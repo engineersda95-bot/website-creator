@@ -60,7 +60,10 @@ export const pricingDefinition: BlockDefinition = {
       featuresSize: 14,
       labelSize: 10,
       labelBold: true,
-      patternType: 'none'
+      patternType: 'none',
+      animationType: 'none',
+      animationDuration: 0.8,
+      animationDelay: 0
     },
     responsiveStyles: {
       tablet: { columns: 2 },

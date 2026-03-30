@@ -29,8 +29,15 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
   // Clean title check
   const hasTitle = content.title && content.title.replace(/<[^>]*>/g, '').trim().length > 0;
 
+  // Animation attributes
+  const animType = style.animationType || 'none';
+  const animDuration = style.animationDuration || 0.8;
+  const baseDelay = style.animationDelay || 0;
+  const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}-${baseDelay}` : 'static';
+
   return (
     <section
+      key={animKey}
       className={cn("w-full transition-all duration-500 overflow-hidden relative")}
       style={{
         background: 'var(--block-bg)',
@@ -68,7 +75,17 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
         }}
       >
         {(hasTitle || onInlineEdit) && (
-          <div className="w-full" style={{ marginBottom: hasTitle ? 'var(--block-gap)' : '0px' }}>
+          <div 
+            className="w-full" 
+            style={{ 
+              marginBottom: hasTitle ? 'var(--block-gap)' : '0px',
+              '--siti-anim-duration': animDuration + 's',
+              '--siti-anim-delay': baseDelay + 's'
+            } as any}
+            data-siti-anim={animType}
+            data-siti-anim-duration={animDuration}
+            data-siti-anim-delay={baseDelay}
+          >
             {onInlineEdit ? (
               <InlineEditable
                 value={content.title || ''}
@@ -101,7 +118,16 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
           </div>
         )}
 
-        <div className="w-full">
+        <div 
+          className="w-full"
+          style={{
+            '--siti-anim-duration': animDuration + 's',
+            '--siti-anim-delay': (baseDelay + 0.1) + 's'
+          } as any}
+          data-siti-anim={animType}
+          data-siti-anim-duration={animDuration}
+          data-siti-anim-delay={baseDelay + 0.1}
+        >
           {onInlineEdit ? (
             <InlineEditable
               value={content.text}

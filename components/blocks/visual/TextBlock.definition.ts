@@ -26,7 +26,10 @@ export const textDefinition: BlockDefinition = {
       patternScale: 40,
       contentSize: 18,
       contentBold: false,
-      contentItalic: false
+      contentItalic: false,
+      animationType: 'none',
+      animationDuration: 0.8,
+      animationDelay: 0
     }
   },
   styleMapper: (style, block, project, viewport) => {

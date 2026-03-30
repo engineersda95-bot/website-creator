@@ -57,8 +57,14 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
       items.length === 2 ? 'lg:grid-cols-2' : ''
     );
 
+  // Animation attributes
+  const animType = style.animationType || 'none';
+  const animDuration = style.animationDuration || 0.8;
+  const baseDelay = style.animationDelay || 0;
+  const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}-${baseDelay}` : 'static';
+
   return (
-    <section id={blockId} className="relative overflow-hidden pricing-block" style={blockStyles}>
+    <section key={animKey} id={blockId} className="relative overflow-hidden pricing-block" style={blockStyles}>
       {content.sectionId && (
         <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
       )}
@@ -74,73 +80,86 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
       <div 
         className="relative z-10 w-full mx-auto px-0"
       >
-        {content.title && (() => {
-          const TitleTag = (style.titleTag || 'h2') as any;
-          return onInlineEdit ? (
-            <InlineEditable
-              value={content.title || ''}
-              onChange={(v) => onInlineEdit('title', v)}
-              className="mb-6 tracking-tighter transition-all duration-500 leading-tight rt-content"
-              style={{
-                fontSize: 'var(--title-fs)',
-                fontWeight: style.titleBold ? '700' : '400',
-                fontStyle: style.titleItalic ? 'italic' : 'normal',
-                textAlign: align as any,
-                color: 'inherit'
-              }}
-              placeholder="Titolo..."
-            />
-          ) : (
-            <div
-              className="mb-6 tracking-tighter transition-all duration-500 leading-tight rt-content"
-              style={{
-                fontSize: 'var(--title-fs)',
-                fontWeight: style.titleBold ? '700' : '400',
-                fontStyle: style.titleItalic ? 'italic' : 'normal',
-                textAlign: align as any,
-                color: 'inherit'
-              }}
-              dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-            />
-          );
-        })()}
+        {(content.title || content.subtitle) && (
+          <div 
+            data-siti-anim={animType}
+            data-siti-anim-duration={animDuration}
+            data-siti-anim-delay={baseDelay}
+            style={{
+              '--siti-anim-duration': animDuration + 's',
+              '--siti-anim-delay': baseDelay + 's'
+            } as any}
+            className="w-full mb-16"
+          >
+            {content.title && (() => {
+              const TitleTag = (style.titleTag || 'h2') as any;
+              return onInlineEdit ? (
+                <InlineEditable
+                  value={content.title || ''}
+                  onChange={(v) => onInlineEdit('title', v)}
+                  className="mb-6 tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  style={{
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: style.titleBold ? '700' : '400',
+                    fontStyle: style.titleItalic ? 'italic' : 'normal',
+                    textAlign: align as any,
+                    color: 'inherit'
+                  }}
+                  placeholder="Titolo..."
+                />
+              ) : (
+                <div
+                  className="mb-6 tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  style={{
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: style.titleBold ? '700' : '400',
+                    fontStyle: style.titleItalic ? 'italic' : 'normal',
+                    textAlign: align as any,
+                    color: 'inherit'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+                />
+              );
+            })()}
 
-        {content.subtitle && (
-          onInlineEdit ? (
-            <InlineEditable
-              value={content.subtitle || ''}
-              onChange={(v) => onInlineEdit('subtitle', v)}
-              className={cn(
-                 "mb-16 opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap rt-content",
-                 align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto"
-              )}
-              style={{
-                fontSize: 'var(--subtitle-fs)',
-                fontWeight: style.subtitleBold ? '700' : '400',
-                fontStyle: style.subtitleItalic ? 'italic' : 'normal',
-                textAlign: align as any,
-                color: 'inherit'
-              }}
-              placeholder="Sottotitolo..."
-              richText
-              multiline
-            />
-          ) : (
-            <div
-              className={cn(
-                 "mb-16 opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap rt-content",
-                 align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto"
-              )}
-              style={{
-                fontSize: 'var(--subtitle-fs)',
-                fontWeight: style.subtitleBold ? '700' : '400',
-                fontStyle: style.subtitleItalic ? 'italic' : 'normal',
-                textAlign: align as any,
-                color: 'inherit'
-              }}
-              dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
-            />
-          )
+            {content.subtitle && (
+              onInlineEdit ? (
+                <InlineEditable
+                  value={content.subtitle || ''}
+                  onChange={(v) => onInlineEdit('subtitle', v)}
+                  className={cn(
+                    "opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap rt-content",
+                    align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto"
+                  )}
+                  style={{
+                    fontSize: 'var(--subtitle-fs)',
+                    fontWeight: style.subtitleBold ? '700' : '400',
+                    fontStyle: style.subtitleItalic ? 'italic' : 'normal',
+                    textAlign: align as any,
+                    color: 'inherit'
+                  }}
+                  placeholder="Sottotitolo..."
+                  richText
+                  multiline
+                />
+              ) : (
+                <div
+                  className={cn(
+                    "opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap rt-content",
+                    align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto"
+                  )}
+                  style={{
+                    fontSize: 'var(--subtitle-fs)',
+                    fontWeight: style.subtitleBold ? '700' : '400',
+                    fontStyle: style.subtitleItalic ? 'italic' : 'normal',
+                    textAlign: align as any,
+                    color: 'inherit'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+                />
+              )
+            )}
+          </div>
         )}
 
         <div 
@@ -149,10 +168,14 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
         >
           {items.map((item: any, i: number) => {
             const isHighlighted = item.isHighlighted;
+            const itemDelay = baseDelay + 0.1 + (i * 0.05);
             
             return (
               <div 
                 key={i} 
+                data-siti-anim={animType}
+                data-siti-anim-duration={animDuration}
+                data-siti-anim-delay={itemDelay}
                 className={cn(
                   "flex flex-col h-full transition-all duration-500 border relative",
                   isHighlighted 
@@ -164,8 +187,10 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
                   borderColor: isHighlighted ? 'var(--highlight-color)' : 'rgba(0,0,0,0.1)',
                   borderRadius: 'var(--card-radius)',
                   padding: 'var(--card-padding)',
-                  color: 'var(--card-color)'
-                }}
+                  color: 'var(--card-color)',
+                  '--siti-anim-duration': animDuration + 's',
+                  '--siti-anim-delay': itemDelay + 's'
+                } as any}
               >
                 <div className="flex-1 w-full flex flex-col">
                   {isHighlighted && (

@@ -98,7 +98,10 @@ export const howItWorksDefinition: BlockDefinition = {
       numberBgColor: '',
       numberTextColor: '',
       titleTag: 'h2',
-      itemTitleTag: 'h3'
+      itemTitleTag: 'h3',
+      animationType: 'none',
+      animationDuration: 0.8,
+      animationDelay: 0
     }
   },
   variants: [

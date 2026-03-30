@@ -98,7 +98,10 @@ export const faqDefinition: BlockDefinition = {
       itemTitleTag: 'h3',
       itemTitleBold: true,
       patternType: 'none',
-      patternScale: 40
+      patternScale: 40,
+      animationType: 'none',
+      animationDuration: 0.8,
+      animationDelay: 0
     }
   },
   variants: [

@@ -203,8 +203,14 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
     }
   };
 
+  // Animation attributes
+  const animType = style.animationType || 'none';
+  const animDuration = style.animationDuration || 0.8;
+  const baseDelay = style.animationDelay || 0;
+  const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}-${baseDelay}` : 'static';
+
   return (
-    <section id={blockId} className="relative overflow-hidden how-it-works-block" style={blockStyles}>
+    <section key={animKey} id={blockId} className="relative overflow-hidden how-it-works-block" style={blockStyles}>
       {content.sectionId && (
         <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
       )}
@@ -219,36 +225,46 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
       <div className="relative z-10 w-full">
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
-          return onInlineEdit ? (
-            <InlineEditable
-              value={content.title || ''}
-              onChange={(v) => onInlineEdit('title', v)}
-              className={cn(
-                  "mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content",
-                  align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left"
-              )}
-              style={{
-                fontSize: 'var(--title-fs)',
-                fontWeight: style.titleBold ? '700' : '400',
-                fontStyle: style.titleItalic ? 'italic' : 'normal',
-                color: 'inherit'
-              }}
-              placeholder="Titolo..."
-            />
-          ) : (
+          return (
             <div
+              data-siti-anim={animType}
+              data-siti-anim-duration={animDuration}
+              data-siti-anim-delay={baseDelay}
+              style={{
+                '--siti-anim-duration': animDuration + 's',
+                '--siti-anim-delay': baseDelay + 's'
+              } as any}
               className={cn(
-                  "mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content",
+                  "mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content w-full",
                   align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left"
               )}
-              style={{
-                fontSize: 'var(--title-fs)',
-                fontWeight: style.titleBold ? '700' : '400',
-                fontStyle: style.titleItalic ? 'italic' : 'normal',
-                color: 'inherit'
-              }}
-              dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-            />
+            >
+              {onInlineEdit ? (
+                <InlineEditable
+                  value={content.title || ''}
+                  onChange={(v) => onInlineEdit('title', v)}
+                  className="tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  style={{
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: style.titleBold ? '700' : '400',
+                    fontStyle: style.titleItalic ? 'italic' : 'normal',
+                    color: 'inherit'
+                  }}
+                  placeholder="Titolo..."
+                />
+              ) : (
+                <div
+                  className="tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  style={{
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: style.titleBold ? '700' : '400',
+                    fontStyle: style.titleItalic ? 'italic' : 'normal',
+                    color: 'inherit'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+                />
+              )}
+            </div>
           );
         })()}
 
@@ -260,9 +276,23 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
             )}
             style={{ gap: 'var(--block-gap, 3rem)' }}
           >
-            {items.map((item: any, i: number) => (
-              <StepItem key={i} item={item} index={i} layoutType="linear" />
-            ))}
+            {items.map((item: any, i: number) => {
+              const itemDelay = baseDelay + 0.1 + (i * 0.05);
+              return (
+                <div 
+                  key={i}
+                  data-siti-anim={animType}
+                  data-siti-anim-duration={animDuration}
+                  data-siti-anim-delay={itemDelay}
+                  style={{
+                    '--siti-anim-duration': animDuration + 's',
+                    '--siti-anim-delay': itemDelay + 's'
+                  } as any}
+                >
+                  <StepItem item={item} index={i} layoutType="linear" />
+                </div>
+              );
+            })}
           </div>
         ) : isSlider ? (
           <div className="relative group/slider">
@@ -295,17 +325,27 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
               )}
               style={{ gap: 'var(--block-gap, 2rem)', paddingLeft: `${style.sliderPadding ?? 48}px`, paddingRight: `${style.sliderPadding ?? 48}px` }}
             >
-              {items.map((item: any, i: number) => (
-                <div 
-                  key={i} 
-                  className={cn(
-                    "flex flex-col transition-all duration-500 min-w-0 shrink-0 snap-center",
-                    sliderWidth
-                  )}
-                >
-                  <StepItem item={item} index={i} layoutType="grid" />
-                </div>
-              ))}
+              {items.map((item: any, i: number) => {
+                const itemDelay = baseDelay + 0.1 + (i * 0.05);
+                return (
+                  <div 
+                    key={i} 
+                    data-siti-anim={animType}
+                    data-siti-anim-duration={animDuration}
+                    data-siti-anim-delay={itemDelay}
+                    className={cn(
+                      "flex flex-col transition-all duration-500 min-w-0 shrink-0 snap-center",
+                      sliderWidth
+                    )}
+                    style={{
+                      '--siti-anim-duration': animDuration + 's',
+                      '--siti-anim-delay': itemDelay + 's'
+                    } as any}
+                  >
+                    <StepItem item={item} index={i} layoutType="grid" />
+                  </div>
+                );
+              })}
             </div>
 
             <div dangerouslySetInnerHTML={{ __html: `<script>
@@ -335,9 +375,23 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
             {variant === 'cards' && align === 'center' && currentCols > 1 && (
                 <div className="absolute top-[28px] left-[10%] right-[10%] h-px bg-black/5 dark:bg-white/5 hidden md:block" />
             )}
-            {items.map((item: any, i: number) => (
-              <StepItem key={i} item={item} index={i} layoutType="grid" />
-            ))}
+            {items.map((item: any, i: number) => {
+              const itemDelay = baseDelay + 0.1 + (i * 0.05);
+              return (
+                <div 
+                  key={i}
+                  data-siti-anim={animType}
+                  data-siti-anim-duration={animDuration}
+                  data-siti-anim-delay={itemDelay}
+                  style={{
+                    '--siti-anim-duration': animDuration + 's',
+                    '--siti-anim-delay': itemDelay + 's'
+                  } as any}
+                >
+                  <StepItem item={item} index={i} layoutType="grid" />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

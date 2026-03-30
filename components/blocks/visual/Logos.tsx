@@ -13,8 +13,15 @@ export const Logos: React.FC<any> = ({
   const items = content.items || [];
   const title = content.title;
 
+  // Animation attributes
+  const animType = style.animationType || 'none';
+  const animDuration = style.animationDuration || 0.8;
+  const baseDelay = style.animationDelay || 0;
+  const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}-${baseDelay}` : 'static';
+
   return (
     <section 
+      key={animKey}
       id={id}
       className="relative overflow-hidden"
       style={{
@@ -42,23 +49,43 @@ export const Logos: React.FC<any> = ({
         {title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
           return (
-            <TitleTag 
-              className="text-center mb-12 tracking-tight"
-              style={{ 
-                fontSize: 'var(--title-fs)',
-                fontWeight: 'var(--title-fw)' as any,
-                fontStyle: 'var(--title-fs-style)' as any,
-                textTransform: 'var(--title-upper)' as any,
-                lineHeight: '1.2'
-              }}
+            <div
+              data-siti-anim={animType}
+              data-siti-anim-duration={animDuration}
+              data-siti-anim-delay={baseDelay}
+              style={{
+                '--siti-anim-duration': animDuration + 's',
+                '--siti-anim-delay': baseDelay + 's'
+              } as any}
+              className="w-full"
             >
-              {title}
-            </TitleTag>
+              <TitleTag 
+                className="text-center mb-12 tracking-tight"
+                style={{ 
+                  fontSize: 'var(--title-fs)',
+                  fontWeight: 'var(--title-fw)' as any,
+                  fontStyle: 'var(--title-fs-style)' as any,
+                  textTransform: 'var(--title-upper)' as any,
+                  lineHeight: '1.2'
+                }}
+              >
+                {title}
+              </TitleTag>
+            </div>
           );
         })()}
 
         {/* Marquee Container */}
-        <div className="relative w-full overflow-hidden mask-fade-edges group">
+        <div 
+          data-siti-anim={animType}
+          data-siti-anim-duration={animDuration}
+          data-siti-anim-delay={baseDelay + (title ? 0.15 : 0)}
+          style={{
+            '--siti-anim-duration': animDuration + 's',
+            '--siti-anim-delay': (baseDelay + (title ? 0.15 : 0)) + 's'
+          } as any}
+          className="relative w-full overflow-hidden mask-fade-edges group"
+        >
           <div 
             className="flex items-center w-max animate-marquee group-hover:[animation-play-state:paused]"
             style={{

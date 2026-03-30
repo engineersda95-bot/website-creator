@@ -129,8 +129,14 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
     );
   };
 
+  // Animation attributes
+  const animType = style.animationType || 'none';
+  const animDuration = style.animationDuration || 0.8;
+  const baseDelay = style.animationDelay || 0;
+  const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}-${baseDelay}` : 'static';
+
   return (
-    <section id={blockId} className="relative overflow-hidden benefits-block" style={blockStyles}>
+    <section key={animKey} id={blockId} className="relative overflow-hidden benefits-block" style={blockStyles}>
       {content.sectionId && (
         <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
       )}
@@ -144,7 +150,16 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
       />
       <div className="relative z-10 w-full mx-auto">
         {(content.title || content.subtitle) && (
-          <div className={cn("mb-16", align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left")}>
+          <div 
+            data-siti-anim={animType}
+            data-siti-anim-duration={animDuration}
+            data-siti-anim-delay={baseDelay}
+            style={{
+              '--siti-anim-duration': animDuration + 's',
+              '--siti-anim-delay': baseDelay + 's'
+            } as any}
+            className={cn("mb-16", align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left")}
+          >
             {content.title && (() => {
               const TitleTag = (style.titleTag || 'h2') as any;
               return onInlineEdit ? (
@@ -237,18 +252,28 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
                 "flex gap-6 md:gap-8 pb-4 items-stretch flex-row overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all"
               )} 
             >
-              {items.map((item: any, i: number) => (
-                <div 
-                  key={i} 
-                  className={cn(
-                    "flex flex-col transition-all duration-500 min-w-0 shrink-0 snap-center",
-                    sliderWidth,
-                    colsD === 1 && "lg:max-w-4xl lg:mx-auto"
-                  )}
-                >
-                  <BenefitItem item={item} />
-                </div>
-              ))}
+              {items.map((item: any, i: number) => {
+                const itemDelay = baseDelay + 0.1 + (i * 0.05);
+                return (
+                  <div 
+                    key={i} 
+                    data-siti-anim={animType}
+                    data-siti-anim-duration={animDuration}
+                    data-siti-anim-delay={itemDelay}
+                    style={{
+                      '--siti-anim-duration': animDuration + 's',
+                      '--siti-anim-delay': itemDelay + 's'
+                    } as any}
+                    className={cn(
+                      "flex flex-col transition-all duration-500 min-w-0 shrink-0 snap-center",
+                      sliderWidth,
+                      colsD === 1 && "lg:max-w-4xl lg:mx-auto"
+                    )}
+                  >
+                    <BenefitItem item={item} />
+                  </div>
+                );
+              })}
             </div>
 
             <div dangerouslySetInnerHTML={{ __html: `<script>
@@ -270,11 +295,23 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
           </div>
         ) : (
           <div className={cn("grid gap-8 md:gap-12", gridClass)}>
-            {items.map((item: any, i: number) => (
-              <div key={i}>
-                <BenefitItem item={item} />
-              </div>
-            ))}
+            {items.map((item: any, i: number) => {
+              const itemDelay = baseDelay + 0.1 + (i * 0.05);
+              return (
+                <div 
+                  key={i}
+                  data-siti-anim={animType}
+                  data-siti-anim-duration={animDuration}
+                  data-siti-anim-delay={itemDelay}
+                  style={{
+                    '--siti-anim-duration': animDuration + 's',
+                    '--siti-anim-delay': itemDelay + 's'
+                  } as any}
+                >
+                  <BenefitItem item={item} />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

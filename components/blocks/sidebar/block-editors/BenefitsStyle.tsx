@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Layers, Type, Palette, Star } from 'lucide-react';
-import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BackgroundManager, PatternManager, BorderShadowManager, SimpleSlider, AnchorManager } from '../SharedSidebarComponents';
+import { LayoutFields, TypographyFields, ColorManager, SectionHeader, BackgroundManager, PatternManager, BorderShadowManager, SimpleSlider, AnchorManager, AnimationManager } from '../SharedSidebarComponents';
 
 interface BenefitsStyleProps {
   selectedBlock: any;
@@ -121,6 +121,11 @@ export const BenefitsStyle: React.FC<BenefitsStyleProps> = ({
           </div>
         </div>
       </section>
+      <AnimationManager 
+        getStyleValue={getStyleValue} 
+        updateStyle={updateStyle} 
+      />
+
       <AnchorManager 
         selectedBlock={selectedBlock} 
         updateContent={updateContent} 

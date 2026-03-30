@@ -36,7 +36,10 @@ export const contactDefinition: BlockDefinition = {
       patternScale: 40,
       titleTag: 'h2',
       itemTitleTag: 'h3',
-      itemTitleBold: true
+      itemTitleBold: true,
+      animationType: 'none',
+      animationDuration: 0.8,
+      animationDelay: 0
     }
   },
   styleMapper: (style, block, project, viewport) => {

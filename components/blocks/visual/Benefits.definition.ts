@@ -40,7 +40,10 @@ export const benefitsDefinition: BlockDefinition = {
       align: 'center',
       titleTag: 'h2',
       itemTitleTag: 'h3',
-      boxStyle: 'card'
+      boxStyle: 'card',
+      animationType: 'none',
+      animationDuration: 0.8,
+      animationDelay: 0
     }
   },
   styleMapper: (style, block, project, viewport) => {

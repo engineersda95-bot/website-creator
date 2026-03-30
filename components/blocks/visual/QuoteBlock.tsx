@@ -233,8 +233,14 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
     }
   };
 
+  // Animation attributes
+  const animType = style.animationType || 'none';
+  const animDuration = style.animationDuration || 0.8;
+  const baseDelay = style.animationDelay || 0;
+  const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}-${baseDelay}` : 'static';
+
   return (
-    <section id={blockId} style={blockStyles} className="relative overflow-hidden quote-block">
+    <section key={animKey} id={blockId} style={blockStyles} className="relative overflow-hidden quote-block">
       {content.sectionId && (
         <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
       )}
@@ -249,31 +255,44 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
       <div className="relative z-10 text-left">
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
-          return onInlineEdit ? (
-            <InlineEditable
-              value={content.title || ''}
-              onChange={(v) => onInlineEdit('title', v)}
-              className="mb-16 tracking-tighter leading-tight"
+          return (
+            <div
+              data-siti-anim={animType}
+              data-siti-anim-duration={animDuration}
+              data-siti-anim-delay={baseDelay}
+              className="w-full mb-16"
               style={{
-                fontSize: 'var(--title-fs)',
-                fontWeight: style.titleBold ? '700' : '400',
-                fontStyle: style.titleItalic ? 'italic' : 'normal',
-                textAlign: align as any
-              }}
-              placeholder="Titolo..."
-            />
-          ) : (
-            <TitleTag
-              style={{
-                fontSize: 'var(--title-fs)',
-                fontWeight: style.titleBold ? '700' : '400',
-                fontStyle: style.titleItalic ? 'italic' : 'normal',
-                textAlign: align as any
-              }}
-              className="mb-16 tracking-tighter leading-tight"
+                '--siti-anim-duration': animDuration + 's',
+                '--siti-anim-delay': baseDelay + 's'
+              } as any}
             >
-              {content.title}
-            </TitleTag>
+              {onInlineEdit ? (
+                <InlineEditable
+                  value={content.title || ''}
+                  onChange={(v) => onInlineEdit('title', v)}
+                  className="mb-16 tracking-tighter leading-tight"
+                  style={{
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: style.titleBold ? '700' : '400',
+                    fontStyle: style.titleItalic ? 'italic' : 'normal',
+                    textAlign: align as any
+                  }}
+                  placeholder="Titolo..."
+                />
+              ) : (
+                <TitleTag
+                  style={{
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: style.titleBold ? '700' : '400',
+                    fontStyle: style.titleItalic ? 'italic' : 'normal',
+                    textAlign: align as any
+                  }}
+                  className="mb-16 tracking-tighter leading-tight"
+                >
+                  {content.title}
+                </TitleTag>
+              )}
+            </div>
           );
         })()}
 
@@ -308,35 +327,55 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
                 "flex-row"
               )}
             >
-              {items.map((item: any, i: number) => (
+              {items.map((item: any, i: number) => {
+                const itemDelay = baseDelay + 0.1 + (i * 0.05);
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      ...cardStyles,
+                      '--siti-anim-duration': animDuration + 's',
+                      '--siti-anim-delay': itemDelay + 's'
+                    } as any}
+                    data-siti-anim={animType}
+                    data-siti-anim-duration={animDuration}
+                    data-siti-anim-delay={itemDelay}
+                    className={cn(
+                      "p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm shrink-0 min-w-0 snap-center",
+                      sliderWidth,
+                      colsD === 1 && "lg:max-w-4xl lg:mx-auto"
+                    )}
+                  >
+                    <CardContent item={item} index={i} />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className={cn("grid gap-8", gridClass)}>
+            {items.map((item: any, i: number) => {
+              const itemDelay = baseDelay + 0.1 + (i * 0.05);
+              return (
                 <div
                   key={i}
-                  style={cardStyles}
+                  style={{
+                    ...cardStyles,
+                    '--siti-anim-duration': animDuration + 's',
+                    '--siti-anim-delay': itemDelay + 's'
+                    } as any}
+                  data-siti-anim={animType}
+                  data-siti-anim-duration={animDuration}
+                  data-siti-anim-delay={itemDelay}
                   className={cn(
-                    "p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm shrink-0 min-w-0 snap-center",
-                    sliderWidth,
+                    "w-full p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm min-w-0",
                     colsD === 1 && "lg:max-w-4xl lg:mx-auto"
                   )}
                 >
                   <CardContent item={item} index={i} />
                 </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className={cn("grid gap-8", gridClass)}>
-            {items.map((item: any, i: number) => (
-              <div
-                key={i}
-                style={cardStyles}
-                className={cn(
-                  "w-full p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm min-w-0",
-                  colsD === 1 && "lg:max-w-4xl lg:mx-auto"
-                )}
-              >
-                <CardContent item={item} index={i} />
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Settings, Maximize2, Zap, Palette, Image as ImageIcon } from 'lucide-react';
-import { SectionHeader, LayoutFields, ColorManager, BackgroundManager, BorderShadowManager, PatternManager, SimpleSlider, TypographyFields, AnchorManager } from '../SharedSidebarComponents';
+import { SectionHeader, LayoutFields, ColorManager, BackgroundManager, BorderShadowManager, PatternManager, SimpleSlider, TypographyFields, AnchorManager, AnimationManager } from '../SharedSidebarComponents';
 import { cn } from '@/lib/utils';
 
 interface LogosStyleProps {
@@ -102,7 +102,7 @@ export const LogosStyle: React.FC<LogosStyleProps> = ({
 
       {/* Marquee & Animazioni */}
       <section className="pt-8 border-t border-zinc-100">
-        <SectionHeader icon={Zap} title="Animazione" />
+        <SectionHeader icon={Zap} title="Marquee & Scroll" />
         <div className="space-y-8">
           <SimpleSlider 
             label="Velocità"
@@ -186,11 +186,17 @@ export const LogosStyle: React.FC<LogosStyleProps> = ({
           getStyleValue={getStyleValue} 
         />
       </section>
+
+      <AnimationManager 
+        getStyleValue={getStyleValue} 
+        updateStyle={updateStyle} 
+      />
+
       <AnchorManager 
         selectedBlock={selectedBlock} 
         updateContent={updateContent} 
       />
     </div>
   );
-};
+};;
 

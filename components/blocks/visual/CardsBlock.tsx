@@ -186,8 +186,14 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
     ? { background: `linear-gradient(${style.cardBgDirection || 'to bottom'}, ${style.cardBgColor || 'transparent'}, ${style.cardBgColor2 || 'transparent'})` }
     : { backgroundColor: style.cardBgColor || 'transparent' };
 
+  // Animation attributes
+  const animType = style.animationType || 'none';
+  const animDuration = style.animationDuration || 0.8;
+  const baseDelay = style.animationDelay || 0;
+  const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}-${baseDelay}` : 'static';
+
   return (
-    <section id={blockId} className="relative overflow-hidden cards-block" style={blockStyles}>
+    <section key={animKey} id={blockId} className="relative overflow-hidden cards-block" style={blockStyles}>
       {content.sectionId && (
         <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />
       )}
@@ -204,32 +210,45 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
       >
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
-          return onInlineEdit ? (
-            <InlineEditable
-              value={content.title || ''}
-              onChange={(v) => onInlineEdit('title', v)}
-              className="mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content"
-              style={{
-                fontSize: 'var(--title-fs)',
-                fontWeight: style.titleBold ? '700' : '400',
-                fontStyle: style.titleItalic ? 'italic' : 'normal',
-                textAlign: align as any,
-                color: 'inherit'
-              }}
-              placeholder="Titolo..."
-            />
-          ) : (
+          return (
             <div
-              className="mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content"
+              data-siti-anim={animType}
+              data-siti-anim-duration={animDuration}
+              data-siti-anim-delay={baseDelay}
               style={{
-                fontSize: 'var(--title-fs)',
-                fontWeight: style.titleBold ? '700' : '400',
-                fontStyle: style.titleItalic ? 'italic' : 'normal',
-                textAlign: align as any,
-                color: 'inherit'
-              }}
-              dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-            />
+                '--siti-anim-duration': animDuration + 's',
+                '--siti-anim-delay': baseDelay + 's'
+              } as any}
+              className="w-full mb-16"
+            >
+              {onInlineEdit ? (
+                <InlineEditable
+                  value={content.title || ''}
+                  onChange={(v) => onInlineEdit('title', v)}
+                  className="tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  style={{
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: style.titleBold ? '700' : '400',
+                    fontStyle: style.titleItalic ? 'italic' : 'normal',
+                    textAlign: align as any,
+                    color: 'inherit'
+                  }}
+                  placeholder="Titolo..."
+                />
+              ) : (
+                <div
+                  className="tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  style={{
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: style.titleBold ? '700' : '400',
+                    fontStyle: style.titleItalic ? 'italic' : 'normal',
+                    textAlign: align as any,
+                    color: 'inherit'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+                />
+              )}
+            </div>
           );
         })()}
 
@@ -264,25 +283,33 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
                 "flex gap-6 md:gap-8 pb-4 items-stretch flex-row overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all"
               )} 
             >
-              {items.map((item: any, i: number) => (
-                <div 
-                  key={i} 
-                  className={cn(
-                    "flex flex-col transition-all duration-500 min-w-0 shrink-0 snap-center",
-                    sliderWidth,
-                    colsD === 1 && "lg:max-w-4xl lg:mx-auto",
-                    (style.cardBgColor || isGradient) && "rounded-[var(--card-radius),_2rem] border border-black/5 dark:border-white/5",
-                    (style.cardBgColor || isGradient) && (colsD > 4 ? "p-4 md:p-6" : "p-6 md:p-8")
-                  )}
-                  style={{
-                    color: style.cardTextColor || undefined,
-                    padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
-                    ...cardBgStyle
-                  }}
-                >
-                  <CardItem item={item} />
-                </div>
-              ))}
+              {items.map((item: any, i: number) => {
+                const itemDelay = baseDelay + 0.1 + (i * 0.05);
+                return (
+                  <div 
+                    key={i} 
+                    data-siti-anim={animType}
+                    data-siti-anim-duration={animDuration}
+                    data-siti-anim-delay={itemDelay}
+                    className={cn(
+                      "flex flex-col transition-all duration-500 min-w-0 shrink-0 snap-center",
+                      sliderWidth,
+                      colsD === 1 && "lg:max-w-4xl lg:mx-auto",
+                      (style.cardBgColor || isGradient) && "rounded-[var(--card-radius),_2rem] border border-black/5 dark:border-white/5",
+                      (style.cardBgColor || isGradient) && (colsD > 4 ? "p-4 md:p-6" : "p-6 md:p-8")
+                    )}
+                    style={{
+                      color: style.cardTextColor || undefined,
+                      padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
+                      ...cardBgStyle,
+                      '--siti-anim-duration': animDuration + 's',
+                      '--siti-anim-delay': itemDelay + 's'
+                    } as any}
+                  >
+                    <CardItem item={item} />
+                  </div>
+                );
+              })}
             </div>
 
             <div dangerouslySetInnerHTML={{ __html: `<script>
@@ -308,26 +335,33 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
               "grid gap-6 md:gap-12 pb-8 md:pb-0",
               gridClass
             )}
-
           >
-            {items.map((item: any, i: number) => (
-              <div 
-                key={i} 
-                className={cn(
-                  "flex flex-col transition-all duration-500 min-w-0 w-full",
-                  colsD === 1 && "lg:max-w-4xl lg:mx-auto",
-                  (style.cardBgColor || isGradient) && "rounded-[var(--card-radius),_2rem] border border-black/5 dark:border-white/5",
-                  (style.cardBgColor || isGradient) && (colsD > 4 ? "p-4 md:p-6" : "p-6 md:p-8")
-                )}
-                style={{
-                  color: style.cardTextColor || undefined,
-                  padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
-                  ...cardBgStyle
-                }}
-              >
-                <CardItem item={item} />
-              </div>
-            ))}
+            {items.map((item: any, i: number) => {
+              const itemDelay = baseDelay + 0.1 + (i * 0.05);
+              return (
+                <div 
+                  key={i} 
+                  data-siti-anim={animType}
+                  data-siti-anim-duration={animDuration}
+                  data-siti-anim-delay={itemDelay}
+                  className={cn(
+                    "flex flex-col transition-all duration-500 min-w-0 w-full",
+                    colsD === 1 && "lg:max-w-4xl lg:mx-auto",
+                    (style.cardBgColor || isGradient) && "rounded-[var(--card-radius),_2rem] border border-black/5 dark:border-white/5",
+                    (style.cardBgColor || isGradient) && (colsD > 4 ? "p-4 md:p-6" : "p-6 md:p-8")
+                  )}
+                  style={{
+                    color: style.cardTextColor || undefined,
+                    padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : undefined,
+                    ...cardBgStyle,
+                    '--siti-anim-duration': animDuration + 's',
+                    '--siti-anim-delay': itemDelay + 's'
+                  } as any}
+                >
+                  <CardItem item={item} />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

@@ -32,7 +32,10 @@ export const logosDefinition: BlockDefinition = {
       aspectRatio: '1:1',
       logoWidth: 120,
       background: 'transparent',
-      titleTag: 'h2'
+      titleTag: 'h2',
+      animationType: 'none',
+      animationDuration: 0.8,
+      animationDelay: 0
     }
   },
   styleMapper: (style, block, project, viewport) => {

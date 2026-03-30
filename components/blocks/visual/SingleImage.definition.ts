@@ -25,7 +25,10 @@ export const singleImageDefinition: BlockDefinition = {
       imageMaxWidth: 100,
       imageBorderRadius: 16,
       imageShadow: true,
-      imageHover: true
+      imageHover: true,
+      animationType: 'none',
+      animationDuration: 0.8,
+      animationDelay: 0
     }
   },
   styleMapper: (style, block, project, viewport) => {
