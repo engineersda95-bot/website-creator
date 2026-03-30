@@ -16,10 +16,11 @@ interface QuoteBlockProps {
 
 export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport, isStatic, imageMemoryCache }) => {
   const { content } = block;
+  const variant = content.variant || 'cards';
   const { style, viewport: currentVp, isDark, theme } = getBlockStyles(block, project, viewport);
-  
+
   const items = content.items || [];
-  
+
   if (items.length === 0 && !content.title) return null;
 
   const layout = content.layout || 'grid';
@@ -30,7 +31,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
   const align = style.align || 'center';
   const blockId = `quote-${block.id.replace(/[^a-zA-Z0-9]/g, '')}`;
 
-  const isSlider = layout === 'slider';
+  const isSlider = layout === 'slider' || variant === 'spotlight';
   
   const colsD = block.style?.columns || 3;
   const colsT = block.responsiveStyles?.tablet?.columns || 2;
@@ -112,79 +113,123 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
 
 
 
-  const CardContent = ({ item }: { item: any }) => (
+  // ─── Shared sub-components ─────────────────────────────────────────
+  const Stars = ({ count }: { count: number }) => (
+    <div className="flex gap-1 shrink-0">
+      {[...Array(5)].map((_, idx) => (
+        <Star key={idx} size={14} className={cn(idx < count ? "text-amber-400 fill-amber-400" : "text-zinc-400 opacity-20")} />
+      ))}
+    </div>
+  );
+
+  const Avatar = ({ item, size, ratio }: { item: any; size?: number; ratio?: string }) => (
+    item.avatar ? (
+      <div
+        style={{ width: `${size || avatarSize}px`, aspectRatio: ratio || avatarAspectRatio }}
+        className={cn("overflow-hidden shrink-0 border border-black/5 dark:border-white/10 shadow-lg", avatarShape === 'circle' ? "rounded-full" : "rounded-2xl")}
+      >
+        <img src={resolveImageUrl(item.avatar, project)} alt={item.avatarAlt || item.name} className="w-full h-full object-cover" />
+      </div>
+    ) : null
+  );
+
+  const AuthorInfo = ({ item }: { item: any }) => (
+    <div className={cn("min-w-0 flex-1", align === 'right' && "text-right")}>
+      {(() => {
+        const ItemTitleTag = (style.itemTitleTag || 'h4') as any;
+        return (
+          <ItemTitleTag
+            style={{ fontSize: 'var(--item-title-fs)', fontWeight: 'var(--item-title-fw)' as any, fontStyle: 'var(--item-title-is)' as any }}
+            className="tracking-tight leading-snug whitespace-normal break-words mb-1"
+          >{item.name}</ItemTitleTag>
+        );
+      })()}
+      <p style={{ fontSize: 'var(--review-role-fs)', fontWeight: 'var(--review-role-fw)' as any, fontStyle: 'var(--review-role-is)' as any }}
+        className="opacity-40 uppercase tracking-widest text-[9px] leading-snug whitespace-normal break-words"
+      >{item.role}</p>
+    </div>
+  );
+
+  const QuoteText = ({ item }: { item: any }) => (
+    <p
+      style={{ fontSize: 'var(--review-fs)', fontWeight: 'var(--review-fw)' as any, fontStyle: 'var(--review-is)' as any, textAlign: align as any }}
+      className="leading-relaxed opacity-80 whitespace-pre-wrap break-words w-full"
+    >{"\u201C"}{item.text}{"\u201D"}</p>
+  );
+
+  // ─── CARDS variant (default) ──────────────────────────────────────
+  const CardsContent = ({ item }: { item: any }) => (
     <>
       <div className="flex-1 flex flex-col w-full min-w-0">
         <div className={cn("mb-8 flex", align === 'center' ? "justify-center" : align === 'right' ? "justify-end" : "justify-start")}>
-          {visualType === 'stars' ? (
-            <div className="flex gap-1 shrink-0">
-              {[...Array(5)].map((_, idx) => (
-                <Star key={idx} size={14} className={cn(idx < item.stars ? "text-amber-400 fill-amber-400" : "text-zinc-400 opacity-20")} />
-              ))}
-            </div>
-          ) : (
-            <QuoteIcon size={44} className="opacity-20 translate-y-2 shrink-0" />
-          )}
+          {visualType === 'stars' ? <Stars count={item.stars} /> : <QuoteIcon size={44} className="opacity-20 translate-y-2 shrink-0" />}
         </div>
-        
-        <p 
-          style={{ 
-            fontSize: 'var(--review-fs)', 
-            fontWeight: 'var(--review-fw)' as any, 
-            fontStyle: 'var(--review-is)' as any, 
-            textAlign: align as any 
-          }}
-          className="leading-relaxed opacity-80 mb-10 whitespace-pre-wrap break-words w-full"
-        >
-          "{item.text}"
-        </p>
+        <div className="mb-10"><QuoteText item={item} /></div>
       </div>
+      <div className={cn("flex items-center gap-5 mt-auto pt-8 border-t border-black/5 dark:border-white/5 w-full min-w-0", align === 'center' ? "justify-center" : align === 'right' ? "justify-end flex-row-reverse" : "justify-start")}>
+        <Avatar item={item} />
+        <AuthorInfo item={item} />
+      </div>
+    </>
+  );
 
-      <div className={cn(
-        "flex items-center gap-5 mt-auto pt-8 border-t border-black/5 dark:border-white/5 w-full min-w-0",
-        align === 'center' ? "justify-center" : align === 'right' ? "justify-end flex-row-reverse" : "justify-start"
-      )}>
-        {item.avatar && (
-          <div 
-            style={{ width: `${avatarSize}px`, aspectRatio: avatarAspectRatio }}
-            className={cn(
-              "overflow-hidden shrink-0 border border-black/5 dark:border-white/10 shadow-lg",
-              avatarShape === 'circle' ? "rounded-full" : "rounded-2xl"
-            )}
-          >
-            <img src={resolveImageUrl(item.avatar, project)} alt={item.avatarAlt || item.name} className="w-full h-full object-cover" />
-          </div>
-        )}
-        <div className={cn("min-w-0 flex-1 ml-0", align === 'right' && "text-right")}>
-          {(() => {
-            const ItemTitleTag = (style.itemTitleTag || 'h4') as any;
-            return (
-              <ItemTitleTag 
-                style={{ 
-                  fontSize: 'var(--item-title-fs)', 
-                  fontWeight: 'var(--item-title-fw)' as any, 
-                  fontStyle: 'var(--item-title-is)' as any 
-                }} 
-                className="tracking-tight leading-snug whitespace-normal break-words mb-1"
-              >
-                {item.name}
-              </ItemTitleTag>
-            );
-          })()}
-          <p 
-            style={{ 
-              fontSize: 'var(--review-role-fs)', 
-              fontWeight: 'var(--review-role-fw)' as any, 
-              fontStyle: 'var(--review-role-is)' as any 
-            }} 
-            className="opacity-40 uppercase tracking-widest text-[9px] leading-snug whitespace-normal break-words"
-          >
-            {item.role}
-          </p>
+  // ─── MINIMAL variant — left border, no card bg ────────────────────
+  const MinimalContent = ({ item }: { item: any }) => (
+    <div className="flex gap-5 w-full">
+      <div className="w-1 shrink-0 rounded-full self-stretch" style={{ background: 'color-mix(in srgb, currentColor 15%, transparent)' }} />
+      <div className="flex-1 min-w-0 flex flex-col">
+        {visualType === 'stars' && <div className="mb-3"><Stars count={item.stars} /></div>}
+        <div className="mb-4"><QuoteText item={item} /></div>
+        <div className="flex items-center gap-3 mt-auto">
+          <Avatar item={item} size={Math.min(avatarSize, 36)} ratio="1/1" />
+          <AuthorInfo item={item} />
+        </div>
+      </div>
+    </div>
+  );
+
+  // ─── SPOTLIGHT variant — big centered quote ───────────────────────
+  const SpotlightContent = ({ item }: { item: any }) => (
+    <div className="flex flex-col items-center text-center w-full">
+      <QuoteIcon size={48} className="opacity-10 mb-6" />
+      <p
+        style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.8rem)', fontWeight: 'var(--review-fw)' as any, fontStyle: 'var(--review-is)' as any }}
+        className="leading-[1.6] opacity-80 mb-8 max-w-3xl mx-auto whitespace-pre-wrap break-words"
+      >{item.text}</p>
+      <Avatar item={item} />
+      <div className="mt-4 text-center">
+        <AuthorInfo item={item} />
+      </div>
+      {visualType === 'stars' && <div className="mt-3"><Stars count={item.stars} /></div>}
+    </div>
+  );
+
+  // ─── BUBBLE variant — chat-style with avatar outside ──────────────
+  const BubbleContent = ({ item }: { item: any }) => (
+    <>
+      <div className="flex-1 flex flex-col w-full min-w-0">
+        {visualType === 'stars' && <div className="mb-3"><Stars count={item.stars} /></div>}
+        <div className="mb-4"><QuoteText item={item} /></div>
+      </div>
+      <div className="flex items-center gap-3 mt-auto pt-4">
+        <Avatar item={item} size={Math.min(avatarSize, 40)} ratio="1/1" />
+        <div className="min-w-0">
+          <span style={{ fontSize: 'var(--item-title-fs)', fontWeight: 'var(--item-title-fw)' as any }} className="tracking-tight block">{item.name}</span>
+          {item.role && <span style={{ fontSize: 'var(--review-role-fs)' }} className="opacity-40 block">{item.role}</span>}
         </div>
       </div>
     </>
   );
+
+  // ─── Pick the right content renderer ──────────────────────────────
+  const CardContent = ({ item, index }: { item: any; index?: number }) => {
+    switch (variant) {
+      case 'minimal': return <MinimalContent item={item} />;
+      case 'spotlight': return <SpotlightContent item={item} />;
+      case 'bubble': return <BubbleContent item={item} />;
+      default: return <CardsContent item={item} />;
+    }
+  };
 
   return (
     <section id={blockId} style={blockStyles} className="relative overflow-hidden quote-block">
@@ -219,10 +264,9 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
 
         {isSlider ? (
           <div className="relative group/quote">
-            {/* Slider Navigation Arrows */}
             <div className="absolute top-1/2 left-2 md:-left-6 -translate-y-1/2 z-30 transition-all duration-300">
-              <button 
-                data-arrow="left" 
+              <button
+                data-arrow="left"
                 className={cn(
                   "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow",
                   isDark ? "bg-zinc-900 border-white/10" : "bg-white border-black/5"
@@ -232,8 +276,8 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
               </button>
             </div>
             <div className="absolute top-1/2 right-2 md:-right-6 -translate-y-1/2 z-30 transition-all duration-300">
-              <button 
-                data-arrow="right" 
+              <button
+                data-arrow="right"
                 className={cn(
                   "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow",
                   isDark ? "bg-zinc-900 border-white/10" : "bg-white border-black/5"
@@ -243,15 +287,15 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
               </button>
             </div>
 
-            <div 
+            <div
               className={cn(
                 "flex gap-8 pb-4 items-stretch overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all",
                 "flex-row"
-              )} 
+              )}
             >
               {items.map((item: any, i: number) => (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   style={cardStyles}
                   className={cn(
                     "p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm shrink-0 min-w-0 snap-center",
@@ -259,7 +303,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
                     colsD === 1 && "lg:max-w-4xl lg:mx-auto"
                   )}
                 >
-                  <CardContent item={item} />
+                  <CardContent item={item} index={i} />
                 </div>
               ))}
             </div>
@@ -267,15 +311,15 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
         ) : (
           <div className={cn("grid gap-8", gridClass)}>
             {items.map((item: any, i: number) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 style={cardStyles}
                 className={cn(
                   "w-full p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm min-w-0",
                   colsD === 1 && "lg:max-w-4xl lg:mx-auto"
                 )}
               >
-                <CardContent item={item} />
+                <CardContent item={item} index={i} />
               </div>
             ))}
           </div>

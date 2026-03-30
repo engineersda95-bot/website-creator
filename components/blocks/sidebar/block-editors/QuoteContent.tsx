@@ -3,10 +3,17 @@
 import React from 'react';
 import { SectionHeader, SimpleInput, LayoutGridSlider } from '../SharedSidebarComponents';
 import { ImageUpload } from '@/components/shared/ImageUpload';
-import { Quote, Plus, Trash2, ChevronDown, ChevronUp, Star, Circle, Square, Layout, Palette, Type } from 'lucide-react';
+import { Quote, Plus, Trash2, ChevronDown, ChevronUp, Star, Circle, Square, Layout, Palette, Type, List, MessageCircle, Maximize2 } from 'lucide-react';
 import { useEditorStore } from '@/store/useEditorStore';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { cn } from '@/lib/utils';
+
+const QUOTE_VARIANTS = [
+  { id: 'cards', label: 'Cards', icon: Layout },
+  { id: 'minimal', label: 'Minimal', icon: List },
+  { id: 'spotlight', label: 'Spotlight', icon: Maximize2 },
+  { id: 'bubble', label: 'Bubble', icon: MessageCircle },
+];
 
 interface ReviewListManagerProps {
   items: Array<{ text: string; name: string; role: string; stars: number; avatar?: string; avatarAlt?: string }>;
@@ -176,9 +183,31 @@ export const QuoteContent: React.FC<any> = ({
   return (
     <div className="space-y-10 pb-20">
       <SectionHeader icon={Quote} title="Configurazione Blocco" />
-      
+
+      {/* Variant selector */}
+      <div className="space-y-2">
+        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Stile</label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {QUOTE_VARIANTS.map((v) => (
+            <button
+              key={v.id}
+              onClick={() => updateContent({ variant: v.id })}
+              className={cn(
+                "flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-[9px] font-medium transition-all",
+                (content.variant || 'cards') === v.id
+                  ? "border-zinc-900 bg-zinc-900 text-white"
+                  : "border-zinc-100 text-zinc-400 hover:border-zinc-300"
+              )}
+            >
+              <v.icon size={14} />
+              {v.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="space-y-8">
-        <SimpleInput 
+        <SimpleInput
           label="Titolo Sezione (Opzionale)"
           placeholder="es: Cosa dicono di noi" 
           value={content.title || ''} 
