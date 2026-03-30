@@ -140,15 +140,28 @@ export async function deployToCloudflare(projectId: string) {
 
     // 3.2. Generate static Tailwind CSS
     console.log('Generating production Tailwind CSS...');
-    // We create the input file in the project root so Tailwind can resolve its modules correctly
-    const rootInputCssPath = path.join(process.cwd(), `tailwind-input-${projectId}.css`);
+    // We create the input file in the temporary directory to avoid read-only filesystem issues
+    const rootInputCssPath = path.join(tempDir, `tailwind-input-${projectId}.css`);
     const inputCssContent = `@import "tailwindcss";\n@source "${tempDir.replace(/\\/g, '/')}/**/*.html";`;
     fs.writeFileSync(rootInputCssPath, inputCssContent);
     
+    const commonEnv = {
+      ...process.env,
+      HOME: '/tmp',
+      npm_config_cache: '/tmp/.npm',
+      WRANGLER_HOME: '/tmp',
+      WRANGLER_CACHE_PATH: '/tmp/wrangler-cache',
+      XDG_CONFIG_HOME: '/tmp/.config',
+      XDG_CACHE_HOME: '/tmp/.cache',
+      CLOUDFLARE_API_TOKEN: API_TOKEN,
+      CLOUDFLARE_ACCOUNT_ID: ACCOUNT_ID,
+      WRANGLER_SKIP_UPDATE_CHECK: '1'
+    };
+
     try {
       // Run from project root so it can resolve 'tailwindcss' package
       execSync(`npx --yes @tailwindcss/cli -i "${rootInputCssPath}" -o "${path.join(assetsDir, 'styles.css')}"`, { 
-        env: { ...process.env, HOME: '/tmp' },
+        env: commonEnv,
         encoding: 'utf-8' 
       });
       console.log('Tailwind CSS generated successfully');
@@ -162,23 +175,10 @@ export async function deployToCloudflare(projectId: string) {
 
     const command = `npx --yes wrangler@3 pages deploy "${tempDir}" --project-name="${projectName}" --branch="main"`;
 
-    const env = {
-      ...process.env,
-      HOME: '/tmp',
-      npm_config_cache: '/tmp/.npm',
-      WRANGLER_HOME: '/tmp',
-      WRANGLER_CACHE_PATH: '/tmp/wrangler-cache',
-      XDG_CONFIG_HOME: '/tmp/.config',
-      XDG_CACHE_HOME: '/tmp/.cache',
-      CLOUDFLARE_API_TOKEN: API_TOKEN,
-      CLOUDFLARE_ACCOUNT_ID: ACCOUNT_ID,
-      WRANGLER_SKIP_UPDATE_CHECK: '1'
-    };
-
     const output = execSync(command, {
       cwd: '/tmp', // Executing from /tmp allows wrangler to ignore the read-only /var/task folder
       env: {
-        ...env,
+        ...commonEnv,
         WRANGLER_SEND_METRICS: 'false',
         WRANGLER_SEND_TELEMETRY: 'false',
         WRANGLER_LOG_PATH: '/tmp/wrangler-deploy.log',
