@@ -141,8 +141,10 @@ export async function deployToCloudflare(projectId: string) {
     // 3.2. Generate static Tailwind CSS
     console.log('Generating production Tailwind CSS...');
     // We create the input file in the temporary directory to avoid read-only filesystem issues
+    // Using absolute path for @import to ensure Tailwind resolves it correctly even from /tmp
+    const tailwindPkgPath = path.dirname(require.resolve('tailwindcss/package.json')).replace(/\\/g, '/');
     const rootInputCssPath = path.join(tempDir, `tailwind-input-${projectId}.css`);
-    const inputCssContent = `@import "tailwindcss";\n@source "${tempDir.replace(/\\/g, '/')}/**/*.html";`;
+    const inputCssContent = `@import "${tailwindPkgPath}/index.css";\n@source "${tempDir.replace(/\\/g, '/')}/**/*.html";`;
     fs.writeFileSync(rootInputCssPath, inputCssContent);
     
     const commonEnv = {
