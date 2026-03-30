@@ -1,9 +1,17 @@
 'use client';
 
 import React from 'react';
-import { List, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { List, Plus, Trash2, ArrowUp, ArrowDown, Layout, Clock, AlignLeft } from 'lucide-react';
 import { SectionHeader, SimpleInput, RichTextarea, LayoutGridSlider } from '../SharedSidebarComponents';
 import { useEditorStore } from '@/store/useEditorStore';
+import { cn } from '@/lib/utils';
+
+const HIW_VARIANTS = [
+  { id: 'cards', label: 'Cards', icon: Layout },
+  { id: 'minimal', label: 'Minimal', icon: AlignLeft },
+  { id: 'timeline', label: 'Timeline', icon: Clock },
+  { id: 'compact', label: 'Compatto', icon: List },
+];
 
 interface HowItWorksContentProps {
   selectedBlock: any;
@@ -62,6 +70,28 @@ export const HowItWorksContent: React.FC<HowItWorksContentProps> = ({
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500 pb-20">
       
+      {/* Variant selector */}
+      <div className="space-y-2">
+        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Stile</label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {HIW_VARIANTS.map((v) => (
+            <button
+              key={v.id}
+              onClick={() => updateContent({ variant: v.id })}
+              className={cn(
+                "flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-[9px] font-medium transition-all",
+                (selectedBlock.content.variant || 'cards') === v.id
+                  ? "border-zinc-900 bg-zinc-900 text-white"
+                  : "border-zinc-100 text-zinc-400 hover:border-zinc-300"
+              )}
+            >
+              <v.icon size={14} />
+              {v.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <section>
         <SectionHeader icon={List} title="Configurazione" />
         <div className="space-y-6">

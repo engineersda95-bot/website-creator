@@ -55,6 +55,19 @@ export const HowItWorksStyle: React.FC<HowItWorksStyleProps> = ({
             ))}
           </div>
         </div>
+
+        {selectedBlock.content?.layout === 'slider' && (
+          <div className="pt-6">
+            <SimpleSlider
+              label="Padding Laterale Slider"
+              min={0}
+              max={120}
+              step={4}
+              value={getStyleValue('sliderPadding', 48)}
+              onChange={(val) => updateStyle({ sliderPadding: val })}
+            />
+          </div>
+        )}
       </section>
 
       {/* 2. Colori & Sfondo Sezione */}

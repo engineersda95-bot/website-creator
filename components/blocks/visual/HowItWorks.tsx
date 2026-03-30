@@ -77,54 +77,112 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
     color: style.numberTextColor || style.backgroundColor || '#fff',
   };
 
-  const StepItem = ({ item, index, layoutType }: { item: any, index: number, layoutType: string }) => {
-    const ItemTitleTag = (style.itemTitleTag || 'h3') as any;
-    
-    return (
-      <div className={cn(
-        "relative flex flex-col transition-all duration-500",
-        layoutType === 'grid' ? (
-            align === 'center' ? "items-center text-center group" :
-            align === 'right' ? "items-end text-right group" :
-            "items-start text-left group"
-        ) : (
-            align === 'center' ? "flex-col md:flex-row items-center text-center md:text-left gap-6 md:gap-10" :
-            align === 'right' ? "flex-col md:flex-row-reverse items-center md:items-start text-center md:text-right gap-6 md:gap-10" :
-            "flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 md:gap-10"
-        )
-      )}>
-        {/* Number Icon */}
-        <div 
-          className={cn(
-            "rounded-2xl flex items-center justify-center font-black text-white shrink-0 shadow-lg z-10 transition-all",
-            layoutType === 'grid' ? "w-[56px] h-[56px] text-xl mb-6 group-hover:scale-110" : 
-            "w-[48px] h-[48px] md:w-[64px] md:h-[64px] text-lg md:text-2xl"
-          )}
+  // ─── Shared pieces ─────────────────────────────────────────────────
+  const StepTitle = ({ item, index }: { item: any; index: number }) => (
+    <div
+      className="mb-2 tracking-tight transition-all duration-300 rt-content"
+      style={{ fontSize: 'var(--item-title-fs)', fontWeight: 'var(--item-title-fw)', fontStyle: 'var(--item-title-is)', color: 'inherit' }}
+      dangerouslySetInnerHTML={{ __html: formatRichText(item.title || `Step ${index + 1}`) }}
+    />
+  );
+  const StepDesc = ({ item }: { item: any }) => (
+    <div
+      className="opacity-70 leading-relaxed transition-all duration-300 rt-content"
+      style={{ ...descStyles, color: 'inherit' }}
+      dangerouslySetInnerHTML={{ __html: formatRichText(item.description || 'Descrizione del passaggio.') }}
+    />
+  );
+  const NumberBox = ({ item, index, size = 56 }: { item: any; index: number; size?: number }) => (
+    <div
+      className="rounded-2xl flex items-center justify-center font-black text-white shrink-0 shadow-lg transition-all"
+      style={{ ...numberStyle, width: `${size}px`, height: `${size}px`, fontSize: `${Math.round(size * 0.36)}px` }}
+    >
+      {item.number || (index + 1)}
+    </div>
+  );
+
+  const variant = content.variant || 'cards';
+
+  // ─── CARDS variant (default) ──────────────────────────────────────
+  const CardsStep = ({ item, index, layoutType }: { item: any; index: number; layoutType: string }) => (
+    <div className={cn(
+      "relative flex flex-col transition-all duration-500",
+      layoutType === 'grid' ? (
+        align === 'center' ? "items-center text-center group" :
+        align === 'right' ? "items-end text-right group" :
+        "items-start text-left group"
+      ) : (
+        align === 'center' ? "flex-col md:flex-row items-center text-center md:text-left gap-6 md:gap-10" :
+        align === 'right' ? "flex-col md:flex-row-reverse items-center md:items-start text-center md:text-right gap-6 md:gap-10" :
+        "flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 md:gap-10"
+      )
+    )}>
+      <div className={cn(layoutType === 'grid' ? "mb-6 group-hover:scale-110 transition-transform" : "")}>
+        <NumberBox item={item} index={index} size={layoutType === 'grid' ? 56 : 48} />
+      </div>
+      <div className="flex-1">
+        <StepTitle item={item} index={index} />
+        <StepDesc item={item} />
+      </div>
+    </div>
+  );
+
+  // ─── MINIMAL variant — big faded number, text beside it ────────────
+  const MinimalStep = ({ item, index }: { item: any; index: number }) => (
+    <div className="flex gap-5">
+      <span className="text-4xl font-black tabular-nums shrink-0 leading-none pt-1" style={{ color: 'currentColor', opacity: 0.1 }}>
+        {String(item.number || index + 1).padStart(2, '0')}
+      </span>
+      <div className="flex-1 min-w-0">
+        <StepTitle item={item} index={index} />
+        <StepDesc item={item} />
+      </div>
+    </div>
+  );
+
+  // ─── TIMELINE variant — dot + line + content ──────────────────────
+  const TimelineStep = ({ item, index }: { item: any; index: number }) => (
+    <div className="flex gap-5 relative">
+      <div className="flex flex-col items-center shrink-0">
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
           style={numberStyle}
         >
           {item.number || (index + 1)}
         </div>
-
-        {/* Content */}
-        <div className="flex-1">
-          <div 
-            className="mb-2 tracking-tight transition-all duration-300 rt-content" 
-            style={{
-              fontSize: 'var(--item-title-fs)',
-              fontWeight: 'var(--item-title-fw)',
-              fontStyle: 'var(--item-title-is)',
-              color: 'inherit'
-            }}
-            dangerouslySetInnerHTML={{ __html: formatRichText(item.title || `Step ${index + 1}`) }}
-          />
-          <div 
-            className="opacity-70 leading-relaxed transition-all duration-300 rt-content" 
-            style={{ ...descStyles, color: 'inherit' }}
-            dangerouslySetInnerHTML={{ __html: formatRichText(item.description || 'Descrizione del passaggio.') }}
-          />
-        </div>
+        <div className="w-px flex-1" style={{ background: 'color-mix(in srgb, currentColor 12%, transparent)' }} />
       </div>
-    );
+      <div className="flex-1 min-w-0">
+        <StepTitle item={item} index={index} />
+        <StepDesc item={item} />
+      </div>
+    </div>
+  );
+
+  // ─── COMPACT variant — small circle + content ─────────────────────
+  const CompactStep = ({ item, index }: { item: any; index: number }) => (
+    <div className="flex gap-4">
+      <div
+        className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
+        style={{ background: 'color-mix(in srgb, currentColor 8%, transparent)', color: 'inherit', opacity: 0.6 }}
+      >
+        {item.number || (index + 1)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <StepTitle item={item} index={index} />
+        <StepDesc item={item} />
+      </div>
+    </div>
+  );
+
+  // ─── Router ───────────────────────────────────────────────────────
+  const StepItem = ({ item, index, layoutType }: { item: any; index: number; layoutType: string }) => {
+    switch (variant) {
+      case 'minimal': return <MinimalStep item={item} index={index} />;
+      case 'timeline': return <TimelineStep item={item} index={index} />;
+      case 'compact': return <CompactStep item={item} index={index} />;
+      default: return <CardsStep item={item} index={index} layoutType={layoutType} />;
+    }
   };
 
   return (
@@ -197,11 +255,11 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
               </button>
             </div>
 
-            <div 
+            <div
               className={cn(
                 "flex pb-4 items-stretch flex-row overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all"
-              )} 
-              style={{ gap: 'var(--block-gap, 2rem)' }}
+              )}
+              style={{ gap: 'var(--block-gap, 2rem)', paddingLeft: `${style.sliderPadding ?? 48}px`, paddingRight: `${style.sliderPadding ?? 48}px` }}
             >
               {items.map((item: any, i: number) => (
                 <div 
