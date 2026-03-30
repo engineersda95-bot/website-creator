@@ -140,11 +140,21 @@ export async function deployToCloudflare(projectId: string) {
 
     // 3.2. Generate static Tailwind CSS
     console.log('Generating production Tailwind CSS...');
-    // We create the input file in the temporary directory to avoid read-only filesystem issues
-    // Construct the tailwind package path based on process.cwd() to avoid require.resolve issues in bundled environments
-    const tailwindPkgPath = path.join(process.cwd(), 'node_modules', 'tailwindcss').replace(/\\/g, '/');
+    
+    // Create a symlink to node_modules in the temp dir so Tailwind can resolve imports correctly
+    const targetNodeModules = path.join(tempDir, 'node_modules');
+    if (!fs.existsSync(targetNodeModules)) {
+      try {
+        // Use 'junction' on Windows, 'dir' on others for better compatibility
+        const type = process.platform === 'win32' ? 'junction' : 'dir';
+        fs.symlinkSync(path.join(process.cwd(), 'node_modules'), targetNodeModules, type);
+      } catch (e: any) {
+        console.warn('Could not create node_modules symlink:', e.message);
+      }
+    }
+
     const rootInputCssPath = path.join(tempDir, `tailwind-input-${projectId}.css`);
-    const inputCssContent = `@import "${tailwindPkgPath}/index.css";\n@source "${tempDir.replace(/\\/g, '/')}/**/*.html";`;
+    const inputCssContent = `@import "tailwindcss";\n@source "${tempDir.replace(/\\/g, '/')}/**/*.html";`;
     fs.writeFileSync(rootInputCssPath, inputCssContent);
     
     const commonEnv = {
