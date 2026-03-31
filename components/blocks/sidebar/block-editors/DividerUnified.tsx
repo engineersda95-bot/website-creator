@@ -4,12 +4,10 @@ import React from 'react';
 import {
   Layers,
   Palette,
-  Play,
   Settings,
 } from 'lucide-react';
 import {
   AnchorManager,
-  AnimationManager,
   BackgroundManager,
   BorderShadowManager,
   ColorManager,
@@ -112,10 +110,6 @@ export const DividerUnified: React.FC<DividerUnifiedProps> = ({
         <ManagerWrapper label="Pattern Decorativo">
           <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
         </ManagerWrapper>
-      </Section>
-
-      <Section icon={Play} label="Animazioni" id="animation" isOpen={openSection === 'animation'} onToggle={toggleSection}>
-        <AnimationManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
       </Section>
 
       <Section icon={Settings} label="Avanzate" id="advanced" isOpen={openSection === 'advanced'} onToggle={toggleSection}>
