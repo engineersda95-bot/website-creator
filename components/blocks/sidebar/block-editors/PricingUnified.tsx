@@ -188,8 +188,8 @@ export const PricingUnified: React.FC<PricingUnifiedProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex-1 mr-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1">
                   <SimpleInput
                     label="Nome Piano"
                     value={item.name || ''}
@@ -197,19 +197,30 @@ export const PricingUnified: React.FC<PricingUnifiedProps> = ({
                     placeholder="es. Base, Premium..."
                   />
                 </div>
-                <button
-                  onClick={() => updateItem(index, { isHighlighted: !item.isHighlighted })}
-                  className={cn(
-                    "mt-5 p-2 rounded-lg border transition-all flex items-center gap-1 font-bold text-[9px] uppercase tracking-wider",
-                    item.isHighlighted
-                      ? "bg-zinc-900 border-zinc-900 text-white shadow-sm"
-                      : "bg-white border-zinc-200 text-zinc-400 hover:border-zinc-900 hover:text-zinc-900"
-                  )}
-                >
-                  <Star size={12} className={item.isHighlighted ? "fill-white" : ""} />
-                  {item.isHighlighted ? "In Risalto" : "Risalto"}
-                </button>
+                <div className="mt-5 flex items-center gap-2">
+                  <button
+                    onClick={() => updateItem(index, { isHighlighted: !item.isHighlighted })}
+                    className={cn(
+                      "p-2 rounded-lg border transition-all flex items-center gap-1 font-bold text-[9px] uppercase tracking-wider",
+                      item.isHighlighted
+                        ? "bg-zinc-900 border-zinc-900 text-white shadow-sm"
+                        : "bg-white border-zinc-200 text-zinc-400 hover:border-zinc-900 hover:text-zinc-900"
+                    )}
+                  >
+                    <Star size={12} className={item.isHighlighted ? "fill-white" : ""} />
+                    {item.isHighlighted ? "In Risalto" : "Risalto"}
+                  </button>
+                </div>
               </div>
+
+              {item.isHighlighted && (
+                <SimpleInput
+                  label="Testo Etichetta (es. Consigliato)"
+                  value={item.highlightLabel || ''}
+                  onChange={(val) => updateItem(index, { highlightLabel: val })}
+                  placeholder="Consigliato"
+                />
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <SimpleInput

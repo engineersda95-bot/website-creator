@@ -200,6 +200,10 @@ export const ContactUnified: React.FC<ContactUnifiedProps> = ({
         </ManagerWrapper>
       </Section>
 
+      <Section icon={Play} label="Animazioni" id="animation" isOpen={openSection === 'animation'} onToggle={toggleSection}>
+        <AnimationManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
+      </Section>
+
       <Section icon={Settings} label="Avanzate" id="advanced" isOpen={openSection === 'advanced'} onToggle={toggleSection}>
         <BorderShadowManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
         <AnchorManager selectedBlock={selectedBlock} updateContent={updateContent} />
