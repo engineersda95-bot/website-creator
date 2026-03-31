@@ -1,8 +1,6 @@
 import { Minus } from 'lucide-react';
 import { DividerBlock } from './DividerBlock';
-import { DividerContent } from '../sidebar/block-editors/DividerContent';
-import { DividerStyle } from '../sidebar/block-editors/DividerStyle';
-import { DividerUnified } from '../sidebar/block-editors/DividerUnified';
+import { Divider } from '../sidebar/block-editors/Divider';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -12,9 +10,7 @@ export const dividerDefinition: BlockDefinition = {
   label: 'Separatore',
   icon: Minus,
   visual: DividerBlock,
-  contentEditor: DividerContent,
-  styleEditor: DividerStyle,
-  unifiedEditor: DividerUnified,
+  unifiedEditor: Divider,
   defaults: {
     content: { type: 'line' },
     style: { 

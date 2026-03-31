@@ -1,9 +1,7 @@
 import React from 'react';
 import { LayoutTemplate } from 'lucide-react';
 import { GalleryBlock } from './GalleryBlock';
-import { GalleryContent } from '../sidebar/block-editors/GalleryContent';
-import { GalleryStyle } from '../sidebar/block-editors/GalleryStyle';
-import { GalleryUnified } from '../sidebar/block-editors/GalleryUnified';
+import { Gallery } from '../sidebar/block-editors/Gallery';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -56,9 +54,7 @@ export const galleryDefinition: BlockDefinition = {
   label: 'Galleria',
   icon: LayoutTemplate,
   visual: GalleryBlock,
-  contentEditor: GalleryContent,
-  styleEditor: GalleryStyle,
-  unifiedEditor: GalleryUnified,
+  unifiedEditor: Gallery,
   defaults: {
     content: {
       variant: 'masonry',

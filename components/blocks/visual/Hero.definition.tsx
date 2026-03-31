@@ -1,9 +1,7 @@
 import React from 'react';
 import { Square } from 'lucide-react';
 import { Hero } from './Hero';
-import { HeroContent } from '../sidebar/block-editors/HeroContent';
-import { HeroStyle } from '../sidebar/block-editors/HeroStyle';
-import { HeroUnified } from '../sidebar/block-editors/HeroUnified';
+import { Hero as HeroEditor } from '../sidebar/block-editors/Hero';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -49,9 +47,7 @@ export const heroDefinition: BlockDefinition = {
   label: 'Hero',
   icon: Square,
   visual: Hero,
-  contentEditor: HeroContent,
-  styleEditor: HeroStyle,
-  unifiedEditor: HeroUnified,
+  unifiedEditor: HeroEditor,
   defaults: {
     content: {
       variant: 'centered',

@@ -5,7 +5,7 @@ import { Smartphone, Search, Type, Palette, MousePointer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEditorStore } from '@/store/useEditorStore';
 import { ProjectSettings } from '@/types/editor';
-import { UnifiedSection as Section, useUnifiedSections } from './UnifiedSection';
+import { UnifiedSection as Section, useUnifiedSections } from './SharedSidebarComponents';
 
 // Modular Sections
 import { SeoSection } from './settings/SeoSection';

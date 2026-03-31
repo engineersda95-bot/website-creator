@@ -42,9 +42,9 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   gallery: galleryDefinition,
   
   // Placeholders for unimplemented/transitioning blocks
-  map: { type: 'map', label: 'Mappa', icon: MapPin, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
-  features: { type: 'features', label: 'Caratteristiche', icon: LayoutTemplate, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
-  reviews: { type: 'reviews', label: 'Recensioni', icon: FileText, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
+  map: { type: 'map', label: 'Mappa', icon: MapPin, visual: null, defaults: { content: {}, style: {} } },
+  features: { type: 'features', label: 'Caratteristiche', icon: LayoutTemplate, visual: null, defaults: { content: {}, style: {} } },
+  reviews: { type: 'reviews', label: 'Recensioni', icon: FileText, visual: null, defaults: { content: {}, style: {} } },
   'product-carousel': { type: 'product-carousel', label: 'Prodotti', icon: ShoppingBag, visual: null, contentEditor: null, styleEditor: null, defaults: { content: {}, style: {} } },
 };
 

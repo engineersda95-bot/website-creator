@@ -22,10 +22,13 @@ import {
   PatternManager,
   SimpleInput,
   TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface EmbedUnifiedProps {
+interface EmbedProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -40,7 +43,7 @@ const EMBED_TYPES = [
   { id: 'custom', label: 'Custom / Iframe', icon: Code },
 ];
 
-export const EmbedUnified: React.FC<EmbedUnifiedProps> = ({
+export const Embed: React.FC<EmbedProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

@@ -19,11 +19,14 @@ import {
   RichTextarea,
   SimpleInput,
   SimpleSlider,
-  TypographyFields
+  TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface ContactUnifiedProps {
+interface ContactProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -31,7 +34,7 @@ interface ContactUnifiedProps {
   project: any;
 }
 
-export const ContactUnified: React.FC<ContactUnifiedProps> = ({
+export const Contact: React.FC<ContactProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

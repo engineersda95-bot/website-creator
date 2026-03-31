@@ -13,10 +13,13 @@ import {
   ColorManager,
   LayoutFields,
   PatternManager,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface DividerUnifiedProps {
+interface DividerProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -24,7 +27,7 @@ interface DividerUnifiedProps {
   project: any;
 }
 
-export const DividerUnified: React.FC<DividerUnifiedProps> = ({
+export const Divider: React.FC<DividerProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

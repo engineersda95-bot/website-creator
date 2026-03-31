@@ -21,10 +21,13 @@ import {
   SimpleInput,
   SimpleSlider,
   TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface PdfUnifiedProps {
+interface PdfProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -32,7 +35,7 @@ interface PdfUnifiedProps {
   project: any;
 }
 
-export const PdfUnified: React.FC<PdfUnifiedProps> = ({
+export const Pdf: React.FC<PdfProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

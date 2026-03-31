@@ -1,9 +1,7 @@
 import React from 'react';
 import { FileText } from 'lucide-react';
 import { FAQBlock } from './FaqBlock';
-import { FAQContent } from '../sidebar/block-editors/FaqContent';
-import { FAQStyle } from '../sidebar/block-editors/FaqStyle';
-import { FaqUnified } from '../sidebar/block-editors/FaqUnified';
+import { Faq } from '../sidebar/block-editors/Faq';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -80,9 +78,7 @@ export const faqDefinition: BlockDefinition = {
   label: 'FAQ',
   icon: FileText,
   visual: FAQBlock,
-  contentEditor: FAQContent,
-  styleEditor: FAQStyle,
-  unifiedEditor: FaqUnified,
+  unifiedEditor: Faq,
   defaults: {
     content: {
       variant: 'accordion',

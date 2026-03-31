@@ -25,10 +25,13 @@ import {
   PatternManager,
   SimpleInput,
   TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface NavigationUnifiedProps {
+interface NavigationProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -36,7 +39,7 @@ interface NavigationUnifiedProps {
   project: any;
 }
 
-export const NavigationUnified: React.FC<NavigationUnifiedProps> = ({
+export const Navigation: React.FC<NavigationProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

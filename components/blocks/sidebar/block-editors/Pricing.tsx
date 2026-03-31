@@ -29,11 +29,14 @@ import {
   SimpleInput,
   SimpleSlider,
   TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 import { useEditorStore } from '@/store/useEditorStore';
 
-interface PricingUnifiedProps {
+interface PricingProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -41,7 +44,7 @@ interface PricingUnifiedProps {
   project: any;
 }
 
-export const PricingUnified: React.FC<PricingUnifiedProps> = ({
+export const Pricing: React.FC<PricingProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

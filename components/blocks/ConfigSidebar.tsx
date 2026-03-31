@@ -68,8 +68,7 @@ export const ConfigSidebar: React.FC = () => {
 
    // Definition from registry
    const definition = BLOCK_DEFINITIONS[selectedBlock.type];
-   const hasUnifiedEditor = !!definition?.unifiedEditor;
-
+   
    // Block Specific Handlers
    const updateContent = (newContent: any) => {
       updateBlock(selectedBlock.id, newContent);
@@ -81,36 +80,6 @@ export const ConfigSidebar: React.FC = () => {
 
    const getStyleValue = (key: string, defaultValue: any) => {
       return getStyleValueUtil(selectedBlock, viewport, key, defaultValue);
-   };
-
-   // Content Editor Selection
-   const renderContentEditor = () => {
-      if (!definition || !definition.contentEditor) {
-         return <div className="p-6 text-zinc-400 text-xs text-center italic">Editor contenuti non disponibile.</div>;
-      }
-      const Component = definition.contentEditor;
-      return <Component 
-         selectedBlock={selectedBlock} 
-         updateContent={updateContent} 
-         updateStyle={updateStyle} 
-         getStyleValue={getStyleValue} 
-         projectPages={projectPages}
-      />;
-   };
-
-   // Style Editor Selection
-   const renderStyleEditor = () => {
-      if (!definition || !definition.styleEditor) {
-         return <div className="p-6 text-zinc-400 text-xs text-center italic">Editor stili non disponibile.</div>;
-      }
-      const Component = definition.styleEditor;
-      return <Component 
-         selectedBlock={selectedBlock} 
-         updateContent={updateContent}
-         updateStyle={updateStyle} 
-         getStyleValue={getStyleValue} 
-         project={project} 
-      />;
    };
 
    return (
@@ -154,54 +123,22 @@ export const ConfigSidebar: React.FC = () => {
             </button>
          </div>
 
-         {hasUnifiedEditor ? (
-            /* Unified editor — no tabs, direct component list */
-            <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
-               {(() => {
-                  const UnifiedComponent = definition.unifiedEditor!;
-                  return <UnifiedComponent
-                     selectedBlock={selectedBlock}
-                     updateContent={updateContent}
-                     updateStyle={updateStyle}
-                     getStyleValue={getStyleValue}
-                     project={project}
-                  />;
-               })()}
-            </div>
-         ) : (
-            <>
-            {/* Tabs */}
-            <div className="flex border-b border-zinc-100 px-4">
-               {(['content', 'style'] as const).map((tab) => (
-                  <button
-                     key={tab}
-                     onClick={() => setActiveTab(tab)}
-                     className={cn(
-                        "flex-1 py-2.5 text-[13px] font-semibold transition-all border-b-2 capitalize",
-                        activeTab === tab
-                           ? "border-zinc-900 text-zinc-900"
-                           : "border-transparent text-zinc-400 hover:text-zinc-600"
-                     )}
-                  >
-                     {tab === 'content' ? 'Contenuto' : 'Stile'}
-                  </button>
-               ))}
-            </div>
-
-            {/* Editor content */}
-            <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
-               {activeTab === 'content' ? (
-                  <div className="p-5 space-y-6 animate-in fade-in duration-300">
-                     {renderContentEditor()}
-                  </div>
-               ) : (
-                  <div className="p-5 space-y-6 animate-in fade-in duration-300">
-                     {renderStyleEditor()}
-                  </div>
-               )}
-            </div>
-            </>
-         )}
+         {/* Editor content */}
+         <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
+            {definition?.unifiedEditor ? (
+               <definition.unifiedEditor
+                  selectedBlock={selectedBlock}
+                  updateContent={updateContent}
+                  updateStyle={updateStyle}
+                  getStyleValue={getStyleValue}
+                  project={project}
+               />
+            ) : (
+               <div className="p-6 text-zinc-400 text-xs text-center italic">
+                  Editor non disponibile per questo blocco.
+               </div>
+            )}
+         </div>
          </div>
       </div>
    );

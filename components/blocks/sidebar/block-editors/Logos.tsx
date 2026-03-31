@@ -27,13 +27,16 @@ import {
   SimpleInput,
   SimpleSlider,
   TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { useEditorStore } from '@/store/useEditorStore';
 import { resolveImageUrl } from '@/lib/image-utils';
 
-interface LogosUnifiedProps {
+interface LogosProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -41,7 +44,7 @@ interface LogosUnifiedProps {
   project: any;
 }
 
-export const LogosUnified: React.FC<LogosUnifiedProps> = ({
+export const Logos: React.FC<LogosProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

@@ -1,8 +1,6 @@
 import { Grid } from 'lucide-react';
 import { CardsBlock } from './CardsBlock';
-import { CardsContent } from '../sidebar/block-editors/CardsContent';
-import { CardsStyle } from '../sidebar/block-editors/CardsStyle';
-import { CardsUnified } from '../sidebar/block-editors/CardsUnified';
+import { Cards } from '../sidebar/block-editors/Cards';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -12,9 +10,7 @@ export const cardsDefinition: BlockDefinition = {
   label: 'Carosello / Cards',
   icon: Grid,
   visual: CardsBlock,
-  contentEditor: CardsContent,
-  styleEditor: CardsStyle,
-  unifiedEditor: CardsUnified,
+  unifiedEditor: Cards,
   defaults: {
     content: {
       title: 'Le Nostre Eccellenze',

@@ -27,14 +27,17 @@ import {
   SimpleInput,
   SimpleSlider,
   TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { useEditorStore } from '@/store/useEditorStore';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { toast } from '@/components/shared/Toast';
 
-interface GalleryUnifiedProps {
+interface GalleryProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -42,7 +45,7 @@ interface GalleryUnifiedProps {
   project: any;
 }
 
-export const GalleryUnified: React.FC<GalleryUnifiedProps> = ({
+export const Gallery: React.FC<GalleryProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

@@ -10,7 +10,7 @@ import {
   Palette,
   Play,
   Plus,
-  Quote,
+  Quote as QuoteIcon,
   Settings,
   Square,
   Star,
@@ -31,13 +31,16 @@ import {
   PatternManager,
   SimpleInput,
   TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { useEditorStore } from '@/store/useEditorStore';
 import { resolveImageUrl } from '@/lib/image-utils';
 
-interface QuoteUnifiedProps {
+interface QuoteProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -51,7 +54,7 @@ const QUOTE_VARIANTS = [
   { id: 'bubble', label: 'Bubble', icon: MessageCircle },
 ];
 
-export const QuoteUnified: React.FC<QuoteUnifiedProps> = ({
+export const Quote: React.FC<QuoteProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,
@@ -170,7 +173,7 @@ export const QuoteUnified: React.FC<QuoteUnifiedProps> = ({
           <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Icona / Stile</label>
           <div className="flex p-1 bg-zinc-100 rounded-xl gap-1.5">
             {[
-              { id: 'quotes', icon: Quote, label: 'Quote' },
+              { id: 'quotes', icon: QuoteIcon, label: 'Quote' },
               { id: 'stars', icon: Star, label: 'Stelle' }
             ].map(t => (
               <button
