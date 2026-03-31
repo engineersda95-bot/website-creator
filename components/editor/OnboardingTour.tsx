@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronRight, ChevronLeft, X, Layers, MousePointer, PanelRight, Monitor, Rocket, FileText, RotateCcw, ZoomIn, HelpCircle, Sun } from 'lucide-react';
+import { ChevronRight, ChevronLeft, X, Layers, MousePointer, PanelRight, Monitor, Rocket, RotateCcw, ZoomIn, HelpCircle, Sun, Edit3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TourStep {
@@ -14,86 +14,65 @@ interface TourStep {
 
 const STEPS: TourStep[] = [
   {
-    target: '[data-tour="page-status"]',
-    title: 'Benvenuto nell\'Editor!',
-    description: 'Qui vedi la pagina attuale e lo stato del sito: Non pubblicato (grigio), Bozza (arancione) o Online (verde). Iniziamo il tour!',
-    icon: <FileText size={18} />,
-    position: 'bottom',
-  },
-  {
-    target: '[data-tour="page-switcher"]',
-    title: 'Cambia Pagina',
-    description: 'Vuoi passare ad un\'altra parte del sito? Clicca sul nome della pagina per vedere l\'elenco completo e muoverti velocemente tra Home, Servizi, Contatti, ecc.',
-    icon: <FileText size={18} />,
-    position: 'bottom',
-  },
-  {
-    target: '[data-tour="site-name"]',
-    title: 'Gestione Sito',
-    description: 'Cliccando sul nome del sito puoi accedere alla tua dashboard. Da lì potrai creare nuove pagine, rinominarle o gestire l\'intero progetto in modo granulare.',
-    icon: <FileText size={18} />,
-    position: 'bottom',
-  },
-  {
     target: '[data-tour="block-sidebar"]',
-    title: 'Blocchi e Struttura',
-    description: 'In alto trovi la struttura della pagina attuale con tutti i blocchi. Sotto, la libreria con 20+ blocchi disponibili: Hero, Testo, Contatti, FAQ e molto altro. Clicca per aggiungerne uno.',
+    title: 'Struttura & Blocchi',
+    description: 'Qui trovi la struttura della pagina con tutti i blocchi. Trascinali per riordinarli. Sotto, la libreria con 20+ blocchi: Hero, Testo, FAQ e molto altro. Clicca per aggiungere.',
     icon: <Layers size={18} />,
     position: 'right',
   },
   {
     target: '[data-tour="canvas"]',
-    title: 'Canvas — L\'Anteprima Live',
-    description: 'Questa è l\'anteprima in tempo reale del tuo sito. Clicca su qualsiasi blocco per selezionarlo e modificarlo. Usa il pulsante "+" tra i blocchi per inserirne di nuovi in una posizione precisa.',
+    title: 'Il tuo sito in tempo reale',
+    description: 'Questa e l\'anteprima live. Clicca su un blocco per selezionarlo. Fai doppio click sui testi per modificarli direttamente. Usa il "+" tra i blocchi per inserirne di nuovi.',
     icon: <MousePointer size={18} />,
     position: 'left',
   },
   {
     target: '[data-tour="config-sidebar"]',
-    title: 'Modifica Contenuto e Stile',
-    description: 'Quando selezioni un blocco, qui trovi due tab: "Contenuto" per testi e immagini, "Stile" per colori, margini e layout. Se nessun blocco è selezionato, vedi le impostazioni globali del sito (font, colori, pulsanti).',
+    title: 'Modifica tutto da qui',
+    description: 'Quando selezioni un blocco, qui trovi tutti i controlli: contenuti, stile, colori, spaziature. Le sezioni si aprono a fisarmonica. Se nessun blocco e selezionato, vedi le impostazioni globali.',
     icon: <PanelRight size={18} />,
     position: 'left',
   },
   {
     target: '[data-tour="viewport-switcher"]',
-    title: 'Anteprima per Dispositivo',
-    description: 'Passa tra Desktop, Tablet e Mobile per vedere come appare il sito su ogni schermo. Ogni vista può avere stili diversi — puoi ridurre il padding su mobile o cambiare dimensione dei testi.',
+    title: 'Desktop, Tablet, Mobile',
+    description: 'Passa tra i dispositivi per vedere come appare il sito. Ogni vista puo avere stili diversi: riduci il padding su mobile, cambia le colonne della griglia.',
     icon: <Monitor size={18} />,
     position: 'bottom',
   },
   {
     target: '[data-tour="undo-redo"]',
     title: 'Annulla e Ripristina',
-    description: 'Hai fatto un errore? Nessun problema. Annulla con il pulsante freccia (o Ctrl+Z) e ripristina con Ctrl+Y. La cronologia tiene fino a 50 passaggi.',
+    description: 'Hai sbagliato? Ctrl+Z per annullare, Ctrl+Y per ripristinare. La cronologia tiene fino a 50 passaggi.',
     icon: <RotateCcw size={18} />,
     position: 'bottom',
   },
   {
     target: '[data-tour="zoom-controls"]',
     title: 'Zoom',
-    description: 'Usa i controlli zoom per avvicinarti ai dettagli o allontanarti per una visione d\'insieme. Clicca sulla percentuale per tornare al 100%.',
+    description: 'Avvicinati ai dettagli o allontanati per una visione d\'insieme. Clicca sulla percentuale per tornare al 100%.',
     icon: <ZoomIn size={18} />,
     position: 'bottom',
   },
   {
     target: '[data-tour="theme-toggle"]',
     title: 'Tema Chiaro / Scuro',
-    description: 'Alterna tra tema chiaro e scuro per il tuo sito. Questo cambia i colori di sfondo e testo di tutte le sezioni — perfetto per siti con atmosfera dark.',
+    description: 'Alterna il tema del sito. Questo cambia sfondo e testo di tutte le sezioni — perfetto per siti con atmosfera dark.',
     icon: <Sun size={18} />,
     position: 'bottom',
   },
   {
     target: '[data-tour="help-btn"]',
-    title: 'Centro Assistenza',
-    description: 'Hai dubbi? Clicca qui per aprire la guida completa con tutorial su blocchi, SEO, pubblicazione, scorciatoie da tastiera e molto altro.',
+    title: 'Serve aiuto?',
+    description: 'Qui trovi guide su blocchi, SEO, pubblicazione e scorciatoie da tastiera. Puoi anche riavviare questo tour.',
     icon: <HelpCircle size={18} />,
     position: 'bottom',
   },
   {
     target: '[data-tour="publish-btn"]',
     title: 'Salva e Pubblica',
-    description: 'Salva le modifiche con il pulsante Salva (o Ctrl+S). Quando sei pronto, clicca Pubblica per rendere il sito visibile a tutti con un dominio dedicato. Buon lavoro!',
+    description: 'Salva con il pulsante blu (o Ctrl+S). Quando sei pronto, clicca Pubblica per mettere il sito online. Buon lavoro!',
     icon: <Rocket size={18} />,
     position: 'bottom',
   },
@@ -126,11 +105,11 @@ export const OnboardingTour: React.FC = () => {
   // Auto-start on first visit
   useEffect(() => {
     if (localStorage.getItem(STORAGE_KEY)) return;
-    const t = setTimeout(() => setActive(true), 1000);
+    const t = setTimeout(() => setActive(true), 1200);
     return () => clearTimeout(t);
   }, []);
 
-  // Find target element for current step, with retry
+  // Find target element for current step
   useEffect(() => {
     if (!active) return;
 
@@ -145,7 +124,6 @@ export const OnboardingTour: React.FC = () => {
     const find = () => {
       const targetSelector = STEPS[step]?.target;
       if (!targetSelector) return;
-      
       const el = document.querySelector(targetSelector);
       if (el) {
         setRect(clampToViewport(el.getBoundingClientRect()));
@@ -158,9 +136,7 @@ export const OnboardingTour: React.FC = () => {
     find();
 
     const onResize = () => {
-      const targetSelector = STEPS[step]?.target;
-      if (!targetSelector) return;
-      const el = document.querySelector(targetSelector);
+      const el = document.querySelector(STEPS[step]?.target);
       if (el) setRect(clampToViewport(el.getBoundingClientRect()));
     };
     window.addEventListener('resize', onResize);
@@ -182,15 +158,14 @@ export const OnboardingTour: React.FC = () => {
   const pad = 8;
   const hasRect = !!rect;
 
-  // Tooltip positioning — always keep within viewport
+  // Tooltip positioning
   let tooltipStyle: React.CSSProperties = {};
   if (rect) {
     const { position } = current;
     const vh = window.innerHeight;
     const vw = window.innerWidth;
-    const tooltipH = 200; // approximate tooltip height
-    const tooltipW = 320; // w-80
-
+    const tooltipH = 200;
+    const tooltipW = 320;
     const centerY = rect.top + rect.height / 2;
     const centerX = rect.left + rect.width / 2;
 
@@ -203,12 +178,7 @@ export const OnboardingTour: React.FC = () => {
     } else if (position === 'top' && rect.top - tooltipH - 20 > 0) {
       tooltipStyle = { bottom: vh - rect.top + 16, left: Math.max(16, Math.min(centerX, vw - tooltipW - 16)), transform: 'translateX(-50%)' };
     } else {
-      // Fallback: center of the element's visible area
-      tooltipStyle = {
-        top: Math.max(16, Math.min(centerY, vh - tooltipH)),
-        left: Math.max(16, Math.min(centerX, vw - tooltipW - 16)),
-        transform: 'translate(-50%, -50%)',
-      };
+      tooltipStyle = { top: Math.max(16, Math.min(centerY, vh - tooltipH)), left: Math.max(16, Math.min(centerX, vw - tooltipW - 16)), transform: 'translate(-50%, -50%)' };
     }
   } else {
     tooltipStyle = { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
@@ -216,17 +186,13 @@ export const OnboardingTour: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-[99999] pointer-events-none">
-      {/* Dark overlay with spotlight hole */}
+      {/* Dark overlay */}
       <div
         className="absolute inset-0 pointer-events-auto"
-        style={{
-          boxShadow: hasRect
-            ? `0 0 0 9999px rgba(0,0,0,0.5), inset 0 0 0 0 rgba(0,0,0,0)`
-            : '0 0 0 9999px rgba(0,0,0,0.5)',
-        }}
+        style={{ boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)' }}
       />
 
-      {/* Spotlight cutout using a positioned transparent box */}
+      {/* Spotlight */}
       {hasRect && (
         <div
           className="absolute rounded-xl pointer-events-none transition-all duration-300 ease-out"
@@ -245,68 +211,49 @@ export const OnboardingTour: React.FC = () => {
       {/* Tooltip */}
       <div
         key={step}
-        className="fixed z-[100000] w-80 bg-white rounded-xl shadow-2xl border border-zinc-200 pointer-events-auto animate-in fade-in duration-200"
+        className="fixed z-[100000] w-80 bg-white rounded-2xl shadow-2xl border border-zinc-200 pointer-events-auto animate-in fade-in zoom-in-95 duration-200"
         style={tooltipStyle}
       >
         <div className="p-5">
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               {current.icon}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-bold text-zinc-900">{current.title}</h3>
-              <span className="text-[10px] text-zinc-400">{step + 1} di {STEPS.length}</span>
+              <h3 className="text-[13px] font-bold text-zinc-900">{current.title}</h3>
+              <span className="text-[10px] text-zinc-400 font-medium">{step + 1} di {STEPS.length}</span>
             </div>
-            <button
-              onClick={finish}
-              className="p-1 text-zinc-400 hover:text-zinc-600 transition-colors shrink-0"
-              title="Chiudi tour"
-            >
+            <button onClick={finish} className="p-1.5 text-zinc-300 hover:text-zinc-600 hover:bg-zinc-100 rounded-lg transition-colors shrink-0">
               <X size={14} />
             </button>
           </div>
-          <p className="text-sm text-zinc-600 leading-relaxed">{current.description}</p>
+          <p className="text-[13px] text-zinc-500 leading-relaxed">{current.description}</p>
         </div>
 
         <div className="px-5 py-3 border-t border-zinc-100 flex items-center justify-between">
+          {/* Progress dots */}
           <div className="flex items-center gap-1">
             {STEPS.map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "h-1.5 rounded-full transition-all",
-                  i === step ? "bg-blue-600 w-4" : i < step ? "bg-blue-300 w-1.5" : "bg-zinc-200 w-1.5"
-                )}
-              />
+              <div key={i} className={cn("h-1.5 rounded-full transition-all", i === step ? "bg-blue-600 w-4" : i < step ? "bg-blue-300 w-1.5" : "bg-zinc-200 w-1.5")} />
             ))}
           </div>
 
+          {/* Navigation */}
           <div className="flex items-center gap-1.5">
             {step === 0 ? (
-              <button
-                onClick={finish}
-                className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-600 transition-all"
-              >
+              <button onClick={finish} className="px-3 py-1.5 text-[12px] font-medium text-zinc-400 hover:text-zinc-600 transition-all">
                 Salta
               </button>
             ) : (
-              <button
-                onClick={() => setStep(step - 1)}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-700 hover:bg-zinc-50 rounded-md transition-all"
-              >
-                <ChevronLeft size={14} />
-                Indietro
+              <button onClick={() => setStep(step - 1)} className="flex items-center gap-1 px-3 py-1.5 text-[12px] font-medium text-zinc-500 hover:text-zinc-700 hover:bg-zinc-50 rounded-lg transition-all">
+                <ChevronLeft size={14} /> Indietro
               </button>
             )}
             <button
               onClick={() => step < STEPS.length - 1 ? setStep(step + 1) : finish()}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-all"
+              className="flex items-center gap-1 px-4 py-1.5 text-[12px] font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all"
             >
-              {step < STEPS.length - 1 ? (
-                <>Avanti <ChevronRight size={14} /></>
-              ) : (
-                'Inizia!'
-              )}
+              {step < STEPS.length - 1 ? (<>Avanti <ChevronRight size={14} /></>) : 'Inizia!'}
             </button>
           </div>
         </div>
