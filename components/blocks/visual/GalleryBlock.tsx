@@ -42,29 +42,29 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
   const baseDelay = style.animationDelay || 0;
   const animKey = !isStatic ? `${block.id}-${animType}-${animDuration}` : 'static';
 
-  const renderImage = (img: any, index: number, extraClass?: string) => {
+  const userAspect = style.imageAspectRatio || 'original';
+  const defaultAspectClass = userAspect === '1/1' ? 'aspect-square' :
+                              userAspect === '4/3' ? 'aspect-[4/3]' :
+                              userAspect === '16/9' ? 'aspect-video' : '';
+
+  const renderImage = (img: any, index: number, opts?: { aspectOverride?: string; noMargin?: boolean; fillHeight?: boolean }) => {
     if (!img.image) return null;
 
-    const aspect = style.imageAspectRatio || 'original';
-    const aspectClass = aspect === '1/1' ? 'aspect-square' : 
-                        aspect === '4/3' ? 'aspect-[4/3]' : 
-                        aspect === '16/9' ? 'aspect-video' : 
-                        'min-h-[200px] w-full h-auto';
-
     const itemDelay = baseDelay + 0.1 + (index * 0.05);
+    const aspectClass = opts?.aspectOverride || defaultAspectClass;
 
     return (
-      <div 
+      <div
         key={index}
         data-siti-anim={animType}
         data-siti-anim-duration={animDuration}
         data-siti-anim-delay={itemDelay}
         className={cn(
-          "group relative overflow-hidden rounded-[var(--image-radius)] w-full block",
-          style.imageShadow ? 'shadow-lg' : '',
-          style.imageHover ? 'transition-all duration-500 hover:scale-[1.02] hover:shadow-xl hover:z-10' : '',
-          extraClass,
-          'mb-[var(--gallery-gap)] break-inside-avoid'
+          "group relative overflow-hidden rounded-[var(--image-radius)] w-full",
+          style.imageShadow && 'shadow-lg',
+          style.imageHover && 'transition-all duration-500 hover:scale-[1.02] hover:shadow-xl hover:z-10',
+          !opts?.noMargin && variant === 'masonry' && 'mb-[var(--gallery-gap)] break-inside-avoid',
+          opts?.fillHeight && 'h-full',
         )}
         style={{
           '--siti-anim-duration': animDuration + 's',
@@ -79,9 +79,10 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
           alt={img.alt || `Gallery Image ${index + 1}`}
           loading={index < 4 ? "eager" : "lazy"}
           className={cn(
-            "object-cover w-full h-full",
-            aspectClass,
-            style.imageHover ? 'transition-transform duration-700 group-hover:scale-105' : ''
+            "object-cover w-full",
+            opts?.fillHeight ? 'h-full' : 'h-full',
+            aspectClass || (userAspect === 'original' ? 'min-h-[200px] h-auto' : ''),
+            style.imageHover && 'transition-transform duration-700 group-hover:scale-105'
           )}
         />
         {style.imageHover && (
@@ -159,13 +160,16 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
           </div>
         )}
 
-        {/* ─── GRID — uniform aspect ratio ─── */}
+        {/* ─── GRID — uniform cells ─── */}
         {variant === 'grid' && (
           <div
             className="w-full grid gap-[var(--gallery-gap)]"
             style={{ gridTemplateColumns: `repeat(var(--gallery-columns), 1fr)` }}
           >
-            {images.map((img: any, idx: number) => renderImage(img, idx, '!mb-0 aspect-[4/3]'))}
+            {images.map((img: any, idx: number) => renderImage(img, idx, {
+              noMargin: true,
+              aspectOverride: defaultAspectClass || 'aspect-[4/3]',
+            }))}
           </div>
         )}
 
@@ -184,14 +188,17 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
             </div>
             <div className="flex gap-[var(--gallery-gap)] overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar pb-2">
               {images.map((img: any, idx: number) => (
-                <div key={idx} className="shrink-0 snap-center" style={{ width: `calc((100% - var(--gallery-gap) * 2) / 3)` }}>
-                  {renderImage(img, idx, '!mb-0 aspect-[3/4]')}
+                <div key={idx} className="shrink-0 snap-center" style={{ width: `calc((100% - var(--gallery-gap, 16px) * 2) / var(--gallery-columns, 3))` }}>
+                  {renderImage(img, idx, {
+                    noMargin: true,
+                    aspectOverride: defaultAspectClass || 'aspect-[3/4]',
+                  })}
                 </div>
               ))}
             </div>
             <div dangerouslySetInnerHTML={{ __html: `<script>
               (function() {
-                var b = document.querySelector('[key="${animKey}"]') || document.currentScript?.closest('div');
+                var b = document.currentScript?.closest('.group\\/gallery');
                 if (!b) return;
                 var c = b.querySelector('.scroll-container');
                 var l = b.querySelector('[data-arrow="left"]');
@@ -209,15 +216,23 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
           </div>
         )}
 
-        {/* ─── FEATURED — first image large, rest small grid ─── */}
+        {/* ─── FEATURED — first image large, rest small ─── */}
         {variant === 'featured' && images.length > 0 && (
-          <div className="w-full grid gap-[var(--gallery-gap)]" style={{ gridTemplateColumns: viewport === 'mobile' ? '1fr' : '2fr 1fr' }}>
-            <div className="row-span-1" style={{ gridRow: viewport === 'mobile' ? 'auto' : `span ${Math.min(images.length - 1, 3)}` }}>
-              {renderImage(images[0], 0, '!mb-0 h-full')}
+          <div
+            className="w-full grid gap-[var(--gallery-gap)]"
+            style={{ gridTemplateColumns: viewport === 'mobile' ? '1fr' : '2fr 1fr', gridTemplateRows: viewport === 'mobile' ? 'auto' : `repeat(${Math.min(images.length - 1, 3)}, 1fr)` }}
+          >
+            <div style={{ gridRow: viewport === 'mobile' ? 'auto' : `1 / ${Math.min(images.length, 4)}` }}>
+              {renderImage(images[0], 0, { noMargin: true, fillHeight: true })}
             </div>
-            <div className="flex flex-col gap-[var(--gallery-gap)]">
-              {images.slice(1, 4).map((img: any, idx: number) => renderImage(img, idx + 1, '!mb-0 aspect-[4/3]'))}
-            </div>
+            {images.slice(1, 4).map((img: any, idx: number) => (
+              <div key={idx + 1}>
+                {renderImage(img, idx + 1, {
+                  noMargin: true,
+                  aspectOverride: defaultAspectClass || 'aspect-[4/3]',
+                })}
+              </div>
+            ))}
           </div>
         )}
         
