@@ -90,7 +90,7 @@ export const LogosUnified: React.FC<LogosUnifiedProps> = ({
 
       <Section icon={Type} label="Titolo" id="title" isOpen={openSection === 'title'} onToggle={toggleSection}>
         <SimpleInput
-          label="Testo"
+          label="Titolo Sezione"
           placeholder="I nostri partner..."
           value={selectedBlock.content.title || ''}
           onChange={(val) => updateContent({ title: val })}

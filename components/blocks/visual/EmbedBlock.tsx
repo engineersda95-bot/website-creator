@@ -1,8 +1,8 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block } from '@/types/editor';
 import { BlockBackground } from '@/components/shared/BlockBackground';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 
 interface EmbedBlockProps {
   content: {
@@ -19,9 +19,10 @@ interface EmbedBlockProps {
   viewport?: string;
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
-export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache }) => {
+export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project, viewport, isStatic, imageMemoryCache, onInlineEdit }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
 
   const getEmbedUrl = () => {
@@ -123,9 +124,12 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
       >
         {content.title && (() => {
           const TitleTag = (style.titleTag || 'h2') as any;
-          return (
-            <TitleTag
-              className="w-full transition-all duration-500"
+          return onInlineEdit ? (
+            <InlineEditable
+              fieldId="title"
+              value={content.title || ''}
+              onChange={(v) => onInlineEdit('title', v)}
+              className="w-full transition-all duration-500 rt-content"
               style={{
                 fontSize: 'var(--title-fs)',
                 fontWeight: style.titleBold ? '700' : 'var(--title-fw)' as any,
@@ -135,9 +139,22 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
                 color: 'inherit',
                 marginBottom: 'var(--block-gap, 2rem)'
               }}
-            >
-              {content.title}
-            </TitleTag>
+              placeholder="Titolo..."
+            />
+          ) : (
+            <TitleTag
+              className="w-full transition-all duration-500 rt-content"
+              style={{
+                fontSize: 'var(--title-fs)',
+                fontWeight: style.titleBold ? '700' : 'var(--title-fw)' as any,
+                fontStyle: style.titleItalic ? 'italic' : 'var(--title-fs-style)' as any,
+                textTransform: 'var(--title-upper)' as any,
+                textAlign: 'var(--block-align)' as any,
+                color: 'inherit',
+                marginBottom: 'var(--block-gap, 2rem)'
+              }}
+              dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+            />
           );
         })()}
 

@@ -1,11 +1,12 @@
 import React from 'react';
 import { Block, Project } from '@/types/editor';
 import { resolveImageUrl } from '@/lib/image-utils';
-import { cn } from '@/lib/utils';
+import { cn, formatRichText } from '@/lib/utils';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { BlockBackground } from '@/components/shared/BlockBackground';
 import { SitiImage } from '@/components/shared/SitiImage';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface GalleryBlockProps {
@@ -14,6 +15,7 @@ interface GalleryBlockProps {
   viewport?: 'desktop' | 'tablet' | 'mobile';
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
+  onInlineEdit?: (field: string, value: string) => void;
 }
 
 export const GalleryBlock: React.FC<GalleryBlockProps> = ({
@@ -21,7 +23,8 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
   project,
   viewport = 'desktop',
   isStatic = false,
-  imageMemoryCache
+  imageMemoryCache,
+  onInlineEdit
 }) => {
   const content = block.content;
   const variant = content.variant || 'masonry';
@@ -132,21 +135,40 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
               '--siti-anim-delay': baseDelay + 's'
             } as any}
           >
-            <TitleTag 
-              className="font-heading leading-tight w-full"
-              style={{
-                fontSize: 'var(--title-fs)',
-                textAlign: 'var(--block-align)' as any,
-                fontWeight: 'var(--title-fw)',
-                fontStyle: 'var(--title-fs-style)',
-                lineHeight: 'var(--title-lh)',
-                letterSpacing: 'var(--title-ls)',
-                textTransform: 'var(--title-upper)' as any,
-                color: 'var(--block-color)'
-              }}
-            >
-              {content.title}
-            </TitleTag>
+            {onInlineEdit ? (
+              <InlineEditable
+                fieldId="title"
+                value={content.title || ''}
+                onChange={(v) => onInlineEdit('title', v)}
+                className="font-heading leading-tight w-full transition-all duration-500 rt-content"
+                style={{
+                  fontSize: 'var(--title-fs)',
+                  textAlign: 'var(--block-align)' as any,
+                  fontWeight: 'var(--title-fw)' as any,
+                  fontStyle: 'var(--title-fs-style)' as any,
+                  lineHeight: 'var(--title-lh)',
+                  letterSpacing: 'var(--title-ls)',
+                  textTransform: 'var(--title-upper)' as any,
+                  color: 'inherit'
+                }}
+                placeholder="Titolo..."
+              />
+            ) : (
+              <TitleTag 
+                className="font-heading leading-tight w-full rt-content"
+                style={{
+                  fontSize: 'var(--title-fs)',
+                  textAlign: 'var(--block-align)' as any,
+                  fontWeight: 'var(--title-fw)' as any,
+                  fontStyle: 'var(--title-fs-style)' as any,
+                  lineHeight: 'var(--title-lh)',
+                  letterSpacing: 'var(--title-ls)',
+                  textTransform: 'var(--title-upper)' as any,
+                  color: 'inherit'
+                }}
+                dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+              />
+            )}
           </div>
         )}
 

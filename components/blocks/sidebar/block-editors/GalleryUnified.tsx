@@ -127,7 +127,7 @@ export const GalleryUnified: React.FC<GalleryUnifiedProps> = ({
 
       <Section icon={Type} label="Titolo" id="title" isOpen={openSection === 'title'} onToggle={toggleSection}>
         <SimpleInput
-          label="Testo"
+          label="Titolo Sezione"
           placeholder="La nostra galleria..."
           value={content.title || ''}
           onChange={(val) => updateContent({ title: val })}

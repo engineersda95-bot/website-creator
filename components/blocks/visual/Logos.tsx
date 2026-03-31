@@ -1,13 +1,14 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn, formatRichText } from '@/lib/utils';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { BlockBackground } from '@/components/shared/BlockBackground';
+import { InlineEditable } from '@/components/shared/InlineEditable';
 
 export const Logos: React.FC<any> = ({
   block,
   project,
   isStatic,
-  imageMemoryCache
+  imageMemoryCache,
+  onInlineEdit
 }) => {
   const { content, style, id } = block;
   const items = content.items || [];
@@ -59,18 +60,36 @@ export const Logos: React.FC<any> = ({
               } as any}
               className="w-full"
             >
-              <TitleTag 
-                className="text-center mb-12 tracking-tight"
-                style={{ 
-                  fontSize: 'var(--title-fs)',
-                  fontWeight: 'var(--title-fw)' as any,
-                  fontStyle: 'var(--title-fs-style)' as any,
-                  textTransform: 'var(--title-upper)' as any,
-                  lineHeight: '1.2'
-                }}
-              >
-                {title}
-              </TitleTag>
+              {onInlineEdit ? (
+                <InlineEditable
+                  fieldId="title"
+                  value={title || ''}
+                  onChange={(v) => onInlineEdit('title', v)}
+                  className="text-center mb-12 tracking-tight rt-content"
+                  style={{
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: 'var(--title-fw)' as any,
+                    fontStyle: 'var(--title-fs-style)' as any,
+                    textTransform: 'var(--title-upper)' as any,
+                    lineHeight: '1.2',
+                    color: 'inherit'
+                  }}
+                  placeholder="Titolo..."
+                />
+              ) : (
+                <TitleTag 
+                  className="text-center mb-12 tracking-tight rt-content"
+                  style={{ 
+                    fontSize: 'var(--title-fs)',
+                    fontWeight: 'var(--title-fw)' as any,
+                    fontStyle: 'var(--title-fs-style)' as any,
+                    textTransform: 'var(--title-upper)' as any,
+                    lineHeight: '1.2',
+                    color: 'inherit'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: formatRichText(title) }}
+                />
+              )}
             </div>
           );
         })()}

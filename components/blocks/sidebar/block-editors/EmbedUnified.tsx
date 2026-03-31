@@ -61,7 +61,7 @@ export const EmbedUnified: React.FC<EmbedUnifiedProps> = ({
 
       <Section icon={Type} label="Titolo" id="title" isOpen={openSection === 'title'} onToggle={toggleSection}>
         <SimpleInput
-          label="Testo"
+          label="Titolo Sezione"
           placeholder="Es: Seguici su Instagram"
           value={content.title || ''}
           onChange={(val) => updateContent({ title: val })}
