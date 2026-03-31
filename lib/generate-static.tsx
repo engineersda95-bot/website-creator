@@ -2,13 +2,17 @@ import 'server-only';
 import { Block, Page, Project, ProjectSettings } from '@/types/editor';
 import React from 'react';
 import { toPx } from '@/lib/utils';
-import { generateBlockCSS } from '@/lib/responsive-utils';
+import { generateBlockCSS, computeCommonVars } from '@/lib/responsive-utils';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { getProjectDomain } from '@/lib/url-utils';
 
 export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: Project): string {
   const { renderToStaticMarkup } = require('react-dom/server');
-  const blocksHtml = page.blocks.map(block => renderBlock(block, allPages, project, renderToStaticMarkup)).join('\n');
+  // Compute common CSS variables for deduplication
+  const commonVars = computeCommonVars(page.blocks, project);
+  const commonVarsCss = Object.entries(commonVars).map(([k, v]) => `${k}:${v};`).join('');
+
+  const blocksHtml = page.blocks.map(block => renderBlock(block, allPages, project, renderToStaticMarkup, commonVars)).join('\n');
   
   const settings = (project?.settings || {}) as ProjectSettings;
   const font = settings.fontFamily || 'Outfit';
@@ -138,6 +142,7 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
             --global-h3-fs: ${toPx(settings?.typography?.h3Size, '2rem')};
             --global-h4-fs: ${toPx(settings?.typography?.h4Size, '1.5rem')};
             --global-body-fs: ${toPx(settings?.typography?.bodySize, '1rem')};
+            ${commonVarsCss}
         }
         ${settings?.responsive?.tablet?.typography ? `
         @media (max-width: 1024px) {
@@ -334,10 +339,10 @@ const StaticRegistry: Record<string, React.FC<any>> = Object.entries(BLOCK_DEFIN
   return acc;
 }, {} as Record<string, React.FC<any>>);
 
-function renderBlock(block: Block, allPages: Page[], project: Project | undefined, renderToStaticMarkup: any): string {
+function renderBlock(block: Block, allPages: Page[], project: Project | undefined, renderToStaticMarkup: any, commonVars?: Record<string, string>): string {
   const { type, content } = block;
   const blockId = `block-${block.id.substring(0, 8)}`;
-  const responsiveCss = generateBlockCSS(blockId, block, project);
+  const responsiveCss = generateBlockCSS(blockId, block, project, commonVars);
   const styleWrapper = `<style>${responsiveCss}</style>`;
   const blockWrapper = (inner: string) => `${styleWrapper}<div id="${blockId}" class="transition-all duration-500">${inner}</div>`;
 
