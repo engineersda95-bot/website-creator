@@ -1,7 +1,6 @@
 import React from 'react';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { Project } from '@/types/editor';
-import { cn } from '@/lib/utils';
 
 interface SitiImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src?: string;
@@ -11,27 +10,32 @@ interface SitiImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 }
 
 /**
- * SitiImage: Standardized image component.
- * Back to 100% native <img> behavior for maximum raw speed.
+ * SitiImage: Standardized image component with performance defaults.
+ * - loading="lazy" by default (override with loading="eager" for hero/above-fold)
+ * - decoding="async" for non-blocking decode
+ * - width/height to prevent CLS (if provided)
  */
-export const SitiImage: React.FC<SitiImageProps> = ({ 
-  src, 
-  project, 
-  isStatic, 
-  imageMemoryCache, 
+export const SitiImage: React.FC<SitiImageProps> = ({
+  src,
+  project,
+  isStatic,
+  imageMemoryCache,
   className,
-  ...props 
+  loading,
+  ...props
 }) => {
   if (!src) return null;
 
   const resolved = resolveImageUrl(src, project || null, imageMemoryCache, isStatic);
 
   return (
-    <img 
-      src={resolved} 
+    <img
+      src={resolved}
       alt={props.alt || ""}
+      loading={loading || "lazy"}
+      decoding="async"
       className={className}
-      {...props} 
+      {...props}
     />
   );
 };

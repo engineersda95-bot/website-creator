@@ -89,7 +89,15 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     <link rel="icon" href="${resolveImageUrl(settings?.favicon, project || null, {}, true) || '/favicon.ico'}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    ${(() => {
+      // Preload hero background image for faster LCP
+      const heroBlock = page.blocks.find((b: any) => b.type === 'hero');
+      const heroImg = heroBlock?.content?.backgroundImage;
+      if (!heroImg) return '';
+      const resolved = resolveImageUrl(heroImg, project || null, {}, true);
+      return `<link rel="preload" as="image" href="${resolved}" fetchpriority="high">`;
+    })()}
     
     ${(() => {
       if (!bDetails?.address && !bDetails?.phone && !bDetails?.businessName) return '';

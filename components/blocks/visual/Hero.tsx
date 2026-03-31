@@ -52,7 +52,7 @@ const HeroBg: React.FC<{
         isStatic={isStatic}
         imageMemoryCache={imageMemoryCache}
         alt={content.backgroundAlt || ''}
-        loading="eager"
+        loading="eager" fetchPriority="high"
         className={cn("absolute inset-0 z-0 w-full h-full pointer-events-none transition-all duration-700", imageClassName)}
         style={{
           objectFit: (style.backgroundSize === 'auto' ? 'none' : style.backgroundSize) || 'cover',
@@ -333,7 +333,7 @@ const SplitHero: React.FC<HeroProps> = ({ content, block, project, viewport, isS
               isStatic={isStatic}
               imageMemoryCache={imageMemoryCache}
               alt={content.backgroundAlt || ''}
-              loading="eager"
+              loading="eager" fetchPriority="high"
               className="absolute inset-0 w-full h-full pointer-events-none transition-all duration-700"
               style={{ objectFit: 'cover', objectPosition: style.backgroundPosition || 'center' } as any}
             />
@@ -379,7 +379,7 @@ const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, i
             isStatic={isStatic}
             imageMemoryCache={imageMemoryCache}
             alt={content.backgroundAlt || ''}
-            loading="eager"
+            loading="eager" fetchPriority="high"
             className="absolute inset-0 w-full h-full pointer-events-none transition-all duration-700"
             style={{ objectFit: 'cover', objectPosition: style.backgroundPosition || 'center' } as any}
           />

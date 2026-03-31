@@ -130,7 +130,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
         style={{ width: `${size || avatarSize}px`, aspectRatio: ratio || avatarAspectRatio }}
         className={cn("overflow-hidden shrink-0 border border-black/5 dark:border-white/10 shadow-lg", avatarShape === 'circle' ? "rounded-full" : "rounded-2xl")}
       >
-        <img src={resolveImageUrl(item.avatar, project)} alt={item.avatarAlt || item.name} className="w-full h-full object-cover" />
+        <img src={resolveImageUrl(item.avatar, project)} alt={item.avatarAlt || item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
       </div>
     ) : null
   );

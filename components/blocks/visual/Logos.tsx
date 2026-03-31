@@ -105,9 +105,11 @@ export const Logos: React.FC<any> = ({
                 }}
               >
                 {item.image ? (
-                  <img 
-                    src={resolveImageUrl(item.image, project, imageMemoryCache)} 
+                  <img
+                    src={resolveImageUrl(item.image, project, imageMemoryCache)}
                     alt={item.alt || 'Partner'}
+                    loading="lazy"
+                    decoding="async"
                     className="max-w-full max-h-full object-contain pointer-events-none"
                   />
                 ) : (
