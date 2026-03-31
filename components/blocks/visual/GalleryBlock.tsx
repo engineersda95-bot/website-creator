@@ -6,6 +6,7 @@ import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { BlockBackground } from '@/components/shared/BlockBackground';
 import { SitiImage } from '@/components/shared/SitiImage';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface GalleryBlockProps {
   block: Block;
@@ -23,6 +24,7 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
   imageMemoryCache
 }) => {
   const content = block.content;
+  const variant = content.variant || 'masonry';
   const { style } = getBlockStyles(block, project, viewport);
   const images = content.images || [];
   
@@ -147,12 +149,77 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
           </div>
         )}
 
-        <div 
-          className="w-full relative gap-[var(--gallery-gap)]"
-          style={{ columnCount: 'var(--gallery-columns)' }}
-        >
-          {images.map((img: any, idx: number) => renderImage(img, idx))}
-        </div>
+        {/* ─── MASONRY (default) ─── */}
+        {variant === 'masonry' && (
+          <div
+            className="w-full relative gap-[var(--gallery-gap)]"
+            style={{ columnCount: 'var(--gallery-columns)' }}
+          >
+            {images.map((img: any, idx: number) => renderImage(img, idx))}
+          </div>
+        )}
+
+        {/* ─── GRID — uniform aspect ratio ─── */}
+        {variant === 'grid' && (
+          <div
+            className="w-full grid gap-[var(--gallery-gap)]"
+            style={{ gridTemplateColumns: `repeat(var(--gallery-columns), 1fr)` }}
+          >
+            {images.map((img: any, idx: number) => renderImage(img, idx, '!mb-0 aspect-[4/3]'))}
+          </div>
+        )}
+
+        {/* ─── SLIDER — horizontal carousel ─── */}
+        {variant === 'slider' && (
+          <div className="relative group/gallery">
+            <div className="absolute top-1/2 left-2 -translate-y-1/2 z-30">
+              <button data-arrow="left" className="p-3 bg-white/90 backdrop-blur-sm shadow-lg rounded-full border border-black/5 transition-all hover:scale-110 active:scale-90 cursor-pointer">
+                <ChevronLeft size={20} />
+              </button>
+            </div>
+            <div className="absolute top-1/2 right-2 -translate-y-1/2 z-30">
+              <button data-arrow="right" className="p-3 bg-white/90 backdrop-blur-sm shadow-lg rounded-full border border-black/5 transition-all hover:scale-110 active:scale-90 cursor-pointer">
+                <ChevronRight size={20} />
+              </button>
+            </div>
+            <div className="flex gap-[var(--gallery-gap)] overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar pb-2">
+              {images.map((img: any, idx: number) => (
+                <div key={idx} className="shrink-0 snap-center" style={{ width: `calc((100% - var(--gallery-gap) * 2) / 3)` }}>
+                  {renderImage(img, idx, '!mb-0 aspect-[3/4]')}
+                </div>
+              ))}
+            </div>
+            <div dangerouslySetInnerHTML={{ __html: `<script>
+              (function() {
+                var b = document.querySelector('[key="${animKey}"]') || document.currentScript?.closest('div');
+                if (!b) return;
+                var c = b.querySelector('.scroll-container');
+                var l = b.querySelector('[data-arrow="left"]');
+                var r = b.querySelector('[data-arrow="right"]');
+                if (c) {
+                  var card = c.querySelector('div');
+                  if (!card) return;
+                  var g = parseInt(getComputedStyle(c).gap) || 16;
+                  var getS = function() { return card.offsetWidth + g; };
+                  if (l) l.onclick = function() { c.scrollBy({ left: -getS(), behavior: 'smooth' }); };
+                  if (r) r.onclick = function() { c.scrollBy({ left: getS(), behavior: 'smooth' }); };
+                }
+              })();
+            </script>`}} />
+          </div>
+        )}
+
+        {/* ─── FEATURED — first image large, rest small grid ─── */}
+        {variant === 'featured' && images.length > 0 && (
+          <div className="w-full grid gap-[var(--gallery-gap)]" style={{ gridTemplateColumns: viewport === 'mobile' ? '1fr' : '2fr 1fr' }}>
+            <div className="row-span-1" style={{ gridRow: viewport === 'mobile' ? 'auto' : `span ${Math.min(images.length - 1, 3)}` }}>
+              {renderImage(images[0], 0, '!mb-0 h-full')}
+            </div>
+            <div className="flex flex-col gap-[var(--gallery-gap)]">
+              {images.slice(1, 4).map((img: any, idx: number) => renderImage(img, idx + 1, '!mb-0 aspect-[4/3]'))}
+            </div>
+          </div>
+        )}
         
       </div>
     </div>

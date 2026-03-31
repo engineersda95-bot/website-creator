@@ -4,12 +4,13 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import {
   Box,
-  Image as ImageIcon,
+  Columns, GalleryHorizontal, Grid, Image as ImageIcon,
   Layers,
   Palette,
   Play,
   Plus,
   Settings,
+  Star,
   Trash2,
   ArrowUp,
   ArrowDown,
@@ -94,6 +95,33 @@ export const GalleryUnified: React.FC<GalleryUnifiedProps> = ({
   return (
     <div>
       {/* Components */}
+      {/* Variant selector */}
+      <div className="px-5 py-4 border-b border-zinc-100">
+        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2 block">Layout</label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {[
+            { id: 'masonry', label: 'Masonry', icon: Columns },
+            { id: 'grid', label: 'Griglia', icon: Grid },
+            { id: 'slider', label: 'Slider', icon: GalleryHorizontal },
+            { id: 'featured', label: 'Featured', icon: Star },
+          ].map((v) => (
+            <button
+              key={v.id}
+              onClick={() => updateContent({ variant: v.id })}
+              className={cn(
+                "flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-[9px] font-medium transition-all",
+                (content.variant || 'masonry') === v.id
+                  ? "border-zinc-900 bg-zinc-900 text-white"
+                  : "border-zinc-100 text-zinc-400 hover:border-zinc-300"
+              )}
+            >
+              <v.icon size={14} />
+              {v.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <CategoryHeader label="Componenti" />
 
       <Section icon={Type} label="Titolo" id="title" isOpen={openSection === 'title'} onToggle={toggleSection}>
