@@ -25,6 +25,7 @@ import { TranslatePageModal } from '@/components/editor/modals/TranslatePageModa
 import { LanguageSection } from '@/components/blocks/sidebar/settings/LanguageSection';
 import { AdvancedSection } from '@/components/blocks/sidebar/settings/AdvancedSection';
 import { DomainSection } from '@/components/blocks/sidebar/settings/DomainSection';
+import { SeoSection } from '@/components/blocks/sidebar/settings/SeoSection';
 import { confirm } from '@/components/shared/ConfirmDialog';
 
 
@@ -94,7 +95,7 @@ export function ProjectDashboardClient({
   const [isPublishing, setIsPublishing] = useState(false);
   const [deletingPageId, setDeletingPageId] = useState<string | null>(null);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pages' | 'design' | 'settings'>('pages');
+  const [activeTab, setActiveTab] = useState<'pages' | 'settings'>('pages');
   const [seoOpenId, setSeoOpenId] = useState<string | null>(null);
   const [translateOpenId, setTranslateOpenId] = useState<string | null>(null);
 
@@ -316,18 +317,6 @@ export function ProjectDashboardClient({
             Pagine
           </button>
           <button
-            onClick={() => setActiveTab('design')}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all -mb-px",
-              activeTab === 'design'
-                ? "border-zinc-900 text-zinc-900"
-                : "border-transparent text-zinc-400 hover:text-zinc-600"
-            )}
-          >
-            <Palette size={15} />
-            Design Globale
-          </button>
-          <button
             onClick={() => setActiveTab('settings')}
             className={cn(
               "flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all -mb-px",
@@ -459,63 +448,6 @@ export function ProjectDashboardClient({
             })()}
           </div>
 
-        ) : activeTab === 'design' ? (
-          /* ── DESIGN TAB ── */
-          <div className="max-w-3xl mx-auto">
-            {/* STICKY DESIGN HEADER */}
-            <div className="sticky top-[56px] z-50 -mx-6 px-6 py-4 mb-6 bg-zinc-50/90 backdrop-blur-md border-b border-zinc-200/50 flex items-center justify-between transition-all">
-              <div>
-                <h2 className="text-lg font-bold text-zinc-900 leading-none">Design Globale</h2>
-                <p className="text-[11px] text-zinc-500 mt-1.5 font-medium">Font, colori, pulsanti e layout.</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center bg-zinc-200/50 rounded-lg p-0.5">
-                  {([
-                    { key: 'desktop' as const, icon: Monitor, label: 'Desktop' },
-                    { key: 'tablet' as const, icon: Tablet, label: 'Tablet' },
-                    { key: 'mobile' as const, icon: Smartphone, label: 'Mobile' },
-                  ]).map(({ key, icon: Icon, label }) => (
-                    <button
-                      key={key}
-                      onClick={() => setViewport(key)}
-                      className={cn(
-                        "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold transition-all",
-                        viewport === key
-                          ? "bg-white text-zinc-900 shadow-sm"
-                          : "text-zinc-400 hover:text-zinc-600"
-                      )}
-                      title={label}
-                    >
-                      <Icon size={14} />
-                      <span className="hidden sm:inline text-[11px]">{label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={saveProject}
-                  disabled={!hasUnsavedChanges}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-xl transition-all text-sm font-bold shadow-sm",
-                    hasUnsavedChanges
-                      ? "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
-                      : "bg-zinc-100 text-zinc-400 cursor-default"
-                  )}
-                >
-                  {hasUnsavedChanges ? <Save size={16} /> : <Check size={16} />}
-                  <span>{hasUnsavedChanges ? 'Salva Design' : 'Salvato'}</span>
-                </button>
-              </div>
-            </div>
-            <div className="bg-white border border-zinc-200 rounded-3xl overflow-hidden p-8 shadow-sm">
-              <GlobalSettings
-                project={localProject}
-                updateProjectSettings={updateProjectSettings}
-                viewport={viewport}
-                variant="page"
-              />
-            </div>
-          </div>
         ) : (
           /* ── SETTINGS TAB ── */
           <div className="max-w-3xl mx-auto space-y-6">
@@ -525,7 +457,8 @@ export function ProjectDashboardClient({
                 <p className="text-[11px] text-zinc-500 mt-1.5 font-medium">Gestisci le lingue e le opzioni avanzate del tuo sito.</p>
               </div>
 
-              <div className="pt-4 border-t border-zinc-100">
+
+              <div className="pt-8 border-t border-zinc-100">
                 <LanguageSection
                   project={localProject}
                   updateProjectSettings={updateProjectSettings}

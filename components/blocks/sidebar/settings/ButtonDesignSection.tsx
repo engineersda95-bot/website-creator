@@ -18,33 +18,24 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
    viewport
 }) => {
    const lang = project?.settings?.defaultLanguage || 'it';
-   const desktopSettings = (project?.settings || {}) as ProjectSettings;
+   const settings = (project?.settings || {}) as ProjectSettings;
    const isDesktop = viewport === 'desktop';
    const currentViewport = viewport as 'tablet' | 'mobile';
-   const currentSettings = (isDesktop ? desktopSettings : (project?.settings?.responsive?.[currentViewport] || {})) as Partial<ProjectSettings>;
-
-   const updateGlobal = (newVal: Partial<ProjectSettings>) => {
-      if (isDesktop) {
-         updateProjectSettings(newVal);
-      } else {
-         updateProjectSettings({
-            responsive: {
-               ...project?.settings?.responsive,
-               [currentViewport]: { ...(project?.settings?.responsive?.[currentViewport] || {}), ...newVal }
-            }
-         });
-      }
+   
+   // Get value based on viewport
+   const getValue = (key: keyof ProjectSettings): any => {
+      if (isDesktop) return settings[key] ?? "";
+      return settings.responsive?.[currentViewport]?.[key] ?? "";
    };
 
-   const getValue = (key: keyof ProjectSettings) => {
-      const val = currentSettings[key];
-      if (val !== undefined && val !== null && val !== "") return val as any;
-      return "";
-   };
-
+   // Placeholder shows desktop value on mobile
    const getPlaceholder = (key: keyof ProjectSettings, fallback: any) => {
       if (isDesktop) return fallback.toString();
-      return (desktopSettings[key] ?? fallback).toString();
+      return (settings[key] ?? fallback).toString();
+   };
+
+   const updateGlobal = (newVal: Partial<ProjectSettings>) => {
+      updateProjectSettings(newVal);
    };
 
    return (
@@ -70,7 +61,7 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
                         value={getValue('buttonShadow')}
                         onChange={(e) => updateGlobal({ buttonShadow: e.target.value as any })}
                      >
-                        {!isDesktop && <option value="">{lang === 'en' ? 'Inherit' : 'Eredita'} ({desktopSettings.buttonShadow || (lang === 'en' ? 'None' : 'Nessuna')})</option>}
+                        {!isDesktop && <option value="">{lang === 'en' ? 'Inherit' : 'Eredita'} ({settings.buttonShadow || (lang === 'en' ? 'None' : 'Nessuna')})</option>}
                         <option value="none">{t('none', lang)}</option>
                         <option value="S">{t('small', lang)}</option>
                         <option value="M">{t('medium', lang)}</option>
@@ -114,7 +105,7 @@ export const ButtonDesignSection: React.FC<ButtonDesignSectionProps> = ({
                      id="btn-caps"
                      type="checkbox"
                      className="w-5 h-5 rounded-lg border-zinc-300 text-zinc-900 focus:ring-zinc-900"
-                     checked={currentSettings.buttonUppercase ?? (isDesktop ? false : desktopSettings.buttonUppercase) ?? false}
+                     checked={isDesktop ? (settings.buttonUppercase ?? false) : (settings.responsive?.[currentViewport]?.buttonUppercase ?? settings.buttonUppercase ?? false)}
                      onChange={(e) => updateGlobal({ buttonUppercase: e.target.checked })}
                   />
                </div>

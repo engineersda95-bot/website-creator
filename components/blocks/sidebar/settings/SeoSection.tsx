@@ -28,59 +28,60 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
 }) => {
    const lang = project?.settings?.defaultLanguage || 'it';
    return (
-      <section className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-10">
-         <div className="space-y-8">
+      <section className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-12">
+         {/* Headers are wrapped in divs as first-child to be hidden by sidebar logic if needed */}
+         <div>
             <SectionHeader icon={Globe} title={t('seo_social', lang)} colorClass="text-teal-500" />
-
-            <div className="space-y-6">
-               <div className="relative">
-                  <SimpleInput
-                     label="Meta Title (Default)"
-                     placeholder="Titolo per Google..."
-                     value={project?.settings?.metaTitle || ''}
-                     onChange={(val) => updateProjectSettings({ metaTitle: val })}
-                  />
-                  <div className={cn(
-                     "absolute top-1 right-2 text-[11px] font-black px-1.5 py-0.5 rounded-full uppercase",
-                     (project?.settings?.metaTitle?.length || 0) < 40 || (project?.settings?.metaTitle?.length || 0) > 70 ? "bg-red-50 text-red-500" :
-                        (project?.settings?.metaTitle?.length || 0) < 50 || (project?.settings?.metaTitle?.length || 0) > 60 ? "bg-amber-50 text-amber-500" : "bg-emerald-50 text-emerald-500"
-                  )}>
-                     {project?.settings?.metaTitle?.length || 0}/60
-                  </div>
-               </div>
-
-               <div className="relative">
-                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block pl-1 mb-2">Meta Description (Default)</label>
-                  <textarea
-                     className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none shadow-inner resize-none min-h-[100px]"
-                     value={project?.settings?.metaDescription || ''}
-                     onChange={(e) => updateProjectSettings({ metaDescription: e.target.value })}
-                     placeholder="Descrizione per motori di ricerca..."
-                  />
-                  <div className={cn(
-                     "absolute top-1 right-2 text-[11px] font-black px-1.5 py-0.5 rounded-full uppercase",
-                     (project?.settings?.metaDescription?.length || 0) < 100 || (project?.settings?.metaDescription?.length || 0) > 200 ? "bg-red-50 text-red-500" :
-                        (project?.settings?.metaDescription?.length || 0) < 110 || (project?.settings?.metaDescription?.length || 0) > 160 ? "bg-amber-50 text-amber-500" : "bg-emerald-50 text-emerald-500"
-                  )}>
-                     {project?.settings?.metaDescription?.length || 0}/160
-                  </div>
-               </div>
-
-               <ImageUpload
-                  label="Immagine Social Globale"
-                  showSEOStatus={true}
-                  value={resolveImageUrl(project?.settings?.metaImage, project, useEditorStore.getState().imageMemoryCache)}
-                  onChange={async (val: string, filename?: string) => {
-                     const relativePath = await uploadImage(val, filename as string);
-                     updateProjectSettings({ metaImage: relativePath });
-                  }}
-               />
-            </div>
          </div>
 
-         {/* Global Project SEO */}
+         <div className="space-y-6">
+            <div className="relative">
+               <SimpleInput
+                  label="Meta Title"
+                  placeholder="Titolo per Google..."
+                  value={project?.settings?.metaTitle || ''}
+                  onChange={(val) => updateProjectSettings({ metaTitle: val })}
+               />
+               <div className={cn(
+                  "absolute top-1 right-2 text-[11px] font-black px-1.5 py-0.5 rounded-full uppercase",
+                  (project?.settings?.metaTitle?.length || 0) < 40 || (project?.settings?.metaTitle?.length || 0) > 70 ? "bg-red-50 text-red-500" :
+                     (project?.settings?.metaTitle?.length || 0) < 50 || (project?.settings?.metaTitle?.length || 0) > 60 ? "bg-amber-50 text-amber-500" : "bg-emerald-50 text-emerald-500"
+               )}>
+                  {project?.settings?.metaTitle?.length || 0}/60
+               </div>
+            </div>
+
+            <div className="relative">
+               <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest block pl-1 mb-2">Meta Description</label>
+               <textarea
+                  className="w-full p-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none shadow-inner resize-none min-h-[100px]"
+                  value={project?.settings?.metaDescription || ''}
+                  onChange={(e) => updateProjectSettings({ metaDescription: e.target.value })}
+                  placeholder="Descrizione per motori di ricerca..."
+               />
+               <div className={cn(
+                  "absolute top-1 right-2 text-[11px] font-black px-1.5 py-0.5 rounded-full uppercase",
+                  (project?.settings?.metaDescription?.length || 0) < 100 || (project?.settings?.metaDescription?.length || 0) > 200 ? "bg-red-50 text-red-500" :
+                     (project?.settings?.metaDescription?.length || 0) < 110 || (project?.settings?.metaDescription?.length || 0) > 160 ? "bg-amber-50 text-amber-500" : "bg-emerald-50 text-emerald-500"
+               )}>
+                  {project?.settings?.metaDescription?.length || 0}/160
+               </div>
+            </div>
+
+            <ImageUpload
+               label="Immagine Social"
+               showSEOStatus={true}
+               value={resolveImageUrl(project?.settings?.metaImage, project, useEditorStore.getState().imageMemoryCache)}
+               onChange={async (val: string, filename?: string) => {
+                  const relativePath = await uploadImage(val, filename as string);
+                  updateProjectSettings({ metaImage: relativePath });
+               }}
+            />
+         </div>
+
+         {/* Global Project SEO / Favicon */}
          <div className="space-y-8 pt-10 border-t border-zinc-100">
-            <SectionHeader icon={Languages} title="Impostazioni Globali" colorClass="text-indigo-500" />
+            <SectionHeader icon={Languages} title="Favicon & Icone" colorClass="text-indigo-500" />
             <div className="space-y-6">
                <ImageUpload
                   label="Favicon Globale (1:1)"
