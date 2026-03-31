@@ -2,6 +2,7 @@ import { Phone } from 'lucide-react';
 import { ContactBlock } from './ContactBlock';
 import { ContactContent } from '../sidebar/block-editors/ContactContent';
 import { ContactStyle } from '../sidebar/block-editors/ContactStyle';
+import { ContactUnified } from '../sidebar/block-editors/ContactUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -13,6 +14,7 @@ export const contactDefinition: BlockDefinition = {
   visual: ContactBlock,
   contentEditor: ContactContent,
   styleEditor: ContactStyle,
+  unifiedEditor: ContactUnified,
   defaults: {
     content: {
       title: 'Mettiamoci in Contatto',
@@ -31,7 +33,7 @@ export const contactDefinition: BlockDefinition = {
       borderRadius: 32,
       mapWidth: 100,
       patternType: 'none',
-      patternColor: '#ffffff',
+      patternColor: '#000000',
       patternOpacity: 10,
       patternScale: 40,
       titleTag: 'h2',

@@ -2,29 +2,37 @@
 
 import { cn } from '@/lib/utils';
 import {
-  AlignCenter,
   AlignLeft,
-  Columns,
-  Image as ImageIcon, Layers,
+  Image as ImageIcon,
+  Layers,
   MousePointer,
-  Palette, Settings, Play,
+  MoveHorizontal,
+  Palette,
+  Play,
+  Settings,
   Type,
 } from 'lucide-react';
 import React from 'react';
+import { ImageUpload } from '@/components/shared/ImageUpload';
+import { resolveImageUrl } from '@/lib/image-utils';
+import { useEditorStore } from '@/store/useEditorStore';
 import {
-  AnchorManager, AnimationManager,
+  AnchorManager,
+  AnimationManager,
   BackgroundManager,
   BorderShadowManager,
   CTAManager,
+  ImageStyleFields,
   LayoutFields,
   PatternManager,
   RichTextarea,
   SimpleInput,
-  TypographyFields
+  SimpleSlider,
+  TypographyFields,
 } from '../SharedSidebarComponents';
 import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface HeroUnifiedProps {
+interface ImageTextUnifiedProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -32,13 +40,7 @@ interface HeroUnifiedProps {
   project: any;
 }
 
-const HERO_VARIANTS = [
-  { id: 'centered', label: 'Centrata', icon: AlignCenter },
-  { id: 'split', label: 'Split', icon: Columns },
-  { id: 'stacked', label: 'Immagine+', icon: Layers },
-];
-
-export const HeroUnified: React.FC<HeroUnifiedProps> = ({
+export const ImageTextUnified: React.FC<ImageTextUnifiedProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,
@@ -46,39 +48,26 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
   project,
 }) => {
   const content = selectedBlock.content;
-  const { openSection, toggleSection } = useUnifiedSections();
+  const { openSection, setOpenSection, toggleSection } = useUnifiedSections();
+
+  React.useEffect(() => {
+    const handler = (e: Event) => {
+      const sectionId = (e as CustomEvent).detail;
+      if (sectionId) setOpenSection(sectionId);
+    };
+    window.addEventListener('imagetext-section-focus', handler);
+    return () => window.removeEventListener('imagetext-section-focus', handler);
+  }, [setOpenSection]);
 
   return (
     <div>
-      {/* Layout variant selector */}
-      <div className="px-5 py-4 border-b border-zinc-100">
-        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2 block">Layout</label>
-        <div className="grid grid-cols-3 gap-1.5">
-          {HERO_VARIANTS.map((v) => (
-            <button
-              key={v.id}
-              onClick={() => updateContent({ variant: v.id })}
-              className={cn(
-                "flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-[9px] font-medium transition-all",
-                (content.variant || 'centered') === v.id
-                  ? "border-zinc-900 bg-zinc-900 text-white"
-                  : "border-zinc-100 text-zinc-400 hover:border-zinc-300"
-              )}
-            >
-              <v.icon size={14} />
-              {v.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Components */}
       <CategoryHeader label="Componenti" />
 
       <Section icon={Type} label="Titolo" id="title" isOpen={openSection === 'title'} onToggle={toggleSection}>
         <SimpleInput
           label="Testo"
-          placeholder="Titolo Hero"
+          placeholder="Inserisci un titolo d'impatto"
           value={content.title || ''}
           onChange={(val) => updateContent({ title: val })}
         />
@@ -89,19 +78,19 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           italicKey="titleItalic"
           tagKey="titleTag"
           showTagSelector
-          defaultTag="h1"
+          defaultTag="h2"
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
-          defaultValue={40}
+          defaultValue={48}
         />
       </Section>
 
-      <Section icon={AlignLeft} label="Sottotitolo" id="subtitle" isOpen={openSection === 'subtitle'} onToggle={toggleSection}>
+      <Section icon={AlignLeft} label="Descrizione" id="description" isOpen={openSection === 'description'} onToggle={toggleSection}>
         <RichTextarea
           label="Testo"
-          placeholder="Sottotitolo Hero"
-          value={content.subtitle || ''}
-          onChange={(val) => updateContent({ subtitle: val })}
+          placeholder="Descrivi il problema, la soluzione o il chi siamo..."
+          value={content.text || ''}
+          onChange={(val) => updateContent({ text: val })}
         />
         <TypographyFields
           label="Stile"
@@ -137,6 +126,39 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
         />
       </Section>
 
+      <Section icon={ImageIcon} label="Immagine" id="image" isOpen={openSection === 'image'} onToggle={toggleSection}>
+        <ImageUpload
+          value={resolveImageUrl(content.image, project, useEditorStore.getState().imageMemoryCache)}
+          onChange={async (val: string, filename?: string) => {
+            const relativePath = await useEditorStore.getState().uploadImage(val, filename);
+            updateContent({ image: relativePath });
+          }}
+          label="Carica Immagine"
+          altValue={content.alt ?? ''}
+          onAltChange={(alt) => updateContent({ alt })}
+          onFilenameSelect={(name) => {
+            if (!content.alt) updateContent({ alt: name });
+          }}
+        />
+        <div>
+          <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Aspetto Immagine</label>
+          <select
+            className="w-full p-2 border border-zinc-200 rounded-lg text-xs bg-zinc-50 font-bold"
+            value={content.imageAspectRatio || '16/9'}
+            onChange={(e) => updateContent({ imageAspectRatio: e.target.value })}
+          >
+            <option value="16/9">Desktop (16:9)</option>
+            <option value="4/3">Standard (4:3)</option>
+            <option value="1/1">Quadrato (1:1)</option>
+            <option value="3/4">Verticale (3:4)</option>
+            <option value="auto">Originale</option>
+          </select>
+        </div>
+        <ManagerWrapper label="Stile Immagine">
+          <ImageStyleFields getStyleValue={getStyleValue} updateStyle={updateStyle} />
+        </ManagerWrapper>
+      </Section>
+
       {/* Global Style */}
       <CategoryHeader label="Stile della Sezione" />
 
@@ -145,26 +167,30 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
         />
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Altezza (px)</label>
-            <input
-              type="number"
-              className="w-full p-2 border border-zinc-200 rounded-lg text-xs bg-zinc-50 font-bold"
-              value={getStyleValue('minHeight', 600)}
-              onChange={(e) => updateStyle({ minHeight: parseInt(e.target.value) || 0 })}
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Gap</label>
-            <input
-              type="number"
-              className="w-full p-2 border border-zinc-200 rounded-lg text-xs bg-zinc-50 font-bold"
-              value={getStyleValue('gap', 32)}
-              onChange={(e) => updateStyle({ gap: parseInt(e.target.value) || 0 })}
-            />
+        {/* Image Position */}
+        <div>
+          <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Posizione Immagine</label>
+          <div className="flex border rounded-lg overflow-hidden bg-zinc-50">
+            {[
+              { id: 'left', label: 'Sinistra' },
+              { id: 'right', label: 'Destra' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => updateStyle({ imagePosition: item.id })}
+                className={cn(
+                  "flex-1 py-2 text-[10px] font-bold uppercase transition-all",
+                  getStyleValue('imagePosition', 'left') === item.id
+                    ? "bg-zinc-900 text-white"
+                    : "text-zinc-400 hover:text-zinc-600"
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
         </div>
+        {/* Vertical Align */}
         <div>
           <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Allineamento Verticale</label>
           <div className="flex border rounded-lg overflow-hidden bg-zinc-50">
@@ -188,10 +214,16 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
             ))}
           </div>
         </div>
+        <SimpleSlider
+          label="Gap Colonne"
+          value={getStyleValue('gap', 60)}
+          onChange={(val: number) => updateStyle({ gap: val })}
+          max={200}
+          step={4}
+        />
       </Section>
 
       <Section icon={Palette} label="Sfondo & Colori" id="background" isOpen={openSection === 'background'} onToggle={toggleSection}>
-        {/* Color pickers on one row */}
         {(() => {
           const appearance = project?.settings?.appearance || 'light';
           const defaultBg = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff');
@@ -199,7 +231,6 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           const bgType = getStyleValue('bgType', 'solid');
           return (
             <div className="space-y-4">
-              {/* Sfondo + Testo on one line */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px] font-bold text-zinc-400 uppercase">Sfondo</label>
@@ -216,7 +247,6 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
                   <Settings size={12} />
                 </button>
               </div>
-              {/* Solid / Gradient switch */}
               <div className="flex bg-zinc-100 p-0.5 rounded-lg">
                 {['solid', 'gradient'].map((t) => (
                   <button key={t} onClick={() => updateStyle({ bgType: t })} className={cn("flex-1 py-1.5 text-[10px] font-bold uppercase rounded-md transition-all", bgType === t ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}>

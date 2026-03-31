@@ -88,6 +88,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
           >
             {onInlineEdit ? (
               <InlineEditable
+                fieldId="title"
                 value={content.title || ''}
                 onChange={(v) => onInlineEdit('title', v)}
                 className="tracking-tighter transition-all duration-500 rt-content w-full"
@@ -130,6 +131,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
         >
           {onInlineEdit ? (
             <InlineEditable
+              fieldId="text"
               value={content.text}
               onChange={(v) => onInlineEdit('text', v)}
               className="rt-content max-w-none transition-all duration-500 w-full"

@@ -223,6 +223,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
             >
               {onInlineEdit ? (
                 <InlineEditable
+                  fieldId="title"
                   value={content.title || ''}
                   onChange={(v) => onInlineEdit('title', v)}
                   className="tracking-tighter transition-all duration-500 leading-tight rt-content"

@@ -110,6 +110,7 @@ export const PdfBlock = ({ block, project, isStatic, viewport, onInlineEdit }: a
             {(title || onInlineEdit) && (
               onInlineEdit ? (
                 <InlineEditable
+                  fieldId="title"
                   value={title || ''}
                   onChange={(v) => onInlineEdit('title', v)}
                   style={titleStyle}
@@ -127,6 +128,7 @@ export const PdfBlock = ({ block, project, isStatic, viewport, onInlineEdit }: a
             {(subtitle || onInlineEdit) && (
               onInlineEdit ? (
                 <InlineEditable
+                  fieldId="subtitle"
                   value={subtitle || ''}
                   onChange={(v) => onInlineEdit('subtitle', v)}
                   style={subtitleStyle}

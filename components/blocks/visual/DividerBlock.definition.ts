@@ -2,6 +2,7 @@ import { Minus } from 'lucide-react';
 import { DividerBlock } from './DividerBlock';
 import { DividerContent } from '../sidebar/block-editors/DividerContent';
 import { DividerStyle } from '../sidebar/block-editors/DividerStyle';
+import { DividerUnified } from '../sidebar/block-editors/DividerUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -13,12 +14,13 @@ export const dividerDefinition: BlockDefinition = {
   visual: DividerBlock,
   contentEditor: DividerContent,
   styleEditor: DividerStyle,
+  unifiedEditor: DividerUnified,
   defaults: {
     content: { type: 'line' },
     style: { 
       padding: 40,
       patternType: 'none',
-      patternColor: '#ffffff',
+      patternColor: '#000000',
       patternOpacity: 10,
       patternScale: 40
     }

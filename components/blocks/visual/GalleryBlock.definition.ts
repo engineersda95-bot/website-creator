@@ -2,6 +2,7 @@ import { LayoutTemplate } from 'lucide-react';
 import { GalleryBlock } from './GalleryBlock';
 import { GalleryContent } from '../sidebar/block-editors/GalleryContent';
 import { GalleryStyle } from '../sidebar/block-editors/GalleryStyle';
+import { GalleryUnified } from '../sidebar/block-editors/GalleryUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -13,6 +14,7 @@ export const galleryDefinition: BlockDefinition = {
   visual: GalleryBlock,
   contentEditor: GalleryContent,
   styleEditor: GalleryStyle,
+  unifiedEditor: GalleryUnified,
   defaults: {
     content: {
       title: 'La Nostra Galleria',
@@ -35,7 +37,7 @@ export const galleryDefinition: BlockDefinition = {
       titleBold: false,
       titleTag: 'h2',
       patternType: 'none',
-      patternColor: '#ffffff',
+      patternColor: '#000000',
       patternOpacity: 10,
       patternScale: 40,
       animationType: 'none',

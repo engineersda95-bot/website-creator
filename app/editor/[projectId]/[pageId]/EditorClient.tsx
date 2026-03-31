@@ -45,6 +45,7 @@ export function EditorClient({
     currentPage,
     projectPages,
     isLoading,
+    isSaving,
     isInitialized,
     user,
     hasUnsavedChanges,
@@ -153,7 +154,7 @@ export function EditorClient({
           hasUnsavedChanges={hasUnsavedChanges}
           siteStatus={siteStatus}
           isPublishing={isPublishing}
-          isLoading={isLoading}
+          isLoading={isLoading || isSaving}
           font={font}
           onSave={async () => {
             await saveCurrentPage();

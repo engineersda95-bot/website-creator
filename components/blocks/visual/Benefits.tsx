@@ -164,6 +164,7 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
               const TitleTag = (style.titleTag || 'h2') as any;
               return onInlineEdit ? (
                 <InlineEditable
+                  fieldId="title"
                   value={content.title || ''}
                   onChange={(v) => onInlineEdit('title', v)}
                   className="mb-4 tracking-tighter transition-all duration-500 leading-tight rt-content"
@@ -191,6 +192,7 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
             {content.subtitle && (
               onInlineEdit ? (
                 <InlineEditable
+                  fieldId="subtitle"
                   value={content.subtitle || ''}
                   onChange={(v) => onInlineEdit('subtitle', v)}
                   className="opacity-70 max-w-2xl mx-auto leading-relaxed transition-all duration-500 rt-content"

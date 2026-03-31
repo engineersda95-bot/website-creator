@@ -2,6 +2,7 @@ import { Type } from 'lucide-react';
 import { TextBlock } from './TextBlock';
 import { TextContent } from '../sidebar/block-editors/TextContent';
 import { TextStyle } from '../sidebar/block-editors/TextStyle';
+import { TextUnified } from '../sidebar/block-editors/TextUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
@@ -12,6 +13,7 @@ export const textDefinition: BlockDefinition = {
   visual: TextBlock,
   contentEditor: TextContent,
   styleEditor: TextStyle,
+  unifiedEditor: TextUnified,
   defaults: {
     content: {
       title: 'Il Tuo Titolo Qui',

@@ -241,6 +241,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
             >
               {onInlineEdit ? (
                 <InlineEditable
+                  fieldId="title"
                   value={content.title || ''}
                   onChange={(v) => onInlineEdit('title', v)}
                   className="tracking-tighter transition-all duration-500 leading-tight rt-content"

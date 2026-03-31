@@ -94,6 +94,7 @@ const FAQWrapper: React.FC<{
           >
             {onInlineEdit ? (
               <InlineEditable
+                fieldId="title"
                 value={content.title || ''}
                 onChange={(v) => onInlineEdit('title', v)}
                 className="tracking-tight transition-all duration-500 w-full rt-content"
@@ -159,6 +160,7 @@ const AccordionVariant: React.FC<{ items: FAQBlockProps['content']['items']; blo
               <div
                 style={{ fontSize: 'var(--item-title-fs)', fontWeight: 'var(--item-title-fw)', fontStyle: 'var(--item-title-is)', color: blockColor }}
                 className="flex-1 rt-content transition-opacity opacity-90 group-hover:opacity-100"
+                data-sidebar-section="items"
                 dangerouslySetInnerHTML={{ __html: formatRichText(item.question) }}
               />
               <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center transition-all" style={{ background: 'color-mix(in srgb, currentColor 8%, transparent)' }}>
@@ -212,6 +214,7 @@ const ClassicVariant: React.FC<{ items: FAQBlockProps['content']['items']; block
               <div
                 style={{ fontSize: 'var(--item-title-fs)', fontWeight: 'var(--item-title-fw)', fontStyle: 'var(--item-title-is)', color: blockColor }}
                 className="flex-1 rt-content transition-opacity opacity-85 group-hover:opacity-100"
+                data-sidebar-section="items"
                 dangerouslySetInnerHTML={{ __html: formatRichText(item.question) }}
               />
               <ChevronDown

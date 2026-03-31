@@ -2,12 +2,14 @@
 
 import { cn } from '@/lib/utils';
 import {
-  AlignCenter,
   AlignLeft,
-  Columns,
-  Image as ImageIcon, Layers,
-  MousePointer,
+  ChevronDown, ChevronUp,
+  Columns, Hash,
+  HelpCircle,
+  Layers,
+  List,
   Palette, Settings, Play,
+  Plus, Square, Trash2,
   Type,
 } from 'lucide-react';
 import React from 'react';
@@ -15,16 +17,15 @@ import {
   AnchorManager, AnimationManager,
   BackgroundManager,
   BorderShadowManager,
-  CTAManager,
   LayoutFields,
   PatternManager,
-  RichTextarea,
   SimpleInput,
+  SimpleSlider,
   TypographyFields
 } from '../SharedSidebarComponents';
 import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface HeroUnifiedProps {
+interface FaqUnifiedProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -32,13 +33,14 @@ interface HeroUnifiedProps {
   project: any;
 }
 
-const HERO_VARIANTS = [
-  { id: 'centered', label: 'Centrata', icon: AlignCenter },
-  { id: 'split', label: 'Split', icon: Columns },
-  { id: 'stacked', label: 'Immagine+', icon: Layers },
+const FAQ_VARIANTS = [
+  { id: 'accordion', label: 'Minimal', icon: List },
+  { id: 'classic', label: 'Classico', icon: Square },
+  { id: 'side-by-side', label: 'Affiancato', icon: Columns },
+  { id: 'numbered', label: 'Numerato', icon: Hash },
 ];
 
-export const HeroUnified: React.FC<HeroUnifiedProps> = ({
+export const FaqUnified: React.FC<FaqUnifiedProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,
@@ -47,20 +49,44 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
 }) => {
   const content = selectedBlock.content;
   const { openSection, toggleSection } = useUnifiedSections();
+  const items: Array<{ question: string; answer: string }> = content.items || [];
+
+  const addItem = () => {
+    updateContent({ items: [...items, { question: 'Nuova Domanda', answer: 'Inserisci qui la risposta.' }] });
+  };
+
+  const removeItem = (index: number) => {
+    updateContent({ items: items.filter((_: any, i: number) => i !== index) });
+  };
+
+  const updateItem = (index: number, field: string, value: string) => {
+    const newItems = [...items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    updateContent({ items: newItems });
+  };
+
+  const moveItem = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === items.length - 1) return;
+    const newItems = [...items];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
+    updateContent({ items: newItems });
+  };
 
   return (
     <div>
-      {/* Layout variant selector */}
+      {/* Variant selector */}
       <div className="px-5 py-4 border-b border-zinc-100">
         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2 block">Layout</label>
-        <div className="grid grid-cols-3 gap-1.5">
-          {HERO_VARIANTS.map((v) => (
+        <div className="grid grid-cols-4 gap-1.5">
+          {FAQ_VARIANTS.map((v) => (
             <button
               key={v.id}
               onClick={() => updateContent({ variant: v.id })}
               className={cn(
                 "flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-[9px] font-medium transition-all",
-                (content.variant || 'centered') === v.id
+                (content.variant || 'accordion') === v.id
                   ? "border-zinc-900 bg-zinc-900 text-white"
                   : "border-zinc-100 text-zinc-400 hover:border-zinc-300"
               )}
@@ -78,7 +104,7 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
       <Section icon={Type} label="Titolo" id="title" isOpen={openSection === 'title'} onToggle={toggleSection}>
         <SimpleInput
           label="Testo"
-          placeholder="Titolo Hero"
+          placeholder="es: Domande Frequenti"
           value={content.title || ''}
           onChange={(val) => updateContent({ title: val })}
         />
@@ -88,53 +114,86 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           boldKey="titleBold"
           italicKey="titleItalic"
           tagKey="titleTag"
-          showTagSelector
-          defaultTag="h1"
+          showTagSelector={true}
+          defaultTag="h2"
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
-          defaultValue={40}
+          defaultValue={48}
         />
       </Section>
 
-      <Section icon={AlignLeft} label="Sottotitolo" id="subtitle" isOpen={openSection === 'subtitle'} onToggle={toggleSection}>
-        <RichTextarea
-          label="Testo"
-          placeholder="Sottotitolo Hero"
-          value={content.subtitle || ''}
-          onChange={(val) => updateContent({ subtitle: val })}
-        />
-        <TypographyFields
-          label="Stile"
-          sizeKey="subtitleSize"
-          boldKey="subtitleBold"
-          italicKey="subtitleItalic"
-          getStyleValue={getStyleValue}
-          updateStyle={updateStyle}
-          defaultValue={18}
-        />
-      </Section>
+      <Section icon={HelpCircle} label="Domande" id="items" badge={`${items.length}`} isOpen={openSection === 'items'} onToggle={toggleSection}>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase">Domande e Risposte</label>
+            <button
+              onClick={addItem}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 text-white rounded-lg text-[10px] font-bold uppercase hover:bg-zinc-800 transition-all"
+            >
+              <Plus size={10} /> Aggiungi
+            </button>
+          </div>
 
-      <Section icon={MousePointer} label="CTA 1" id="cta" badge={content.cta || 'vuoto'} isOpen={openSection === 'cta'} onToggle={toggleSection}>
-        <CTAManager
-          content={content}
-          updateContent={updateContent}
-          style={selectedBlock.style}
-          updateStyle={updateStyle}
-          label="CTA 1"
-        />
-      </Section>
+          <div className="space-y-4">
+            {items.map((item, i) => (
+              <div key={i} className="p-4 bg-white border border-zinc-200 rounded-2xl shadow-sm space-y-3 relative group animate-in slide-in-from-right-2 duration-200">
+                <div className="flex items-center justify-between gap-2 border-b border-zinc-50 pb-2">
+                  <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider">FAQ #{i + 1}</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => moveItem(i, 'up')}
+                      disabled={i === 0}
+                      className="p-1 text-zinc-400 hover:text-zinc-900 disabled:opacity-20"
+                    >
+                      <ChevronUp size={12} />
+                    </button>
+                    <button
+                      onClick={() => moveItem(i, 'down')}
+                      disabled={i === items.length - 1}
+                      className="p-1 text-zinc-400 hover:text-zinc-900 disabled:opacity-20"
+                    >
+                      <ChevronDown size={12} />
+                    </button>
+                    <button
+                      onClick={() => removeItem(i)}
+                      className="p-1 text-zinc-400 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                </div>
 
-      <Section icon={MousePointer} label="CTA 2" id="cta2" badge={content.cta2 || 'nessuno'} isOpen={openSection === 'cta2'} onToggle={toggleSection}>
-        <CTAManager
-          content={content}
-          updateContent={updateContent}
-          style={selectedBlock.style}
-          updateStyle={updateStyle}
-          label="CTA 2"
-          ctaKey="cta2"
-          urlKey="cta2Url"
-          themeKey="cta2Theme"
-        />
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase block">Domanda</label>
+                  <textarea
+                    className="w-full p-2 border border-zinc-100 rounded-xl text-xs bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none font-bold resize-none"
+                    rows={2}
+                    placeholder="Inserisci la domanda..."
+                    value={item.question}
+                    onChange={(e) => updateItem(i, 'question', e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase block">Risposta</label>
+                  <textarea
+                    className="w-full p-2 border border-zinc-100 rounded-xl text-xs bg-zinc-50 focus:bg-white focus:border-zinc-900 transition-all outline-none resize-none leading-relaxed"
+                    rows={3}
+                    placeholder="Inserisci la risposta..."
+                    value={item.answer}
+                    onChange={(e) => updateItem(i, 'answer', e.target.value)}
+                  />
+                </div>
+              </div>
+            ))}
+
+            {items.length === 0 && (
+              <div className="p-8 text-center border-2 border-dashed border-zinc-100 rounded-2xl">
+                <p className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider">Nessuna domanda. Clicca aggiungi per iniziare.</p>
+              </div>
+            )}
+          </div>
+        </div>
       </Section>
 
       {/* Global Style */}
@@ -145,53 +204,49 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
         />
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Altezza (px)</label>
-            <input
-              type="number"
-              className="w-full p-2 border border-zinc-200 rounded-lg text-xs bg-zinc-50 font-bold"
-              value={getStyleValue('minHeight', 600)}
-              onChange={(e) => updateStyle({ minHeight: parseInt(e.target.value) || 0 })}
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Gap</label>
-            <input
-              type="number"
-              className="w-full p-2 border border-zinc-200 rounded-lg text-xs bg-zinc-50 font-bold"
-              value={getStyleValue('gap', 32)}
-              onChange={(e) => updateStyle({ gap: parseInt(e.target.value) || 0 })}
-            />
-          </div>
+        <div className="pt-4 border-t border-zinc-100 space-y-4">
+          <SimpleSlider
+            label="Distanza Titolo-FAQ (Gap)"
+            value={getStyleValue('gap', 64)}
+            onChange={(val: number) => updateStyle({ gap: val })}
+            max={200} step={4}
+          />
+          <SimpleSlider
+            label="Larghezza Massima Sezione"
+            value={getStyleValue('maxWidth', 800)}
+            onChange={(val: number) => updateStyle({ maxWidth: val })}
+            min={400} max={1400} step={50}
+          />
         </div>
-        <div>
-          <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Allineamento Verticale</label>
-          <div className="flex border rounded-lg overflow-hidden bg-zinc-50">
-            {[
-              { id: 'top', label: 'Sopra' },
-              { id: 'center', label: 'Centro' },
-              { id: 'bottom', label: 'Sotto' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => updateStyle({ verticalAlign: item.id })}
-                className={cn(
-                  "flex-1 py-2 text-[10px] font-bold uppercase transition-all",
-                  getStyleValue('verticalAlign', 'center') === item.id
-                    ? "bg-zinc-900 text-white"
-                    : "text-zinc-400 hover:text-zinc-600"
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+      </Section>
+
+      <Section icon={Type} label="Tipografia" id="typography" isOpen={openSection === 'typography'} onToggle={toggleSection}>
+        <div className="space-y-4">
+          <TypographyFields
+            label="Dimensione Domande"
+            sizeKey="itemTitleSize"
+            boldKey="itemTitleBold"
+            italicKey="itemTitleItalic"
+            tagKey="itemTitleTag"
+            showTagSelector={true}
+            defaultTag="h3"
+            getStyleValue={getStyleValue}
+            updateStyle={updateStyle}
+            defaultValue={18}
+          />
+          <TypographyFields
+            label="Dimensione Risposte"
+            sizeKey="answerSize"
+            boldKey="answerBold"
+            italicKey="answerItalic"
+            getStyleValue={getStyleValue}
+            updateStyle={updateStyle}
+            defaultValue={16}
+          />
         </div>
       </Section>
 
       <Section icon={Palette} label="Sfondo & Colori" id="background" isOpen={openSection === 'background'} onToggle={toggleSection}>
-        {/* Color pickers on one row */}
         {(() => {
           const appearance = project?.settings?.appearance || 'light';
           const defaultBg = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff');
@@ -199,7 +254,6 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           const bgType = getStyleValue('bgType', 'solid');
           return (
             <div className="space-y-4">
-              {/* Sfondo + Testo on one line */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px] font-bold text-zinc-400 uppercase">Sfondo</label>
@@ -216,7 +270,6 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
                   <Settings size={12} />
                 </button>
               </div>
-              {/* Solid / Gradient switch */}
               <div className="flex bg-zinc-100 p-0.5 rounded-lg">
                 {['solid', 'gradient'].map((t) => (
                   <button key={t} onClick={() => updateStyle({ bgType: t })} className={cn("flex-1 py-1.5 text-[10px] font-bold uppercase rounded-md transition-all", bgType === t ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}>

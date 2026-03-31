@@ -2,6 +2,7 @@ import { Layout } from 'lucide-react';
 import { FooterBlock } from './FooterBlock';
 import { FooterContent } from '../sidebar/block-editors/FooterContent';
 import { FooterStyle } from '../sidebar/block-editors/FooterStyle';
+import { FooterUnified } from '../sidebar/block-editors/FooterUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -13,6 +14,7 @@ export const footerDefinition: BlockDefinition = {
   visual: FooterBlock,
   contentEditor: FooterContent,
   styleEditor: FooterStyle,
+  unifiedEditor: FooterUnified,
   defaults: {
     content: { 
       copyright: '© 2024 Tutti i diritti riservati',
@@ -21,7 +23,7 @@ export const footerDefinition: BlockDefinition = {
     style: { 
       padding: 40,
       patternType: 'none',
-      patternColor: '#ffffff',
+      patternColor: '#000000',
       patternOpacity: 10,
       patternScale: 40
     }

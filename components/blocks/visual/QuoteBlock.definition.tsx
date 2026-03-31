@@ -3,6 +3,7 @@ import { FileText } from 'lucide-react';
 import { QuoteBlock } from './QuoteBlock';
 import { QuoteContent } from '../sidebar/block-editors/QuoteContent';
 import { QuoteStyle } from '../sidebar/block-editors/QuoteStyle';
+import { QuoteUnified } from '../sidebar/block-editors/QuoteUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
@@ -66,6 +67,7 @@ export const quoteDefinition: BlockDefinition = {
   visual: QuoteBlock,
   contentEditor: QuoteContent,
   styleEditor: QuoteStyle,
+  unifiedEditor: QuoteUnified,
   defaults: {
     content: {
       variant: 'cards',
@@ -94,7 +96,7 @@ export const quoteDefinition: BlockDefinition = {
       itemTitleTag: 'h3',
       itemTitleBold: true,
       patternType: 'none',
-      patternColor: '#ffffff',
+      patternColor: '#000000',
       patternOpacity: 10,
       patternScale: 40,
       animationType: 'none',

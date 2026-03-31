@@ -3,6 +3,7 @@ import { ListChecks } from 'lucide-react';
 import { HowItWorks } from './HowItWorks';
 import { HowItWorksContent } from '../sidebar/block-editors/HowItWorksContent';
 import { HowItWorksStyle } from '../sidebar/block-editors/HowItWorksStyle';
+import { HowItWorksUnified } from '../sidebar/block-editors/HowItWorksUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
@@ -81,6 +82,7 @@ export const howItWorksDefinition: BlockDefinition = {
   visual: HowItWorks,
   contentEditor: HowItWorksContent,
   styleEditor: HowItWorksStyle,
+  unifiedEditor: HowItWorksUnified,
   defaults: {
     content: {
       variant: 'cards',

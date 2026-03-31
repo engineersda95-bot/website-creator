@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight, Save, Check, Rocket, Loader2, ExternalLink, Layout, Grid } from 'lucide-react';
+import { ChevronRight, Save, Check, Rocket, Loader2, ExternalLink, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEditorStore } from '@/store/useEditorStore';
 import { UserMenu } from '@/components/auth/UserMenu';
@@ -37,61 +37,37 @@ export function EditorHeader({
   siteStatus,
   isPublishing,
   isLoading,
-  font,
   onSave,
   onPublish
 }: EditorHeaderProps) {
+  const navigateWithCheck = async (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (hasUnsavedChanges) {
+      e.preventDefault();
+      if (await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?', confirmLabel: 'Abbandona', variant: 'danger' })) {
+        useEditorStore.getState().setUnsavedChanges(false);
+        window.location.href = href;
+      }
+    }
+  };
+
   return (
-    <header className="h-14 bg-white border-b border-zinc-200/80 flex items-center justify-between px-5 shrink-0 z-[9999] relative">
-      {/* Left: breadcrumb + status */}
-      <div className="flex items-center gap-3">
-        {/* Breadcrumb - Clean & Minimal */}
-        <nav className="flex items-center gap-1 text-[13px]">
-          <Link
-            href="/editor"
-            onClick={async (e) => {
-              if (hasUnsavedChanges) {
-                e.preventDefault();
-                if (await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?', confirmLabel: 'Abbandona', variant: 'danger' })) {
-                  useEditorStore.getState().setUnsavedChanges(false);
-                  window.location.href = '/editor';
-                }
-              }
-            }}
-            className="flex items-center gap-1.5 px-2 py-1 text-zinc-400 hover:text-zinc-900 transition-all font-semibold group"
-            title="Torna all'elenco di tutti i tuoi siti"
-          >
-            <Grid size={13} className="text-zinc-300 group-hover:text-zinc-500 transition-colors" />
-            <span className="underline underline-offset-4 decoration-transparent group-hover:decoration-zinc-300 transition-all">
-              I miei siti
-            </span>
-          </Link>
-          
-          <ChevronRight size={10} className="text-zinc-300 mx-0.5" />
-          
-          <Link
-            href={`/editor/${initialProject?.id}`}
-            onClick={async (e) => {
-              if (hasUnsavedChanges) {
-                e.preventDefault();
-                if (await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate. Vuoi abbandonare la pagina e perdere le modifiche?', confirmLabel: 'Abbandona', variant: 'danger' })) {
-                  useEditorStore.getState().setUnsavedChanges(false);
-                  window.location.href = `/editor/${initialProject?.id}`;
-                }
-              }
-            }}
-            className="flex items-center gap-1.5 px-2 py-1 text-zinc-400 hover:text-zinc-900 transition-all font-semibold max-w-[160px] group"
-            title="Gestisci pagine del sito"
-            data-tour="site-name"
-          >
-            <Layout size={13} className="text-zinc-300 group-hover:text-zinc-500 transition-colors" />
-            <span className="truncate underline underline-offset-4 decoration-transparent group-hover:decoration-zinc-300 transition-all">
-              {targetProject?.name || 'Sito'}
-            </span>
-          </Link>
-          
-          <ChevronRight size={10} className="text-zinc-300 mx-1" />
-          
+    <header className="h-12 bg-white border-b border-zinc-200/80 flex items-center justify-between px-4 shrink-0 z-[9999] relative">
+      {/* Left: back + project name + page switcher */}
+      <div className="flex items-center gap-2 min-w-0">
+        <Link
+          href={`/editor/${initialProject?.id}`}
+          onClick={(e) => navigateWithCheck(e, `/editor/${initialProject?.id}`)}
+          className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-lg transition-all shrink-0"
+          title="Torna alla gestione pagine"
+        >
+          <ArrowLeft size={16} />
+        </Link>
+
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-[13px] font-semibold text-zinc-700 truncate max-w-[140px]" title={targetProject?.name}>
+            {targetProject?.name || 'Sito'}
+          </span>
+          <ChevronRight size={10} className="text-zinc-300 shrink-0" />
           <PageSwitcher
             currentPage={currentPage}
             pages={targetPages}
@@ -99,72 +75,54 @@ export function EditorHeader({
             initialPageId={initialPageId}
             fontFamily="'DM Sans', sans-serif"
           />
-        </nav>
-
-        <div 
-          data-tour="page-status"
-          className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ml-1 shadow-sm border",
-            siteStatus === 'pubblicato'
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
-              : siteStatus === 'bozza'
-                ? "bg-amber-50 text-amber-700 border-amber-200/60"
-                : "bg-zinc-100 text-zinc-500 border-zinc-200/60"
-          )}
-        >
-          <div className={cn("w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.1)]",
-            siteStatus === 'pubblicato' ? "bg-emerald-500 shadow-emerald-200" :
-              siteStatus === 'bozza' ? "bg-amber-500 shadow-amber-200" : "bg-zinc-400"
-          )} />
-          {siteStatus === 'pubblicato' ? 'Online' : 'Bozza'}
         </div>
 
-        {currentPage?.language && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-zinc-900 text-white border border-zinc-900 shadow-sm ml-1">
-            {currentPage.language}
-          </div>
-        )}
+        {/* Status dot */}
+        <div className={cn(
+          "w-2 h-2 rounded-full shrink-0 ml-1",
+          siteStatus === 'pubblicato' ? "bg-emerald-500" : "bg-zinc-300"
+        )} title={siteStatus === 'pubblicato' ? 'Online' : 'Bozza'} />
 
         {project?.live_url && (
           <a
             href={getProjectDomain(project)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+            className="p-1.5 text-zinc-300 hover:text-blue-500 transition-colors shrink-0"
+            title="Apri sito live"
           >
-            <ExternalLink size={12} />
-            <span className="hidden xl:inline">Vedi sito</span>
+            <ExternalLink size={13} />
           </a>
         )}
       </div>
 
-      {/* Right: actions */}
-      <div className="flex items-center gap-2" data-tour="publish-btn">
+      {/* Right: save + publish + user */}
+      <div className="flex items-center gap-1.5" data-tour="publish-btn">
         <button
           onClick={onSave}
           disabled={!hasUnsavedChanges && !isLoading}
           className={cn(
-            "flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all text-sm font-medium",
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-[13px] font-medium",
             hasUnsavedChanges
-              ? "bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-200"
-              : "text-zinc-400 hover:text-zinc-500"
+              ? "bg-blue-600 text-white hover:bg-blue-700"
+              : "text-zinc-400"
           )}
-          title={hasUnsavedChanges ? "Salva Modifiche (Ctrl+S)" : "Tutto Salvato"}
+          title={hasUnsavedChanges ? "Salva (Ctrl+S)" : "Tutto salvato"}
         >
-          {hasUnsavedChanges ? <Save size={14} /> : <Check size={14} />}
-          <span className="hidden sm:inline">{hasUnsavedChanges ? 'Salva' : 'Salvato'}</span>
+          {isLoading ? <Loader2 size={13} className="animate-spin" /> : hasUnsavedChanges ? <Save size={13} /> : <Check size={13} />}
+          <span className="hidden sm:inline">{isLoading ? 'Salvo...' : hasUnsavedChanges ? 'Salva' : 'Salvato'}</span>
         </button>
-
-        <UserMenu />
 
         <button
           onClick={onPublish}
           disabled={isPublishing || isLoading}
-          className="flex items-center gap-2 px-5 py-1.5 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          className="flex items-center gap-1.5 px-4 py-1.5 text-[13px] font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all active:scale-[0.97] disabled:opacity-50"
         >
-          {isPublishing ? <Loader2 className="animate-spin" size={14} /> : <Rocket size={14} />}
-          {isPublishing ? 'Pubblicando...' : 'Pubblica'}
+          {isPublishing ? <Loader2 className="animate-spin" size={13} /> : <Rocket size={13} />}
+          <span className="hidden sm:inline">{isPublishing ? 'Pubblico...' : 'Pubblica'}</span>
         </button>
+
+        <UserMenu />
       </div>
     </header>
   );

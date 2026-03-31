@@ -268,6 +268,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
             >
               {onInlineEdit ? (
                 <InlineEditable
+                  fieldId="title"
                   value={content.title || ''}
                   onChange={(v) => onInlineEdit('title', v)}
                   className="mb-16 tracking-tighter leading-tight"

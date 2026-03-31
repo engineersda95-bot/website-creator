@@ -109,8 +109,21 @@ export const EditorCanvas: React.FC = () => {
       }
     };
 
+    // Click on rt-content with data-sidebar-section → open that section in sidebar
+    const handleSidebarFocus = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest('[data-sidebar-section]');
+      if (target) {
+        const sectionId = target.getAttribute('data-sidebar-section');
+        if (sectionId) window.dispatchEvent(new CustomEvent('block-section-focus', { detail: sectionId }));
+      }
+    };
+
     document.addEventListener('click', handleCaptureClick, true);
-    return () => document.removeEventListener('click', handleCaptureClick, true);
+    document.addEventListener('dblclick', handleSidebarFocus);
+    return () => {
+      document.removeEventListener('click', handleCaptureClick, true);
+      document.removeEventListener('dblclick', handleSidebarFocus);
+    };
   }, []);
 
   // Listener for 'open-help' event from UserMenu

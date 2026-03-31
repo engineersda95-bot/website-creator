@@ -2,6 +2,7 @@ import { Plus } from 'lucide-react';
 import { EmbedBlock } from './EmbedBlock';
 import { EmbedContent } from '../sidebar/block-editors/EmbedContent';
 import { EmbedStyle } from '../sidebar/block-editors/EmbedStyle';
+import { EmbedUnified } from '../sidebar/block-editors/EmbedUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
@@ -12,6 +13,7 @@ export const embedDefinition: BlockDefinition = {
   visual: EmbedBlock,
   contentEditor: EmbedContent,
   styleEditor: EmbedStyle,
+  unifiedEditor: EmbedUnified,
   defaults: {
     content: {
       type: 'youtube',
@@ -20,7 +22,7 @@ export const embedDefinition: BlockDefinition = {
     style: {
       padding: 60,
       patternType: 'none',
-      patternColor: '#ffffff',
+      patternColor: '#000000',
       patternOpacity: 10,
       patternScale: 40,
       titleTag: 'h2'

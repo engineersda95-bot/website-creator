@@ -55,6 +55,7 @@ interface EditorState {
   removeBlock: (id: string) => void;
   moveBlockUp: (id: string) => void;
   moveBlockDown: (id: string) => void;
+  reorderBlocks: (fromIndex: number, toIndex: number) => void;
   selectBlock: (id: string | null) => void;
   duplicateBlock: (id: string) => void;
   copyBlock: (id: string) => void;
@@ -663,6 +664,22 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
     const blocks = [...currentPage.blocks];
     [blocks[idx + 1], blocks[idx]] = [blocks[idx], blocks[idx + 1]];
+    const newCurrentPage = { ...currentPage, blocks };
+
+    set({
+      currentPage: newCurrentPage,
+      projectPages: projectPages.map(p => p.id === currentPage.id ? newCurrentPage : p)
+    });
+    triggerAutoSave(get, set);
+  },
+
+  reorderBlocks: (fromIndex, toIndex) => {
+    const { currentPage, projectPages } = get();
+    if (!currentPage || fromIndex === toIndex) return;
+
+    const blocks = [...currentPage.blocks];
+    const [moved] = blocks.splice(fromIndex, 1);
+    blocks.splice(toIndex, 0, moved);
     const newCurrentPage = { ...currentPage, blocks };
 
     set({

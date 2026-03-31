@@ -106,7 +106,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
             <div 
               className="absolute inset-0 pointer-events-none z-0 background-pattern"
               style={BACKGROUND_PATTERNS.find(p => p.id === style.patternType)?.getStyle(
-                style.patternColor || '#ffffff',
+                style.patternColor || '#000000',
                 style.patternOpacity || 10,
                 style.patternScale || 40
               )}
@@ -149,6 +149,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
                        {(content.description || onInlineEdit) && (
                          onInlineEdit ? (
                            <InlineEditable
+                             fieldId="description"
                              value={content.description || ''}
                              onChange={(v) => onInlineEdit('description', v)}
                              className="rt-content opacity-70"
@@ -241,6 +242,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
                      {(content.description || onInlineEdit) && (
                         onInlineEdit ? (
                           <InlineEditable
+                            fieldId="description"
                             value={content.description || ''}
                             onChange={(v) => onInlineEdit('description', v)}
                             className="rt-content opacity-70 w-full break-words"

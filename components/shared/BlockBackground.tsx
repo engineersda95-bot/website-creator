@@ -32,11 +32,11 @@ export const BlockBackground: React.FC<BlockBackgroundProps> = ({
   return (
     <>
       {pattern && pattern.id !== 'none' && (
-        <div 
+        <div
           className="absolute inset-0 z-[0] pointer-events-none transition-all duration-500 background-pattern"
           style={pattern.getStyle(
-            style.patternColor || '#ffffff', 
-            style.patternOpacity || 10, 
+            style.patternColor || '#000000',
+            style.patternOpacity || 10,
             style.patternScale || 40
           )}
         />

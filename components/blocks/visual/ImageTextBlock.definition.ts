@@ -2,6 +2,7 @@ import { Grid } from 'lucide-react';
 import { ImageTextBlock } from './ImageTextBlock';
 import { ImageTextContent } from '../sidebar/block-editors/ImageTextContent';
 import { ImageTextStyle } from '../sidebar/block-editors/ImageTextStyle';
+import { ImageTextUnified } from '../sidebar/block-editors/ImageTextUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -13,6 +14,7 @@ export const imageTextDefinition: BlockDefinition = {
   visual: ImageTextBlock,
   contentEditor: ImageTextContent,
   styleEditor: ImageTextStyle,
+  unifiedEditor: ImageTextUnified,
   defaults: {
     content: {
       title: 'Innovazione in ogni dettaglio',
@@ -26,7 +28,7 @@ export const imageTextDefinition: BlockDefinition = {
       gap: 60,
       buttonTheme: 'secondary',
       patternType: 'none',
-      patternColor: '#ffffff',
+      patternColor: '#000000',
       patternOpacity: 10,
       patternScale: 40,
       animationType: 'none',

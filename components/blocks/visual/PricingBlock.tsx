@@ -95,6 +95,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
               const TitleTag = (style.titleTag || 'h2') as any;
               return onInlineEdit ? (
                 <InlineEditable
+                  fieldId="title"
                   value={content.title || ''}
                   onChange={(v) => onInlineEdit('title', v)}
                   className="mb-6 tracking-tighter transition-all duration-500 leading-tight rt-content"
@@ -125,6 +126,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
             {content.subtitle && (
               onInlineEdit ? (
                 <InlineEditable
+                  fieldId="subtitle"
                   value={content.subtitle || ''}
                   onChange={(v) => onInlineEdit('subtitle', v)}
                   className={cn(

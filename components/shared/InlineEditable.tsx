@@ -205,7 +205,7 @@ export const InlineEditable: React.FC<InlineEditableProps> = ({
     if (disabled || isEditing) return;
     setIsEditing(true);
     if (fieldId) {
-      window.dispatchEvent(new CustomEvent('hero-section-focus', { detail: fieldId }));
+      window.dispatchEvent(new CustomEvent('block-section-focus', { detail: fieldId }));
     }
     setTimeout(() => {
       if (!ref.current) return;

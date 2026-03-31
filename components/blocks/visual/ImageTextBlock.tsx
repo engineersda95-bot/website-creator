@@ -175,6 +175,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                 const TitleTag = (style.titleTag || 'h2') as any;
                 return onInlineEdit ? (
                   <InlineEditable
+                    fieldId="title"
                     value={content.title || ''}
                     onChange={(v) => onInlineEdit('title', v)}
                     className="tracking-tighter transition-all duration-500 leading-[1.1] rt-content"
@@ -221,6 +222,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                 };
                 return onInlineEdit ? (
                   <InlineEditable
+                    fieldId="text"
                     value={content.text || ''}
                     onChange={(v) => onInlineEdit('text', v)}
                     className="rt-content max-w-none transition-all duration-500 w-full"
@@ -254,6 +256,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   theme={content.ctaTheme || style.buttonTheme}
                   isStatic={isStatic}
                   onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined}
+                  fieldId="cta"
                   {...getCTAOverrides(content, 'cta', content.ctaTheme || style.buttonTheme)}
                 />
               )}
@@ -266,6 +269,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   theme={content.cta2Theme || 'secondary'}
                   isStatic={isStatic}
                   onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined}
+                  fieldId="cta2"
                   {...getCTAOverrides(content, 'cta2', content.cta2Theme || 'secondary')}
                 />
               )}

@@ -2,11 +2,9 @@
 
 import { cn } from '@/lib/utils';
 import {
-  AlignCenter,
   AlignLeft,
-  Columns,
-  Image as ImageIcon, Layers,
-  MousePointer,
+  Layers,
+  Mail, Map, MapPin, Phone,
   Palette, Settings, Play,
   Type,
 } from 'lucide-react';
@@ -15,16 +13,16 @@ import {
   AnchorManager, AnimationManager,
   BackgroundManager,
   BorderShadowManager,
-  CTAManager,
   LayoutFields,
   PatternManager,
   RichTextarea,
   SimpleInput,
+  SimpleSlider,
   TypographyFields
 } from '../SharedSidebarComponents';
 import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface HeroUnifiedProps {
+interface ContactUnifiedProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -32,13 +30,7 @@ interface HeroUnifiedProps {
   project: any;
 }
 
-const HERO_VARIANTS = [
-  { id: 'centered', label: 'Centrata', icon: AlignCenter },
-  { id: 'split', label: 'Split', icon: Columns },
-  { id: 'stacked', label: 'Immagine+', icon: Layers },
-];
-
-export const HeroUnified: React.FC<HeroUnifiedProps> = ({
+export const ContactUnified: React.FC<ContactUnifiedProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,
@@ -50,35 +42,13 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
 
   return (
     <div>
-      {/* Layout variant selector */}
-      <div className="px-5 py-4 border-b border-zinc-100">
-        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2 block">Layout</label>
-        <div className="grid grid-cols-3 gap-1.5">
-          {HERO_VARIANTS.map((v) => (
-            <button
-              key={v.id}
-              onClick={() => updateContent({ variant: v.id })}
-              className={cn(
-                "flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-[9px] font-medium transition-all",
-                (content.variant || 'centered') === v.id
-                  ? "border-zinc-900 bg-zinc-900 text-white"
-                  : "border-zinc-100 text-zinc-400 hover:border-zinc-300"
-              )}
-            >
-              <v.icon size={14} />
-              {v.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Components */}
       <CategoryHeader label="Componenti" />
 
       <Section icon={Type} label="Titolo" id="title" isOpen={openSection === 'title'} onToggle={toggleSection}>
         <SimpleInput
           label="Testo"
-          placeholder="Titolo Hero"
+          placeholder="Contattaci"
           value={content.title || ''}
           onChange={(val) => updateContent({ title: val })}
         />
@@ -88,18 +58,17 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           boldKey="titleBold"
           italicKey="titleItalic"
           tagKey="titleTag"
-          showTagSelector
-          defaultTag="h1"
+          showTagSelector={true}
+          defaultTag="h2"
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
-          defaultValue={40}
         />
       </Section>
 
       <Section icon={AlignLeft} label="Sottotitolo" id="subtitle" isOpen={openSection === 'subtitle'} onToggle={toggleSection}>
         <RichTextarea
           label="Testo"
-          placeholder="Sottotitolo Hero"
+          placeholder="Descrizione della sezione contatti..."
           value={content.subtitle || ''}
           onChange={(val) => updateContent({ subtitle: val })}
         />
@@ -114,26 +83,81 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
         />
       </Section>
 
-      <Section icon={MousePointer} label="CTA 1" id="cta" badge={content.cta || 'vuoto'} isOpen={openSection === 'cta'} onToggle={toggleSection}>
-        <CTAManager
-          content={content}
-          updateContent={updateContent}
-          style={selectedBlock.style}
-          updateStyle={updateStyle}
-          label="CTA 1"
-        />
+      <Section icon={Mail} label="Dati Contatto" id="contact-data" isOpen={openSection === 'contact-data'} onToggle={toggleSection}>
+        <div className="space-y-4">
+          <SimpleInput
+            label="E-mail"
+            placeholder="info@tuaazienda.it"
+            value={content.email || ''}
+            onChange={(val) => updateContent({ email: val })}
+            icon={Mail}
+          />
+          <SimpleInput
+            label="Telefono"
+            placeholder="+39 02 1234567"
+            value={content.phone || ''}
+            onChange={(val) => updateContent({ phone: val })}
+            icon={Phone}
+          />
+          <SimpleInput
+            label="Indirizzo"
+            placeholder="Via Roma 1, Milano"
+            value={content.address || ''}
+            onChange={(val) => updateContent({ address: val })}
+            icon={MapPin}
+          />
+        </div>
+
+        {/* Typography for contact labels and values */}
+        <div className="pt-4 border-t border-zinc-100 space-y-4">
+          <SimpleSlider
+            label="Dimensione Icone"
+            value={getStyleValue('iconSize', 20)}
+            onChange={(val: number) => updateStyle({ iconSize: val })}
+            min={12} max={64} step={2}
+          />
+          <TypographyFields
+            label="Etichette (E-mail, Tel...)"
+            sizeKey="itemTitleSize"
+            boldKey="itemTitleBold"
+            italicKey="itemTitleItalic"
+            tagKey="itemTitleTag"
+            showTagSelector={true}
+            defaultTag="h3"
+            getStyleValue={getStyleValue}
+            updateStyle={updateStyle}
+            defaultValue={9}
+          />
+          <TypographyFields
+            label="Dati Contatto"
+            sizeKey="contactValueSize"
+            boldKey="contactValueBold"
+            italicKey="contactValueItalic"
+            getStyleValue={getStyleValue}
+            updateStyle={updateStyle}
+            defaultValue={18}
+          />
+        </div>
       </Section>
 
-      <Section icon={MousePointer} label="CTA 2" id="cta2" badge={content.cta2 || 'nessuno'} isOpen={openSection === 'cta2'} onToggle={toggleSection}>
-        <CTAManager
-          content={content}
-          updateContent={updateContent}
-          style={selectedBlock.style}
-          updateStyle={updateStyle}
-          label="CTA 2"
-          ctaKey="cta2"
-          urlKey="cta2Url"
-          themeKey="cta2Theme"
+      <Section icon={Map} label="Mappa" id="map" isOpen={openSection === 'map'} onToggle={toggleSection}>
+        <div className="flex items-center justify-between p-3 bg-zinc-50 border border-zinc-100 rounded-xl">
+          <div className="space-y-0.5">
+            <label className="text-[10px] font-bold uppercase text-zinc-900 tracking-wider leading-none">Mostra Mappa Google</label>
+            <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-tight">Visibile se inserisci l'indirizzo</p>
+          </div>
+          <input
+            type="checkbox"
+            className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
+            checked={content.showMap !== false}
+            onChange={(e) => updateContent({ showMap: e.target.checked })}
+          />
+        </div>
+        <SimpleSlider
+          label="Larghezza Mappa"
+          value={getStyleValue('mapWidth', 100)}
+          onChange={(val: number) => updateStyle({ mapWidth: val })}
+          min={20} suffix="%"
         />
       </Section>
 
@@ -145,53 +169,15 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
         />
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Altezza (px)</label>
-            <input
-              type="number"
-              className="w-full p-2 border border-zinc-200 rounded-lg text-xs bg-zinc-50 font-bold"
-              value={getStyleValue('minHeight', 600)}
-              onChange={(e) => updateStyle({ minHeight: parseInt(e.target.value) || 0 })}
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Gap</label>
-            <input
-              type="number"
-              className="w-full p-2 border border-zinc-200 rounded-lg text-xs bg-zinc-50 font-bold"
-              value={getStyleValue('gap', 32)}
-              onChange={(e) => updateStyle({ gap: parseInt(e.target.value) || 0 })}
-            />
-          </div>
-        </div>
-        <div>
-          <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Allineamento Verticale</label>
-          <div className="flex border rounded-lg overflow-hidden bg-zinc-50">
-            {[
-              { id: 'top', label: 'Sopra' },
-              { id: 'center', label: 'Centro' },
-              { id: 'bottom', label: 'Sotto' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => updateStyle({ verticalAlign: item.id })}
-                className={cn(
-                  "flex-1 py-2 text-[10px] font-bold uppercase transition-all",
-                  getStyleValue('verticalAlign', 'center') === item.id
-                    ? "bg-zinc-900 text-white"
-                    : "text-zinc-400 hover:text-zinc-600"
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <SimpleSlider
+          label="Spaziatura Interna (Gap)"
+          value={getStyleValue('gap', 64)}
+          onChange={(val: number) => updateStyle({ gap: val })}
+          max={200} step={4}
+        />
       </Section>
 
       <Section icon={Palette} label="Sfondo & Colori" id="background" isOpen={openSection === 'background'} onToggle={toggleSection}>
-        {/* Color pickers on one row */}
         {(() => {
           const appearance = project?.settings?.appearance || 'light';
           const defaultBg = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff');
@@ -199,7 +185,6 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           const bgType = getStyleValue('bgType', 'solid');
           return (
             <div className="space-y-4">
-              {/* Sfondo + Testo on one line */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px] font-bold text-zinc-400 uppercase">Sfondo</label>
@@ -216,7 +201,6 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
                   <Settings size={12} />
                 </button>
               </div>
-              {/* Solid / Gradient switch */}
               <div className="flex bg-zinc-100 p-0.5 rounded-lg">
                 {['solid', 'gradient'].map((t) => (
                   <button key={t} onClick={() => updateStyle({ bgType: t })} className={cn("flex-1 py-1.5 text-[10px] font-bold uppercase rounded-md transition-all", bgType === t ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}>
@@ -258,10 +242,6 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
         <ManagerWrapper label="Pattern Decorativo">
           <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
         </ManagerWrapper>
-      </Section>
-
-      <Section icon={Play} label="Animazioni" id="animation" isOpen={openSection === 'animation'} onToggle={toggleSection}>
-        <AnimationManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
       </Section>
 
       <Section icon={Settings} label="Avanzate" id="advanced" isOpen={openSection === 'advanced'} onToggle={toggleSection}>

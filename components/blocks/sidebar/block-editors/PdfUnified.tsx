@@ -2,29 +2,28 @@
 
 import { cn } from '@/lib/utils';
 import {
-  AlignCenter,
   AlignLeft,
-  Columns,
-  Image as ImageIcon, Layers,
-  MousePointer,
-  Palette, Settings, Play,
+  FileText,
+  Layers,
+  Palette,
+  Settings,
   Type,
 } from 'lucide-react';
 import React from 'react';
 import {
-  AnchorManager, AnimationManager,
+  AnchorManager,
   BackgroundManager,
   BorderShadowManager,
-  CTAManager,
   LayoutFields,
   PatternManager,
   RichTextarea,
   SimpleInput,
-  TypographyFields
+  SimpleSlider,
+  TypographyFields,
 } from '../SharedSidebarComponents';
 import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface HeroUnifiedProps {
+interface PdfUnifiedProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -32,53 +31,34 @@ interface HeroUnifiedProps {
   project: any;
 }
 
-const HERO_VARIANTS = [
-  { id: 'centered', label: 'Centrata', icon: AlignCenter },
-  { id: 'split', label: 'Split', icon: Columns },
-  { id: 'stacked', label: 'Immagine+', icon: Layers },
-];
-
-export const HeroUnified: React.FC<HeroUnifiedProps> = ({
+export const PdfUnified: React.FC<PdfUnifiedProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,
   getStyleValue,
   project,
 }) => {
-  const content = selectedBlock.content;
-  const { openSection, toggleSection } = useUnifiedSections();
+  const content = selectedBlock.content || {};
+  const { openSection, setOpenSection, toggleSection } = useUnifiedSections();
+
+  React.useEffect(() => {
+    const handler = (e: Event) => {
+      const sectionId = (e as CustomEvent).detail;
+      if (sectionId) setOpenSection(sectionId);
+    };
+    window.addEventListener('pdf-section-focus', handler);
+    return () => window.removeEventListener('pdf-section-focus', handler);
+  }, [setOpenSection]);
 
   return (
     <div>
-      {/* Layout variant selector */}
-      <div className="px-5 py-4 border-b border-zinc-100">
-        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2 block">Layout</label>
-        <div className="grid grid-cols-3 gap-1.5">
-          {HERO_VARIANTS.map((v) => (
-            <button
-              key={v.id}
-              onClick={() => updateContent({ variant: v.id })}
-              className={cn(
-                "flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-[9px] font-medium transition-all",
-                (content.variant || 'centered') === v.id
-                  ? "border-zinc-900 bg-zinc-900 text-white"
-                  : "border-zinc-100 text-zinc-400 hover:border-zinc-300"
-              )}
-            >
-              <v.icon size={14} />
-              {v.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Components */}
       <CategoryHeader label="Componenti" />
 
       <Section icon={Type} label="Titolo" id="title" isOpen={openSection === 'title'} onToggle={toggleSection}>
         <SimpleInput
           label="Testo"
-          placeholder="Titolo Hero"
+          placeholder="es. Il Nostro Menu"
           value={content.title || ''}
           onChange={(val) => updateContent({ title: val })}
         />
@@ -89,7 +69,7 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           italicKey="titleItalic"
           tagKey="titleTag"
           showTagSelector
-          defaultTag="h1"
+          defaultTag="h2"
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
           defaultValue={40}
@@ -99,7 +79,7 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
       <Section icon={AlignLeft} label="Sottotitolo" id="subtitle" isOpen={openSection === 'subtitle'} onToggle={toggleSection}>
         <RichTextarea
           label="Testo"
-          placeholder="Sottotitolo Hero"
+          placeholder="es. Scopri i piatti del giorno..."
           value={content.subtitle || ''}
           onChange={(val) => updateContent({ subtitle: val })}
         />
@@ -108,33 +88,25 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           sizeKey="subtitleSize"
           boldKey="subtitleBold"
           italicKey="subtitleItalic"
+          tagKey="subtitleTag"
+          showTagSelector
+          defaultTag="p"
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
-          defaultValue={18}
+          defaultValue={20}
         />
       </Section>
 
-      <Section icon={MousePointer} label="CTA 1" id="cta" badge={content.cta || 'vuoto'} isOpen={openSection === 'cta'} onToggle={toggleSection}>
-        <CTAManager
-          content={content}
-          updateContent={updateContent}
-          style={selectedBlock.style}
-          updateStyle={updateStyle}
-          label="CTA 1"
+      <Section icon={FileText} label="PDF" id="pdf" isOpen={openSection === 'pdf'} onToggle={toggleSection}>
+        <SimpleInput
+          label="URL del PDF (Google Drive o diretto)"
+          value={content.url || ''}
+          onChange={(val) => updateContent({ url: val })}
+          placeholder="https://drive.google.com/file/d/..."
         />
-      </Section>
-
-      <Section icon={MousePointer} label="CTA 2" id="cta2" badge={content.cta2 || 'nessuno'} isOpen={openSection === 'cta2'} onToggle={toggleSection}>
-        <CTAManager
-          content={content}
-          updateContent={updateContent}
-          style={selectedBlock.style}
-          updateStyle={updateStyle}
-          label="CTA 2"
-          ctaKey="cta2"
-          urlKey="cta2Url"
-          themeKey="cta2Theme"
-        />
+        <p className="text-[10px] text-zinc-400 italic leading-relaxed">
+          Inserisci l&apos;URL di condivisione di Google Drive o un link diretto a un file PDF.
+        </p>
       </Section>
 
       {/* Global Style */}
@@ -145,53 +117,23 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           getStyleValue={getStyleValue}
           updateStyle={updateStyle}
         />
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Altezza (px)</label>
-            <input
-              type="number"
-              className="w-full p-2 border border-zinc-200 rounded-lg text-xs bg-zinc-50 font-bold"
-              value={getStyleValue('minHeight', 600)}
-              onChange={(e) => updateStyle({ minHeight: parseInt(e.target.value) || 0 })}
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Gap</label>
-            <input
-              type="number"
-              className="w-full p-2 border border-zinc-200 rounded-lg text-xs bg-zinc-50 font-bold"
-              value={getStyleValue('gap', 32)}
-              onChange={(e) => updateStyle({ gap: parseInt(e.target.value) || 0 })}
-            />
-          </div>
-        </div>
-        <div>
-          <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Allineamento Verticale</label>
-          <div className="flex border rounded-lg overflow-hidden bg-zinc-50">
-            {[
-              { id: 'top', label: 'Sopra' },
-              { id: 'center', label: 'Centro' },
-              { id: 'bottom', label: 'Sotto' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => updateStyle({ verticalAlign: item.id })}
-                className={cn(
-                  "flex-1 py-2 text-[10px] font-bold uppercase transition-all",
-                  getStyleValue('verticalAlign', 'center') === item.id
-                    ? "bg-zinc-900 text-white"
-                    : "text-zinc-400 hover:text-zinc-600"
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <SimpleSlider
+          value={getStyleValue('embedHeight', 800)}
+          onChange={(v: number) => updateStyle({ embedHeight: v })}
+          label="Altezza Viewer (px)"
+          min={300}
+          max={1200}
+          step={50}
+        />
+        <SimpleInput
+          label="Larghezza Max Embed (px)"
+          placeholder="Esempio: 1200"
+          value={getStyleValue('containerWidth', '')?.toString() || ''}
+          onChange={(v) => updateStyle({ containerWidth: v === '' ? null : parseInt(v) })}
+        />
       </Section>
 
       <Section icon={Palette} label="Sfondo & Colori" id="background" isOpen={openSection === 'background'} onToggle={toggleSection}>
-        {/* Color pickers on one row */}
         {(() => {
           const appearance = project?.settings?.appearance || 'light';
           const defaultBg = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff');
@@ -199,7 +141,6 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           const bgType = getStyleValue('bgType', 'solid');
           return (
             <div className="space-y-4">
-              {/* Sfondo + Testo on one line */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px] font-bold text-zinc-400 uppercase">Sfondo</label>
@@ -216,7 +157,6 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
                   <Settings size={12} />
                 </button>
               </div>
-              {/* Solid / Gradient switch */}
               <div className="flex bg-zinc-100 p-0.5 rounded-lg">
                 {['solid', 'gradient'].map((t) => (
                   <button key={t} onClick={() => updateStyle({ bgType: t })} className={cn("flex-1 py-1.5 text-[10px] font-bold uppercase rounded-md transition-all", bgType === t ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}>
@@ -258,10 +198,6 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
         <ManagerWrapper label="Pattern Decorativo">
           <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
         </ManagerWrapper>
-      </Section>
-
-      <Section icon={Play} label="Animazioni" id="animation" isOpen={openSection === 'animation'} onToggle={toggleSection}>
-        <AnimationManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
       </Section>
 
       <Section icon={Settings} label="Avanzate" id="advanced" isOpen={openSection === 'advanced'} onToggle={toggleSection}>

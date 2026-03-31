@@ -114,6 +114,7 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
                 >
                   {onInlineEdit ? (
                     <InlineEditable
+                      fieldId="title"
                       value={content.title || ''}
                       onChange={(v) => onInlineEdit('title', v)}
                       className="tracking-tighter leading-[0.9] rt-content"
@@ -153,6 +154,7 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
                 >
                   {onInlineEdit ? (
                     <InlineEditable
+                      fieldId="subtitle"
                       value={content.subtitle || ''}
                       onChange={(v) => onInlineEdit('subtitle', v)}
                       className="opacity-60 leading-relaxed max-w-2xl rt-content"

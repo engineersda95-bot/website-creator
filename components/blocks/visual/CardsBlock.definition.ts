@@ -2,6 +2,7 @@ import { Grid } from 'lucide-react';
 import { CardsBlock } from './CardsBlock';
 import { CardsContent } from '../sidebar/block-editors/CardsContent';
 import { CardsStyle } from '../sidebar/block-editors/CardsStyle';
+import { CardsUnified } from '../sidebar/block-editors/CardsUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -13,6 +14,7 @@ export const cardsDefinition: BlockDefinition = {
   visual: CardsBlock,
   contentEditor: CardsContent,
   styleEditor: CardsStyle,
+  unifiedEditor: CardsUnified,
   defaults: {
     content: {
       title: 'Le Nostre Eccellenze',
@@ -38,7 +40,7 @@ export const cardsDefinition: BlockDefinition = {
       itemTitleTag: 'h3',
       cardSubtitleBold: false,
       patternType: 'none',
-      patternColor: '#ffffff',
+      patternColor: '#000000',
       patternOpacity: 10,
       patternScale: 40,
       animationType: 'none',

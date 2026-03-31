@@ -21,23 +21,35 @@ import {
   Menu,
   FileText,
   ShoppingBag,
-  Minus
+  Minus,
+  GripVertical
 } from 'lucide-react';
 import { getBlockLibrary } from '@/lib/block-definitions';
 import { BlockDefinition, BlockVariant } from '@/types/block-definition';
 import { VariantPicker } from '@/components/editor/VariantPicker';
 
 export const BlockSidebar: React.FC = () => {
-  const { addBlock, currentPage, selectedBlockId, selectBlock, leftSidebarCollapsed, setLeftSidebarCollapsed } = useEditorStore();
+  const { addBlock, currentPage, selectedBlockId, selectBlock, leftSidebarCollapsed, setLeftSidebarCollapsed, reorderBlocks } = useEditorStore();
   const [variantPicker, setVariantPicker] = React.useState<BlockDefinition | null>(null);
+  const [dragIdx, setDragIdx] = React.useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = React.useState<number | null>(null);
 
   const blockLibrary = getBlockLibrary();
+
+  const scrollToNewBlock = () => {
+    setTimeout(() => {
+      const wrappers = document.querySelectorAll('#editor-content .block-wrapper');
+      const last = wrappers[wrappers.length - 1];
+      last?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
 
   const handleAddBlock = (blockDef: BlockDefinition) => {
     if (blockDef.variants && blockDef.variants.length > 0) {
       setVariantPicker(blockDef);
     } else {
       addBlock(blockDef.type);
+      scrollToNewBlock();
     }
   };
 
@@ -48,6 +60,7 @@ export const BlockSidebar: React.FC = () => {
       style: variant.styleOverride,
     });
     setVariantPicker(null);
+    scrollToNewBlock();
   };
 
   const blockIcons: Record<string, any> = {
@@ -96,42 +109,84 @@ export const BlockSidebar: React.FC = () => {
                 <div className="px-1 mb-3">
                   <h3 className="text-[13px] font-semibold text-zinc-500 uppercase tracking-wide">Struttura</h3>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {currentPage.blocks.map((block, idx) => {
                     const Icon = blockIcons[block.type] || Square;
                     const isSelected = selectedBlockId === block.id;
+                    const isDragging = dragIdx === idx;
+                    const isDragOver = dragOverIdx === idx;
 
                     return (
-                      <button
+                      <div
                         key={block.id}
-                        onClick={() => selectBlock(block.id)}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = 'move';
+                          setDragOverIdx(idx);
+                        }}
+                        onDragLeave={() => setDragOverIdx(null)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (dragIdx !== null && dragIdx !== idx) {
+                            reorderBlocks(dragIdx, idx);
+                          }
+                          setDragIdx(null);
+                          setDragOverIdx(null);
+                        }}
+                        onClick={() => {
+                          selectBlock(block.id);
+                          setTimeout(() => {
+                            // Find the block wrapper in the canvas by iterating block-wrappers
+                            const wrappers = document.querySelectorAll('#editor-content .block-wrapper');
+                            const el = wrappers[idx];
+                            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }, 50);
+                        }}
                         className={cn(
-                          "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-left group",
+                          "w-full flex items-center gap-1 pr-2.5 py-1.5 rounded-lg transition-all text-left group",
                           isSelected
                             ? "bg-zinc-900 text-white"
-                            : "text-zinc-600 hover:bg-zinc-50"
+                            : "text-zinc-600 hover:bg-zinc-50",
+                          isDragging && "opacity-40",
+                          isDragOver && dragIdx !== idx && "ring-2 ring-blue-400 ring-offset-1"
                         )}
                       >
+                        {/* Drag handle */}
+                        <div
+                          draggable
+                          onDragStart={(e) => {
+                            setDragIdx(idx);
+                            e.dataTransfer.effectAllowed = 'move';
+                            e.stopPropagation();
+                          }}
+                          onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
+                          className={cn(
+                            "px-1 py-2 cursor-grab active:cursor-grabbing shrink-0 opacity-0 group-hover:opacity-100 transition-opacity",
+                            isSelected && "opacity-50"
+                          )}
+                        >
+                          <GripVertical size={12} className={isSelected ? "text-white/50" : "text-zinc-300"} />
+                        </div>
                         <div className={cn(
-                          "p-1.5 rounded-md transition-colors",
+                          "p-1.5 rounded-md transition-colors shrink-0",
                           isSelected ? "bg-white/15" : "bg-zinc-100"
                         )}>
                           <Icon size={12} className={isSelected ? "text-white" : "text-zinc-400"} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-[13px] font-medium truncate">
+                          <div className="text-[12px] font-medium truncate">
                             {block.type.charAt(0).toUpperCase() + block.type.slice(1).replace('-', ' ')}
                           </div>
                           {(block.content?.title || block.content?.text) && (
-                            <div className={cn("text-[11px] truncate mt-0.5", isSelected ? "text-white/50" : "text-zinc-400")}>
+                            <div className={cn("text-[10px] truncate mt-0.5", isSelected ? "text-white/50" : "text-zinc-400")}>
                               {block.content.title || block.content.text?.substring(0, 30)}
                             </div>
                           )}
                         </div>
-                        <span className={cn("text-[10px] font-medium", isSelected ? "text-white/30" : "text-zinc-300")}>
+                        <span className={cn("text-[9px] font-medium tabular-nums", isSelected ? "text-white/30" : "text-zinc-300")}>
                           {idx + 1}
                         </span>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>

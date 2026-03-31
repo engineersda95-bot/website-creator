@@ -3,6 +3,7 @@ import { FileText } from 'lucide-react';
 import { FAQBlock } from './FaqBlock';
 import { FAQContent } from '../sidebar/block-editors/FaqContent';
 import { FAQStyle } from '../sidebar/block-editors/FaqStyle';
+import { FaqUnified } from '../sidebar/block-editors/FaqUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -81,6 +82,7 @@ export const faqDefinition: BlockDefinition = {
   visual: FAQBlock,
   contentEditor: FAQContent,
   styleEditor: FAQStyle,
+  unifiedEditor: FaqUnified,
   defaults: {
     content: {
       variant: 'accordion',

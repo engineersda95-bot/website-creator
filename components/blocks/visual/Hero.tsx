@@ -146,7 +146,7 @@ const PatternLayer: React.FC<{ style: any }> = ({ style }) => {
   return (
     <div
       className="absolute inset-0 z-0 pointer-events-none transition-all duration-500 background-pattern"
-      style={pattern.getStyle(style.patternColor || '#ffffff', style.patternOpacity || 10, style.patternScale || 40)}
+      style={pattern.getStyle(style.patternColor || '#000000', style.patternOpacity || 10, style.patternScale || 40)}
     />
   );
 };

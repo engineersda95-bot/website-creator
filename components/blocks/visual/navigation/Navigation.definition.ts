@@ -2,6 +2,7 @@ import { Menu } from 'lucide-react';
 import { Navigation } from './Navigation';
 import { NavigationContent } from '../../sidebar/block-editors/NavigationContent';
 import { NavigationStyle } from '../../sidebar/block-editors/NavigationStyle';
+import { NavigationUnified } from '../../sidebar/block-editors/NavigationUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -13,6 +14,7 @@ export const navigationDefinition: BlockDefinition = {
   visual: Navigation,
   contentEditor: NavigationContent,
   styleEditor: NavigationStyle as any,
+  unifiedEditor: NavigationUnified,
   defaults: {
     content: { logoText: 'Studio', links: [], showContact: true },
     style: { 

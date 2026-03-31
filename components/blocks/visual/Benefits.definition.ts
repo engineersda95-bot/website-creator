@@ -2,6 +2,7 @@ import { Star } from 'lucide-react';
 import { Benefits } from './Benefits';
 import { BenefitsContent } from '../sidebar/block-editors/BenefitsContent';
 import { BenefitsStyle } from '../sidebar/block-editors/BenefitsStyle';
+import { BenefitsUnified } from '../sidebar/block-editors/BenefitsUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
@@ -12,6 +13,7 @@ export const benefitsDefinition: BlockDefinition = {
   visual: Benefits,
   contentEditor: BenefitsContent,
   styleEditor: BenefitsStyle,
+  unifiedEditor: BenefitsUnified,
   defaults: {
     content: {
       title: 'Perché scegliere noi',

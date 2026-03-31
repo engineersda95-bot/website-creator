@@ -65,7 +65,7 @@ export const heroDefinition: BlockDefinition = {
       titleBold: false,
       titleTag: 'h1',
       patternType: 'none',
-      patternColor: '#ffffff',
+      patternColor: '#000000',
       patternOpacity: 10,
       patternScale: 40,
       animationType: 'none',
