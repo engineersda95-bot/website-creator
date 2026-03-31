@@ -108,6 +108,7 @@ export const NavigationContent: React.FC<NavigationContentProps> = ({
                 updateContent={updateContent}
                 style={selectedBlock.style}
                 updateStyle={updateStyle}
+                getStyleValue={getStyleValue}
             />
           </section>
       </div>

@@ -69,6 +69,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
             updateContent={updateContent}
             style={selectedBlock.style}
             updateStyle={updateStyle}
+            getStyleValue={getStyleValue}
             label="CTA 1"
          />
 
@@ -77,6 +78,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
             updateContent={updateContent}
             style={selectedBlock.style}
             updateStyle={updateStyle}
+            getStyleValue={getStyleValue}
             label="CTA 2"
             ctaKey="cta2"
             urlKey="cta2Url"

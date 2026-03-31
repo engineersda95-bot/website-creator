@@ -6,6 +6,9 @@ import { SectionHeader } from '../ui/SectionHeader';
 export function CTAManager({ 
    content, 
    updateContent, 
+   style,
+   updateStyle,
+   getStyleValue,
    label = "CTA",
    ctaKey = "cta",
    urlKey = "ctaUrl",
@@ -18,10 +21,25 @@ export function CTAManager({
    // Chiavi per gli override indipendenti (es: ctaBgColor, cta2BgColor)
    const valKey = (key: string) => `${ctaKey}${key}`;
 
-   const getVal = (key: string, def: any) => content[valKey(key)] !== undefined ? content[valKey(key)] : def;
+   const getVal = (key: string, def: any) => {
+      const fullKey = valKey(key);
+      if (getStyleValue) {
+         // Prioritize style (which supports responsive overrides) over content
+         return getStyleValue(fullKey, content[fullKey] ?? def);
+      }
+      return content[fullKey] !== undefined ? content[fullKey] : def;
+   };
 
    const updateVal = (key: string, val: any) => {
-      updateContent({ [valKey(key)]: val });
+      const fullKey = valKey(key);
+      // Visual properties are routed to style if updateStyle is available to enable responsive overrides
+      const isVisualStyle = ['BgColor', 'TextColor', 'Radius', 'PaddingX', 'PaddingY', 'FontSize', 'Shadow', 'Animation', 'Uppercase'].includes(key);
+      
+      if (isVisualStyle && updateStyle) {
+         updateStyle({ [fullKey]: val });
+      } else {
+         updateContent({ [fullKey]: val });
+      }
    };
 
    return (

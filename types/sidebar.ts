@@ -79,6 +79,7 @@ export interface CTAManagerProps {
    updateContent: (content: Record<string, any>) => void;
    style?: Record<string, any>;
    updateStyle?: (style: Record<string, any>) => void;
+   getStyleValue?: (key: string, defaultValue: any) => any;
    label?: string;
    ctaKey?: string;
    urlKey?: string;

@@ -109,6 +109,7 @@ export const ImageTextUnified: React.FC<ImageTextUnifiedProps> = ({
           updateContent={updateContent}
           style={selectedBlock.style}
           updateStyle={updateStyle}
+          getStyleValue={getStyleValue}
           label="CTA 1"
         />
       </Section>
@@ -119,6 +120,7 @@ export const ImageTextUnified: React.FC<ImageTextUnifiedProps> = ({
           updateContent={updateContent}
           style={selectedBlock.style}
           updateStyle={updateStyle}
+          getStyleValue={getStyleValue}
           label="CTA 2"
           ctaKey="cta2"
           urlKey="cta2Url"

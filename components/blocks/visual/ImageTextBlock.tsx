@@ -257,7 +257,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   isStatic={isStatic}
                   onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined}
                   fieldId="cta"
-                  {...getCTAOverrides(content, 'cta', content.ctaTheme || style.buttonTheme)}
+                  {...getCTAOverrides(content, style, 'cta', content.ctaTheme || style.buttonTheme)}
                 />
               )}
               {content.cta2 && (
@@ -270,7 +270,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   isStatic={isStatic}
                   onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined}
                   fieldId="cta2"
-                  {...getCTAOverrides(content, 'cta2', content.cta2Theme || 'secondary')}
+                  {...getCTAOverrides(content, style, 'cta2', content.cta2Theme || 'secondary')}
                 />
               )}
             </div>

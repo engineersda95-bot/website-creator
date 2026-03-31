@@ -277,7 +277,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
                     theme={item.buttonTheme || (isHighlighted ? 'primary' : 'secondary')}
                     isStatic={isStatic}
                     className="w-full justify-center py-4 text-center"
-                    {...getCTAOverrides(item, 'buttonText', item.buttonTheme || (isHighlighted ? 'primary' : 'secondary'))}
+                    {...getCTAOverrides(item, style, 'buttonText', item.buttonTheme || (isHighlighted ? 'primary' : 'secondary'))}
                   />
                 </div>
               </div>

@@ -120,6 +120,7 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           updateContent={updateContent}
           style={selectedBlock.style}
           updateStyle={updateStyle}
+          getStyleValue={getStyleValue}
           label="CTA 1"
         />
       </Section>
@@ -130,6 +131,7 @@ export const HeroUnified: React.FC<HeroUnifiedProps> = ({
           updateContent={updateContent}
           style={selectedBlock.style}
           updateStyle={updateStyle}
+          getStyleValue={getStyleValue}
           label="CTA 2"
           ctaKey="cta2"
           urlKey="cta2Url"

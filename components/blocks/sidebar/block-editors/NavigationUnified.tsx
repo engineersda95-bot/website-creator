@@ -149,6 +149,7 @@ export const NavigationUnified: React.FC<NavigationUnifiedProps> = ({
           updateContent={updateContent}
           style={selectedBlock.style}
           updateStyle={updateStyle}
+          getStyleValue={getStyleValue}
         />
       </Section>
 

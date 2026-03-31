@@ -29,22 +29,25 @@ interface CTAProps {
   uppercase?: boolean;
 }
 
-export const getCTAOverrides = (content: any, prefix: string, theme?: string) => {
+export const getCTAOverrides = (content: any, style: any, prefix: string, theme?: string) => {
   // If the theme is not custom, we ignore all manual style overrides
   const isCustom = theme === 'custom';
 
   if (!isCustom) return {};
 
+  const s = style || {};
+  const c = content || {};
+
   return {
-    bgColor: content[`${prefix}BgColor`],
-    textColor: content[`${prefix}TextColor`],
-    radius: content[`${prefix}Radius`],
-    paddingX: content[`${prefix}PaddingX`],
-    paddingY: content[`${prefix}PaddingY`],
-    fontSize: content[`${prefix}FontSize`],
-    shadow: content[`${prefix}Shadow`],
-    animation: content[`${prefix}Animation`],
-    uppercase: content[`${prefix}Uppercase`],
+    bgColor: s[`${prefix}BgColor`] ?? c[`${prefix}BgColor`],
+    textColor: s[`${prefix}TextColor`] ?? c[`${prefix}TextColor`],
+    radius: s[`${prefix}Radius`] ?? c[`${prefix}Radius`],
+    paddingX: s[`${prefix}PaddingX`] ?? c[`${prefix}PaddingX`],
+    paddingY: s[`${prefix}PaddingY`] ?? c[`${prefix}PaddingY`],
+    fontSize: s[`${prefix}FontSize`] ?? c[`${prefix}FontSize`],
+    shadow: s[`${prefix}Shadow`] ?? c[`${prefix}Shadow`],
+    animation: s[`${prefix}Animation`] ?? c[`${prefix}Animation`],
+    uppercase: s[`${prefix}Uppercase`] ?? c[`${prefix}Uppercase`],
   };
 };
 

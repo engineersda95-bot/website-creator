@@ -118,7 +118,7 @@ const HeroCTAs: React.FC<{
           isStatic={isStatic} 
           onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta', v) : undefined} 
           fieldId="cta" 
-          {...getCTAOverrides(content, 'cta', content.ctaTheme || style.buttonTheme)}
+          {...getCTAOverrides(content, style, 'cta', content.ctaTheme || style.buttonTheme)}
         />
       )}
       {content.cta2 && (
@@ -131,7 +131,7 @@ const HeroCTAs: React.FC<{
           isStatic={isStatic} 
           onLabelChange={onInlineEdit ? (v) => onInlineEdit('cta2', v) : undefined} 
           fieldId="cta2" 
-          {...getCTAOverrides(content, 'cta2', content.cta2Theme || 'secondary')}
+          {...getCTAOverrides(content, style, 'cta2', content.cta2Theme || 'secondary')}
         />
       )}
     </div>

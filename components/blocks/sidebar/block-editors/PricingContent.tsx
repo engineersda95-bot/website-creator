@@ -206,6 +206,9 @@ export const PricingContent: React.FC<PricingContentProps> = ({
                 <CTAManager
                   content={item}
                   updateContent={(updates) => updateItem(index, updates)}
+                  style={selectedBlock.style}
+                  updateStyle={updateStyle}
+                  getStyleValue={getStyleValue}
                   label="CTA"
                   ctaKey="buttonText"
                   urlKey="buttonUrl"

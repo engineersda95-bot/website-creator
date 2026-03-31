@@ -215,7 +215,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               viewport={(viewport as any) || 'desktop'} 
               theme={content.ctaTheme || style.buttonTheme || 'primary'} 
               isStatic={!!(isStatic || !viewport)} 
-              {...getCTAOverrides(content, 'cta', content.ctaTheme || style.buttonTheme || 'primary')}
+              {...getCTAOverrides(content, style, 'cta', content.ctaTheme || style.buttonTheme || 'primary')}
             />
           )}
         </div>
@@ -288,7 +288,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                           viewport="desktop"
                           theme={content.ctaTheme || style.buttonTheme || 'primary'} 
                           isStatic={true} 
-                          {...getCTAOverrides(content, 'cta', content.ctaTheme || style.buttonTheme || 'primary')}
+                          {...getCTAOverrides(content, style, 'cta', content.ctaTheme || style.buttonTheme || 'primary')}
                         />
                       </div>
                     )}
@@ -318,7 +318,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             isStatic={isStatic}
             layoutType={content.layoutType}
             buttonTheme={content.ctaTheme || style.buttonTheme || 'primary'}
-            ctaOverrides={getCTAOverrides(content, 'cta', content.ctaTheme || style.buttonTheme || 'primary')}
+            ctaOverrides={getCTAOverrides(content, style, 'cta', content.ctaTheme || style.buttonTheme || 'primary')}
           />
         )}
       </div>
