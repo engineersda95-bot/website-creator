@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import {
   AlignLeft,
-  Grid,
+  Grid, LayoutGrid, List, AlignCenter,
   Layers,
   Palette, Settings, Play,
   Plus, Trash2, ArrowUp, ArrowDown,
@@ -90,6 +90,33 @@ export const BenefitsUnified: React.FC<BenefitsUnifiedProps> = ({
   return (
     <div>
       {/* Components */}
+      {/* Variant selector */}
+      <div className="px-5 py-4 border-b border-zinc-100">
+        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2 block">Stile</label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {[
+            { id: 'cards', label: 'Cards', icon: LayoutGrid },
+            { id: 'minimal', label: 'Minimal', icon: AlignLeft },
+            { id: 'centered', label: 'Centrato', icon: AlignCenter },
+            { id: 'list', label: 'Lista', icon: List },
+          ].map((v) => (
+            <button
+              key={v.id}
+              onClick={() => updateContent({ variant: v.id })}
+              className={cn(
+                "flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-[9px] font-medium transition-all",
+                (content.variant || 'cards') === v.id
+                  ? "border-zinc-900 bg-zinc-900 text-white"
+                  : "border-zinc-100 text-zinc-400 hover:border-zinc-300"
+              )}
+            >
+              <v.icon size={14} />
+              {v.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <CategoryHeader label="Componenti" />
 
       <Section icon={Type} label="Titolo" id="title" isOpen={openSection === 'title'} onToggle={toggleSection}>

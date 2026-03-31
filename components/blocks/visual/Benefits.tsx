@@ -85,48 +85,95 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
     fontSize: style.itemSubtitleSize ? `${style.itemSubtitleSize}px` : undefined,
   };
 
-  const BenefitItem = ({ item }: { item: any }) => {
-    const itemStyle = isCard ? {
-      backgroundColor: content.cardBgColor || 'white',
-      color: content.cardTextColor || 'inherit',
-      borderRadius: style.cardBorderRadius !== undefined ? `${style.cardBorderRadius}px` : '1.5rem',
-      padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : '2rem',
-    } : {};
+  const variant = content.variant || 'cards';
 
-    return (
-      <div 
-        className={cn(
-          "flex flex-col transition-all duration-500 h-full",
-          align === 'center' ? "items-center text-center" : align === 'right' ? "items-end text-right" : "items-start text-left",
-          isCard && "border border-black/5 dark:border-white/5 shadow-sm hover:shadow-xl hover:-translate-y-1 backdrop-blur-sm"
-        )}
-        style={itemStyle}
-      >
-        <div className="mb-6 h-12 flex items-center justify-center transition-all duration-300">
-          {renderIcon(item.icon, itemStyle)}
-        </div>
-        {(() => {
-          const BenefitTitleTag = (style.itemTitleTag || 'h3') as any;
-          return (
-            <div 
-              className="mb-3 tracking-tight transition-all duration-300 rt-content"
-              style={{
-                fontSize: 'var(--item-title-fs)',
-                fontWeight: 'var(--item-title-fw)',
-                fontStyle: 'var(--item-title-is)',
-                color: 'inherit'
-              }}
-              dangerouslySetInnerHTML={{ __html: formatRichText(item.title || 'Vantaggio') }}
-            />
-          );
-        })()}
-        <div 
-          className="opacity-70 leading-relaxed transition-all duration-300 rt-content"
-          style={{ ...itemSubtitleStyle, color: 'inherit' }}
-          dangerouslySetInnerHTML={{ __html: formatRichText(item.description || 'Spiegazione del vantaggio.') }}
-        />
+  // Shared sub-components
+  const ItemTitle = ({ item }: { item: any }) => (
+    <div
+      className="tracking-tight transition-all duration-300 rt-content"
+      style={{ fontSize: 'var(--item-title-fs)', fontWeight: 'var(--item-title-fw)', fontStyle: 'var(--item-title-is)', color: 'inherit' }}
+      data-sidebar-section="items"
+      dangerouslySetInnerHTML={{ __html: formatRichText(item.title || 'Vantaggio') }}
+    />
+  );
+  const ItemDesc = ({ item }: { item: any }) => (
+    <div
+      className="opacity-70 leading-relaxed transition-all duration-300 rt-content"
+      style={{ ...itemSubtitleStyle, color: 'inherit' }}
+      dangerouslySetInnerHTML={{ __html: formatRichText(item.description || 'Spiegazione del vantaggio.') }}
+    />
+  );
+
+  const cardStyle = isCard ? {
+    backgroundColor: content.cardBgColor || 'white',
+    color: content.cardTextColor || 'inherit',
+    borderRadius: style.cardBorderRadius !== undefined ? `${style.cardBorderRadius}px` : '1.5rem',
+    padding: style.cardPadding !== undefined ? `${style.cardPadding}px` : '2rem',
+  } : {};
+
+  // ─── CARDS (default) ─────────────────────────────────────────────
+  const CardsItem = ({ item }: { item: any }) => (
+    <div
+      className={cn(
+        "flex flex-col transition-all duration-500 h-full",
+        align === 'center' ? "items-center text-center" : align === 'right' ? "items-end text-right" : "items-start text-left",
+        isCard && "border border-black/5 dark:border-white/5 shadow-sm hover:shadow-xl hover:-translate-y-1 backdrop-blur-sm"
+      )}
+      style={cardStyle}
+    >
+      <div className="mb-6 h-12 flex items-center justify-center transition-all duration-300">
+        {renderIcon(item.icon, cardStyle)}
       </div>
-    );
+      <div className="mb-3"><ItemTitle item={item} /></div>
+      <ItemDesc item={item} />
+    </div>
+  );
+
+  // ─── MINIMAL — icon left, text right ─────────────────────────────
+  const MinimalItem = ({ item }: { item: any }) => (
+    <div className="flex gap-5 h-full">
+      <div className="shrink-0 pt-1">
+        {renderIcon(item.icon, {})}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="mb-2"><ItemTitle item={item} /></div>
+        <ItemDesc item={item} />
+      </div>
+    </div>
+  );
+
+  // ─── CENTERED — big icon, text below ─────────────────────────────
+  const CenteredItem = ({ item }: { item: any }) => (
+    <div className="flex flex-col items-center text-center h-full">
+      <div className="mb-5 transition-all duration-300">
+        {renderIcon(item.icon, {})}
+      </div>
+      <div className="mb-2"><ItemTitle item={item} /></div>
+      <ItemDesc item={item} />
+    </div>
+  );
+
+  // ─── LIST — icon + title inline, desc below, separator ───────────
+  const ListItem = ({ item }: { item: any }) => (
+    <div
+      className="py-5 first:pt-0 last:pb-0 border-b last:border-b-0"
+      style={{ borderColor: 'color-mix(in srgb, currentColor 8%, transparent)' }}
+    >
+      <div className="flex items-center gap-3 mb-2">
+        <div className="shrink-0">{renderIcon(item.icon, {})}</div>
+        <ItemTitle item={item} />
+      </div>
+      <ItemDesc item={item} />
+    </div>
+  );
+
+  const BenefitItem = ({ item }: { item: any }) => {
+    switch (variant) {
+      case 'minimal': return <MinimalItem item={item} />;
+      case 'centered': return <CenteredItem item={item} />;
+      case 'list': return <ListItem item={item} />;
+      default: return <CardsItem item={item} />;
+    }
   };
 
   // Animation attributes

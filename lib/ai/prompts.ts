@@ -67,11 +67,12 @@ Your goal is to generate a complete, Professional website structure with CONCISE
 ### 📋 INTERIOR BLOCK SCHEMAS
 Every block: { "type": "Type", "content": { ... }, "style": { ... } }
 
+**CONTENT schemas:**
 1. "hero": { "title": string (MAX 8 WORDS), "subtitle": string (MAX 2 sentences), "cta": string (MAX 3 words), "ctaUrl": string, "backgroundImage": string } — MANDATORY: Always include a backgroundImage URL.
-2. "text": { "title": string (MAX 8 words, puncy), "text": string (MAX 2-3 sentences) } — Ensure the title is in the "title" field, NOT inside the "text" field with HTML tags.
-3. "benefits": { "title": string (MAX 5 words), "subtitle": string (1 sentence), "items": [{ "icon": string, "title": string (2-4 words), "description": string (1 sentence max) }] }
+2. "text": { "title": string (MAX 8 words, punchy), "text": string (MAX 2-3 sentences) } — Ensure the title is in the "title" field, NOT inside the "text" field with HTML tags.
+3. "benefits": { "title": string (MAX 5 words), "subtitle": string (1 sentence), "variant": "cards" | "minimal" | "centered" | "list", "items": [{ "icon": string, "title": string (2-4 words), "description": string (1 sentence max) }] }
 4. "cards": { "title": string (MAX 5 words), "subtitle": string (1 sentence), "items": [{ "image": string, "title": string (2-4 words), "subtitle": string, "description": string (1-2 sentences) }] }
-5. "how-it-works": { "title": string, "items": [{ "title": string (2-4 words), "description": string (1 sentence), "stepNumber": number }] }
+5. "how-it-works": { "title": string, "variant": "cards" | "minimal" | "timeline" | "compact", "items": [{ "title": string (2-4 words), "description": string (1 sentence), "stepNumber": number }] }
 6. "pricing": { "title": string, "plans": [{ "name": string, "price": string, "interval": string, "features": string[] }] }
 7. "contact": {
       "title": string (MAX 4 words),
@@ -83,6 +84,29 @@ Every block: { "type": "Type", "content": { ... }, "style": { ... } }
       "successTitle": string,
       "successMessage": string
    }
+8. "faq": { "title": string, "variant": "accordion" | "classic" | "side-by-side" | "numbered", "items": [{ "question": string, "answer": string }] }
+9. "quote": { "title": string, "variant": "cards" | "minimal" | "bubble", "items": [{ "name": string, "role": string, "text": string, "stars": number, "avatar": "" }] }
+
+**STYLE schema (optional per block — use to add visual variety):**
+Each block can have a "style" object with these optional properties:
+{
+  "patternType": "none" | "dots" | "grid" | "diagonal" | "topography" | "waves",
+  "patternColor": "#hex",
+  "patternOpacity": number (5-15, subtle),
+  "patternScale": number (30-60),
+  "backgroundColor": "#hex",
+  "textColor": "#hex"
+}
+
+### 🎨 PATTERN & VARIANT USAGE RULES (IMPORTANT FOR VISUAL RICHNESS):
+1. **USE PATTERNS** on 2-3 blocks per page to add visual depth. Good candidates: benefits, how-it-works, contact, faq, pricing.
+2. **Pattern color**: Use the TEXT color of the block (NOT the background). For light backgrounds, use dark pattern (#000000 or primaryColor). For dark backgrounds, use light pattern (#ffffff).
+3. **Pattern opacity**: Keep it SUBTLE — between 5 and 12. Never above 15.
+4. **Pattern types**: "dots" for professional, "grid" for tech, "topography" for creative, "waves" for elegant, "diagonal" for dynamic.
+5. **DO NOT** use patterns on hero blocks (they have background images).
+6. **Alternate backgrounds**: Alternate between white/light sections and sections with a subtle colored background + pattern to create visual rhythm.
+7. **USE VARIANTS**: For benefits, how-it-works, faq, and quote blocks, pick a variant that fits the content. Don't always use the default. Mix "cards", "minimal", "timeline", "centered" etc.
+8. **Example alternation**: hero (image bg) → benefits (white, cards variant) → text (light gray bg + dots pattern) → how-it-works (white, timeline variant) → contact (primaryColor bg + waves pattern, light text)
 
 ### 📋 OUTPUT JSON FORMAT
 Return ONLY a JSON object:
