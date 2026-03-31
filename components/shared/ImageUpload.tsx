@@ -139,7 +139,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             type="text"
             value={altValue ?? ''}
             onChange={(e) => onAltChange(e.target.value)}
-            placeholder="Descrizione immagine per accessibilità e SEO..."
+            placeholder=""
             className="w-full p-2.5 border border-zinc-200 rounded-xl text-[12px] bg-zinc-50 focus:bg-white focus:border-zinc-400 transition-all outline-none"
           />
         </div>

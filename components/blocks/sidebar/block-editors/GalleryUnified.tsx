@@ -71,7 +71,7 @@ export const GalleryUnified: React.FC<GalleryUnifiedProps> = ({
     updateContent((prev: any) => ({
       images: [
         ...(prev.images || []),
-        { image: '', alt: `Nuova Immagine ${images.length + 1}` }
+        { image: '', alt: '' }
       ]
     }));
   };

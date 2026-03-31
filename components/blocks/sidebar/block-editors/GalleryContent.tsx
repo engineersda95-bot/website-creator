@@ -39,7 +39,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
     updateContent((prev: any) => ({
       images: [
         ...(prev.images || []),
-        { image: '', alt: `Nuova Immagine ${images.length + 1}` }
+        { image: '', alt: '' }
       ]
     }));
   };
