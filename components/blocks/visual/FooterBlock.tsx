@@ -106,7 +106,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
             <div 
               className="absolute inset-0 pointer-events-none z-0 background-pattern"
               style={BACKGROUND_PATTERNS.find(p => p.id === style.patternType)?.getStyle(
-                style.patternColor || '#000000',
+                style.patternColor || style.textColor || '#000000',
                 style.patternOpacity || 10,
                 style.patternScale || 40
               )}

@@ -3,6 +3,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { BACKGROUND_PATTERNS, PatternType } from '@/lib/background-patterns';
+import { useEditorStore } from '@/store/useEditorStore';
 import { Grid } from 'lucide-react';
 
 interface PatternManagerProps {
@@ -11,8 +12,14 @@ interface PatternManagerProps {
 }
 
 export function PatternManager({ getStyleValue, updateStyle }: PatternManagerProps) {
+  const { project } = useEditorStore();
+  const appearance = project?.settings?.appearance || 'light';
+  const themeText = appearance === 'dark' 
+    ? (project?.settings?.themeColors?.dark?.text || '#ffffff') 
+    : (project?.settings?.themeColors?.light?.text || '#000000');
+
   const currentPattern = getStyleValue('patternType', 'none') as PatternType;
-  const patternColor = getStyleValue('patternColor', '#ffffff');
+  const patternColor = getStyleValue('patternColor', themeText);
   const patternOpacity = getStyleValue('patternOpacity', 10);
   const patternScale = getStyleValue('patternScale', 40);
 
