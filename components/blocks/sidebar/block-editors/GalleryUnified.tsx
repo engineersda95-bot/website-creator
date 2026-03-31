@@ -50,7 +50,8 @@ export const GalleryUnified: React.FC<GalleryUnifiedProps> = ({
   project,
 }) => {
   const { uploadImage, imageMemoryCache } = useEditorStore();
-  const images = selectedBlock.content.images || [];
+  const content = selectedBlock.content;
+  const images = content.images || [];
   const { openSection, toggleSection } = useUnifiedSections();
 
   const updateImage = (index: number, updates: any) => {
@@ -128,7 +129,7 @@ export const GalleryUnified: React.FC<GalleryUnifiedProps> = ({
         <SimpleInput
           label="Testo"
           placeholder="La nostra galleria..."
-          value={selectedBlock.content.title || ''}
+          value={content.title || ''}
           onChange={(val) => updateContent({ title: val })}
         />
         <TypographyFields
