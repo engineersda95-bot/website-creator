@@ -79,9 +79,9 @@ export const DividerUnified: React.FC<DividerUnifiedProps> = ({
             />
             <button
               onClick={() => updateStyle({ dividerColor: undefined })}
-              className="w-full p-2 text-[10px] font-bold text-zinc-400 border border-dashed rounded-lg hover:text-zinc-900 transition-all uppercase tracking-widest"
+              className="w-full p-2.5 text-[10px] font-black text-zinc-400 border border-zinc-100 border-dashed rounded-xl hover:bg-zinc-50 hover:text-zinc-900 transition-all uppercase tracking-widest bg-white/50"
             >
-              Resetta a Colore Tema
+              Resetta a Tema Globale
             </button>
           </div>
         </div>
@@ -98,7 +98,7 @@ export const DividerUnified: React.FC<DividerUnifiedProps> = ({
       </Section>
 
       <Section icon={Palette} label="Sfondo & Colori" id="background" isOpen={openSection === 'background'} onToggle={toggleSection}>
-        <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+        <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} showTitle={false} />
         <div className="h-px bg-zinc-100 my-1" />
         <ManagerWrapper label="Immagine Sfondo">
           <BackgroundManager

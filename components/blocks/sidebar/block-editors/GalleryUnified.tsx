@@ -312,6 +312,7 @@ export const GalleryUnified: React.FC<GalleryUnifiedProps> = ({
           updateStyle={updateStyle}
           getStyleValue={getStyleValue}
           project={project}
+          showTitle={false}
         />
         <div className="h-px bg-zinc-100 my-1" />
         <ManagerWrapper label="Immagine Sfondo">

@@ -158,7 +158,7 @@ export const EmbedUnified: React.FC<EmbedUnifiedProps> = ({
       </Section>
 
       <Section icon={Palette} label="Sfondo & Colori" id="background" isOpen={openSection === 'background'} onToggle={toggleSection}>
-        <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} />
+        <ColorManager getStyleValue={getStyleValue} updateStyle={updateStyle} project={project} showTitle={false} />
         <div className="h-px bg-zinc-100 my-1" />
         <ManagerWrapper label="Immagine Sfondo">
           <BackgroundManager

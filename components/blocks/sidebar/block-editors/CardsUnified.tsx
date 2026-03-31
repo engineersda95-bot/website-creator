@@ -20,6 +20,7 @@ import {
   AnimationManager,
   BackgroundManager,
   BorderShadowManager,
+  ColorManager,
   ImageStyleFields,
   LayoutFields,
   LayoutGridSlider,
@@ -258,32 +259,14 @@ export const CardsUnified: React.FC<CardsUnifiedProps> = ({
 
       <Section icon={Palette} label="Stile Card" id="cardColors" isOpen={openSection === 'cardColors'} onToggle={toggleSection}>
         <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="flex-1 space-y-1">
-              <label className="text-[10px] font-bold text-zinc-400 uppercase">Sfondo Card</label>
-              <input
-                type="color"
-                className="w-full h-8 border border-zinc-200 rounded-lg cursor-pointer bg-transparent"
-                value={getStyleValue('cardBgColor', '#ffffff00')}
-                onChange={(e) => updateStyle({ cardBgColor: e.target.value })}
-              />
-            </div>
-            <div className="flex-1 space-y-1">
-              <label className="text-[10px] font-bold text-zinc-400 uppercase">Testo Card</label>
-              <input
-                type="color"
-                className="w-full h-8 border border-zinc-200 rounded-lg cursor-pointer bg-transparent"
-                value={getStyleValue('cardTextColor', '#000000')}
-                onChange={(e) => updateStyle({ cardTextColor: e.target.value })}
-              />
-            </div>
-            <button
-              onClick={() => updateStyle({ cardBgColor: undefined, cardTextColor: undefined, cardBorderRadius: undefined, cardPadding: undefined })}
-              className="self-end p-1.5 text-zinc-300 hover:text-zinc-600 transition-colors" title="Reset"
-            >
-              <Settings size={12} />
-            </button>
-          </div>
+          <ColorManager
+            getStyleValue={getStyleValue}
+            updateStyle={updateStyle}
+            project={project}
+            bgKey="cardBgColor"
+            textKey="cardTextColor"
+            showTitle={false}
+          />
           <SimpleSlider
             label="Arrotondamento Card"
             value={getStyleValue('cardBorderRadius', 32)}
@@ -324,57 +307,12 @@ export const CardsUnified: React.FC<CardsUnifiedProps> = ({
       </Section>
 
       <Section icon={Palette} label="Sfondo & Colori" id="background" isOpen={openSection === 'background'} onToggle={toggleSection}>
-        {(() => {
-          const appearance = project?.settings?.appearance || 'light';
-          const defaultBg = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.bg || '#0c0c0e') : (project?.settings?.themeColors?.light?.bg || '#ffffff');
-          const defaultText = appearance === 'dark' ? (project?.settings?.themeColors?.dark?.text || '#ffffff') : (project?.settings?.themeColors?.light?.text || '#000000');
-          const bgType = getStyleValue('bgType', 'solid');
-          return (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="flex-1 space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase">Sfondo</label>
-                  <input type="color" className="w-full h-8 border border-zinc-200 rounded-lg cursor-pointer bg-transparent" value={getStyleValue('backgroundColor', defaultBg)} onChange={(e) => updateStyle({ backgroundColor: e.target.value })} />
-                </div>
-                <div className="flex-1 space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase">Testo</label>
-                  <input type="color" className="w-full h-8 border border-zinc-200 rounded-lg cursor-pointer bg-transparent" value={getStyleValue('textColor', defaultText)} onChange={(e) => updateStyle({ textColor: e.target.value })} />
-                </div>
-                <button
-                  onClick={() => updateStyle({ backgroundColor: undefined, textColor: undefined, bgType: 'solid', backgroundColor2: undefined, bgDirection: undefined })}
-                  className="self-end p-1.5 text-zinc-300 hover:text-zinc-600 transition-colors" title="Reset"
-                >
-                  <Settings size={12} />
-                </button>
-              </div>
-              <div className="flex bg-zinc-100 p-0.5 rounded-lg">
-                {['solid', 'gradient'].map((t) => (
-                  <button key={t} onClick={() => updateStyle({ bgType: t })} className={cn("flex-1 py-1.5 text-[10px] font-bold uppercase rounded-md transition-all", bgType === t ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-600")}>
-                    {t === 'solid' ? 'Tinta Unita' : 'Gradiente'}
-                  </button>
-                ))}
-              </div>
-              {bgType === 'gradient' && (
-                <div className="flex items-center gap-3 animate-in fade-in duration-200">
-                  <div className="flex-1 space-y-1">
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase">Fine</label>
-                    <input type="color" className="w-full h-8 border border-zinc-200 rounded-lg cursor-pointer bg-transparent" value={getStyleValue('backgroundColor2', '#f3f4f6')} onChange={(e) => updateStyle({ backgroundColor2: e.target.value })} />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase">Direzione</label>
-                    <select className="w-full py-1.5 px-2 border border-zinc-200 rounded-lg text-[10px] font-bold bg-zinc-50" value={getStyleValue('bgDirection', 'to bottom')} onChange={(e) => updateStyle({ bgDirection: e.target.value })}>
-                      <option value="to bottom">Alto &rarr; Basso</option>
-                      <option value="to top">Basso &rarr; Alto</option>
-                      <option value="to right">Sx &rarr; Dx</option>
-                      <option value="to left">Dx &rarr; Sx</option>
-                      <option value="to bottom right">Inclinato</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })()}
+        <ColorManager
+          getStyleValue={getStyleValue}
+          updateStyle={updateStyle}
+          project={project}
+          showTitle={false}
+        />
         <div className="h-px bg-zinc-100 my-1" />
         <ManagerWrapper label="Immagine Sfondo">
           <BackgroundManager
