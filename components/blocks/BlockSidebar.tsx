@@ -161,11 +161,11 @@ export const BlockSidebar: React.FC = () => {
                           }}
                           onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
                           className={cn(
-                            "px-1 py-2 cursor-grab active:cursor-grabbing shrink-0 opacity-0 group-hover:opacity-100 transition-opacity",
-                            isSelected && "opacity-50"
+                            "px-1 py-2 cursor-grab active:cursor-grabbing shrink-0 transition-all",
+                            isSelected ? "opacity-100" : "opacity-60 group-hover:opacity-100"
                           )}
                         >
-                          <GripVertical size={12} className={isSelected ? "text-white/50" : "text-zinc-300"} />
+                          <GripVertical size={12} className={isSelected ? "text-white/50" : "text-zinc-500"} />
                         </div>
                         <div className={cn(
                           "p-1.5 rounded-md transition-colors shrink-0",
