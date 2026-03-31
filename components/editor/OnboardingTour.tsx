@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronRight, ChevronLeft, X, Layers, MousePointer, PanelRight, Monitor, Rocket, RotateCcw, ZoomIn, HelpCircle, Sun, Edit3 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, X, Layers, MousePointer, PanelRight, Monitor, Rocket, RotateCcw, ZoomIn, HelpCircle, Sun, ArrowLeft, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TourStep {
@@ -13,6 +13,20 @@ interface TourStep {
 }
 
 const STEPS: TourStep[] = [
+  {
+    target: '[data-tour="site-page-nav"]',
+    title: 'Navigazione',
+    description: 'Qui vedi il nome del sito e la pagina attuale. Clicca sul nome della pagina per passare ad un\'altra (Home, Servizi, Contatti...).',
+    icon: <FileText size={18} />,
+    position: 'bottom',
+  },
+  {
+    target: '[data-tour="back-btn"]',
+    title: 'Torna alla Dashboard',
+    description: 'Questa freccia ti riporta alla gestione del sito dove puoi creare nuove pagine, gestire le impostazioni e pubblicare.',
+    icon: <ArrowLeft size={18} />,
+    position: 'bottom',
+  },
   {
     target: '[data-tour="block-sidebar"]',
     title: 'Struttura & Blocchi',

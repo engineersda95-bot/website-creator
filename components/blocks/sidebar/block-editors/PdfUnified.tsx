@@ -6,12 +6,14 @@ import {
   FileText,
   Layers,
   Palette,
+  Play,
   Settings,
   Type,
 } from 'lucide-react';
 import React from 'react';
 import {
   AnchorManager,
+  AnimationManager,
   BackgroundManager,
   BorderShadowManager,
   LayoutFields,
@@ -198,6 +200,10 @@ export const PdfUnified: React.FC<PdfUnifiedProps> = ({
         <ManagerWrapper label="Pattern Decorativo">
           <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
         </ManagerWrapper>
+      </Section>
+
+      <Section icon={Play} label="Animazioni" id="animation" isOpen={openSection === 'animation'} onToggle={toggleSection}>
+        <AnimationManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
       </Section>
 
       <Section icon={Settings} label="Avanzate" id="advanced" isOpen={openSection === 'advanced'} onToggle={toggleSection}>

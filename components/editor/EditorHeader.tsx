@@ -53,17 +53,18 @@ export function EditorHeader({
   return (
     <header className="h-12 bg-white border-b border-zinc-200/80 flex items-center justify-between px-4 shrink-0 z-[9999] relative">
       {/* Left: back + project name + page switcher */}
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center gap-2 min-w-0" data-tour="editor-nav">
         <Link
           href={`/editor/${initialProject?.id}`}
           onClick={(e) => navigateWithCheck(e, `/editor/${initialProject?.id}`)}
           className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-lg transition-all shrink-0"
           title="Torna alla gestione pagine"
+          data-tour="back-btn"
         >
           <ArrowLeft size={16} />
         </Link>
 
-        <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0" data-tour="site-page-nav">
           <span className="text-[13px] font-semibold text-zinc-700 truncate max-w-[140px]" title={targetProject?.name}>
             {targetProject?.name || 'Sito'}
           </span>
@@ -80,7 +81,7 @@ export function EditorHeader({
         {/* Status dot */}
         <div className={cn(
           "w-2 h-2 rounded-full shrink-0 ml-1",
-          siteStatus === 'pubblicato' ? "bg-emerald-500" : "bg-zinc-300"
+          siteStatus === 'pubblicato' ? "bg-emerald-500" : "bg-amber-400"
         )} title={siteStatus === 'pubblicato' ? 'Online' : 'Bozza'} />
 
         {project?.live_url && (
