@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { FileText, Clock, Globe, Loader2, Trash2, Search } from 'lucide-react';
 import { Page } from '@/types/editor';
+import { cn } from '@/lib/utils';
 
 interface PageCardProps {
   page: Page;
@@ -14,9 +15,11 @@ interface PageCardProps {
   onDelete: (id: string) => void;
   isDeleting?: boolean;
   onInternalNavigate: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  score?: number;
+  onScoreClick?: () => void;
 }
 
-export function PageCard({ page, projectId, formatDate, onOpenSeo, onOpenTranslate, onDelete, isDeleting, onInternalNavigate }: PageCardProps) {
+export function PageCard({ page, projectId, formatDate, onOpenSeo, onOpenTranslate, onDelete, isDeleting, onInternalNavigate, score, onScoreClick }: PageCardProps) {
   const langEmoji: Record<string, string> = {
     it: '🇮🇹',
     en: '🇬🇧',
@@ -44,7 +47,7 @@ export function PageCard({ page, projectId, formatDate, onOpenSeo, onOpenTransla
             </div>
           )}
         </div>
-        <h3 className="text-sm font-bold text-zinc-900 transition-colors">
+        <h3 className="text-sm font-bold text-zinc-900 transition-colors truncate">
           {page.title}
         </h3>
         <p className="text-[10px] text-zinc-400 mt-1 flex items-center gap-1.5 uppercase font-bold">
@@ -54,7 +57,23 @@ export function PageCard({ page, projectId, formatDate, onOpenSeo, onOpenTransla
       </Link>
 
       <div className="px-5 py-3 border-t border-zinc-100 flex items-center justify-between bg-zinc-50/30">
-        <span className="text-[11px] text-zinc-400 font-mono">/{page.slug}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-zinc-400 font-mono">/{page.slug}</span>
+          {score !== undefined && (
+            <button
+              onClick={() => onScoreClick?.()}
+              className={cn(
+                "flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border transition-all hover:shadow-sm",
+                score === 100 ? "bg-emerald-50 text-emerald-600 border-emerald-200" :
+                score >= 60 ? "bg-blue-50 text-blue-600 border-blue-200" :
+                "bg-amber-50 text-amber-600 border-amber-200"
+              )}
+              title="Completamento pagina"
+            >
+              {score}%
+            </button>
+          )}
+        </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => onOpenSeo(page.id)}

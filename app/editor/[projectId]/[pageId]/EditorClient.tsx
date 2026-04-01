@@ -17,6 +17,7 @@ import { OnboardingTour } from '@/components/editor/OnboardingTour';
 import { PageSwitcher } from '@/components/editor/PageSwitcher';
 import { EditorHeader } from '@/components/editor/EditorHeader';
 import { useEditorShortcuts } from '@/hooks/useEditorShortcuts';
+import { ChecklistModal } from '@/components/editor/ChecklistModal';
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
   const googleFontUrl = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap`;
@@ -66,6 +67,7 @@ export function EditorClient({
   const siteStatus = !isPublished ? 'non_pubblicato' : (hasUnsavedChanges || isDraftAtLeastOnePage ? 'bozza' : 'pubblicato');
 
   const [isPublishing, setIsPublishing] = React.useState(false);
+  const [showChecklist, setShowChecklist] = React.useState(false);
   const font = targetProject?.settings?.fontFamily || 'Outfit';
 
   // Flicker Fix Check
@@ -161,6 +163,7 @@ export function EditorClient({
             toast('Modifiche salvate', 'success', 2000);
           }}
           onPublish={handlePublish}
+          onChecklistClick={() => setShowChecklist(true)}
         />
 
         {showLoader ? (
@@ -175,6 +178,15 @@ export function EditorClient({
 
       <ConfigSidebar />
       <OnboardingTour />
+
+      {showChecklist && targetProject && (
+        <ChecklistModal
+          project={targetProject}
+          pages={targetPages}
+          onClose={() => setShowChecklist(false)}
+          initialPageId={currentPage?.id}
+        />
+      )}
     </div>
   );
 }

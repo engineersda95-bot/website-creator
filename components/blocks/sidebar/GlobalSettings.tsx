@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Smartphone, Search, Type, Palette, MousePointer } from 'lucide-react';
+import { Smartphone, Search, Type, Palette, MousePointer, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEditorStore } from '@/store/useEditorStore';
 import { ProjectSettings } from '@/types/editor';
 import { UnifiedSection as Section, useUnifiedSections } from './UnifiedSection';
+import { SiteChecklist } from '@/components/editor/SiteChecklist';
 
 // Modular Sections
 import { SeoSection } from './settings/SeoSection';
@@ -59,6 +60,17 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
 
       {/* Sections */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <Section icon={ClipboardCheck} label="Checklist Sito" id="checklist" isOpen={openSection === 'checklist'} onToggle={toggleSection}>
+          <SiteChecklist
+            project={project}
+            pages={useEditorStore.getState().projectPages || []}
+            currentPage={useEditorStore.getState().currentPage || undefined}
+            onFixAction={(action, target) => {
+              if (action === 'open-section') toggleSection(target);
+            }}
+          />
+        </Section>
+
         <Section icon={Search} label="SEO & Meta" id="seo" isOpen={openSection === 'seo'} onToggle={toggleSection}>
           <div className="[&>section]:pt-0 [&>section]:border-t-0 [&>section>div:first-child]:hidden">
             <SeoSection

@@ -8,7 +8,8 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   ArrowLeft, Plus, FileText, ExternalLink, Rocket, Save,
   Loader2, Trash2, LayoutGrid, Clock, Palette, Globe, X,
-  Monitor, Tablet, Smartphone, Check, Settings
+  Monitor, Tablet, Smartphone, Check, Settings,
+  CheckCircle2, Circle, ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { deployToCloudflare } from '@/app/actions/deploy';
@@ -27,6 +28,9 @@ import { AdvancedSection } from '@/components/blocks/sidebar/settings/AdvancedSe
 import { DomainSection } from '@/components/blocks/sidebar/settings/DomainSection';
 import { SeoSection } from '@/components/blocks/sidebar/settings/SeoSection';
 import { confirm } from '@/components/shared/ConfirmDialog';
+import { ChecklistModal } from '@/components/editor/ChecklistModal';
+import { CompletionBadge, SiteChecklist } from '@/components/editor/SiteChecklist';
+import { getCompletionScore, runGlobalChecks, runPageChecks, CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/site-checklist';
 
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
@@ -95,7 +99,8 @@ export function ProjectDashboardClient({
   const [isPublishing, setIsPublishing] = useState(false);
   const [deletingPageId, setDeletingPageId] = useState<string | null>(null);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pages' | 'settings'>('pages');
+  const [activeTab, setActiveTab] = useState<'pages' | 'checklist' | 'settings'>('pages');
+  const [showChecklist, setShowChecklist] = useState(false);
   const [seoOpenId, setSeoOpenId] = useState<string | null>(null);
   const [translateOpenId, setTranslateOpenId] = useState<string | null>(null);
 
@@ -267,6 +272,10 @@ export function ProjectDashboardClient({
               <div className={cn("w-1.5 h-1.5 rounded-full", isPublished ? "bg-emerald-500" : "bg-amber-400 animate-pulse")} />
               {isPublished ? 'Online' : 'Bozza'}
             </div>
+            <CompletionBadge
+              score={getCompletionScore(runGlobalChecks(localProject, pages))}
+              onClick={() => setShowChecklist(true)}
+            />
           </div>
 
           <div className="flex items-center gap-2">
@@ -328,9 +337,173 @@ export function ProjectDashboardClient({
             <Settings size={15} />
             Impostazioni
           </button>
+          <button
+            onClick={() => setActiveTab('checklist')}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all -mb-px",
+              activeTab === 'checklist'
+                ? "border-zinc-900 text-zinc-900"
+                : "border-transparent text-zinc-400 hover:text-zinc-600"
+            )}
+          >
+            <Check size={15} />
+            Checklist
+            {(() => {
+              const gScore = getCompletionScore(runGlobalChecks(localProject, pages));
+              const pageScoresArr = pages.map(p => getCompletionScore(runPageChecks(localProject, pages, p)));
+              const avgPage = pageScoresArr.length > 0 ? Math.round(pageScoresArr.reduce((a, b) => a + b, 0) / pageScoresArr.length) : 0;
+              const combined = Math.round((gScore + avgPage) / 2);
+              return (
+                <span className={cn(
+                  "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+                  combined === 100 ? "bg-emerald-100 text-emerald-700" : combined >= 70 ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"
+                )}>
+                  {combined}%
+                </span>
+              );
+            })()}
+          </button>
         </div>
 
-        {activeTab === 'pages' ? (
+        {activeTab === 'checklist' && (() => {
+          const gResults = runGlobalChecks(localProject, pages);
+          const gScore = getCompletionScore(gResults);
+          const gPassed = gResults.filter(r => r.passed).length;
+          const pageScoresData = pages.map(p => ({
+            page: p,
+            score: getCompletionScore(runPageChecks(localProject, pages, p)),
+          }));
+          const avgPageScore = pageScoresData.length > 0 ? Math.round(pageScoresData.reduce((s, p) => s + p.score, 0) / pageScoresData.length) : 0;
+
+          return (
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Score cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Global score */}
+              <div className="bg-white border border-zinc-200 rounded-2xl p-5 flex items-center gap-4">
+                <div className="relative w-14 h-14 shrink-0">
+                  <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
+                    <circle cx="18" cy="18" r="15" fill="none" stroke="#e4e4e7" strokeWidth="2.5" />
+                    <circle cx="18" cy="18" r="15" fill="none" stroke={gScore === 100 ? '#10b981' : gScore >= 70 ? '#3b82f6' : '#f59e0b'} strokeWidth="2.5" strokeDasharray={`${gScore * 0.94} 94`} strokeLinecap="round" className="transition-all duration-700" />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-zinc-800">{gScore}%</span>
+                </div>
+                <div>
+                  <div className="text-[13px] font-bold text-zinc-900">Sito</div>
+                  <div className="text-[11px] text-zinc-400">{gPassed}/{gResults.length} completati</div>
+                </div>
+              </div>
+
+              {/* Pages average */}
+              <div className="bg-white border border-zinc-200 rounded-2xl p-5 flex items-center gap-4">
+                <div className="relative w-14 h-14 shrink-0">
+                  <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
+                    <circle cx="18" cy="18" r="15" fill="none" stroke="#e4e4e7" strokeWidth="2.5" />
+                    <circle cx="18" cy="18" r="15" fill="none" stroke={avgPageScore === 100 ? '#10b981' : avgPageScore >= 70 ? '#3b82f6' : '#f59e0b'} strokeWidth="2.5" strokeDasharray={`${avgPageScore * 0.94} 94`} strokeLinecap="round" className="transition-all duration-700" />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-zinc-800">{avgPageScore}%</span>
+                </div>
+                <div>
+                  <div className="text-[13px] font-bold text-zinc-900">Media Pagine</div>
+                  <div className="text-[11px] text-zinc-400">{pageScoresData.filter(p => p.score === 100).length}/{pages.length} complete</div>
+                </div>
+              </div>
+
+              {/* Overall combined */}
+              {(() => {
+                const combined = Math.round((gScore + avgPageScore) / 2);
+                return (
+                  <div className={cn(
+                    "border rounded-2xl p-5 flex items-center gap-4",
+                    combined === 100 ? "bg-emerald-50 border-emerald-200" : combined >= 70 ? "bg-blue-50 border-blue-200" : "bg-amber-50 border-amber-200"
+                  )}>
+                    <div className="relative w-14 h-14 shrink-0">
+                      <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
+                        <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeWidth="2.5" opacity="0.15" />
+                        <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray={`${combined * 0.94} 94`} strokeLinecap="round" className="transition-all duration-700" />
+                      </svg>
+                      <span className="absolute inset-0 flex items-center justify-center text-sm font-bold">{combined}%</span>
+                    </div>
+                    <div>
+                      <div className="text-[13px] font-bold">{combined === 100 ? 'Perfetto!' : combined >= 70 ? 'Buon lavoro' : 'Da migliorare'}</div>
+                      <div className="text-[11px] opacity-60">Punteggio complessivo</div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Global checks */}
+            <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-zinc-100">
+                <h3 className="text-[13px] font-bold text-zinc-900">Controlli Generali</h3>
+                <p className="text-[10px] text-zinc-400 mt-0.5">Passaggi per rendere il sito completo e professionale</p>
+              </div>
+              <div className="divide-y divide-zinc-50">
+                {gResults.map(({ item, passed: ok }) => (
+                  <div key={item.id} className={cn("flex items-center gap-3 px-5 py-3 transition-all", ok ? "opacity-50" : "hover:bg-zinc-50")}>
+                    {ok ? (
+                      <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                    ) : (
+                      <Circle size={16} className="text-zinc-300 shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className={cn("text-[12px] font-medium", ok && "line-through text-zinc-400")}>{item.label}</div>
+                      {!ok && <div className="text-[10px] text-zinc-400 mt-0.5">{item.description}</div>}
+                    </div>
+                    <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0", CATEGORY_COLORS[item.category])}>
+                      {CATEGORY_LABELS[item.category]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Per-page checks */}
+            <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-zinc-100">
+                <h3 className="text-[13px] font-bold text-zinc-900">Controlli per Pagina</h3>
+                <p className="text-[10px] text-zinc-400 mt-0.5">Ogni pagina ha i suoi requisiti per un risultato ottimale</p>
+              </div>
+              <div className="divide-y divide-zinc-50">
+                {pageScoresData.map(({ page: p, score: pScore }) => {
+                  const pResults = runPageChecks(localProject, pages, p);
+                  const allDone = pScore === 100;
+                  return (
+                    <details key={p.id} className="group">
+                      <summary className="flex items-center gap-3 px-5 py-3 cursor-pointer list-none hover:bg-zinc-50 transition-all">
+                        <div className="relative w-8 h-8 shrink-0">
+                          <svg viewBox="0 0 36 36" className="w-8 h-8 -rotate-90">
+                            <circle cx="18" cy="18" r="14" fill="none" stroke="#e4e4e7" strokeWidth="3" />
+                            <circle cx="18" cy="18" r="14" fill="none" stroke={pScore === 100 ? '#10b981' : pScore >= 60 ? '#3b82f6' : '#f59e0b'} strokeWidth="3" strokeDasharray={`${pScore * 0.88} 88`} strokeLinecap="round" />
+                          </svg>
+                          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-zinc-600">{pScore}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[12px] font-semibold text-zinc-800 truncate">{p.title || p.slug}</div>
+                          <div className="text-[10px] text-zinc-400">/{p.slug}</div>
+                        </div>
+                        {allDone && <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />}
+                        <ChevronDown size={12} className="text-zinc-300 group-open:rotate-180 transition-transform shrink-0" />
+                      </summary>
+                      <div className="px-5 pb-3 pl-16 space-y-1">
+                        {pResults.map(({ item, passed: ok }) => (
+                          <div key={item.id} className={cn("flex items-center gap-2 py-1.5", ok && "opacity-40")}>
+                            {ok ? <CheckCircle2 size={12} className="text-emerald-500 shrink-0" /> : <Circle size={12} className="text-zinc-300 shrink-0" />}
+                            <span className={cn("text-[11px]", ok ? "text-zinc-400 line-through" : "text-zinc-600")}>{item.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          );
+        })()}
+
+        {activeTab === 'pages' && (
           /* ── PAGES TAB ── */
           <div>
             <div className="flex items-center justify-between mb-6">
@@ -411,6 +584,8 @@ export function ProjectDashboardClient({
                   onDelete={handleDeletePage}
                   isDeleting={deletingPageId === page.id}
                   onInternalNavigate={handleInternalNavigation}
+                  score={getCompletionScore(runPageChecks(localProject, pages, page))}
+                  onScoreClick={() => setShowChecklist(true)}
                 />
               ))}
             </div>
@@ -448,7 +623,9 @@ export function ProjectDashboardClient({
             })()}
           </div>
 
-        ) : (
+        )}
+
+        {activeTab === 'settings' && (
           /* ── SETTINGS TAB ── */
           <div className="max-w-3xl mx-auto space-y-6">
             <div className="bg-white border border-zinc-200 rounded-3xl p-8 shadow-sm space-y-8">
@@ -498,6 +675,14 @@ export function ProjectDashboardClient({
           </div>
         )}
       </main>
+
+      {showChecklist && (
+        <ChecklistModal
+          project={localProject}
+          pages={pages}
+          onClose={() => setShowChecklist(false)}
+        />
+      )}
     </div>
   );
 }

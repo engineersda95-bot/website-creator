@@ -8,6 +8,8 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { PageSwitcher } from '@/components/editor/PageSwitcher';
 import { getProjectDomain } from '@/lib/url-utils';
+import { CompletionBadge } from '@/components/editor/SiteChecklist';
+import { getCompletionScore, runGlobalChecks, runPageChecks } from '@/lib/site-checklist';
 import { confirm } from '@/components/shared/ConfirmDialog';
 
 interface EditorHeaderProps {
@@ -24,6 +26,7 @@ interface EditorHeaderProps {
   font: string;
   onSave: () => void;
   onPublish: () => void;
+  onChecklistClick?: () => void;
 }
 
 export function EditorHeader({
@@ -38,7 +41,8 @@ export function EditorHeader({
   isPublishing,
   isLoading,
   onSave,
-  onPublish
+  onPublish,
+  onChecklistClick
 }: EditorHeaderProps) {
   const navigateWithCheck = async (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (hasUnsavedChanges) {
@@ -83,6 +87,16 @@ export function EditorHeader({
           "w-2 h-2 rounded-full shrink-0 ml-1",
           siteStatus === 'pubblicato' ? "bg-emerald-500" : "bg-amber-400"
         )} title={siteStatus === 'pubblicato' ? 'Online' : 'Bozza'} />
+
+        {/* Completion badge — page score when editing a page */}
+        {(() => {
+          const allPages = useEditorStore.getState().projectPages || [];
+          const cp = useEditorStore.getState().currentPage;
+          const score = cp
+            ? getCompletionScore(runPageChecks(targetProject, allPages, cp))
+            : getCompletionScore(runGlobalChecks(targetProject, allPages));
+          return <CompletionBadge score={score} onClick={onChecklistClick} />;
+        })()}
 
         {project?.live_url && (
           <a
