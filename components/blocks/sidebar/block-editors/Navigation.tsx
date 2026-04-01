@@ -107,8 +107,8 @@ export const Navigation: React.FC<NavigationProps> = ({
             <input
               type="number"
               className="w-20 p-2 border border-zinc-200 rounded-lg text-xs font-bold"
-              value={getStyleValue('logoTextSize', content?.logoTextSize || 24)}
-              onChange={(e) => updateStyle({ logoTextSize: parseInt(e.target.value) })}
+              value={getStyleValue('logoTextSize', content?.logoTextSize || 24) || 24}
+              onChange={(e) => updateStyle({ logoTextSize: parseInt(e.target.value) || 0 })}
             />
           </div>
           <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4">
@@ -116,8 +116,8 @@ export const Navigation: React.FC<NavigationProps> = ({
             <input
               type="number"
               className="w-20 p-2 border border-zinc-200 rounded-lg text-xs font-bold"
-              value={getStyleValue('logoSize', content?.logoSize || 40)}
-              onChange={(e) => updateStyle({ logoSize: parseInt(e.target.value) })}
+              value={getStyleValue('logoSize', content?.logoSize || 40) || 40}
+              onChange={(e) => updateStyle({ logoSize: parseInt(e.target.value) || 0 })}
             />
           </div>
           <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4">
@@ -177,8 +177,8 @@ export const Navigation: React.FC<NavigationProps> = ({
             <label className="text-[10px] font-bold text-zinc-400 uppercase">Gap Link - CTA (px)</label>
             <input
               type="number"
-              value={getStyleValue('linksCtaGap', 32)}
-              onChange={(e) => updateStyle({ linksCtaGap: parseInt(e.target.value) || 32 })}
+              value={getStyleValue('linksCtaGap', 32) || 32}
+              onChange={(e) => updateStyle({ linksCtaGap: parseInt(e.target.value) || 0 })}
               className="w-20 px-3 py-1 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold text-zinc-900 outline-none focus:border-zinc-900 transition-colors"
             />
           </div>
@@ -188,8 +188,8 @@ export const Navigation: React.FC<NavigationProps> = ({
           <label className="text-[10px] font-bold text-zinc-400 uppercase">Larghezza Sidebar (px)</label>
           <input
             type="number"
-            value={getStyleValue('hamburgerWidth', 450)}
-            onChange={(e) => updateStyle({ hamburgerWidth: parseInt(e.target.value) || 450 })}
+            value={getStyleValue('hamburgerWidth', 450) || 450}
+            onChange={(e) => updateStyle({ hamburgerWidth: parseInt(e.target.value) || 0 })}
             className="w-20 px-3 py-1 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold text-zinc-900 outline-none focus:border-zinc-900 transition-colors"
           />
         </div>
@@ -252,8 +252,8 @@ export const Navigation: React.FC<NavigationProps> = ({
               min="0"
               max="100"
               step="1"
-              value={getStyleValue('scrolledOpacity', 100)}
-              onChange={(e) => updateStyle({ scrolledOpacity: parseInt(e.target.value) })}
+              value={getStyleValue('scrolledOpacity', 100) || 0}
+              onChange={(e) => updateStyle({ scrolledOpacity: parseInt(e.target.value) || 0 })}
               className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900"
             />
           </div>

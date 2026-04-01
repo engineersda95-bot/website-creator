@@ -25,6 +25,8 @@ Your goal is to generate a complete, Professional website structure with CONCISE
   * Extract services/offerings -> cards block
 - EVERY block must be scannable in 3 seconds. If text is too long, split it.
 - Use clear size hierarchy: <h2> for section titles, <p> for body. Never use same size for both.
+#### NOTE DEV: è necessario dire di usare H2 etc? dovrebbero essere cose già gestite dai default dei blocchi.
+#### NOTE DEV: ma viene spiegato che IA può usare i blocchi menzionati sopra e NON deve seguire strettamente queste direttive? In base a tutto il contesto genero i blocchi piu utili, se uso blocchi con immagini sono da reperire su Unplash (ex. Image Text).
 
 ### 🛑 CRITICAL: NO-INVENTION RULE (STRICT ENFORCEMENT)
 1. **FORBIDDEN**: Do NOT invent specific products, dishes, services, or prices.
@@ -70,11 +72,14 @@ Your goal is to generate a complete, Professional website structure with CONCISE
   "footer": { "logoType": "text" | "image", "logoText": string, "logoImage": string, "copyright": string, "socialLinks": [{ "platform": string, "url": string }], "links": [{ "label": string, "url": string }] }
 }
 
+#### NOTA DEV: direi che qui possiamo dare SOLO gli elementi che può decidere l'IA che abbiamo detto prima, tutto ciò che è messo in modo deterministico si tolga. Nota speciale per i Business Detail: se sono stati inseriti da IA
+
 ### 📸 MULTIMODAL & VISUAL INSTRUCTIONS
 1. **HERO IMAGES**: You MUST ALWAYS provide a high-quality 'backgroundImage' from Unsplash for the 'hero' block. Choose an image that fits the business mood. 
 2. **LOGO RESTRICTION**: If the user has NOT provided a logo URL, you MUST NOT invent one. Set 'logoType' to 'text' and leave 'logoImage' empty.
 3. **READABILITY**: Choose images that are not too busy; the system will apply a dark overlay (40-50%) to ensure white text is readable.
 4. **COLORS**: If screenshots are provided, replicate the exact hex codes.
+#### NOTA DEV: mi è capitato a volte vengano usate immagini che poi non si visualizzano in quanto rotte, se possibile in post processing inserirei un cntrollo deterministico in modo da non salvare l'immagine di sfondo se non valida e togliere le impostazioni di overlay e testo.
 
 ### 📋 INTERIOR BLOCK SCHEMAS (Blocchi Disponibili)
 Ogni blocco segue: `{ "type": "Type", "content": { ... }, "style": { ... } }`
@@ -88,6 +93,7 @@ Ogni blocco segue: `{ "type": "Type", "content": { ... }, "style": { ... } }`
 - **contact**: `{ "title": string, "subtitle": string, "email": string, "phone": string, "address": string, "showMap": boolean, "successTitle": string, "successMessage": string }`
 - **faq**: `{ "title": string, "variant": "accordion" | "classic" | "side-by-side" | "numbered", "items": [{ "question": string, "answer": string }] }`
 - **quote**: `{ "title": string, "variant": "cards" | "minimal" | "bubble", "items": [{ "name": string, "role": string, "text": string, "stars": number, "avatar": "" }] }`
+#### QUI INSERIAMO LE DESCRIZIONI PER OGNUNO DI QUESTI BLOCCHI
 
 ### 🎨 PATTERN & VARIANT USAGE RULES (VISUAL RICHNESS)
 1. **USE PATTERNS** on 2-3 blocks per page. (none, dots, grid, diagonal, topography, waves).
@@ -95,6 +101,7 @@ Ogni blocco segue: `{ "type": "Type", "content": { ... }, "style": { ... } }`
 3. **Alternate backgrounds**: Alternanza tra sezioni chiare e sezioni con sfondo colorato/pattern.
 4. **USE VARIANTS**: Non usare solo il default; mixa le varianti disponibili per ogni blocco.
 ```
+#### NOTE DEV: forse questo si può fare in modo deterministico dopo? valuta tu cosa ha più senso. Magari per avere varianti si può usare in alcuni blocchi un pattern o un colore di sfondo che é quello ACCENT COLOR + TEXT (colori del bottone in pratica)
 
 ### B. Input Utente Dinamico (Template da `ai-generator.ts`)
 
@@ -128,6 +135,7 @@ Email: {{email}}
 Phone: {{phone}}
 Address: {{address}}, {{city}} {{zip}}, {{country}}
 Socials: {{socialsList}}
+#### NOTA DEV: servono separati o si possono mettere su User Input? forse si può aggiungere ciò che manca sopra eed evitare la ripetizione di alcune cose.
 
 EXTRA PAGES REQUESTED:
 {{extraPagesList}}
@@ -139,8 +147,13 @@ You MUST return exactly {{totalPages}} pages:
 
 ### 🔴 NAVIGATION LINK RULE:
 Since there are multiple pages, the navigation block on EVERY page MUST contain links to ALL pages using the /slug format.
+#### NOTA DEV: questo dovrebbe essere deterministico ora, si dovrebbe togliere credo 
 
 {{userStyleOverrides}}
+#### NOTA DEV: questo dovrebbe essere deterministico ora, si dovrebbe togliere credo 
+
+#### NOTA DEV: non chiaro dove vengono inserite le risposte alle domande dell'utente della prima validazione (prompt di validazione)
+
 ```
 
 ---
@@ -181,6 +194,8 @@ Socials: {{socials}}
 Extra Pages: {{extraPages}}
 ```
 
+#### NOTA DEV: qui mi sembra manchi il fatto di chiedere cose che utente può rispondere in one shot, non domande tipo "Hai immagini di qualità?" risposta "Si" e poi non fai nulla a riguardo.
+
 ---
 
 ## 3. Criticità dei Prompt Attuali
@@ -194,6 +209,8 @@ Extra Pages: {{extraPages}}
 **Nessun limite sul numero di domande.** Il modello può generare 5-6 domande anche per descrizioni sufficienti.
 
 **Risposte di validazione non strutturate.** Le risposte dell'utente vengono accodate come testo libero alla `description`. Non c'è parsing separato: il modello di generazione le legge nel mezzo di un testo lungo, con rischio di ignorarle.
+
+#### NOTE DEV: ok su tutti e 3 i punti primi, soprattutto limite di domande mettiamo max 10. Le risposte non strutturate: più che altro mi interessa che eventuali domande riguardanti i Business Detail (email, phone) vengano inserite deterministicamente dove serve.
 
 ---
 
@@ -234,9 +251,11 @@ Questi campi occupano spazio nel prompt e nel contesto della risposta AI senza p
 **"CRITICAL" ovunque.** Quasi ogni sezione del system prompt è marcata `CRITICAL`. Quando tutto è critico, il modello non può prioritizzare — tratta tutte le sezioni allo stesso livello. Il vero priorità dovrebbe essere implicita nella struttura (posizione e brevità), non nell'etichetta.
 
 **`image` nei `cards.items`.** Il prompt chiede all'AI di fornire URL immagine per ogni card item. L'AI genera URL Unsplash inventati, non validati — alcuni funzioneranno, altri no. Non è chiaro se questo sia intenzionale o se le immagini dei card dovrebbero essere placeholder/vuote per default.
+#### NOTA DEV: dobbiamo mettere IMMAGINE UNPLASH, 
 
 **Icone emoji nelle intestazioni di sezione.** Aggiungono 1-2 token ciascuna e aiutano solo la leggibilità umana del prompt — nessun effetto misurabile sul comportamento del modello. Possono essere mantenute per comodità editoriale o rimosse per pulizia, senza conseguenze sull'output.
 
+#### NOTA DEV: mi tornano le considerazioni varie, incrociando con tutte le mie note possiam fare un bel lavoro. NON METTIAMO UNA SEQUENZA #### NOTA DEV: BLOCCHI RACCOMANDATA PER ORA, basiamoci interamente sulle descrizioni dell'utente senza inventare nuove informazioni. Poi vorrei mettere un flag (disattivo di default) modalità creativa che se impostato cambia il PROMPT indicando di essere creativo e inserire più roba nelle pagine (manteniamo comunque indicativamente un massimo di 10 blocchi per pagina)
 ---
 
 ## 4. Prompt Proposto — Passo 1 (Validazione)

@@ -99,8 +99,8 @@ export const Navigation: React.FC<NavigationProps> = ({
     if (isEditing) return <div className="cursor-pointer flex items-center gap-3">{children}</div>;
     return (
       <a 
-        {...formatLink(content.logoLinkHome ? (content.logoUrl || '/') : undefined, !isEditing)} 
-        className={cn("no-underline flex items-center gap-3", !content.logoLinkHome && "pointer-events-none")}
+        {...formatLink(content.logoLinkHome !== false ? (content.logoUrl || '/') : undefined, !isEditing)} 
+        className={cn("no-underline flex items-center gap-3", content.logoLinkHome === false && "pointer-events-none")}
       >
         {children}
       </a>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Palette, Layout, Type, Settings as SettingsIcon, Mic, MicOff, Plus, Loader2, Sparkles, Wand2, Info, Image as ImageIcon, AlertCircle, X, ChevronRight, ChevronLeft, Check, Trash2, Sun, Moon, ChevronDown, ChevronUp, Settings } from 'lucide-react';
+import { Palette, Layout, Type, Settings as SettingsIcon, Mic, MicOff, Plus, Loader2, Sparkles, Wand2, Info, Image as ImageIcon, AlertCircle, X, ChevronRight, ChevronLeft, Check, Trash2, ChevronDown, ChevronUp, Settings } from 'lucide-react';
 import { FontManager } from '../../blocks/sidebar/ui/FontManager';
 import { cn } from '@/lib/utils';
 import { BUSINESS_TYPES } from '@/lib/editor-constants';
@@ -103,6 +103,8 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const [useAnchorNav, setUseAnchorNav] = useState(true);
   const [tone, setTone] = useState('professional');
   const [strengths, setStrengths] = useState<string[]>(['']);
+  const [services, setServices] = useState<string[]>(['']);
+  const [creativeMode, setCreativeMode] = useState(false);
   const [extraPages, setExtraPages] = useState<{ name: string; description: string }[]>([]);
   const [pagesInitialized, setPagesInitialized] = useState(false);
   const [lastValidatedPages, setLastValidatedPages] = useState<string | null>(null);
@@ -124,9 +126,8 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
 
   // Advanced Settings State
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [appearance, setAppearance] = useState<'light' | 'dark' | 'auto'>('auto');
-  const [primaryColor, setPrimaryColor] = useState<string | null>(null);
-  const [secondaryColor, setSecondaryColor] = useState<string | null>(null);
+  const [accentColor, setAccentColor] = useState<string | null>(null);
+  const [bgColor, setBgColor] = useState<string | null>(null);
   const [textColor, setTextColor] = useState<string | null>(null);
   const [fontFamily, setFontFamily] = useState<string | null>(null);
 
@@ -144,8 +145,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
       }
       setIsUploading(true);
       const ext = file.name.split('.').pop();
-      const filename = `logo-${Date.now()}.${ext}`;
-      const path = `ai-temp/${user.id}/${filename}`;
+      const path = `${user.id}/ai-temp/logo-${Date.now()}.${ext}`;
 
       const { data } = await supabase.storage
         .from('project-assets')
@@ -179,8 +179,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
         continue;
       }
       const ext = file.name.split('.').pop();
-      const filename = `screenshot-${Date.now()}-${Math.random().toString(36).substring(2, 5)}.${ext}`;
-      const path = `ai-temp/${user.id}/${filename}`;
+      const path = `${user.id}/ai-temp/screenshot-${Date.now()}-${Math.random().toString(36).substring(2, 5)}.${ext}`;
 
       const { data } = await supabase.storage
         .from('project-assets')
@@ -319,6 +318,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
       ].filter(s => s.url);
 
       const filledStrengths = strengths.filter(s => s.trim());
+      const filledServices = services.filter(s => s.trim());
 
       const result = await generateProjectWithAI({
         businessName,
@@ -335,15 +335,16 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
         zip: businessZip || undefined,
         country: businessCountry || undefined,
         socials: socials.length > 0 ? socials : undefined,
-        primaryColor: primaryColor || undefined,
-        secondaryColor: secondaryColor || undefined,
+        accentColor: accentColor || undefined,
+        bgColor: bgColor || undefined,
         textColor: textColor || undefined,
         fontFamily: fontFamily || undefined,
-        appearance: appearance === 'auto' ? undefined : appearance,
         siteObjective,
         tone,
         strengths: filledStrengths.length > 0 ? filledStrengths : undefined,
+        services: filledServices.length > 0 ? filledServices : undefined,
         useAnchorNav: extraPages.length === 0 ? useAnchorNav : undefined,
+        creativeMode: creativeMode || undefined,
       });
 
       clearTimeout(timeout);
@@ -709,20 +710,15 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Descrivi la tua attività</label>
-                  <div className="group relative">
-                    <Info size={13} className="text-zinc-300 cursor-help hover:text-zinc-500 transition-colors" />
-                    <div className="absolute bottom-full right-0 mb-2 w-56 p-3 bg-zinc-900 text-white text-[10px] rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-10 leading-relaxed">
-                      Raccontaci cosa fai, cosa offri e cosa ti rende unico. Più dettagli dai, migliore sarà il risultato.
-                    </div>
-                  </div>
+                  <span className={cn("text-[10px] font-mono", description.length > 4500 ? "text-red-400" : "text-zinc-300")}>{description.length}/5000</span>
                 </div>
                 <div className="relative">
                   <textarea
                     autoFocus
                     value={description}
                     onChange={e => setDescription(e.target.value)}
-                    placeholder="Es: Siamo un ristorante a conduzione familiare specializzato in cucina tradizionale milanese..."
-                    className="w-full h-28 px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all placeholder:text-zinc-300 resize-none leading-relaxed"
+                    placeholder="Raccontaci chi sei, cosa offri, la tua storia, il tuo pubblico, cosa ti rende unico. Più dettagli dai, migliore sarà il sito generato."
+                    className="w-full h-44 px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all placeholder:text-zinc-300 resize-y leading-relaxed min-h-[7rem]"
                   />
                   <button
                     onClick={() => toggleListening('description')}
@@ -770,6 +766,46 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                 </div>
               </div>
 
+              {/* Servizi */}
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  I tuoi servizi <span className="font-normal normal-case text-zinc-300">(opzionale — uno per riga)</span>
+                </label>
+                <div className="space-y-2">
+                  {services.map((s, i) => (
+                    <div key={i} className="flex gap-2 animate-in fade-in slide-in-from-right-2 duration-200">
+                      <input
+                        value={s}
+                        onChange={e => {
+                          const updated = [...services];
+                          updated[i] = e.target.value;
+                          setServices(updated);
+                        }}
+                        placeholder={['Es: Taglio e piega', 'Es: Colorazione', 'Es: Trattamenti capelli'][i] || 'Es: Altro servizio...'}
+                        className={inputClass}
+                      />
+                      {services.length > 1 && (
+                        <button
+                          onClick={() => setServices(services.filter((_, idx) => idx !== i))}
+                          className="p-2.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-zinc-100"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {services.length < 10 && (
+                    <button
+                      onClick={() => setServices([...services, ''])}
+                      className="flex items-center gap-2 px-3 py-2 text-[11px] font-bold text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 rounded-xl transition-all border border-dashed border-zinc-200"
+                    >
+                      <Plus size={12} />
+                      Aggiungi servizio
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Punti di forza */}
               <div className="space-y-2">
                 <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
@@ -809,6 +845,26 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                   )}
                 </div>
               </div>
+
+              {/* Modalità Creativa */}
+              <button
+                onClick={() => setCreativeMode(!creativeMode)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left",
+                  creativeMode
+                    ? "border-indigo-400 bg-indigo-50 shadow-sm"
+                    : "border-zinc-200 bg-white hover:border-zinc-300"
+                )}
+              >
+                <Sparkles size={16} className={creativeMode ? "text-indigo-500" : "text-zinc-400"} />
+                <div className="flex-1">
+                  <div className={cn("text-[12px] font-bold", creativeMode ? "text-indigo-800" : "text-zinc-700")}>Modalità Creativa</div>
+                  <div className={cn("text-[10px]", creativeMode ? "text-indigo-500" : "text-zinc-400")}>Layout più ricco e variegato, fino a 10 blocchi per pagina</div>
+                </div>
+                <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0", creativeMode ? "border-indigo-400 bg-indigo-400" : "border-zinc-300")}>
+                  {creativeMode && <Check size={8} className="text-white" />}
+                </div>
+              </button>
             </div>
           )}
 
@@ -887,7 +943,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                       >
                         <div className="flex-1 min-w-0">
                           <div className={cn("text-[12px] font-semibold", editingPageIdx === i ? "text-blue-700" : "text-zinc-800")}>{p.name}</div>
-                          <div className="text-[10px] text-zinc-400 truncate">{p.description}</div>
+                          <div className="text-[10px] text-zinc-400 line-clamp-2">{p.description}</div>
                         </div>
                         <button
                           onClick={(e) => { e.stopPropagation(); removePage(i); }}
@@ -921,8 +977,8 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                   <textarea
                     value={newPageDesc}
                     onChange={e => setNewPageDesc(e.target.value)}
-                    placeholder="Descrivi cosa vuoi in questa pagina..."
-                    className="w-full h-20 px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all placeholder:text-zinc-300 resize-none"
+                    placeholder="Descrivi cosa vuoi in questa pagina: contenuti, sezioni, messaggi chiave... Più dettagli = risultato migliore."
+                    className="w-full h-28 px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all placeholder:text-zinc-300 resize-y min-h-[5rem]"
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addPage(); } }}
                   />
                   <button
@@ -1022,50 +1078,54 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
 
                 {showAdvanced && (
                   <div className="mt-6 space-y-10 pl-1 animate-in slide-in-from-top-4 duration-300">
-                    {/* Tema */}
-                    <div className="space-y-4">
-                      <label className="block text-[11px] font-black text-zinc-400 uppercase tracking-widest pl-1">Aspetto del sito</label>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          onClick={() => setAppearance(appearance === 'light' ? 'auto' : 'light')}
-                          className={cn("py-6 flex flex-col items-center gap-2 text-[12px] font-bold border-2 rounded-2xl transition-all", appearance === 'light' ? "bg-zinc-900 text-white border-zinc-900 shadow-xl scale-[1.05]" : "bg-white text-zinc-400 border-zinc-100 hover:border-zinc-200")}
-                        >
-                          <Sun size={20} />
-                          <span className="uppercase">Chiaro</span>
-                        </button>
-                        <button
-                          onClick={() => setAppearance(appearance === 'dark' ? 'auto' : 'dark')}
-                          className={cn("py-6 flex flex-col items-center gap-2 text-[12px] font-bold border-2 rounded-2xl transition-all", appearance === 'dark' ? "bg-zinc-900 text-white border-zinc-900 shadow-xl scale-[1.05]" : "bg-white text-zinc-400 border-zinc-100 hover:border-zinc-200")}
-                        >
-                          <Moon size={20} />
-                          <span className="uppercase">Scuro</span>
-                        </button>
-                      </div>
-                      {appearance === 'auto' && (
-                        <div className="text-[10px] text-zinc-400 italic text-center">Nessun tema forzato: l'IA deciderà in base alle tue immagini.</div>
-                      )}
-                    </div>
-
                     {/* Colori Brand */}
-                    <div className="space-y-4 pt-4 border-t border-zinc-50">
+                    <div className="space-y-4">
                       <label className="block text-[11px] font-black text-zinc-400 uppercase tracking-widest pl-1">Personalizza Colori</label>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Accento</label>
+                          <div className="flex items-center gap-3 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all">
+                            {accentColor ? (
+                              <input type="color" className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none" value={accentColor} onChange={e => setAccentColor(e.target.value)} />
+                            ) : (
+                              <button onClick={() => setAccentColor('#3b82f6')} className="w-8 h-8 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 hover:border-zinc-400 hover:text-zinc-600 transition-all">
+                                <Plus size={12} />
+                              </button>
+                            )}
+                            <div className="flex-1 min-w-0">
+                               {accentColor ? <span className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-tighter">{accentColor}</span> : <span className="text-[10px] text-zinc-400 italic">Predefinito (AI)</span>}
+                            </div>
+                            {accentColor && <button onClick={() => setAccentColor(null)} className="text-zinc-300 hover:text-red-500"><X size={12} /></button>}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
                           <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Sfondo</label>
                           <div className="flex items-center gap-3 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all">
-                            <input type="color" className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none" value={secondaryColor || '#ffffff'} onChange={e => setSecondaryColor(e.target.value)} />
+                            {bgColor ? (
+                              <input type="color" className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none" value={bgColor} onChange={e => setBgColor(e.target.value)} />
+                            ) : (
+                              <button onClick={() => setBgColor('#ffffff')} className="w-8 h-8 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 hover:border-zinc-400 hover:text-zinc-600 transition-all">
+                                <Plus size={12} />
+                              </button>
+                            )}
                             <div className="flex-1 min-w-0">
-                               {secondaryColor ? <span className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-tighter">{secondaryColor}</span> : <span className="text-[10px] text-zinc-400 italic">Predefinito</span>}
+                               {bgColor ? <span className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-tighter">{bgColor}</span> : <span className="text-[10px] text-zinc-400 italic">Predefinito (AI)</span>}
                             </div>
-                            {secondaryColor && <button onClick={() => setSecondaryColor(null)} className="text-zinc-300 hover:text-red-500"><X size={12} /></button>}
+                            {bgColor && <button onClick={() => setBgColor(null)} className="text-zinc-300 hover:text-red-500"><X size={12} /></button>}
                           </div>
                         </div>
                         <div className="space-y-2">
                           <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Testo</label>
                           <div className="flex items-center gap-3 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all">
-                            <input type="color" className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none" value={textColor || '#000000'} onChange={e => setTextColor(e.target.value)} />
+                            {textColor ? (
+                              <input type="color" className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none" value={textColor} onChange={e => setTextColor(e.target.value)} />
+                            ) : (
+                              <button onClick={() => setTextColor('#111111')} className="w-8 h-8 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 hover:border-zinc-400 hover:text-zinc-600 transition-all">
+                                <Plus size={12} />
+                              </button>
+                            )}
                             <div className="flex-1 min-w-0">
-                               {textColor ? <span className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-tighter">{textColor}</span> : <span className="text-[10px] text-zinc-400 italic">Auto</span>}
+                               {textColor ? <span className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-tighter">{textColor}</span> : <span className="text-[10px] text-zinc-400 italic">Auto (AI)</span>}
                             </div>
                             {textColor && <button onClick={() => setTextColor(null)} className="text-zinc-300 hover:text-red-500"><X size={12} /></button>}
                           </div>
@@ -1080,14 +1140,24 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                     {/* Tipografia */}
                     <div className="space-y-4 pt-4 border-t border-zinc-50">
                       <label className="block text-[11px] font-black text-zinc-400 uppercase tracking-widest pl-1">Tipografia</label>
-                      <div className="relative group/font">
-                        <FontManager value={fontFamily || 'Outfit'} onChange={setFontFamily} />
-                        {fontFamily && (
+                      {fontFamily ? (
+                        <div className="relative group/font">
+                          <FontManager value={fontFamily} onChange={setFontFamily} />
                           <button onClick={() => setFontFamily(null)} className="absolute top-1.5 right-1.5 p-1 bg-white border border-zinc-100 rounded-lg text-zinc-300 hover:text-red-500 transition-all z-10 shadow-sm" title="Reset Font">
                             <X size={10} />
                           </button>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setFontFamily('Outfit')}
+                          className="flex items-center gap-3 px-3 py-2 w-full bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all"
+                        >
+                          <div className="w-8 h-8 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 hover:border-zinc-400 hover:text-zinc-600 transition-all shrink-0">
+                            <Plus size={12} />
+                          </div>
+                          <span className="text-[10px] text-zinc-400 italic">Predefinito (AI)</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
