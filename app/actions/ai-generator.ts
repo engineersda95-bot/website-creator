@@ -481,7 +481,7 @@ ${data.creativeMode ? `
     };
 
     // --- PAGE ENRICHMENT ---
-    const validSlugs = new Set(pages.map((p: any) => p.slug));
+    const validSlugs = new Set<string>(pages.map((p: any) => p.slug));
 
     const enrichedPages = pages.map((page: any) => {
       const pageId = uuidv4();
