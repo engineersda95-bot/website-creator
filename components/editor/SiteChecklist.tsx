@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { CheckCircle2, Circle, ChevronDown, Trophy, X } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronDown, Trophy, X, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   CheckResult,
@@ -107,7 +107,10 @@ export const SiteChecklist: React.FC<SiteChecklistProps> = ({
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-[13px] font-bold text-zinc-900">
-            {activeScore === 100 ? 'Tutto completato!' : `${activeResults.filter(r => r.passed).length}/${activeResults.length} completati`}
+            {activeScore === 100 ? 'Tutto completato!' : (() => {
+              const scored = activeResults.filter(r => !r.item.informational);
+              return `${scored.filter(r => r.passed).length}/${scored.length} completati`;
+            })()}
           </div>
           <div className="text-[11px] text-zinc-400">
             {activeScore === 100 ? 'Il tuo sito è pronto' : 'Completa i passaggi per un sito perfetto'}
@@ -136,8 +139,9 @@ export const SiteChecklist: React.FC<SiteChecklistProps> = ({
       {/* Categories */}
       <div className="space-y-1">
         {Object.entries(grouped).map(([category, results]) => {
-          const passed = results.filter(r => r.passed).length;
-          const total = results.length;
+          const scored = results.filter(r => !r.item.informational);
+          const passed = scored.filter(r => r.passed).length;
+          const total = scored.length;
           const allDone = passed === total;
           const isExpanded = expandedCategory === category;
 
@@ -162,7 +166,7 @@ export const SiteChecklist: React.FC<SiteChecklistProps> = ({
 
               {isExpanded && (
                 <div className="py-1 pl-3 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
-                  {results.map(({ item, passed: ok }) => (
+                  {results.map(({ item, passed: ok, href }) => (
                     <div
                       key={item.id}
                       className={cn(
@@ -170,8 +174,10 @@ export const SiteChecklist: React.FC<SiteChecklistProps> = ({
                         ok ? "opacity-60" : "hover:bg-zinc-50"
                       )}
                     >
-                      {ok ? (
+                      {ok && !item.informational ? (
                         <CheckCircle2 size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                      ) : item.informational ? (
+                        <Bell size={14} className="text-amber-400 shrink-0 mt-0.5" />
                       ) : (
                         <Circle size={14} className="text-zinc-300 shrink-0 mt-0.5" />
                       )}
@@ -182,10 +188,28 @@ export const SiteChecklist: React.FC<SiteChecklistProps> = ({
                         {!ok && (
                           <div className="text-[10px] text-zinc-400 mt-0.5">{item.description}</div>
                         )}
+                        {!ok && href && (
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2 mt-1 block truncate"
+                          >
+                            {href}
+                          </a>
+                        )}
                       </div>
-                      {!ok && item.fix && onFixAction && (
+                      {!ok && item.fix && (onFixAction || item.fix.action === 'open-url') && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); onFixAction(item.fix!.action, item.fix!.target); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (item.fix!.action === 'open-url') {
+                              window.open(item.fix!.target, '_blank', 'noopener,noreferrer');
+                            } else if (onFixAction) {
+                              onFixAction(item.fix!.action, item.fix!.target);
+                            }
+                          }}
                           className="text-[10px] font-semibold text-blue-600 hover:text-blue-700 shrink-0 mt-0.5"
                         >
                           {item.fix.label}

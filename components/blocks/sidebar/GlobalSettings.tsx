@@ -1,10 +1,8 @@
 "use client";
 
-import { SiteChecklist } from "@/components/editor/SiteChecklist";
 import { useEditorStore } from "@/store/useEditorStore";
 import { ProjectSettings } from "@/types/editor";
 import {
-  ClipboardCheck,
   MousePointer,
   Palette,
   Search,
@@ -86,23 +84,6 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
 
       {/* Sections */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <Section
-          icon={ClipboardCheck}
-          label="Checklist Sito"
-          id="checklist"
-          isOpen={openSection === "checklist"}
-          onToggle={toggleSection}
-        >
-          <SiteChecklist
-            project={project}
-            pages={useEditorStore.getState().projectPages || []}
-            currentPage={useEditorStore.getState().currentPage || undefined}
-            onFixAction={(action, target) => {
-              if (action === "open-section") toggleSection(target);
-            }}
-          />
-        </Section>
-
         <Section
           icon={Search}
           label="SEO & Meta"

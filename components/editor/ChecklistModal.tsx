@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { X, CheckCircle2, Circle, AlertTriangle, ChevronDown } from 'lucide-react';
+import { X, CheckCircle2, Circle, AlertTriangle, ChevronDown, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   CheckResult,
@@ -46,8 +46,9 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({ project, pages, 
     }
 
     return Object.entries(grouped).map(([category, items]) => {
-      const passed = items.filter(r => r.passed).length;
-      const total = items.length;
+      const scored = items.filter(r => !r.item.informational);
+      const passed = scored.filter(r => r.passed).length;
+      const total = scored.length;
 
       return (
         <div key={category} className="space-y-1">
@@ -57,10 +58,12 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({ project, pages, 
             </span>
             <span className="text-[10px] text-zinc-400">{passed}/{total}</span>
           </div>
-          {items.map(({ item, passed: ok }) => (
+          {items.map(({ item, passed: ok, href }) => (
             <div key={item.id} className={cn("flex items-start gap-2.5 px-3 py-2 rounded-lg", ok ? "opacity-50" : "bg-zinc-50")}>
-              {ok ? (
+              {ok && !item.informational ? (
                 <CheckCircle2 size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+              ) : item.informational ? (
+                <Bell size={14} className="text-amber-400 shrink-0 mt-0.5" />
               ) : (
                 <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
               )}
@@ -69,6 +72,24 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({ project, pages, 
                   {item.label}
                 </div>
                 {!ok && <div className="text-[10px] text-zinc-400 mt-0.5">{item.description}</div>}
+                {!ok && href && (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2 mt-1 block truncate"
+                  >
+                    {href}
+                  </a>
+                )}
+                {!ok && item.fix?.action === 'open-url' && (
+                  <button
+                    onClick={() => window.open(item.fix!.target, '_blank', 'noopener,noreferrer')}
+                    className="text-[10px] font-semibold text-blue-600 hover:text-blue-700 mt-1"
+                  >
+                    {item.fix.label} →
+                  </button>
+                )}
               </div>
             </div>
           ))}

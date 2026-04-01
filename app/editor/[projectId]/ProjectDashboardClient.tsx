@@ -9,7 +9,7 @@ import {
   ArrowLeft, Plus, FileText, ExternalLink, Rocket, Save,
   Loader2, Trash2, LayoutGrid, Clock, Palette, Globe, X,
   Monitor, Tablet, Smartphone, Check, Settings,
-  CheckCircle2, Circle, ChevronDown
+  CheckCircle2, Circle, ChevronDown, Bell
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { deployToCloudflare } from '@/app/actions/deploy';
@@ -365,7 +365,7 @@ export function ProjectDashboardClient({
         {activeTab === 'checklist' && (() => {
           const gResults = runGlobalChecks(localProject, pages);
           const gScore = getCompletionScore(gResults);
-          const gPassed = gResults.filter(r => r.passed).length;
+          const gPassed = gResults.filter(r => !r.item.informational && r.passed).length;
           const pageScoresData = pages.map(p => ({
             page: p,
             score: getCompletionScore(runPageChecks(localProject, pages, p)),
@@ -387,7 +387,7 @@ export function ProjectDashboardClient({
                   </div>
                   <div>
                     <div className="text-[13px] font-bold text-zinc-900">Sito</div>
-                    <div className="text-[11px] text-zinc-400">{gPassed}/{gResults.length} completati</div>
+                    <div className="text-[11px] text-zinc-400">{gPassed}/{gResults.filter(r => !r.item.informational).length} completati</div>
                   </div>
                 </div>
 
@@ -437,20 +437,50 @@ export function ProjectDashboardClient({
                   <p className="text-[10px] text-zinc-400 mt-0.5">Passaggi per rendere il sito completo e professionale</p>
                 </div>
                 <div className="divide-y divide-zinc-50">
-                  {gResults.map(({ item, passed: ok }) => (
-                    <div key={item.id} className={cn("flex items-center gap-3 px-5 py-3 transition-all", ok ? "opacity-50" : "hover:bg-zinc-50")}>
-                      {ok ? (
+                  {gResults.map(({ item, passed: ok, href }) => (
+                    <div key={item.id} className={cn("flex items-center gap-3 px-5 py-3 transition-all", ok && !item.informational ? "opacity-50" : !ok ? "hover:bg-zinc-50" : "")}>
+                      {ok && !item.informational ? (
                         <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                      ) : item.informational ? (
+                        <Bell size={16} className="text-amber-400 shrink-0" />
                       ) : (
                         <Circle size={16} className="text-zinc-300 shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className={cn("text-[12px] font-medium", ok && "line-through text-zinc-400")}>{item.label}</div>
-                        {!ok && <div className="text-[10px] text-zinc-400 mt-0.5">{item.description}</div>}
+                        <div className={cn("text-[12px] font-medium", ok && !item.informational && "line-through text-zinc-400")}>{item.label}</div>
+                        {(!ok || item.informational) && <div className="text-[10px] text-zinc-400 mt-0.5">{item.description}</div>}
+                        {item.informational && href && (
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2 mt-1 block truncate"
+                          >
+                            {href}
+                          </a>
+                        )}
+                        {item.informational && item.fix?.action === 'open-url' && (
+                          <button
+                            onClick={() => window.open(item.fix!.target, '_blank', 'noopener,noreferrer')}
+                            className="text-[10px] font-semibold text-blue-600 hover:text-blue-700 mt-1"
+                          >
+                            {item.fix.label} →
+                          </button>
+                        )}
                       </div>
-                      <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0", CATEGORY_COLORS[item.category])}>
-                        {CATEGORY_LABELS[item.category]}
-                      </span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {!ok && item.category === 'seo' && (
+                          <button
+                            onClick={() => setActiveTab('settings')}
+                            className="text-[10px] font-semibold text-blue-600 hover:text-blue-700"
+                          >
+                            Modifica SEO
+                          </button>
+                        )}
+                        <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded", CATEGORY_COLORS[item.category])}>
+                          {CATEGORY_LABELS[item.category]}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -487,7 +517,15 @@ export function ProjectDashboardClient({
                           {pResults.map(({ item, passed: ok }) => (
                             <div key={item.id} className={cn("flex items-center gap-2 py-1.5", ok && "opacity-40")}>
                               {ok ? <CheckCircle2 size={12} className="text-emerald-500 shrink-0" /> : <Circle size={12} className="text-zinc-300 shrink-0" />}
-                              <span className={cn("text-[11px]", ok ? "text-zinc-400 line-through" : "text-zinc-600")}>{item.label}</span>
+                              <span className={cn("text-[11px] flex-1", ok ? "text-zinc-400 line-through" : "text-zinc-600")}>{item.label}</span>
+                              {!ok && item.category === 'seo' && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setSeoOpenId(p.id); }}
+                                  className="text-[10px] font-semibold text-blue-600 hover:text-blue-700 shrink-0"
+                                >
+                                  Modifica SEO
+                                </button>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -591,22 +629,6 @@ export function ProjectDashboardClient({
               ))}
             </div>
 
-            {/* SEO Modal */}
-            {seoOpenId && (() => {
-              const page = pages.find(p => p.id === seoOpenId);
-              if (!page) return null;
-
-              return (
-                <PageSeoModal
-                  page={page}
-                  project={localProject}
-                  onClose={() => setSeoOpenId(null)}
-                  updatePageSEO={handleUpdatePageSEO}
-                  uploadImage={uploadImage}
-                  isUploading={isUploading}
-                />
-              );
-            })()}
 
             {/* Translate Modal */}
             {translateOpenId && (() => {
@@ -629,12 +651,35 @@ export function ProjectDashboardClient({
         {activeTab === 'settings' && (
           /* ── SETTINGS TAB ── */
           <div className="max-w-3xl mx-auto space-y-6">
-            <div className="bg-white border border-zinc-200 rounded-3xl p-8 shadow-sm space-y-8">
+            {/* Sticky save bar */}
+            <div className="sticky top-14 z-10 -mx-6 px-6 py-3 bg-zinc-50/90 backdrop-blur-sm border-b border-zinc-200 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-zinc-900 leading-none">Impostazioni Progetto</h2>
-                <p className="text-[11px] text-zinc-500 mt-1.5 font-medium">Gestisci le lingue e le opzioni avanzate del tuo sito.</p>
+                <p className="text-[13px] font-bold text-zinc-900">Impostazioni Progetto</p>
+                <p className="text-[11px] text-zinc-400">SEO, lingue e opzioni avanzate</p>
               </div>
+              <button
+                onClick={saveProject}
+                disabled={!hasUnsavedChanges}
+                className={cn(
+                  "flex items-center gap-2 px-5 py-2 rounded-xl transition-all text-sm font-bold shadow-sm",
+                  hasUnsavedChanges
+                    ? "bg-zinc-900 text-white hover:bg-zinc-800 active:scale-95"
+                    : "bg-zinc-100 text-zinc-400 cursor-default"
+                )}
+              >
+                {hasUnsavedChanges ? <Save size={15} /> : <Check size={15} />}
+                {hasUnsavedChanges ? 'Salva' : 'Salvato'}
+              </button>
+            </div>
 
+            <div className="bg-white border border-zinc-200 rounded-3xl p-8 shadow-sm space-y-8">
+
+              <SeoSection
+                project={localProject}
+                updateProjectSettings={updateProjectSettings}
+                isUploading={isUploading}
+                uploadImage={uploadImage}
+              />
 
               <div className="pt-8 border-t border-zinc-100">
                 <LanguageSection
@@ -660,25 +705,25 @@ export function ProjectDashboardClient({
                 />
               </div>
 
-              <div className="pt-8 border-t border-zinc-100 flex justify-end">
-                <button
-                  onClick={saveProject}
-                  disabled={!hasUnsavedChanges}
-                  className={cn(
-                    "flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all text-sm font-bold shadow-sm",
-                    hasUnsavedChanges
-                      ? "bg-zinc-900 text-white hover:bg-zinc-800 active:scale-95"
-                      : "bg-zinc-100 text-zinc-400 cursor-default"
-                  )}
-                >
-                  {hasUnsavedChanges ? <Save size={16} /> : <Check size={16} />}
-                  <span>{hasUnsavedChanges ? 'Salva Impostazioni' : 'Impostazioni Salvate'}</span>
-                </button>
-              </div>
             </div>
           </div>
         )}
       </main>
+
+      {seoOpenId && (() => {
+        const page = pages.find(p => p.id === seoOpenId);
+        if (!page) return null;
+        return (
+          <PageSeoModal
+            page={page}
+            project={localProject}
+            onClose={() => setSeoOpenId(null)}
+            updatePageSEO={handleUpdatePageSEO}
+            uploadImage={uploadImage}
+            isUploading={isUploading}
+          />
+        );
+      })()}
 
       {showChecklist && (
         <ChecklistModal

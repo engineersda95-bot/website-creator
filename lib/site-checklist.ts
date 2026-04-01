@@ -9,16 +9,20 @@ export interface CheckItem {
   id: string;
   label: string;
   description: string;
-  category: 'content' | 'seo' | 'design' | 'publish';
+  category: 'content' | 'seo' | 'publish';
   scope: 'global' | 'page';
   // Returns true if the check passes
   check: (ctx: CheckContext) => boolean;
+  // If true, shown as reminder but not counted in the score
+  informational?: boolean;
   // Optional: link/action to fix
   fix?: {
     label: string;
-    action: 'navigate' | 'open-section';
+    action: 'navigate' | 'open-section' | 'open-url';
     target: string;
   };
+  // Optional: external link computed from context (e.g. sitemap URL)
+  href?: (ctx: CheckContext) => string | undefined;
 }
 
 export interface CheckContext {
@@ -31,20 +35,13 @@ export interface CheckContext {
 export interface CheckResult {
   item: CheckItem;
   passed: boolean;
+  href?: string;
 }
 
 // ─── GLOBAL CHECKS (site-level) ─────────────────────────────────────────
 
 const GLOBAL_CHECKS: CheckItem[] = [
   // Content
-  {
-    id: 'has-pages',
-    label: 'Almeno 2 pagine',
-    description: 'Un sito completo ha più di una pagina (es. Home + Contatti)',
-    category: 'content',
-    scope: 'global',
-    check: ({ pages }) => pages.length >= 2,
-  },
   {
     id: 'has-navigation',
     label: 'Navigazione presente',
@@ -81,6 +78,19 @@ const GLOBAL_CHECKS: CheckItem[] = [
     fix: { label: 'Imposta titolo', action: 'open-section', target: 'seo' },
   },
   {
+    id: 'meta-title-quality',
+    label: 'Lunghezza titolo SEO ottimale',
+    description: 'Il titolo dovrebbe essere tra 40 e 70 caratteri (ideale: 50-60). Attuale: troppo corto o lungo.',
+    category: 'seo',
+    scope: 'global',
+    check: ({ project }) => {
+      const title = (project.settings as any)?.metaTitle?.trim() || '';
+      if (!title) return true; // non applicabile — il check presenza gestisce il caso vuoto
+      return title.length >= 40 && title.length <= 70;
+    },
+    fix: { label: 'Correggi titolo', action: 'open-section', target: 'seo' },
+  },
+  {
     id: 'has-meta-description',
     label: 'Descrizione SEO globale',
     description: 'La descrizione appare sotto il titolo nei risultati di ricerca',
@@ -88,6 +98,19 @@ const GLOBAL_CHECKS: CheckItem[] = [
     scope: 'global',
     check: ({ project }) => !!(project.settings as any)?.metaDescription?.trim(),
     fix: { label: 'Imposta descrizione', action: 'open-section', target: 'seo' },
+  },
+  {
+    id: 'meta-desc-quality',
+    label: 'Lunghezza descrizione SEO ottimale',
+    description: 'La descrizione dovrebbe essere tra 110 e 160 caratteri. Attuale: troppo corta o lunga.',
+    category: 'seo',
+    scope: 'global',
+    check: ({ project }) => {
+      const desc = (project.settings as any)?.metaDescription?.trim() || '';
+      if (!desc) return true; // non applicabile — il check presenza gestisce il caso vuoto
+      return desc.length >= 110 && desc.length <= 160;
+    },
+    fix: { label: 'Correggi descrizione', action: 'open-section', target: 'seo' },
   },
   {
     id: 'has-favicon',
@@ -98,31 +121,26 @@ const GLOBAL_CHECKS: CheckItem[] = [
     check: ({ project }) => !!(project.settings as any)?.favicon || !!(project.settings as any)?.logo,
     fix: { label: 'Carica logo', action: 'open-section', target: 'seo' },
   },
-
-  // Design
   {
-    id: 'has-custom-font',
-    label: 'Font personalizzato',
-    description: 'Un font diverso dal default rende il sito più professionale',
-    category: 'design',
+    id: 'has-og-image',
+    label: 'Immagine social (Open Graph)',
+    description: 'Aggiunge un\'anteprima visiva quando il sito viene condiviso su social network e chat',
+    category: 'seo',
     scope: 'global',
-    check: ({ project }) => {
-      const font = (project.settings as any)?.fontFamily;
-      return !!font && font !== 'Outfit';
-    },
-    fix: { label: 'Scegli font', action: 'open-section', target: 'typography' },
+    check: ({ project }) => !!(project.settings as any)?.metaImage?.trim(),
+    fix: { label: 'Aggiungi immagine', action: 'open-section', target: 'seo' },
   },
   {
-    id: 'has-primary-color',
-    label: 'Colore primario impostato',
-    description: 'Il colore del brand usato per pulsanti e accenti',
-    category: 'design',
+    id: 'has-business-info',
+    label: 'Dati attività (JSON-LD)',
+    description: 'Il nome e i contatti dell\'attività aiutano Google a mostrare info nei risultati locali',
+    category: 'seo',
     scope: 'global',
     check: ({ project }) => {
-      const color = (project.settings as any)?.primaryColor;
-      return !!color && color !== '#3b82f6';
+      const bd = (project.settings as any)?.businessDetails;
+      return !!(bd?.businessName?.trim());
     },
-    fix: { label: 'Scegli colore', action: 'open-section', target: 'theme' },
+    fix: { label: 'Compila dati attività', action: 'open-section', target: 'seo' },
   },
 
   // Publish
@@ -134,27 +152,39 @@ const GLOBAL_CHECKS: CheckItem[] = [
     scope: 'global',
     check: ({ project }) => !!(project as any).live_url,
   },
+  {
+    id: 'sitemap-google',
+    label: 'Sitemap inviata a Google Search Console',
+    description: 'Invia la sitemap a Google Search Console per accelerare l\'indicizzazione su Google',
+    category: 'publish',
+    scope: 'global',
+    informational: true,
+    check: ({ project }) => !(project as any).live_url,
+    href: ({ project }) => {
+      const url = (project as any).live_url;
+      return url ? `${url}/sitemap.xml` : undefined;
+    },
+    fix: { label: 'Apri Google Search Console', action: 'open-url', target: 'https://search.google.com/search-console' },
+  },
+  {
+    id: 'sitemap-bing',
+    label: 'Sitemap inviata a Bing Webmaster Tools',
+    description: 'Bing alimenta la ricerca di Copilot, Perplexity e altri LLM — vale la pena indicizzarsi anche lì',
+    category: 'publish',
+    scope: 'global',
+    informational: true,
+    check: ({ project }) => !(project as any).live_url,
+    href: ({ project }) => {
+      const url = (project as any).live_url;
+      return url ? `${url}/sitemap.xml` : undefined;
+    },
+    fix: { label: 'Apri Bing Webmaster Tools', action: 'open-url', target: 'https://www.bing.com/webmasters' },
+  },
 ];
 
 // ─── PAGE CHECKS (per-page) ─────────────────────────────────────────────
 
 const PAGE_CHECKS: CheckItem[] = [
-  {
-    id: 'page-has-hero',
-    label: 'Sezione Hero',
-    description: 'La prima impressione conta — aggiungi un Hero con titolo e call-to-action',
-    category: 'content',
-    scope: 'page',
-    check: ({ page }) => !!page?.blocks?.some(b => b.type === 'hero'),
-  },
-  {
-    id: 'page-has-3-blocks',
-    label: 'Almeno 3 blocchi',
-    description: 'Una pagina con più sezioni è più completa e coinvolgente',
-    category: 'content',
-    scope: 'page',
-    check: ({ page }) => (page?.blocks?.length || 0) >= 3,
-  },
   {
     id: 'page-has-cta',
     label: 'Call-to-action presente',
@@ -162,22 +192,6 @@ const PAGE_CHECKS: CheckItem[] = [
     category: 'content',
     scope: 'page',
     check: ({ page }) => !!page?.blocks?.some(b => b.content?.cta || b.type === 'contact'),
-  },
-  {
-    id: 'page-seo-title',
-    label: 'Titolo SEO della pagina',
-    description: 'Un titolo specifico per questa pagina migliora il posizionamento',
-    category: 'seo',
-    scope: 'page',
-    check: ({ page }) => !!(page?.seo as any)?.title?.trim(),
-  },
-  {
-    id: 'page-seo-description',
-    label: 'Descrizione SEO della pagina',
-    description: 'La descrizione specifica appare nei risultati di ricerca per questa pagina',
-    category: 'seo',
-    scope: 'page',
-    check: ({ page }) => !!(page?.seo as any)?.description?.trim(),
   },
   {
     id: 'page-has-images',
@@ -188,6 +202,59 @@ const PAGE_CHECKS: CheckItem[] = [
     check: ({ page }) => !!page?.blocks?.some(b =>
       b.content?.backgroundImage || b.content?.image || (b.content?.images?.length > 0 && b.content.images.some((i: any) => i.image))
     ),
+  },
+  {
+    id: 'page-seo-title',
+    label: 'Titolo SEO della pagina',
+    description: 'Un titolo specifico per questa pagina migliora il posizionamento',
+    category: 'seo',
+    scope: 'page',
+    check: ({ page }) => !!(page?.seo as any)?.title?.trim(),
+    fix: { label: 'Modifica SEO pagina', action: 'open-section', target: 'seo' },
+  },
+  {
+    id: 'page-seo-title-quality',
+    label: 'Lunghezza titolo SEO ottimale',
+    description: 'Il titolo della pagina dovrebbe essere tra 40 e 70 caratteri (ideale: 50-60)',
+    category: 'seo',
+    scope: 'page',
+    check: ({ page }) => {
+      const title = (page?.seo as any)?.title?.trim() || '';
+      if (!title) return true; // non applicabile — il check presenza gestisce il caso vuoto
+      return title.length >= 40 && title.length <= 70;
+    },
+    fix: { label: 'Modifica SEO pagina', action: 'open-section', target: 'seo' },
+  },
+  {
+    id: 'page-seo-description',
+    label: 'Descrizione SEO della pagina',
+    description: 'La descrizione specifica appare nei risultati di ricerca per questa pagina',
+    category: 'seo',
+    scope: 'page',
+    check: ({ page }) => !!(page?.seo as any)?.description?.trim(),
+    fix: { label: 'Modifica SEO pagina', action: 'open-section', target: 'seo' },
+  },
+  {
+    id: 'page-seo-desc-quality',
+    label: 'Lunghezza descrizione SEO ottimale',
+    description: 'La descrizione della pagina dovrebbe essere tra 110 e 160 caratteri',
+    category: 'seo',
+    scope: 'page',
+    check: ({ page }) => {
+      const desc = (page?.seo as any)?.description?.trim() || '';
+      if (!desc) return true; // non applicabile — il check presenza gestisce il caso vuoto
+      return desc.length >= 110 && desc.length <= 160;
+    },
+    fix: { label: 'Modifica SEO pagina', action: 'open-section', target: 'seo' },
+  },
+  {
+    id: 'page-seo-image',
+    label: 'Immagine social della pagina',
+    description: 'Aggiungi un\'immagine specifica per questa pagina per il social sharing e i risultati Google',
+    category: 'seo',
+    scope: 'page',
+    check: ({ page }) => !!(page?.seo as any)?.image?.trim(),
+    fix: { label: 'Modifica SEO pagina', action: 'open-section', target: 'seo' },
   },
 ];
 
@@ -206,6 +273,7 @@ export function runGlobalChecks(project: Project, pages: Page[]): CheckResult[] 
   return GLOBAL_CHECKS.map(item => ({
     item,
     passed: item.check(ctx),
+    href: item.href ? item.href(ctx) : undefined,
   }));
 }
 
@@ -214,25 +282,25 @@ export function runPageChecks(project: Project, pages: Page[], page: Page): Chec
   return PAGE_CHECKS.map(item => ({
     item,
     passed: item.check(ctx),
+    href: item.href ? item.href(ctx) : undefined,
   }));
 }
 
 export function getCompletionScore(results: CheckResult[]): number {
-  if (results.length === 0) return 100;
-  const passed = results.filter(r => r.passed).length;
-  return Math.round((passed / results.length) * 100);
+  const scored = results.filter(r => !r.item.informational);
+  if (scored.length === 0) return 100;
+  const passed = scored.filter(r => r.passed).length;
+  return Math.round((passed / scored.length) * 100);
 }
 
 export const CATEGORY_LABELS: Record<string, string> = {
   content: 'Contenuti',
   seo: 'SEO',
-  design: 'Design',
   publish: 'Pubblicazione',
 };
 
 export const CATEGORY_COLORS: Record<string, string> = {
   content: 'text-blue-600 bg-blue-50',
   seo: 'text-emerald-600 bg-emerald-50',
-  design: 'text-violet-600 bg-violet-50',
   publish: 'text-amber-600 bg-amber-50',
 };
