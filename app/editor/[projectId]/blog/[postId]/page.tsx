@@ -1,13 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { ProjectDashboardClient } from './ProjectDashboardClient';
+import { BlogPostEditorClient } from './BlogPostEditorClient';
 
-export default async function ProjectDashboardPage({
+export default async function BlogPostEditorPage({
   params,
 }: {
-  params: Promise<{ projectId: string }>;
+  params: Promise<{ projectId: string; postId: string }>;
 }) {
-  const { projectId } = await params;
+  const { projectId, postId } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -22,24 +22,20 @@ export default async function ProjectDashboardPage({
 
   if (!project) redirect('/editor');
 
-  const { data: pages } = await supabase
-    .from('pages')
-    .select('*')
-    .eq('project_id', projectId)
-    .order('created_at', { ascending: true });
-
-  const { data: blogPosts } = await supabase
+  const { data: post } = await supabase
     .from('blog_posts')
     .select('*')
+    .eq('id', postId)
     .eq('project_id', projectId)
-    .order('created_at', { ascending: false });
+    .single();
+
+  if (!post) redirect(`/editor/${projectId}`);
 
   return (
-    <ProjectDashboardClient
+    <BlogPostEditorClient
       initialUser={user}
       initialProject={project}
-      initialPages={pages || []}
-      initialBlogPosts={blogPosts || []}
+      initialPost={post}
     />
   );
 }

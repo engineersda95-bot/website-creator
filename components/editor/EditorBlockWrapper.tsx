@@ -45,6 +45,26 @@ export const EditorBlockWrapper = React.memo(({
   const updateBlock = useEditorStore(state => state.updateBlock);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  // Blog posts for blog-list block
+  const currentPage = useEditorStore(state => state.currentPage);
+  const [editorBlogPosts, setEditorBlogPosts] = useState<any[]>([]);
+  useEffect(() => {
+    if (block.type !== 'blog-list' || !project?.id) return;
+    import('@/lib/supabase').then(({ supabase }) => {
+      supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('project_id', project.id)
+        .order('created_at', { ascending: false })
+        .then(({ data }) => { if (data) setEditorBlogPosts(data); });
+    });
+  }, [block.type, project?.id]);
+
+  // Inject page language into blog-list block for multilingual filtering
+  const effectiveBlock = block.type === 'blog-list' && currentPage?.language
+    ? { ...block, content: { ...block.content, language: currentPage.language } }
+    : block;
+
   const onInlineEdit = React.useCallback((field: string, value: string) => {
     updateBlock(block.id, { [field]: value });
   }, [block.id, updateBlock]);
@@ -82,8 +102,8 @@ export const EditorBlockWrapper = React.memo(({
       )}
 
       <Component
-        content={block.content}
-        block={block}
+        content={effectiveBlock.content}
+        block={effectiveBlock}
         isEditing={true}
         isStatic={false}
         project={project}
@@ -91,6 +111,7 @@ export const EditorBlockWrapper = React.memo(({
         viewport={viewport}
         imageMemoryCache={imageMemoryCache}
         onInlineEdit={onInlineEdit}
+        allBlogPosts={editorBlogPosts}
       />
 
       {/* Block Controls */}
@@ -132,23 +153,25 @@ export const EditorBlockWrapper = React.memo(({
         >
           <ChevronDown size={18} />
         </button>
-        {confirmDelete ? (
-          <button
-            onClick={(e) => { e.stopPropagation(); onRemove(block.id); setConfirmDelete(false); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white rounded-xl transition-all ml-1 text-[11px] font-semibold animate-in fade-in zoom-in-95 duration-150"
-            title="Conferma eliminazione"
-          >
-            <Trash2 size={14} />
-            Elimina?
-          </button>
-        ) : (
-          <button
-            onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
-            className="p-2 hover:bg-red-500 text-white rounded-xl transition-colors ml-1"
-            title="Elimina"
-          >
-            <Trash2 size={18} />
-          </button>
+        {block.type !== 'blog-list' && (
+          confirmDelete ? (
+            <button
+              onClick={(e) => { e.stopPropagation(); onRemove(block.id); setConfirmDelete(false); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white rounded-xl transition-all ml-1 text-[11px] font-semibold animate-in fade-in zoom-in-95 duration-150"
+              title="Conferma eliminazione"
+            >
+              <Trash2 size={14} />
+              Elimina?
+            </button>
+          ) : (
+            <button
+              onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
+              className="p-2 hover:bg-red-500 text-white rounded-xl transition-colors ml-1"
+              title="Elimina"
+            >
+              <Trash2 size={18} />
+            </button>
+          )
         )}
       </div>
     </div>

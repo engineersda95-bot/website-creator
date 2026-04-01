@@ -20,7 +20,8 @@ export type BlockType =
   'benefits' |
   'how-it-works' |
   'pdf' |
-  'pricing';
+  'pricing' |
+  'blog-list';
 
 export interface Block {
   id: string;
@@ -46,6 +47,32 @@ export interface Page {
     image?: string;
     indexable?: boolean;
   };
+  updated_at: string;
+}
+
+// ─── Blog ───────────────────────────────────────────────────────────────
+
+export interface BlogPost {
+  id: string;
+  project_id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  cover_image: string;
+  categories: string[];
+  authors: string[];
+  status: 'draft' | 'published';
+  published_at: string | null;
+  blocks: Block[];
+  seo: {
+    title?: string;
+    description?: string;
+    image?: string;
+    indexable?: boolean;
+  };
+  language?: string;
+  translation_group?: string; // Shared UUID linking translated versions of the same post
+  created_at: string;
   updated_at: string;
 }
 

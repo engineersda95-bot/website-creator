@@ -9,7 +9,8 @@ import {
   ArrowLeft, Plus, FileText, ExternalLink, Rocket, Save,
   Loader2, Trash2, LayoutGrid, Clock, Palette, Globe, X,
   Monitor, Tablet, Smartphone, Check, Settings,
-  CheckCircle2, Circle, ChevronDown
+  CheckCircle2, Circle, ChevronDown, PenLine, Eye, EyeOff,
+  Image as ImageIcon, Calendar, Tag
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { deployToCloudflare } from '@/app/actions/deploy';
@@ -18,11 +19,13 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { GlobalSettings } from '@/components/blocks/sidebar/GlobalSettings';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { resolveImageUrl } from '@/lib/image-utils';
-import { Page } from '@/types/editor';
+import { Page, BlogPost } from '@/types/editor';
 import { toast } from '@/components/shared/Toast';
 import { PageCard } from '@/components/editor/cards/PageCard';
 import { PageSeoModal } from '@/components/editor/modals/PageSeoModal';
 import { TranslatePageModal } from '@/components/editor/modals/TranslatePageModal';
+import { TranslateBlogModal } from '@/components/editor/modals/TranslateBlogModal';
+import { translateBlogPostWithAI } from '@/app/actions/ai-generator';
 import { LanguageSection } from '@/components/blocks/sidebar/settings/LanguageSection';
 import { AdvancedSection } from '@/components/blocks/sidebar/settings/AdvancedSection';
 import { DomainSection } from '@/components/blocks/sidebar/settings/DomainSection';
@@ -43,10 +46,12 @@ export function ProjectDashboardClient({
   initialUser,
   initialProject,
   initialPages,
+  initialBlogPosts = [],
 }: {
   initialUser: any;
   initialProject: any;
   initialPages: any[];
+  initialBlogPosts?: BlogPost[];
 }) {
   const router = useRouter();
   const {
@@ -99,8 +104,11 @@ export function ProjectDashboardClient({
   const [isPublishing, setIsPublishing] = useState(false);
   const [deletingPageId, setDeletingPageId] = useState<string | null>(null);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pages' | 'checklist' | 'settings'>('pages');
+  const [activeTab, setActiveTab] = useState<'pages' | 'blog' | 'checklist' | 'settings'>('pages');
   const [showChecklist, setShowChecklist] = useState(false);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
+  const [blogLangFilter, setBlogLangFilter] = useState<string>('all');
+  const [translateBlogPost, setTranslateBlogPost] = useState<BlogPost | null>(null);
   const [seoOpenId, setSeoOpenId] = useState<string | null>(null);
   const [translateOpenId, setTranslateOpenId] = useState<string | null>(null);
 
@@ -326,6 +334,21 @@ export function ProjectDashboardClient({
             Pagine
           </button>
           <button
+            onClick={() => setActiveTab('blog')}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all -mb-px",
+              activeTab === 'blog'
+                ? "border-zinc-900 text-zinc-900"
+                : "border-transparent text-zinc-400 hover:text-zinc-600"
+            )}
+          >
+            <PenLine size={15} />
+            Blog
+            {blogPosts.length > 0 && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-zinc-100 text-zinc-500">{blogPosts.length}</span>
+            )}
+          </button>
+          <button
             onClick={() => setActiveTab('settings')}
             className={cn(
               "flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all -mb-px",
@@ -364,6 +387,308 @@ export function ProjectDashboardClient({
             })()}
           </button>
         </div>
+
+        {/* ── BLOG TAB ── */}
+        {activeTab === 'blog' && (() => {
+          const siteLanguages = localProject.settings?.languages || [localProject.settings?.defaultLanguage || 'it'];
+          const isMultilingual = siteLanguages.length > 1;
+          const defaultLang = localProject.settings?.defaultLanguage || 'it';
+          const langLabels: Record<string, string> = { it: '🇮🇹', en: '🇬🇧', fr: '🇫🇷', de: '🇩🇪', es: '🇪🇸' };
+          const filteredPosts = blogLangFilter === 'all' ? blogPosts : blogPosts.filter(p => (p.language || defaultLang) === blogLangFilter);
+
+          return (
+          <div className="max-w-5xl mx-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-bold text-zinc-900">Blog</h2>
+                <p className="text-sm text-zinc-500 mt-0.5">{blogPosts.length === 0 ? 'Crea il tuo primo articolo' : `${blogPosts.length} ${blogPosts.length === 1 ? 'articolo' : 'articoli'}`}</p>
+              </div>
+              <button
+                onClick={async () => {
+                  // Auto-create /blog page if it doesn't exist
+                  const hasBlogPage = pages.some(p => p.slug === 'blog');
+                  if (!hasBlogPage) {
+                    const blogPageId = crypto.randomUUID();
+                    let navBlock = null;
+                    let footerBlock = null;
+                    for (const p of pages) {
+                      if (!navBlock) navBlock = p.blocks?.find((b: any) => b.type === 'navigation') || null;
+                      if (!footerBlock) footerBlock = p.blocks?.find((b: any) => b.type === 'footer') || null;
+                      if (navBlock && footerBlock) break;
+                    }
+                    const blogListBlock = {
+                      id: crypto.randomUUID(),
+                      type: 'blog-list',
+                      content: {
+                        title: 'Il nostro Blog',
+                        subtitle: 'Scopri i nostri ultimi articoli e aggiornamenti.',
+                        filterMode: 'all',
+                        maxPosts: 20,
+                        showViewAll: false,
+                        showFilters: true,
+                        isBlogPage: true,
+                      },
+                      style: { padding: 80, align: 'center', columns: 3, titleTag: 'h2', itemTitleTag: 'h3', itemTitleBold: true },
+                    };
+                    const blogPageBlocks = [
+                      ...(navBlock ? [{ ...navBlock, id: crypto.randomUUID() }] : []),
+                      blogListBlock,
+                      ...(footerBlock ? [{ ...footerBlock, id: crypto.randomUUID() }] : []),
+                    ];
+                    const { data: newPage } = await supabase.from('pages').insert({
+                      id: blogPageId,
+                      project_id: localProject.id,
+                      slug: 'blog',
+                      title: 'Blog',
+                      blocks: blogPageBlocks,
+                      seo: { title: `Blog — ${localProject.name}`, description: 'Tutti gli articoli del nostro blog.' },
+                      language: defaultLang,
+                    }).select().single();
+                    if (newPage) setPages([...pages, newPage]);
+                  }
+
+                  // Create blog post with language from filter (or default)
+                  const postLang = blogLangFilter !== 'all' ? blogLangFilter : defaultLang;
+                  const id = crypto.randomUUID();
+                  const slug = `post-${Date.now().toString(36)}`;
+                  const postPayload: any = {
+                    id,
+                    project_id: localProject.id,
+                    slug,
+                    title: 'Nuovo Articolo',
+                    excerpt: '',
+                    cover_image: '',
+                    categories: [],
+                    authors: [],
+                    status: 'draft',
+                    blocks: [],
+                    seo: {},
+                    language: postLang,
+                    translation_group: id,
+                  };
+                  let { data } = await supabase.from('blog_posts').insert(postPayload).select().single();
+                  // Fallback if translation_group column doesn't exist yet
+                  if (!data) {
+                    delete postPayload.translation_group;
+                    ({ data } = await supabase.from('blog_posts').insert(postPayload).select().single());
+                  }
+                  if (data) {
+                    setBlogPosts([data, ...blogPosts]);
+                    router.push(`/editor/${localProject.id}/blog/${id}`);
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all active:scale-[0.97]"
+              >
+                <Plus size={16} />
+                Nuovo Articolo
+              </button>
+            </div>
+
+            {/* Language filter — only for multilingual sites */}
+            {isMultilingual && (
+              <div className="flex items-center gap-1.5 mb-4">
+                <button
+                  onClick={() => setBlogLangFilter('all')}
+                  className={cn("px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all", blogLangFilter === 'all' ? "bg-zinc-900 text-white" : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100")}
+                >
+                  Tutti
+                </button>
+                {siteLanguages.map((lang: string) => (
+                  <button
+                    key={lang}
+                    onClick={() => setBlogLangFilter(lang)}
+                    className={cn("px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all", blogLangFilter === lang ? "bg-zinc-900 text-white" : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100")}
+                  >
+                    {langLabels[lang] || lang} {lang.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {filteredPosts.length === 0 ? (
+              <div className="text-center py-20 bg-white border border-zinc-200 rounded-2xl">
+                <div className="w-14 h-14 mx-auto bg-zinc-100 rounded-2xl flex items-center justify-center mb-4">
+                  <PenLine size={24} className="text-zinc-300" />
+                </div>
+                <h3 className="text-sm font-bold text-zinc-800 mb-1">Nessun articolo</h3>
+                <p className="text-xs text-zinc-400 max-w-sm mx-auto">Crea articoli per il blog del tuo sito. Ogni articolo avrà la sua pagina con URL dedicato.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filteredPosts.map((post) => {
+                  // Find sibling translations
+                  const siblings = post.translation_group
+                    ? blogPosts.filter(p => p.translation_group === post.translation_group && p.id !== post.id)
+                    : [];
+                  return (
+                  <div
+                    key={post.id}
+                    className="flex items-center gap-4 p-4 bg-white border border-zinc-200 rounded-xl hover:shadow-md hover:border-zinc-300 transition-all group cursor-pointer"
+                    onClick={() => router.push(`/editor/${localProject.id}/blog/${post.id}`)}
+                  >
+                    {/* Cover thumbnail */}
+                    <div className="w-20 h-14 rounded-lg bg-zinc-100 overflow-hidden shrink-0">
+                      {post.cover_image ? (
+                        <img src={post.cover_image} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageIcon size={16} className="text-zinc-300" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        {isMultilingual && (
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase shrink-0">{langLabels[post.language || defaultLang] || post.language}</span>
+                        )}
+                        <h3 className="text-[13px] font-semibold text-zinc-900 truncate group-hover:text-blue-600 transition-colors">{post.title || 'Senza titolo'}</h3>
+                        <span className={cn(
+                          "text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0",
+                          post.status === 'published' ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                        )}>
+                          {post.status === 'published' ? 'Pubblicato' : 'Bozza'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[11px] text-zinc-400 truncate">{post.excerpt || 'Nessun estratto'}</p>
+                        {siblings.length > 0 && (
+                          <span className="text-[9px] text-zinc-300 shrink-0">
+                            {siblings.map(s => langLabels[s.language || defaultLang] || s.language).join(' ')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Meta */}
+                    <div className="flex items-center gap-3 shrink-0 text-[10px] text-zinc-400">
+                      {post.categories?.length > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Tag size={10} />
+                          {post.categories.join(', ')}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Calendar size={10} />
+                        {new Date(post.updated_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                      </span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {isMultilingual && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setTranslateBlogPost(post); }}
+                          className="p-1.5 text-zinc-300 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
+                          title="Traduci"
+                        >
+                          <Globe size={14} />
+                        </button>
+                      )}
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (!await confirm({ title: 'Elimina articolo', message: `Vuoi eliminare "${post.title}"?`, confirmLabel: 'Elimina', variant: 'danger' })) return;
+                          await supabase.from('blog_posts').delete().eq('id', post.id);
+                          setBlogPosts(blogPosts.filter(p => p.id !== post.id));
+                        }}
+                        className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Translate blog modal */}
+            {translateBlogPost && (
+              <TranslateBlogModal
+                post={translateBlogPost}
+                project={localProject}
+                existingLanguages={
+                  blogPosts
+                    .filter(p => p.translation_group === translateBlogPost.translation_group)
+                    .map(p => p.language || defaultLang)
+                }
+                onClose={() => setTranslateBlogPost(null)}
+                onTranslate={async ({ lang, mode, title, slug }) => {
+                  const sourcePost = translateBlogPost;
+                  const group = sourcePost.translation_group || sourcePost.id;
+                  let body = '';
+                  let excerpt = sourcePost.excerpt;
+                  let finalTitle = title;
+
+                  if (mode === 'copy') {
+                    body = (sourcePost.blocks[0] as any)?.content?.text || '';
+                  } else if (mode === 'ai') {
+                    try {
+                      const translated = await translateBlogPostWithAI({
+                        title: sourcePost.title,
+                        excerpt: sourcePost.excerpt,
+                        body: (sourcePost.blocks[0] as any)?.content?.text || '',
+                        sourceLang: sourcePost.language || defaultLang,
+                        targetLang: lang,
+                      });
+                      finalTitle = translated.title;
+                      excerpt = translated.excerpt;
+                      body = translated.body;
+                    } catch (err: any) {
+                      toast(err.message || 'Errore traduzione AI', 'error');
+                      return;
+                    }
+                  }
+
+                  const id = crypto.randomUUID();
+                  const blocks = body ? [{
+                    id: crypto.randomUUID(),
+                    type: 'text' as const,
+                    content: { text: body },
+                    style: {},
+                  }] : [];
+
+                  const translatePayload: any = {
+                    id,
+                    project_id: localProject.id,
+                    slug,
+                    title: finalTitle,
+                    excerpt,
+                    cover_image: sourcePost.cover_image,
+                    categories: sourcePost.categories,
+                    authors: sourcePost.authors,
+                    status: 'draft',
+                    blocks,
+                    seo: {},
+                    language: lang,
+                    translation_group: group,
+                  };
+                  let { data } = await supabase.from('blog_posts').insert(translatePayload).select().single();
+                  if (!data) {
+                    delete translatePayload.translation_group;
+                    ({ data } = await supabase.from('blog_posts').insert(translatePayload).select().single());
+                  }
+
+                  if (data) {
+                    // Also update source post's translation_group if it didn't have one
+                    if (!sourcePost.translation_group && translatePayload.translation_group) {
+                      await supabase.from('blog_posts').update({ translation_group: group }).eq('id', sourcePost.id);
+                      setBlogPosts(prev => prev.map(p => p.id === sourcePost.id ? { ...p, translation_group: group } : p));
+                    }
+                    setBlogPosts(prev => [data, ...prev]);
+                    toast('Traduzione creata', 'success');
+                    router.push(`/editor/${localProject.id}/blog/${id}`);
+                  }
+                }}
+              />
+            )}
+          </div>
+          );
+        })()}
 
         {activeTab === 'checklist' && (() => {
           const gResults = runGlobalChecks(localProject, pages);
