@@ -1,7 +1,7 @@
-export type BlockType = 
-  'hero' | 
-  'text' | 
-  'navigation' | 
+export type BlockType =
+  'hero' |
+  'text' |
+  'navigation' |
   'footer' |
   'image' |
   'image-text' |
@@ -11,7 +11,7 @@ export type BlockType =
   'contact' |
   'reviews' |
   'product-carousel' |
-  'embed' | 
+  'embed' |
   'faq' |
   'quote' |
   'divider' |
@@ -20,7 +20,8 @@ export type BlockType =
   'benefits' |
   'how-it-works' |
   'pdf' |
-  'pricing';
+  'pricing' |
+  'promo';
 
 export interface Block {
   id: string;

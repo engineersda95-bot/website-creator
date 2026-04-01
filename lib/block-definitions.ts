@@ -20,6 +20,7 @@ import { singleImageDefinition } from '@/components/blocks/visual/SingleImage.de
 import { pdfDefinition } from '@/components/blocks/visual/PdfBlock.definition';
 import { pricingDefinition } from '@/components/blocks/visual/PricingBlock.definition';
 import { galleryDefinition } from '@/components/blocks/visual/GalleryBlock.definition';
+import { promoDefinition } from '@/components/blocks/visual/PromoBlock.definition';
 
 export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   hero: heroDefinition,
@@ -40,7 +41,8 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   pdf: pdfDefinition,
   pricing: pricingDefinition,
   gallery: galleryDefinition,
-  
+  promo: promoDefinition,
+
   // Placeholders for unimplemented/transitioning blocks
   map: { type: 'map', label: 'Mappa', icon: MapPin, visual: null, defaults: { content: {}, style: {} } },
   features: { type: 'features', label: 'Caratteristiche', icon: LayoutTemplate, visual: null, defaults: { content: {}, style: {} } },
