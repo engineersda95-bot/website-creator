@@ -29,13 +29,16 @@ import {
   SimpleInput,
   SimpleSlider,
   TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { useEditorStore } from '@/store/useEditorStore';
 import { resolveImageUrl } from '@/lib/image-utils';
 
-interface CardsUnifiedProps {
+interface CardsProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -43,7 +46,7 @@ interface CardsUnifiedProps {
   project: any;
 }
 
-export const CardsUnified: React.FC<CardsUnifiedProps> = ({
+export const Cards: React.FC<CardsProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

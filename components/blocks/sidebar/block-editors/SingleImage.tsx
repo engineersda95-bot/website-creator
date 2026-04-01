@@ -21,13 +21,16 @@ import {
   PatternManager,
   SimpleInput,
   SimpleSlider,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { useEditorStore } from '@/store/useEditorStore';
 import { resolveImageUrl } from '@/lib/image-utils';
 
-interface SingleImageUnifiedProps {
+interface SingleImageProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -35,7 +38,7 @@ interface SingleImageUnifiedProps {
   project: any;
 }
 
-export const SingleImageUnified: React.FC<SingleImageUnifiedProps> = ({
+export const SingleImage: React.FC<SingleImageProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

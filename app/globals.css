@@ -163,24 +163,24 @@ body {
 
 /* Base keyframes for animations */
 @keyframes siti-anim-slide-up {
-    from { opacity: 0; transform: translateY(40px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translate3d(0, 40px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 @keyframes siti-anim-slide-down {
-    from { opacity: 0; transform: translateY(-40px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translate3d(0, -40px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 @keyframes siti-anim-slide-left {
-    from { opacity: 0; transform: translateX(40px); }
-    to { opacity: 1; transform: translateX(0); }
+    from { opacity: 0; transform: translate3d(40px, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 @keyframes siti-anim-slide-right {
-    from { opacity: 0; transform: translateX(-40px); }
-    to { opacity: 1; transform: translateX(0); }
+    from { opacity: 0; transform: translate3d(-40px, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 @keyframes siti-anim-zoom-in {
-    from { opacity: 0; transform: scale(0.92); }
-    to { opacity: 1; transform: scale(1); }
+    from { opacity: 0; transform: scale3d(0.92, 0.92, 1); }
+    to { opacity: 1; transform: scale3d(1, 1, 1); }
 }
 
 /* Editor Preview System */
@@ -190,6 +190,12 @@ body {
     animation-delay: var(--siti-anim-delay, 0s);
     animation-fill-mode: forwards;
     animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    
+    /* Safari/Mac optimization: Force GPU Layer */
+    will-change: transform, opacity;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translate3d(0,0,0);
 }
 
 #editor-content [data-siti-anim="slide-up"]    { animation-name: siti-anim-slide-up; }

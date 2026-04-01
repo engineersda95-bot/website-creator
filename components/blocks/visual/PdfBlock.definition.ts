@@ -1,8 +1,6 @@
 import { BookOpen } from 'lucide-react';
 import { PdfBlock } from './PdfBlock';
-import { PdfContent } from '../sidebar/block-editors/PdfContent';
-import { PdfStyle } from '../sidebar/block-editors/PdfStyle';
-import { PdfUnified } from '../sidebar/block-editors/PdfUnified';
+import { Pdf } from '../sidebar/block-editors/Pdf';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -12,9 +10,7 @@ export const pdfDefinition: BlockDefinition = {
   label: 'PDF / Catalogo',
   icon: BookOpen,
   visual: PdfBlock,
-  contentEditor: PdfContent,
-  styleEditor: PdfStyle as any,
-  unifiedEditor: PdfUnified,
+  unifiedEditor: Pdf,
   defaults: {
     content: { 
       url: '', 

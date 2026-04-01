@@ -17,11 +17,14 @@ import {
   PatternManager,
   RichTextarea,
   SimpleInput,
-  TypographyFields
+  TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface TextUnifiedProps {
+interface TextProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -29,7 +32,7 @@ interface TextUnifiedProps {
   project: any;
 }
 
-export const TextUnified: React.FC<TextUnifiedProps> = ({
+export const Text: React.FC<TextProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

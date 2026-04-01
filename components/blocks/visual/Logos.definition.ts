@@ -1,9 +1,7 @@
 import { Building2 } from 'lucide-react';
 import { BlockDefinition } from '@/types/block-definition';
 import { Logos } from './Logos';
-import { LogosContent } from '../sidebar/block-editors/LogosContent';
-import { LogosStyle } from '../sidebar/block-editors/LogosStyle';
-import { LogosUnified } from '../sidebar/block-editors/LogosUnified';
+import { Logos as LogosEditor } from '../sidebar/block-editors/Logos';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
 
@@ -12,9 +10,7 @@ export const logosDefinition: BlockDefinition = {
   label: 'Loghi Partner',
   icon: Building2,
   visual: Logos,
-  contentEditor: LogosContent,
-  styleEditor: LogosStyle,
-  unifiedEditor: LogosUnified,
+  unifiedEditor: LogosEditor,
   defaults: {
     content: {
       title: 'Partner & Collaborazioni',

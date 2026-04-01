@@ -1,8 +1,6 @@
 import { Tag } from 'lucide-react';
 import { PricingBlock } from '@/components/blocks/visual/PricingBlock';
-import { PricingContent } from '@/components/blocks/sidebar/block-editors/PricingContent';
-import { PricingStyle } from '@/components/blocks/sidebar/block-editors/PricingStyle';
-import { PricingUnified } from '../sidebar/block-editors/PricingUnified';
+import { Pricing } from '../sidebar/block-editors/Pricing';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -12,9 +10,7 @@ export const pricingDefinition: BlockDefinition = {
   label: 'Pricing / Piani',
   icon: Tag,
   visual: PricingBlock,
-  contentEditor: PricingContent,
-  styleEditor: PricingStyle,
-  unifiedEditor: PricingUnified,
+  unifiedEditor: Pricing,
   defaults: {
     content: {
       title: 'I Nostri Piani',

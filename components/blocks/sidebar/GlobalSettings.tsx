@@ -1,46 +1,70 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Smartphone, Search, Type, Palette, MousePointer, ClipboardCheck } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useEditorStore } from '@/store/useEditorStore';
-import { ProjectSettings } from '@/types/editor';
-import { UnifiedSection as Section, useUnifiedSections } from './UnifiedSection';
-import { SiteChecklist } from '@/components/editor/SiteChecklist';
+import { SiteChecklist } from "@/components/editor/SiteChecklist";
+import { useEditorStore } from "@/store/useEditorStore";
+import { ProjectSettings } from "@/types/editor";
+import {
+  ClipboardCheck,
+  MousePointer,
+  Palette,
+  Search,
+  Smartphone,
+  Type,
+} from "lucide-react";
+import React from "react";
+import {
+  UnifiedSection as Section,
+  useUnifiedSections,
+} from "./SharedSidebarComponents";
 
 // Modular Sections
-import { SeoSection } from './settings/SeoSection';
-import { ThemeSection } from './settings/ThemeSection';
-import { ButtonDesignSection } from './settings/ButtonDesignSection';
-import { TypographySection } from './settings/TypographySection';
-import { t } from '@/lib/i18n';
+import { t } from "@/lib/i18n";
+import { ButtonDesignSection } from "./settings/ButtonDesignSection";
+import { SeoSection } from "./settings/SeoSection";
+import { ThemeSection } from "./settings/ThemeSection";
+import { TypographySection } from "./settings/TypographySection";
 
 interface GlobalSettingsProps {
   project: any;
   updateProjectSettings: (settings: Partial<ProjectSettings>) => void;
   viewport: string;
-  variant?: 'sidebar' | 'page';
+  variant?: "sidebar" | "page";
 }
 
 export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
   project,
   updateProjectSettings,
   viewport,
-  variant = 'sidebar'
+  variant = "sidebar",
 }) => {
   const { isUploading, uploadImage } = useEditorStore();
   const { openSection, toggleSection } = useUnifiedSections();
-  const isPage = variant === 'page';
-  const lang = project?.settings?.defaultLanguage || 'it';
+  const isPage = variant === "page";
+  const lang = project?.settings?.defaultLanguage || "it";
 
   // For 'page' variant (dashboard), render flat without accordion
   if (isPage) {
     return (
       <div className="w-full space-y-8 py-2">
-        <SeoSection project={project} updateProjectSettings={updateProjectSettings} isUploading={isUploading} uploadImage={uploadImage} />
-        <TypographySection project={project} updateProjectSettings={updateProjectSettings} />
-        <ThemeSection project={project} updateProjectSettings={updateProjectSettings} />
-        <ButtonDesignSection project={project} updateProjectSettings={updateProjectSettings} viewport={viewport} />
+        <SeoSection
+          project={project}
+          updateProjectSettings={updateProjectSettings}
+          isUploading={isUploading}
+          uploadImage={uploadImage}
+        />
+        <TypographySection
+          project={project}
+          updateProjectSettings={updateProjectSettings}
+        />
+        <ThemeSection
+          project={project}
+          updateProjectSettings={updateProjectSettings}
+        />
+        <ButtonDesignSection
+          project={project}
+          updateProjectSettings={updateProjectSettings}
+          viewport={viewport}
+        />
       </div>
     );
   }
@@ -49,8 +73,10 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
     <div className="w-full flex flex-col bg-white overflow-hidden relative h-full shadow-2xl">
       {/* Header */}
       <div className="px-5 py-3.5 border-b border-zinc-100 flex items-center justify-between shrink-0">
-        <h2 className="text-[13px] font-bold text-zinc-900">{t('global_design', lang)}</h2>
-        {viewport !== 'desktop' && (
+        <h2 className="text-[13px] font-bold text-zinc-900">
+          {t("global_design", lang)}
+        </h2>
+        {viewport !== "desktop" && (
           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-600 border border-indigo-100">
             <Smartphone size={9} />
             {viewport}
@@ -60,18 +86,30 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
 
       {/* Sections */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <Section icon={ClipboardCheck} label="Checklist Sito" id="checklist" isOpen={openSection === 'checklist'} onToggle={toggleSection}>
+        <Section
+          icon={ClipboardCheck}
+          label="Checklist Sito"
+          id="checklist"
+          isOpen={openSection === "checklist"}
+          onToggle={toggleSection}
+        >
           <SiteChecklist
             project={project}
             pages={useEditorStore.getState().projectPages || []}
             currentPage={useEditorStore.getState().currentPage || undefined}
             onFixAction={(action, target) => {
-              if (action === 'open-section') toggleSection(target);
+              if (action === "open-section") toggleSection(target);
             }}
           />
         </Section>
 
-        <Section icon={Search} label="SEO & Meta" id="seo" isOpen={openSection === 'seo'} onToggle={toggleSection}>
+        <Section
+          icon={Search}
+          label="SEO & Meta"
+          id="seo"
+          isOpen={openSection === "seo"}
+          onToggle={toggleSection}
+        >
           <div className="[&>section]:pt-0 [&>section]:border-t-0 [&>section>div:first-child]:hidden">
             <SeoSection
               project={project}
@@ -82,7 +120,13 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
           </div>
         </Section>
 
-        <Section icon={Type} label="Tipografia" id="typography" isOpen={openSection === 'typography'} onToggle={toggleSection}>
+        <Section
+          icon={Type}
+          label="Tipografia"
+          id="typography"
+          isOpen={openSection === "typography"}
+          onToggle={toggleSection}
+        >
           <div className="[&>section]:pt-0 [&>section]:border-t-0 [&>section>div:first-child]:hidden">
             <TypographySection
               project={project}
@@ -91,7 +135,13 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
           </div>
         </Section>
 
-        <Section icon={Palette} label="Tema & Colori" id="theme" isOpen={openSection === 'theme'} onToggle={toggleSection}>
+        <Section
+          icon={Palette}
+          label="Tema & Colori"
+          id="theme"
+          isOpen={openSection === "theme"}
+          onToggle={toggleSection}
+        >
           <div className="[&>section]:pt-0 [&>section]:border-t-0 [&>section>div:first-child]:hidden">
             <ThemeSection
               project={project}
@@ -100,7 +150,13 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
           </div>
         </Section>
 
-        <Section icon={MousePointer} label="Stile Pulsanti" id="buttons" isOpen={openSection === 'buttons'} onToggle={toggleSection}>
+        <Section
+          icon={MousePointer}
+          label="Stile Pulsanti"
+          id="buttons"
+          isOpen={openSection === "buttons"}
+          onToggle={toggleSection}
+        >
           <div className="[&>section]:pt-0 [&>section]:border-t-0 [&>section>div:first-child]:hidden">
             <ButtonDesignSection
               project={project}

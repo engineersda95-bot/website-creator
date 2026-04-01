@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import {
-  AnchorManager, AnimationManager,
+  AnchorManager,
+  AnimationManager,
   BackgroundManager,
   BorderShadowManager,
   ColorManager,
@@ -22,11 +23,14 @@ import {
   PatternManager,
   SimpleInput,
   SimpleSlider,
-  TypographyFields
+  TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface FaqUnifiedProps {
+interface FaqProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -41,7 +45,7 @@ const FAQ_VARIANTS = [
   { id: 'numbered', label: 'Numerato', icon: Hash },
 ];
 
-export const FaqUnified: React.FC<FaqUnifiedProps> = ({
+export const Faq: React.FC<FaqProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

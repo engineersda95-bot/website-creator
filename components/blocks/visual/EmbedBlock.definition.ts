@@ -1,8 +1,6 @@
 import { Plus } from 'lucide-react';
 import { EmbedBlock } from './EmbedBlock';
-import { EmbedContent } from '../sidebar/block-editors/EmbedContent';
-import { EmbedStyle } from '../sidebar/block-editors/EmbedStyle';
-import { EmbedUnified } from '../sidebar/block-editors/EmbedUnified';
+import { Embed } from '../sidebar/block-editors/Embed';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
@@ -11,9 +9,7 @@ export const embedDefinition: BlockDefinition = {
   label: 'Embed (Video/Post)',
   icon: Plus,
   visual: EmbedBlock,
-  contentEditor: EmbedContent,
-  styleEditor: EmbedStyle,
-  unifiedEditor: EmbedUnified,
+  unifiedEditor: Embed,
   defaults: {
     content: {
       type: 'youtube',

@@ -1,8 +1,6 @@
 import { ImageIcon } from 'lucide-react';
 import { SingleImage } from './SingleImage';
-import { SingleImageContent } from '../sidebar/block-editors/SingleImageContent';
-import { SingleImageStyle } from '../sidebar/block-editors/SingleImageStyle';
-import { SingleImageUnified } from '../sidebar/block-editors/SingleImageUnified';
+import { SingleImage as SingleImageEditor } from '../sidebar/block-editors/SingleImage';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
@@ -11,9 +9,7 @@ export const singleImageDefinition: BlockDefinition = {
   label: 'Immagine',
   icon: ImageIcon,
   visual: SingleImage,
-  contentEditor: SingleImageContent,
-  styleEditor: SingleImageStyle,
-  unifiedEditor: SingleImageUnified,
+  unifiedEditor: SingleImageEditor,
   defaults: {
     content: {
       image: '',

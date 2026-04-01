@@ -16,6 +16,7 @@ export { SimpleSlider } from './ui/SimpleSlider';
 export { SimpleInput } from './ui/SimpleInput';
 export { RichTextarea } from './ui/RichTextarea';
 export { IconManager } from './ui/IconManager';
+export { UnifiedSection, useUnifiedSections, CategoryHeader, ManagerWrapper } from './ui/UnifiedSection';
 
 // Style Managers
 export { AdvancedMargins } from './managers/AdvancedMargins';

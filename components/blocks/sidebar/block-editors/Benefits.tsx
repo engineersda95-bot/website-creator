@@ -23,12 +23,15 @@ import {
   RichTextarea,
   SimpleInput,
   SimpleSlider,
-  TypographyFields
+  TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 import { useEditorStore } from '@/store/useEditorStore';
 
-interface BenefitsUnifiedProps {
+interface BenefitsProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -36,7 +39,7 @@ interface BenefitsUnifiedProps {
   project: any;
 }
 
-export const BenefitsUnified: React.FC<BenefitsUnifiedProps> = ({
+export const Benefits: React.FC<BenefitsProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

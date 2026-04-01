@@ -1,9 +1,7 @@
 import React from 'react';
 import { Star } from 'lucide-react';
 import { Benefits } from './Benefits';
-import { BenefitsContent } from '../sidebar/block-editors/BenefitsContent';
-import { BenefitsStyle } from '../sidebar/block-editors/BenefitsStyle';
-import { BenefitsUnified } from '../sidebar/block-editors/BenefitsUnified';
+import { Benefits as BenefitsEditor } from '../sidebar/block-editors/Benefits';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
@@ -76,9 +74,7 @@ export const benefitsDefinition: BlockDefinition = {
   label: 'Vantaggi',
   icon: Star,
   visual: Benefits,
-  contentEditor: BenefitsContent,
-  styleEditor: BenefitsStyle,
-  unifiedEditor: BenefitsUnified,
+  unifiedEditor: BenefitsEditor,
   defaults: {
     content: {
       variant: 'cards',

@@ -8,7 +8,6 @@ import {
   Layers,
   MapPin,
   Palette,
-  Play,
   Settings,
   Share2,
   Type,
@@ -16,7 +15,6 @@ import {
 } from 'lucide-react';
 import {
   AnchorManager,
-  AnimationManager,
   BackgroundManager,
   BorderShadowManager,
   ColorManager,
@@ -24,10 +22,13 @@ import {
   PatternManager,
   SimpleInput,
   TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface EmbedUnifiedProps {
+interface EmbedProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -42,7 +43,7 @@ const EMBED_TYPES = [
   { id: 'custom', label: 'Custom / Iframe', icon: Code },
 ];
 
-export const EmbedUnified: React.FC<EmbedUnifiedProps> = ({
+export const Embed: React.FC<EmbedProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,
@@ -172,10 +173,6 @@ export const EmbedUnified: React.FC<EmbedUnifiedProps> = ({
         <ManagerWrapper label="Pattern Decorativo">
           <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
         </ManagerWrapper>
-      </Section>
-
-      <Section icon={Play} label="Animazioni" id="animation" isOpen={openSection === 'animation'} onToggle={toggleSection}>
-        <AnimationManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
       </Section>
 
       <Section icon={Settings} label="Avanzate" id="advanced" isOpen={openSection === 'advanced'} onToggle={toggleSection}>

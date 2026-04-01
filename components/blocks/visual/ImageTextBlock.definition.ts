@@ -1,8 +1,6 @@
 import { Grid } from 'lucide-react';
 import { ImageTextBlock } from './ImageTextBlock';
-import { ImageTextContent } from '../sidebar/block-editors/ImageTextContent';
-import { ImageTextStyle } from '../sidebar/block-editors/ImageTextStyle';
-import { ImageTextUnified } from '../sidebar/block-editors/ImageTextUnified';
+import { ImageText } from '../sidebar/block-editors/ImageText';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -12,9 +10,7 @@ export const imageTextDefinition: BlockDefinition = {
   label: 'Immagine e Testo',
   icon: Grid,
   visual: ImageTextBlock,
-  contentEditor: ImageTextContent,
-  styleEditor: ImageTextStyle,
-  unifiedEditor: ImageTextUnified,
+  unifiedEditor: ImageText,
   defaults: {
     content: {
       title: 'Innovazione in ogni dettaglio',

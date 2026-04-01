@@ -30,10 +30,13 @@ import {
   SimpleInput,
   SocialLinksManager,
   TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface FooterUnifiedProps {
+interface FooterProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -41,7 +44,7 @@ interface FooterUnifiedProps {
   project: any;
 }
 
-export const FooterUnified: React.FC<FooterUnifiedProps> = ({
+export const Footer: React.FC<FooterProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,

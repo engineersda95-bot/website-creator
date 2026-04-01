@@ -15,8 +15,8 @@ export interface BlockDefinition {
   label: string;
   icon: any;
   visual: React.FC<any> | null;
-  contentEditor: React.FC<any> | null;
-  styleEditor: React.FC<any> | null;
+  contentEditor?: React.FC<any> | null;
+  styleEditor?: React.FC<any> | null;
   defaults: {
     content: any;
     style: any;

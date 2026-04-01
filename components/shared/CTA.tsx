@@ -39,15 +39,15 @@ export const getCTAOverrides = (content: any, style: any, prefix: string, theme?
   const c = content || {};
 
   return {
-    bgColor: s[`${prefix}BgColor`] ?? c[`${prefix}BgColor`],
-    textColor: s[`${prefix}TextColor`] ?? c[`${prefix}TextColor`],
-    radius: s[`${prefix}Radius`] ?? c[`${prefix}Radius`],
-    paddingX: s[`${prefix}PaddingX`] ?? c[`${prefix}PaddingX`],
-    paddingY: s[`${prefix}PaddingY`] ?? c[`${prefix}PaddingY`],
-    fontSize: s[`${prefix}FontSize`] ?? c[`${prefix}FontSize`],
-    shadow: s[`${prefix}Shadow`] ?? c[`${prefix}Shadow`],
-    animation: s[`${prefix}Animation`] ?? c[`${prefix}Animation`],
-    uppercase: s[`${prefix}Uppercase`] ?? c[`${prefix}Uppercase`],
+    bgColor: c[`${prefix}BgColor`] ?? s[`${prefix}BgColor`],
+    textColor: c[`${prefix}TextColor`] ?? s[`${prefix}TextColor`],
+    radius: c[`${prefix}Radius`] ?? s[`${prefix}Radius`],
+    paddingX: c[`${prefix}PaddingX`] ?? s[`${prefix}PaddingX`],
+    paddingY: c[`${prefix}PaddingY`] ?? s[`${prefix}PaddingY`],
+    fontSize: c[`${prefix}FontSize`] ?? s[`${prefix}FontSize`],
+    shadow: c[`${prefix}Shadow`] ?? s[`${prefix}Shadow`],
+    animation: c[`${prefix}Animation`] ?? s[`${prefix}Animation`],
+    uppercase: c[`${prefix}Uppercase`] ?? s[`${prefix}Uppercase`],
   };
 };
 

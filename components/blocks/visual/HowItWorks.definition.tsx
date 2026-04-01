@@ -1,9 +1,7 @@
 import React from 'react';
 import { ListChecks } from 'lucide-react';
 import { HowItWorks } from './HowItWorks';
-import { HowItWorksContent } from '../sidebar/block-editors/HowItWorksContent';
-import { HowItWorksStyle } from '../sidebar/block-editors/HowItWorksStyle';
-import { HowItWorksUnified } from '../sidebar/block-editors/HowItWorksUnified';
+import { HowItWorks as HowItWorksEditor } from '../sidebar/block-editors/HowItWorks';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
@@ -80,9 +78,7 @@ export const howItWorksDefinition: BlockDefinition = {
   label: 'Come Funziona',
   icon: ListChecks,
   visual: HowItWorks,
-  contentEditor: HowItWorksContent,
-  styleEditor: HowItWorksStyle,
-  unifiedEditor: HowItWorksUnified,
+  unifiedEditor: HowItWorksEditor,
   defaults: {
     content: {
       variant: 'cards',

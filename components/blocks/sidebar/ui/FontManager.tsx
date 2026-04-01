@@ -33,6 +33,7 @@ export function FontManager({ value, onChange, label = "Fonte Principale" }: Fon
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [filteredFonts, setFilteredFonts] = useState<string[]>(POPULAR_FONTS);
+  const [hoveredFont, setHoveredFont] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,8 +54,20 @@ export function FontManager({ value, onChange, label = "Fonte Principale" }: Fon
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [wrapperRef]);
 
+  // Generate unique set of fonts to load (selected + hovered)
+  const fontsToLoad = Array.from(new Set([value, hoveredFont].filter(Boolean) as string[]));
+
   return (
     <div className="space-y-3" ref={wrapperRef}>
+      {/* Dynamic Font Loading */}
+      {fontsToLoad.map(font => (
+        <link 
+          key={font}
+          rel="stylesheet" 
+          href={`https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:wght@400;700&display=swap`} 
+        />
+      ))}
+
       <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">
         {label}
       </label>
@@ -102,6 +115,8 @@ export function FontManager({ value, onChange, label = "Fonte Principale" }: Fon
                   <button
                     key={font}
                     type="button"
+                    onMouseEnter={() => setHoveredFont(font)}
+                    onMouseLeave={() => setHoveredFont(null)}
                     onClick={() => {
                       onChange(font);
                       setIsOpen(false);
@@ -127,11 +142,6 @@ export function FontManager({ value, onChange, label = "Fonte Principale" }: Fon
                        </span>
                     </div>
                     {value === font && <Check size={14} className="text-white" />}
-                    
-                    <link 
-                      rel="stylesheet" 
-                      href={`https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:wght@400;700&display=swap`} 
-                    />
                   </button>
                 ))
               ) : (

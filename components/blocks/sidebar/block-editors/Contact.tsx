@@ -19,11 +19,14 @@ import {
   RichTextarea,
   SimpleInput,
   SimpleSlider,
-  TypographyFields
+  TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 
-interface ContactUnifiedProps {
+interface ContactProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -31,7 +34,7 @@ interface ContactUnifiedProps {
   project: any;
 }
 
-export const ContactUnified: React.FC<ContactUnifiedProps> = ({
+export const Contact: React.FC<ContactProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,
@@ -198,6 +201,10 @@ export const ContactUnified: React.FC<ContactUnifiedProps> = ({
         <ManagerWrapper label="Pattern Decorativo">
           <PatternManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
         </ManagerWrapper>
+      </Section>
+
+      <Section icon={Play} label="Animazioni" id="animation" isOpen={openSection === 'animation'} onToggle={toggleSection}>
+        <AnimationManager getStyleValue={getStyleValue} updateStyle={updateStyle} />
       </Section>
 
       <Section icon={Settings} label="Avanzate" id="advanced" isOpen={openSection === 'advanced'} onToggle={toggleSection}>

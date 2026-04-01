@@ -1,8 +1,6 @@
 import { Layout } from 'lucide-react';
 import { FooterBlock } from './FooterBlock';
-import { FooterContent } from '../sidebar/block-editors/FooterContent';
-import { FooterStyle } from '../sidebar/block-editors/FooterStyle';
-import { FooterUnified } from '../sidebar/block-editors/FooterUnified';
+import { Footer } from '../sidebar/block-editors/Footer';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
@@ -12,9 +10,7 @@ export const footerDefinition: BlockDefinition = {
   label: 'Footer',
   icon: Layout,
   visual: FooterBlock,
-  contentEditor: FooterContent,
-  styleEditor: FooterStyle,
-  unifiedEditor: FooterUnified,
+  unifiedEditor: Footer,
   defaults: {
     content: { 
       copyright: '© 2024 Tutti i diritti riservati',

@@ -1,9 +1,7 @@
 import React from 'react';
 import { FileText } from 'lucide-react';
 import { QuoteBlock } from './QuoteBlock';
-import { QuoteContent } from '../sidebar/block-editors/QuoteContent';
-import { QuoteStyle } from '../sidebar/block-editors/QuoteStyle';
-import { QuoteUnified } from '../sidebar/block-editors/QuoteUnified';
+import { Quote } from '../sidebar/block-editors/Quote';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
@@ -65,9 +63,7 @@ export const quoteDefinition: BlockDefinition = {
   label: 'Citazioni',
   icon: FileText,
   visual: QuoteBlock,
-  contentEditor: QuoteContent,
-  styleEditor: QuoteStyle,
-  unifiedEditor: QuoteUnified,
+  unifiedEditor: Quote,
   defaults: {
     content: {
       variant: 'cards',

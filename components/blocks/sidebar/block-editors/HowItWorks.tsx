@@ -30,11 +30,14 @@ import {
   SimpleInput,
   SimpleSlider,
   TypographyFields,
+  UnifiedSection as Section, 
+  useUnifiedSections, 
+  CategoryHeader, 
+  ManagerWrapper
 } from '../SharedSidebarComponents';
-import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../UnifiedSection';
 import { useEditorStore } from '@/store/useEditorStore';
 
-interface HowItWorksUnifiedProps {
+interface HowItWorksProps {
   selectedBlock: any;
   updateContent: (content: any) => void;
   updateStyle: (style: any) => void;
@@ -49,7 +52,7 @@ const HIW_VARIANTS = [
   { id: 'compact', label: 'Compatto', icon: List },
 ];
 
-export const HowItWorksUnified: React.FC<HowItWorksUnifiedProps> = ({
+export const HowItWorks: React.FC<HowItWorksProps> = ({
   selectedBlock,
   updateContent,
   updateStyle,
