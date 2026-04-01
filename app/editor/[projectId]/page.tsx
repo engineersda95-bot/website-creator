@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { ProjectDashboardClient } from './ProjectDashboardClient';
+import { getUserLimits } from '@/lib/permissions';
 
 export default async function ProjectDashboardPage({
   params,
@@ -22,17 +23,17 @@ export default async function ProjectDashboardPage({
 
   if (!project) redirect('/editor');
 
-  const { data: pages } = await supabase
-    .from('pages')
-    .select('*')
-    .eq('project_id', projectId)
-    .order('created_at', { ascending: true });
+  const [{ data: pages }, userLimits] = await Promise.all([
+    supabase.from('pages').select('*').eq('project_id', projectId).order('created_at', { ascending: true }),
+    getUserLimits(user.id),
+  ]);
 
   return (
     <ProjectDashboardClient
       initialUser={user}
       initialProject={project}
       initialPages={pages || []}
+      userLimits={userLimits}
     />
   );
 }

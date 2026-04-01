@@ -60,24 +60,42 @@ function ToastItem({ toast: t, onRemove }: { toast: Toast; onRemove: (id: string
     }
   }, [leaving, onRemove, t.id]);
 
-  const icons = {
-    success: <CheckCircle size={16} className="text-emerald-500 shrink-0" />,
-    error: <AlertCircle size={16} className="text-red-500 shrink-0" />,
-    info: <Info size={16} className="text-blue-500 shrink-0" />,
+  const variants = {
+    success: {
+      wrapper: 'bg-emerald-600 border-emerald-700',
+      icon: <CheckCircle size={16} className="text-white shrink-0" />,
+      text: 'text-white',
+      close: 'text-emerald-200 hover:text-white',
+    },
+    error: {
+      wrapper: 'bg-red-600 border-red-700',
+      icon: <AlertCircle size={16} className="text-white shrink-0" />,
+      text: 'text-white',
+      close: 'text-red-200 hover:text-white',
+    },
+    info: {
+      wrapper: 'bg-zinc-900 border-zinc-700',
+      icon: <Info size={16} className="text-zinc-300 shrink-0" />,
+      text: 'text-white',
+      close: 'text-zinc-400 hover:text-white',
+    },
   };
+
+  const v = variants[t.type];
 
   return (
     <div
       className={cn(
-        "pointer-events-auto flex items-center gap-3 px-4 py-3 bg-white border border-zinc-200 rounded-xl shadow-lg max-w-sm transition-all duration-200",
+        "pointer-events-auto flex items-center gap-3 px-4 py-3 border rounded-xl shadow-xl max-w-sm transition-all duration-200",
+        v.wrapper,
         leaving ? "opacity-0 translate-x-4" : "opacity-100 translate-x-0 animate-in slide-in-from-right-4 fade-in"
       )}
     >
-      {icons[t.type]}
-      <p className="text-sm text-zinc-700 flex-1">{t.message}</p>
+      {v.icon}
+      <p className={cn("text-sm font-medium flex-1", v.text)}>{t.message}</p>
       <button
         onClick={() => setLeaving(true)}
-        className="p-0.5 text-zinc-400 hover:text-zinc-600 transition-colors shrink-0"
+        className={cn("p-0.5 transition-colors shrink-0", v.close)}
       >
         <X size={14} />
       </button>

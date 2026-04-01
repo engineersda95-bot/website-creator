@@ -21,9 +21,7 @@ export function ProjectCard({
   onDelete,
   isDeleting,
 }: ProjectCardProps) {
-  const projectLangs = project.settings?.languages || [
-    project.settings?.language || project.settings?.defaultLanguage || "it",
-  ];
+  const projectLangs = project.settings?.languages || [project.settings?.defaultLanguage || "it"];
   const languages = projectLangs
     .map((code: string) => LANGUAGES.find((l) => l.value === code))
     .filter(Boolean);

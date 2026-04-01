@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(find /c/Users/User/Desktop/Proximatica/siti-vetrina -path */node_modules -prune -o -type f -name *.types.ts -o -type f -name types.ts -o -type d -name types)",
+      "Bash(find /c/Users/User/Desktop/Proximatica/siti-vetrina -path */node_modules -prune -o -type f -name *store* -o -name *Store*)",
+      "Bash(find c:/Users/User/Desktop/Proximatica/siti-vetrina -name *checklist* -o -name *seo*)"
+    ]
+  }
+}

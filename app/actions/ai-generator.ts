@@ -2,6 +2,7 @@
 
 import { AI_VALIDATION_PROMPT, AI_WEBSITE_GENERATOR_SYSTEM_PROMPT } from '@/lib/ai/prompts';
 import { createClient } from '@/lib/supabase/server';
+import { canUseAI, canCreateProject } from '@/lib/permissions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -101,16 +102,12 @@ export async function generateProjectWithAI(data: AIGenerationData) {
     return { success: false, error: 'User not authenticated' };
   }
 
-  // 1. Check Credits
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('ai_generations_used, max_ai_generations')
-    .eq('id', user.id)
-    .single();
+  // 1. Check Permissions
+  const aiCheck = await canUseAI(user.id);
+  if (!aiCheck.allowed) return { success: false, error: aiCheck.reason };
 
-  if (profileError || !profile) {
-    return { success: false, error: 'Could not verify user profile' };
-  }
+  const projectCheck = await canCreateProject(user.id);
+  if (!projectCheck.allowed) return { success: false, error: projectCheck.reason };
 
   try {
     // 2. Construct Prompt Parts (built once, reused on fallback)
@@ -458,11 +455,8 @@ export async function generateProjectWithAI(data: AIGenerationData) {
     });
 
     // --- 8. FINISH ---
-    // Increment Credits Used
-    await supabase
-      .from('profiles')
-      .update({ ai_generations_used: (profile.ai_generations_used || 0) + 1 })
-      .eq('id', user.id);
+    // Increment Credits Used (totale + mensile, in modo atomico)
+    await supabase.rpc('increment_ai_usage', { p_user_id: user.id });
 
     return {
       success: true,

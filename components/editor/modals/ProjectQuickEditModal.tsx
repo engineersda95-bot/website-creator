@@ -23,7 +23,6 @@ export function ProjectQuickEditModal({ projectId, project, onClose, onSave }: P
   const [city, setCity] = useState(project.settings?.businessDetails?.city || '');
   const [zip, setZip] = useState(project.settings?.businessDetails?.postalCode || '');
   const [country, setCountry] = useState(project.settings?.businessDetails?.country || 'Italia');
-  const [langs, setLangs] = useState<string[]>(project.settings?.languages || [project.settings?.language || project.settings?.defaultLanguage || 'it']);
   const [cuisine, setCuisine] = useState(project.settings?.businessDetails?.servesCuisine || '');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -44,8 +43,6 @@ export function ProjectQuickEditModal({ projectId, project, onClose, onSave }: P
         priceRange: (project.settings?.businessDetails as any)?.priceRange, // Preserve existing if any
         servesCuisine: bType === 'Restaurant' ? cuisine : undefined
       },
-      languages: langs,
-      defaultLanguage: langs[0] || 'it',
       // Update metaTitle only if it follows the template pattern or is empty
       metaTitle: project.settings.metaTitle === `${project.settings.businessDetails?.businessName || project.name} - ` || !project.settings.metaTitle
         ? (bName || name)
@@ -79,43 +76,9 @@ export function ProjectQuickEditModal({ projectId, project, onClose, onSave }: P
           </button>
         </div>
         <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Nome Progetto</label>
-              <input value={name} onChange={e => setName(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Lingue Supportate</label>
-              <div className="flex flex-wrap gap-2">
-                {LANGUAGES.map((l) => {
-                  const isSelected = langs.includes(l.value);
-                  return (
-                    <button
-                      key={l.value}
-                      onClick={() => {
-                        if (isSelected && langs.length > 1) {
-                          setLangs(langs.filter(la => la !== l.value));
-                        } else if (!isSelected) {
-                          setLangs([...langs, l.value]);
-                        }
-                      }}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-bold transition-all",
-                        isSelected
-                          ? "bg-zinc-900 border-zinc-900 text-white shadow-sm"
-                          : "bg-white border-zinc-200 text-zinc-400 hover:border-zinc-300"
-                      )}
-                    >
-                      <span>{l.flag}</span>
-                      <span>{l.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="text-[10px] text-zinc-400 font-medium italic mt-1">
-                La prima lingua sarà quella predefinita.
-              </p>
-            </div>
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Nome Progetto</label>
+            <input value={name} onChange={e => setName(e.target.value)} className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg focus:border-zinc-400 outline-none text-sm" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">

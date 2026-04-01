@@ -10,11 +10,13 @@ import { confirm } from '@/components/shared/ConfirmDialog';
 interface DomainSectionProps {
    project: any;
    updateProjectSettings: (settings: Partial<ProjectSettings>) => void;
+   canCustomDomain?: boolean;
 }
 
 export const DomainSection: React.FC<DomainSectionProps> = ({
    project,
-   updateProjectSettings
+   updateProjectSettings,
+   canCustomDomain = true,
 }) => {
    const [domain, setDomain] = useState(project?.settings?.customDomain || '');
    const [copied, setCopied] = useState<string | null>(null);
@@ -36,7 +38,19 @@ export const DomainSection: React.FC<DomainSectionProps> = ({
             <SectionHeader icon={Globe} title="Dominio Personalizzato" colorClass="text-blue-500" />
          </div>
 
-         {!liveUrl ? (
+         {!canCustomDomain ? (
+         <div className="bg-amber-50 p-6 rounded-[2.5rem] border border-amber-100 flex items-start gap-4">
+            <div className="p-2 bg-white rounded-2xl shadow-sm text-amber-500 shrink-0">
+               <AlertCircle size={20} />
+            </div>
+            <div className="space-y-1">
+               <h5 className="text-[13px] font-bold text-amber-900 uppercase tracking-wide">Funzione non disponibile</h5>
+               <p className="text-[12px] text-amber-700/80 leading-relaxed font-medium">
+                  Il dominio personalizzato non è incluso nel tuo piano attuale. Effettua un upgrade per collegare il tuo dominio.
+               </p>
+            </div>
+         </div>
+      ) : !liveUrl ? (
             <div className="bg-amber-50 p-6 rounded-[2.5rem] border border-amber-100 flex items-start gap-4">
                <div className="p-2 bg-white rounded-2xl shadow-sm text-amber-500 shrink-0">
                   <AlertCircle size={20} />

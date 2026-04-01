@@ -86,7 +86,6 @@ export interface ProjectSettings {
   customScriptsBody?: string;
   customDomain?: string;
   domainStatus?: 'pending' | 'active' | 'error';
-  language?: string; // Global site language (e.g. 'it', 'en')
   businessType?: string; // Schema.org type (e.g. 'LocalBusiness', 'Restaurant')
   businessDetails?: {
     address?: string;

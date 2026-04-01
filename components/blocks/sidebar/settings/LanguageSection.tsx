@@ -9,6 +9,7 @@ import { toast } from '@/components/shared/Toast';
 interface LanguageSectionProps {
   project: any;
   updateProjectSettings: (settings: Partial<ProjectSettings>) => void;
+  canMultilang?: boolean;
 }
 
 const AVAILABLE_LANGUAGES = [
@@ -22,6 +23,7 @@ const AVAILABLE_LANGUAGES = [
 export const LanguageSection: React.FC<LanguageSectionProps> = ({
   project,
   updateProjectSettings,
+  canMultilang = true,
 }) => {
   const settings = project?.settings || {};
   const languages = settings.languages || ['it'];
@@ -112,7 +114,12 @@ export const LanguageSection: React.FC<LanguageSectionProps> = ({
         })}
       </div>
 
-      {!isAdding ? (
+      {!canMultilang ? (
+        <div className="flex items-center gap-2 py-3 px-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm font-medium">
+          <Globe size={15} className="shrink-0 text-amber-500" />
+          Il multilingua non è disponibile nel tuo piano attuale.
+        </div>
+      ) : !isAdding ? (
         <button
           onClick={() => setIsAdding(true)}
           className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-zinc-100 rounded-xl text-zinc-400 hover:border-indigo-200 hover:text-indigo-600 hover:bg-indigo-50/30 transition-all text-sm font-bold"

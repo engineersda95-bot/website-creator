@@ -20,6 +20,9 @@ import { ProjectCard } from '@/components/editor/cards/ProjectCard';
 import { ProjectQuickEditModal } from '@/components/editor/modals/ProjectQuickEditModal';
 import { AIGeneratorModal } from '@/components/editor/modals/AIGeneratorModal';
 import { confirm } from '@/components/shared/ConfirmDialog';
+import { toast } from '@/components/shared/Toast';
+import { createProject } from '@/app/actions/projects';
+import type { UserLimits } from '@/lib/permissions';
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
   const googleFontUrl = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap`;
@@ -45,9 +48,13 @@ import { BUSINESS_TYPES, LANGUAGES } from '@/lib/editor-constants';
 export function ProjectListClient({
   initialUser,
   initialProjects,
+  userLimits,
+  projectCount,
 }: {
   initialUser: any;
   initialProjects: any[];
+  userLimits: UserLimits | null;
+  projectCount: number;
 }) {
   const router = useRouter();
   const { setUser, initialize } = useEditorStore();
@@ -96,9 +103,8 @@ export function ProjectListClient({
       const { data: uploadData } = await supabase.storage
         .from('project-assets')
         .upload(`${projId}/${filename}`, logoFile);
-      
+
       if (uploadData) {
-        // Construct the relative path that the editor and static generator expect
         logoPath = `/assets/${filename}`;
       }
     }
@@ -124,50 +130,44 @@ export function ProjectListClient({
       logo: logoPath || undefined
     };
 
-    const { data: newProj } = await supabase
-      .from('projects')
-      .insert({
-        id: projId,
-        user_id: initialUser.id,
-        name: newName.trim(),
-        subdomain,
-        settings: initialSettings,
-      })
-      .select()
-      .single();
+    const templateBlocks = selectedTemplate !== 'blank' && selectedTemplate in TEMPLATES
+      ? getBlocksFromTemplate(selectedTemplate as keyof typeof TEMPLATES)
+      : [];
 
-    if (newProj) {
-      // Create home page with template blocks
-      const templateBlocks = selectedTemplate !== 'blank' && selectedTemplate in TEMPLATES
-        ? getBlocksFromTemplate(selectedTemplate as keyof typeof TEMPLATES)
-        : [];
+    const initialPages: any[] = [
+      { id: uuidv4(), title: 'Home', slug: 'home', blocks: templateBlocks },
+    ];
 
-      const pagesToInsert = [
-        { id: uuidv4(), project_id: projId, title: 'Home', slug: 'home', blocks: templateBlocks },
-      ];
-
-      // Add extra pages from template
-      const extraPages = TEMPLATE_PAGES[selectedTemplate];
-      if (extraPages) {
-        for (const ep of extraPages) {
-          pagesToInsert.push({
-            id: uuidv4(),
-            project_id: projId,
-            title: ep.title,
-            slug: ep.slug,
-            blocks: ep.blocks.map((b: any) => ({ ...b, id: uuidv4() })),
-          });
-        }
+    const extraPages = TEMPLATE_PAGES[selectedTemplate];
+    if (extraPages) {
+      for (const ep of extraPages) {
+        initialPages.push({
+          id: uuidv4(),
+          title: ep.title,
+          slug: ep.slug,
+          blocks: ep.blocks.map((b: any) => ({ ...b, id: uuidv4() })),
+        });
       }
-
-      await supabase.from('pages').insert(pagesToInsert);
-
-      setProjects([newProj, ...projects]);
-      setShowCreate(false);
-      setNewName('');
-      router.push(`/editor/${projId}`);
     }
 
+    const result = await createProject({
+      projectId: projId,
+      name: newName.trim(),
+      subdomain,
+      settings: initialSettings,
+      initialPages,
+    });
+
+    if (!result.success) {
+      toast(result.error || 'Errore durante la creazione del sito', 'error');
+      setIsCreating(false);
+      return;
+    }
+
+    setProjects([result.project, ...projects]);
+    setShowCreate(false);
+    setNewName('');
+    router.push(`/editor/${projId}`);
     setIsCreating(false);
   };
 
@@ -177,49 +177,37 @@ export function ProjectListClient({
 
     const projId = uuidv4();
     const cleanBusinessName = (aiData.businessName || 'Nuovo Sito IA').trim();
-    // Subdomain from business name
     const subdomain = cleanBusinessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + projId.substring(0, 6);
 
-    const { data: newProj, error: pError } = await supabase
-      .from('projects')
-      .insert({
-        id: projId,
-        user_id: initialUser.id,
-        name: cleanBusinessName,
-        subdomain,
-        settings: aiData.settings,
-      })
-      .select()
-      .single();
+    const initialPages = aiData.pages.map((p: any) => ({
+      id: p.id || uuidv4(),
+      title: p.slug === 'home' ? 'Home' : p.title,
+      slug: p.slug,
+      blocks: p.blocks,
+      seo: {
+        title: p.seo?.title || `${p.title} — ${aiData.businessName}`,
+        description: p.seo?.description || `${p.title} di ${aiData.businessName}`,
+      },
+      language: aiData.language || 'it',
+    }));
 
-    if (pError) {
-      console.error('[AI Create] Project error:', pError);
+    const result = await createProject({
+      projectId: projId,
+      name: cleanBusinessName,
+      subdomain,
+      settings: aiData.settings,
+      initialPages,
+    });
+
+    if (!result.success) {
+      toast(result.error || 'Errore durante la creazione del sito', 'error');
       setIsCreating(false);
       return;
     }
 
-    if (newProj) {
-      const pagesToInsert = aiData.pages.map((p: any) => ({
-        id: p.id || uuidv4(),
-        project_id: projId,
-        title: p.slug === 'home' ? 'Home' : p.title,
-        slug: p.slug,
-        blocks: p.blocks,
-        seo: {
-          title: p.seo?.title || `${p.title} — ${aiData.businessName}`,
-          description: p.seo?.description || `${p.title} di ${aiData.businessName}`,
-        },
-        language: aiData.language || 'it',
-      }));
-
-      const { error: pgError } = await supabase.from('pages').insert(pagesToInsert);
-      if (pgError) console.error('[AI Create] Pages error:', pgError);
-
-      setProjects([newProj, ...projects]);
-      setShowCreate(false);
-      router.push(`/editor/${projId}`);
-    }
-
+    setProjects([result.project, ...projects]);
+    setShowCreate(false);
+    router.push(`/editor/${projId}`);
     setIsCreating(false);
   };
 
@@ -257,7 +245,13 @@ export function ProjectListClient({
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setShowAIGenerator(true)}
+              onClick={() => {
+                const atLimit = userLimits?.max_projects !== null && projectCount >= (userLimits?.max_projects ?? 0);
+                const noAI = userLimits?.max_ai_per_month !== null && (userLimits?.ai_used_this_month ?? 0) >= (userLimits?.max_ai_per_month ?? 0);
+                if (atLimit) { toast(`Hai raggiunto il limite di ${userLimits?.max_projects} siti del tuo piano`, 'error'); return; }
+                if (noAI) { toast(`Hai esaurito le ${userLimits?.max_ai_per_month} generazioni AI disponibili questo mese`, 'error'); return; }
+                setShowAIGenerator(true);
+              }}
               className="group flex items-center gap-2.5 px-6 py-2.5 text-sm font-black bg-gradient-to-r from-zinc-900 via-indigo-950 to-zinc-950 text-white rounded-xl hover:shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all active:scale-[0.97] border border-zinc-800 shadow-xl"
             >
               <div className="relative">
@@ -267,7 +261,11 @@ export function ProjectListClient({
               Crea con IA
             </button>
             <button
-              onClick={() => setShowCreate(true)}
+              onClick={() => {
+                const atLimit = userLimits?.max_projects !== null && projectCount >= (userLimits?.max_projects ?? 0);
+                if (atLimit) { toast(`Hai raggiunto il limite di ${userLimits?.max_projects} siti del tuo piano`, 'error'); return; }
+                setShowCreate(true);
+              }}
               className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-white text-zinc-900 border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-all active:scale-[0.97] shadow-sm"
             >
               <Plus size={16} />
@@ -316,7 +314,11 @@ export function ProjectListClient({
                     {/* AI Card */}
                     <button
                       type="button"
-                      onClick={() => { setShowCreate(false); setCreateStep(0); setShowAIGenerator(true); }}
+                      onClick={() => {
+                        const noAI = userLimits?.max_ai_per_month !== null && (userLimits?.ai_used_this_month ?? 0) >= (userLimits?.max_ai_per_month ?? 0);
+                        if (noAI) { toast(`Hai esaurito le ${userLimits?.max_ai_per_month} generazioni AI disponibili questo mese`, 'error'); return; }
+                        setShowCreate(false); setCreateStep(0); setShowAIGenerator(true);
+                      }}
                       className="group w-full relative p-4 rounded-xl border-2 border-transparent bg-gradient-to-r from-zinc-900 via-indigo-950 to-zinc-950 text-left overflow-hidden transition-all hover:shadow-[0_0_24px_rgba(79,70,229,0.25)] hover:scale-[1.01] active:scale-[0.99]"
                     >
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(99,102,241,0.15),transparent_60%)]" />
