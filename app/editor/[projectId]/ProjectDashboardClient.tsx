@@ -231,6 +231,20 @@ export function ProjectDashboardClient({
     setIsDeletingProject(true);
     await supabase.from('pages').delete().eq('project_id', localProject.id);
     await supabase.from('projects').delete().eq('id', localProject.id);
+
+    // Best-effort: rimuove tutti gli asset del progetto dallo storage
+    try {
+      const prefix = `${localProject.user_id}/${localProject.id}`;
+      const { data: files } = await supabase.storage.from('project-assets').list(prefix);
+      if (files?.length) {
+        await supabase.storage.from('project-assets').remove(
+          files.map(f => `${prefix}/${f.name}`)
+        );
+      }
+    } catch {
+      // non blocca il redirect
+    }
+
     router.push('/editor');
   };
 

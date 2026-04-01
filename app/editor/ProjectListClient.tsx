@@ -102,7 +102,7 @@ export function ProjectListClient({
       const filename = `logo-${Date.now()}.${extension}`;
       const { data: uploadData } = await supabase.storage
         .from('project-assets')
-        .upload(`${projId}/${filename}`, logoFile);
+        .upload(`${initialUser.id}/${projId}/${filename}`, logoFile);
 
       if (uploadData) {
         logoPath = `/assets/${filename}`;
@@ -179,23 +179,50 @@ export function ProjectListClient({
     const cleanBusinessName = (aiData.businessName || 'Nuovo Sito IA').trim();
     const subdomain = cleanBusinessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + projId.substring(0, 6);
 
-    const initialPages = aiData.pages.map((p: any) => ({
+    // Migrate logo from ai-temp to the project folder and replace all references
+    let processedAiData = aiData;
+    if (aiData.logoStoragePath && aiData.settings?.logo) {
+      const oldLogoUrl: string = aiData.settings.logo;
+      const logoFilename = aiData.logoStoragePath.split('/').pop() as string;
+      const destPath = `${initialUser.id}/${projId}/${logoFilename}`;
+      const newLogoRelativePath = `/assets/${logoFilename}`;
+
+      const { error: moveError } = await supabase.storage
+        .from('project-assets')
+        .move(aiData.logoStoragePath, destPath);
+
+      if (!moveError) {
+        // Replace every occurrence of the old ai-temp logo URL with the relative path
+        const serialized = JSON.stringify(aiData).replaceAll(oldLogoUrl, newLogoRelativePath);
+        processedAiData = JSON.parse(serialized);
+      }
+    }
+
+    // Clean up ai-temp screenshots (fire and forget)
+    if (aiData.screenshotStoragePaths?.length > 0) {
+      supabase.storage
+        .from('project-assets')
+        .remove(aiData.screenshotStoragePaths)
+        .catch(() => {}); // best-effort cleanup
+    }
+
+    const initialPages = processedAiData.pages.map((p: any) => ({
       id: p.id || uuidv4(),
       title: p.slug === 'home' ? 'Home' : p.title,
       slug: p.slug,
       blocks: p.blocks,
       seo: {
-        title: p.seo?.title || `${p.title} — ${aiData.businessName}`,
-        description: p.seo?.description || `${p.title} di ${aiData.businessName}`,
+        title: p.seo?.title || `${p.title} — ${processedAiData.businessName}`,
+        description: p.seo?.description || `${p.title} di ${processedAiData.businessName}`,
       },
-      language: aiData.language || 'it',
+      language: processedAiData.language || 'it',
     }));
 
     const result = await createProject({
       projectId: projId,
       name: cleanBusinessName,
       subdomain,
-      settings: aiData.settings,
+      settings: processedAiData.settings,
       initialPages,
     });
 

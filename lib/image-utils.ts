@@ -44,8 +44,7 @@ export function resolveImageUrl(
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       
       if (supabaseUrl) {
-        // Use project.id as the folder name on Supabase Storage
-        return `${supabaseUrl}/storage/v1/object/public/project-assets/${project.id}/${filename}`;
+        return `${supabaseUrl}/storage/v1/object/public/project-assets/${project.user_id}/${project.id}/${filename}`;
       }
 
       // Final fallback: use the live URL or fall back to predicted subdomain

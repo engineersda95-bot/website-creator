@@ -109,6 +109,25 @@ export async function generateProjectWithAI(data: AIGenerationData) {
   const projectCheck = await canCreateProject(user.id);
   if (!projectCheck.allowed) return { success: false, error: projectCheck.reason };
 
+  // Pulizia lazy: rimuove file ai-temp dell'utente più vecchi di 30 minuti
+  try {
+    const TTL_MS = 30 * 60 * 1000;
+    const prefix = `ai-temp/${user.id}`;
+    const { data: staleFiles } = await supabase.storage
+      .from('project-assets')
+      .list(prefix);
+    if (staleFiles?.length) {
+      const toDelete = staleFiles
+        .filter(f => f.created_at && Date.now() - new Date(f.created_at).getTime() > TTL_MS)
+        .map(f => `${prefix}/${f.name}`);
+      if (toDelete.length > 0) {
+        await supabase.storage.from('project-assets').remove(toDelete);
+      }
+    }
+  } catch {
+    // best-effort, non blocca la generazione
+  }
+
   try {
     // 2. Construct Prompt Parts (built once, reused on fallback)
     const cleanPhone = data.phone ? data.phone.replace(/\D/g, '') : '';

@@ -780,18 +780,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
       const hash = await getImageHash(base64);
 
-      // Update filename with .webp if it was optimized
-      let cleanFilename = filename
-        ? filename.replace(/[^a-zA-Z0-9.-]/g, '_')
-        : `img_${hash}.${finalExtension}`;
-
-      // Force change extension only if it was indeed optimized
-      if (finalExtension === 'webp' && !cleanFilename.endsWith('.webp')) {
-        cleanFilename = cleanFilename.replace(/\.[^/.]+$/, "") + ".webp";
-      }
+      // Always use hash-based naming to prevent accidental overwrites
+      const cleanFilename = `img_${hash}.${finalExtension}`;
 
       const relativePath = `/assets/${cleanFilename}`;
-      const bucketPath = `${project.id}/${cleanFilename}`;
+      const bucketPath = `${project.user_id}/${project.id}/${cleanFilename}`;
 
       // 1. Update memory cache for instant preview with optimized version
       set(state => ({
@@ -809,7 +802,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           upsert: true
         });
 
-      if (uploadError && uploadError.message !== 'The resource already exists') {
+      const isAlreadyExists = uploadError?.message === 'The resource already exists'
+        || uploadError?.message?.includes('row-level security policy');
+      if (uploadError && !isAlreadyExists) {
         throw uploadError;
       }
 

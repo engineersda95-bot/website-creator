@@ -109,6 +109,8 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const [newPageName, setNewPageName] = useState('');
   const [newPageDesc, setNewPageDesc] = useState('');
   const [screenshotUrls, setScreenshotUrls] = useState<string[]>([]);
+  const [logoStoragePath, setLogoStoragePath] = useState<string | null>(null);
+  const [screenshotStoragePaths, setScreenshotStoragePaths] = useState<string[]>([]);
 
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -154,6 +156,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
           .from('project-assets')
           .getPublicUrl(path);
         setBusinessLogoUrl(publicUrl);
+        setLogoStoragePath(path);
       }
       setIsUploading(false);
     }
@@ -188,6 +191,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
           .from('project-assets')
           .getPublicUrl(path);
         setScreenshotUrls(prev => [...prev, publicUrl]);
+        setScreenshotStoragePaths(prev => [...prev, path]);
       }
     }
     setIsUploading(false);
@@ -350,7 +354,9 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
           onSuccess({
             ...result.data,
             businessName,
-            language
+            language,
+            logoStoragePath,
+            screenshotStoragePaths,
           });
         }, 800);
       } else {
@@ -434,6 +440,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
 
   const removeScreenshot = (idx: number) => {
     setScreenshotUrls(screenshotUrls.filter((_, i) => i !== idx));
+    setScreenshotStoragePaths(screenshotStoragePaths.filter((_, i) => i !== idx));
   };
 
   const canGoNext = () => {

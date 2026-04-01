@@ -118,7 +118,7 @@ export async function deployToCloudflare(projectId: string) {
     // Second pass: download unique assets from Supabase Storage
     console.log(`Downloading ${assetsToDownload.size} unique assets from Supabase...`);
     for (const assetFilename of assetsToDownload) {
-      const bucketPath = `${projectId}/${assetFilename}`;
+      const bucketPath = `${project.user_id}/${projectId}/${assetFilename}`;
       const localPath = path.join(assetsDir, assetFilename);
 
       try {
