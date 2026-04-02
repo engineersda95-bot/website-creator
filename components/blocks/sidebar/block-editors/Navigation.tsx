@@ -10,6 +10,7 @@ import {
   Settings,
   Type,
   Layout,
+  Share2
 } from 'lucide-react';
 import React from 'react';
 import { ImageUpload } from '@/components/shared/ImageUpload';
@@ -25,6 +26,8 @@ import {
   LinkListManager,
   PatternManager,
   SimpleInput,
+  SimpleSlider,
+  SocialLinksManager,
   TypographyFields,
   UnifiedSection as Section, 
   useUnifiedSections, 
@@ -196,6 +199,59 @@ export const Navigation: React.FC<NavigationProps> = ({
             onChange={(links) => updateContent({ links })}
           />
         </ManagerWrapper>
+        <div className="mt-4">
+          <SimpleSlider
+            label="Gap tra Link"
+            value={getStyleValue('linksGap', 15)}
+            onChange={(val) => updateStyle({ linksGap: val })}
+            max={100}
+          />
+        </div>
+      </Section>
+
+      <Section icon={Share2} label="Social" id="social" isOpen={openSection === 'social'} onToggle={toggleSection}>
+        <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl border border-zinc-100">
+          <label className="text-[10px] font-bold text-zinc-400 uppercase">Mostra Social</label>
+          <div
+            className={cn("w-10 h-5 rounded-full p-1 cursor-pointer transition-colors", content.showSocial ? "bg-zinc-900" : "bg-zinc-200")}
+            onClick={() => {
+              const newVal = !content.showSocial;
+              const update: any = { showSocial: newVal };
+              if (newVal && (!content.socialLinks || content.socialLinks.length === 0) && project?.settings?.socialLinks) {
+                update.socialLinks = project.settings.socialLinks;
+              }
+              updateContent(update);
+            }}
+          >
+            <div className={cn("w-3 h-3 bg-white rounded-full transition-transform", content.showSocial && "translate-x-5")} />
+          </div>
+        </div>
+
+        {content.showSocial && (
+          <>
+            <ManagerWrapper label="Link Social">
+              <SocialLinksManager
+                links={content.socialLinks || []}
+                onChange={(socialLinks) => updateContent({ socialLinks })}
+              />
+            </ManagerWrapper>
+            <div className="mt-4 space-y-2">
+              <SimpleSlider
+                label="Dimensione Icone"
+                value={getStyleValue('socialIconSize', 20)}
+                onChange={(val) => updateStyle({ socialIconSize: val })}
+                min={12}
+                max={60}
+              />
+              <SimpleSlider
+                label="Gap tra Icone"
+                value={getStyleValue('socialLinksGap', 15)}
+                onChange={(val) => updateStyle({ socialLinksGap: val })}
+                max={100}
+              />
+            </div>
+          </>
+        )}
       </Section>
 
       <Section icon={MousePointer} label="CTA" id="cta" badge={content.cta || 'vuoto'} isOpen={openSection === 'cta'} onToggle={toggleSection}>
@@ -221,15 +277,12 @@ export const Navigation: React.FC<NavigationProps> = ({
         />
 
         {(content?.layoutType || 'standard') === 'standard' && (
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase">Gap Link - CTA (px)</label>
-            <input
-              type="number"
-              value={getStyleValue('linksCtaGap', 32) || 32}
-              onChange={(e) => updateStyle({ linksCtaGap: parseInt(e.target.value) || 0 })}
-              className="w-20 px-3 py-1 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold text-zinc-900 outline-none focus:border-zinc-900 transition-colors"
-            />
-          </div>
+          <SimpleSlider
+            label="Gap tra Componenti"
+            value={getStyleValue('linksCtaGap', 20)}
+            onChange={(val) => updateStyle({ linksCtaGap: val })}
+            max={150}
+          />
         )}
 
         <div className="flex items-center justify-between">

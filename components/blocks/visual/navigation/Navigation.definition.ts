@@ -12,7 +12,7 @@ export const navigationDefinition: BlockDefinition = {
   visual: Navigation,
   unifiedEditor: NavigationEditor,
   defaults: {
-    content: { logoText: 'Studio', links: [], showContact: true },
+    content: { logoText: 'Studio', links: [], showContact: true, showSocial: false, socialLinks: [] },
     style: { 
       padding: 20, 
       hamburgerWidth: 450,
@@ -21,7 +21,10 @@ export const navigationDefinition: BlockDefinition = {
       patternOpacity: 10,
       patternScale: 40,
       scrolledOpacity: 100,
-      linksCtaGap: 32
+      linksCtaGap: 20,
+      socialIconSize: 20,
+      linksGap: 15,
+      socialLinksGap: 15
     }
   },
   styleMapper: (style, block, project, viewport) => {
@@ -50,7 +53,10 @@ export const navigationDefinition: BlockDefinition = {
       '--nav-transparent': val('isTransparent', false) ? 'transparent' : 'var(--block-bg)',
       '--scrolled-opacity': ((val('scrolledOpacity', 100) / 100)).toString(),
       '--hamburger-width': toPx(val('hamburgerWidth', 450)),
-      '--nav-links-cta-gap': viewport === 'mobile' ? '0px' : toPx(val('linksCtaGap', 32)),
+      '--nav-links-cta-gap': viewport === 'mobile' ? '0px' : toPx(val('linksCtaGap', 20)),
+      '--social-icon-size': toPx(val('socialIconSize', 20)),
+      '--nav-links-gap': viewport === 'mobile' ? '0px' : toPx(val('linksGap', 15)),
+      '--social-links-gap': toPx(val('socialLinksGap', 15)),
     };
   }
 };

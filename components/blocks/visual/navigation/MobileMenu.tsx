@@ -22,6 +22,11 @@ interface MobileMenuProps {
   layoutType?: string;
   buttonTheme?: 'primary' | 'secondary';
   ctaOverrides?: any;
+  showSocial?: boolean;
+  socialLinks?: Array<{ platform: string; url: string }>;
+  socialIconSize?: number;
+  SOCIAL_ICONS?: Record<string, any>;
+  MailIcon?: any;
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({
@@ -39,7 +44,12 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   isStatic,
   layoutType,
   buttonTheme,
-  ctaOverrides
+  ctaOverrides,
+  showSocial,
+  socialLinks,
+  socialIconSize,
+  SOCIAL_ICONS,
+  MailIcon
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
@@ -134,6 +144,36 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                   {link.label}
                 </a>
               ))}
+
+              {/* SOCIAL LINKS (IN HAMBURGER) */}
+              {showSocial && socialLinks && socialLinks.length > 0 && (
+                <div 
+                  className="flex items-center py-10 justify-center"
+                  style={{ gap: 'var(--social-links-gap, 32px)' }}
+                >
+                  {socialLinks.map((social, i) => {
+                    const Icon = (SOCIAL_ICONS && SOCIAL_ICONS[social.platform.toLowerCase()]) || MailIcon;
+                    return (
+                      <a 
+                        key={i} 
+                        {...formatLink(social.url, isStatic)} 
+                        className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit flex items-center justify-center"
+                        style={{ height: 'var(--social-icon-size, 24px)', width: 'var(--social-icon-size, 24px)' }}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Icon 
+                           size={socialIconSize || 24} 
+                           style={{ 
+                             width: 'var(--social-icon-size, 24px)', 
+                             height: 'var(--social-icon-size, 24px)' 
+                           }} 
+                        />
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
+
               {cta && (
                 <div className="py-12 flex justify-center">
                   <CTA 
