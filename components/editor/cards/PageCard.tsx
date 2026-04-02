@@ -11,7 +11,6 @@ interface PageCardProps {
   projectId: string;
   formatDate: (d: string) => string;
   onOpenSeo: (id: string) => void;
-  onOpenTranslate: (id: string) => void;
   onDelete: (id: string) => void;
   isDeleting?: boolean;
   onInternalNavigate: (e: React.MouseEvent<HTMLAnchorElement>) => void;
@@ -19,7 +18,7 @@ interface PageCardProps {
   onScoreClick?: () => void;
 }
 
-export function PageCard({ page, projectId, formatDate, onOpenSeo, onOpenTranslate, onDelete, isDeleting, onInternalNavigate, score, onScoreClick }: PageCardProps) {
+export function PageCard({ page, projectId, formatDate, onOpenSeo, onDelete, isDeleting, onInternalNavigate, score, onScoreClick }: PageCardProps) {
   const langEmoji: Record<string, string> = {
     it: '🇮🇹',
     en: '🇬🇧',
@@ -86,21 +85,12 @@ export function PageCard({ page, projectId, formatDate, onOpenSeo, onOpenTransla
             </div>
           </button>
           <button
-            onClick={() => onOpenTranslate(page.id)}
-            className="p-1.5 rounded-md text-zinc-300 hover:text-blue-600 hover:bg-white transition-all shadow-sm"
-            title="Traduci"
+            onClick={() => onDelete(page.id)}
+            disabled={isDeleting}
+            className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-white rounded-md transition-all shadow-sm disabled:opacity-50"
           >
-            <Globe fontStyle="italic" size={14} className="scale-x-[-1]" />
+            {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
           </button>
-          {page.slug !== 'home' && (
-            <button
-              onClick={() => onDelete(page.id)}
-              disabled={isDeleting}
-              className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-white rounded-md transition-all shadow-sm disabled:opacity-50"
-            >
-              {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-            </button>
-          )}
         </div>
       </div>
     </div>

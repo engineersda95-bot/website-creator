@@ -260,6 +260,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     if (navBlock || footerBlock) {
       for (const p of projectPages) {
         if (p.id === currentPage.id) continue;
+        // Sync only pages with the same language
+        if (p.language !== currentPage.language) continue;
+        
         let changed = false;
         const newBlocks = p.blocks.map(b => {
           if (b.type === 'navigation' && navBlock) { changed = true; return { ...navBlock, id: b.id }; }
@@ -561,7 +564,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         if (page.id === currentPage.id) {
           return { ...currentPage, blocks };
         }
-        if (isGlobal) {
+        if (isGlobal && page.language === currentPage.language) {
           return {
             ...page,
             blocks: page.blocks.map(b => b.type === targetBlock.type ? { ...targetBlock, id: b.id } : b)
@@ -611,7 +614,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         if (page.id === currentPage.id) {
           return { ...currentPage, blocks };
         }
-        if (isGlobal) {
+        if (isGlobal && page.language === currentPage.language) {
           return {
             ...page,
             blocks: page.blocks.map(b => b.type === targetBlock.type ? { ...targetBlock, id: b.id } : b)

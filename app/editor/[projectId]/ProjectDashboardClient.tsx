@@ -18,11 +18,10 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { GlobalSettings } from '@/components/blocks/sidebar/GlobalSettings';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { resolveImageUrl } from '@/lib/image-utils';
-import { Page } from '@/types/editor';
+import { Page, Project, Block } from '@/types/editor';
 import { toast } from '@/components/shared/Toast';
 import { PageCard } from '@/components/editor/cards/PageCard';
 import { PageSeoModal } from '@/components/editor/modals/PageSeoModal';
-import { TranslatePageModal } from '@/components/editor/modals/TranslatePageModal';
 import { LanguageSection } from '@/components/blocks/sidebar/settings/LanguageSection';
 import { AdvancedSection } from '@/components/blocks/sidebar/settings/AdvancedSection';
 import { DomainSection } from '@/components/blocks/sidebar/settings/DomainSection';
@@ -33,6 +32,7 @@ import type { UserLimits } from '@/lib/permissions';
 import { ChecklistModal } from '@/components/editor/ChecklistModal';
 import { CompletionBadge, SiteChecklist } from '@/components/editor/SiteChecklist';
 import { getCompletionScore, runGlobalChecks, runPageChecks, CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/site-checklist';
+import { LANGUAGES, BUSINESS_TYPES } from '@/lib/editor-constants';
 
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
@@ -48,8 +48,8 @@ export function ProjectDashboardClient({
   userLimits,
 }: {
   initialUser: any;
-  initialProject: any;
-  initialPages: any[];
+  initialProject: Project;
+  initialPages: Page[];
   userLimits: UserLimits | null;
 }) {
   const router = useRouter();
@@ -103,10 +103,10 @@ export function ProjectDashboardClient({
   const [isPublishing, setIsPublishing] = useState(false);
   const [deletingPageId, setDeletingPageId] = useState<string | null>(null);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
+  const [newLang, setNewLang] = useState(initialProject.settings?.defaultLanguage || 'it');
   const [activeTab, setActiveTab] = useState<'pages' | 'checklist' | 'settings'>('pages');
   const [showChecklist, setShowChecklist] = useState(false);
   const [seoOpenId, setSeoOpenId] = useState<string | null>(null);
-  const [translateOpenId, setTranslateOpenId] = useState<string | null>(null);
 
   const isPublished = !!localProject?.live_url;
 
@@ -134,15 +134,37 @@ export function ProjectDashboardClient({
     if (!newTitle.trim()) return;
 
     const slug = newSlug.trim() || newTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    
+    // Validazione slug duplicato nella stessa lingua
+    const existingPage = pages.find(p => p.slug === slug && p.language === newLang);
+    if (existingPage) {
+      toast(`Una pagina con lo slug "/${slug}" esiste già in ${newLang.toUpperCase()}`, 'error');
+      return;
+    }
+
     const pageId = uuidv4();
+
+    // Seleziona nav e footer da clonare
+    // 1. Cerca nella lingua selezionata
+    const sameLangPage = pages.find((p: Page) => p.language === newLang);
+    let navToClone = sameLangPage?.blocks.find((b: Block) => b.type === 'navigation');
+    let footerToClone = sameLangPage?.blocks.find((b: Block) => b.type === 'footer');
+
+    // 2. Se non li trova, cerca in qualsiasi pagina
+    if (!navToClone) navToClone = pages.flatMap((p: Page) => p.blocks).find((b: Block) => b.type === 'navigation');
+    if (!footerToClone) footerToClone = pages.flatMap((p: Page) => p.blocks).find((b: Block) => b.type === 'footer');
+
+    const initialBlocks = [];
+    if (navToClone) initialBlocks.push({ ...navToClone, id: uuidv4() });
+    if (footerToClone) initialBlocks.push({ ...footerToClone, id: uuidv4() });
 
     const result = await createPage({
       id: pageId,
       projectId: localProject.id,
       title: newTitle.trim(),
       slug,
-      language: localProject.settings?.defaultLanguage || 'it',
-      blocks: [],
+      language: newLang,
+      blocks: initialBlocks,
     });
 
     if (!result.success) {
@@ -154,6 +176,7 @@ export function ProjectDashboardClient({
     setIsCreating(false);
     setNewTitle('');
     setNewSlug('');
+    setNewLang(localProject.settings?.defaultLanguage || 'it');
   };
 
   const handleDeletePage = async (pageId: string) => {
@@ -174,39 +197,6 @@ export function ProjectDashboardClient({
     await supabase.from('pages').update({ seo: newSeo }).eq('id', pageId);
   };
 
-  const handleTranslatePage = async ({ lang, title, slug, seoTitle, seoDescription }: {
-    lang: string;
-    title: string;
-    slug: string;
-    seoTitle?: string;
-    seoDescription?: string;
-  }) => {
-    const sourcePage = pages.find(p => p.id === translateOpenId);
-    if (!sourcePage) return;
-
-    const newPageId = uuidv4();
-    const result = await createPage({
-      id: newPageId,
-      projectId: localProject.id,
-      title,
-      slug,
-      language: lang,
-      blocks: sourcePage.blocks.map((b: any) => ({ ...b, id: uuidv4() })),
-      seo: {
-        ...sourcePage.seo,
-        title: seoTitle || title,
-        description: seoDescription || sourcePage.seo?.description || '',
-      },
-    });
-
-    if (!result.success) {
-      toast(`Errore durante la traduzione: ${result.error}`, 'error');
-      throw new Error(result.error);
-    }
-
-    setPages([...pages, result.page]);
-    toast(`Pagina tradotta in ${lang.toUpperCase()}!`, 'success');
-  };
 
   const handlePublish = async () => {
     if (!localProject) return;
@@ -604,6 +594,30 @@ export function ProjectDashboardClient({
                         />
                       </div>
                     </div>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 font-mono">Lingua</label>
+                      <div className="flex gap-2">
+                        {(localProject.settings?.languages || ['it']).map((langCode: string) => {
+                          const langDef = LANGUAGES.find(l => l.value === langCode);
+                          return (
+                            <button
+                              key={langCode}
+                              type="button"
+                              onClick={() => setNewLang(langCode)}
+                              className={cn(
+                                "flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-bold transition-all",
+                                newLang === langCode 
+                                  ? "bg-zinc-900 border-zinc-900 text-white shadow-sm"
+                                  : "bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300"
+                              )}
+                            >
+                              <span>{langDef?.flag || '🌐'}</span>
+                              <span className="uppercase">{langCode}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                   <div className="flex gap-3 mt-6">
                     <button
@@ -633,7 +647,6 @@ export function ProjectDashboardClient({
                   projectId={localProject.id}
                   formatDate={formatDate}
                   onOpenSeo={(id) => setSeoOpenId(id)}
-                  onOpenTranslate={(id) => setTranslateOpenId(id)}
                   onDelete={handleDeletePage}
                   isDeleting={deletingPageId === page.id}
                   onInternalNavigate={handleInternalNavigation}
@@ -644,20 +657,6 @@ export function ProjectDashboardClient({
             </div>
 
 
-            {/* Translate Modal */}
-            {translateOpenId && (() => {
-              const page = pages.find(p => p.id === translateOpenId);
-              if (!page) return null;
-
-              return (
-                <TranslatePageModal
-                  page={page}
-                  project={localProject}
-                  onClose={() => setTranslateOpenId(null)}
-                  onTranslate={handleTranslatePage}
-                />
-              );
-            })()}
           </div>
 
         )}

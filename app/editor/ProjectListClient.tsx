@@ -127,7 +127,9 @@ export function ProjectListClient({
       metaTitle: (businessName || newName.trim()),
       favicon: logoPath || undefined,
       metaImage: logoPath || undefined,
-      logo: logoPath || undefined
+      logo: logoPath || undefined,
+      typography: { h1Size: 64, h2Size: 48, h3Size: 32, h4Size: 24, h5Size: 20, h6Size: 16, bodySize: 16 },
+      responsive: { mobile: { typography: { h1Size: 40, h2Size: 32, h3Size: 24, h4Size: 20, h5Size: 18, h6Size: 16, bodySize: 14 } }, tablet: {} },
     };
 
     const templateBlocks = selectedTemplate !== 'blank' && selectedTemplate in TEMPLATES

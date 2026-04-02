@@ -10,7 +10,8 @@ import {
   Settings,
   Type,
   Layout,
-  Share2
+  Share2,
+  Globe
 } from 'lucide-react';
 import React from 'react';
 import { ImageUpload } from '@/components/shared/ImageUpload';
@@ -65,6 +66,18 @@ export const Navigation: React.FC<NavigationProps> = ({
 
   return (
     <div>
+      {/* Sync Info */}
+      <div className="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-2xl">
+        <div className="flex gap-3">
+          <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+            <Globe size={14} className="text-amber-600" />
+          </div>
+          <p className="text-[11px] text-amber-800 leading-normal">
+            La configurazione di questo blocco è <strong>sincronizzata</strong> tra tutte le pagine in <strong>{useEditorStore.getState().currentPage?.language?.toUpperCase() || 'IT'}</strong>.
+          </p>
+        </div>
+      </div>
+
       {/* Components */}
       <CategoryHeader label="Componenti" />
 

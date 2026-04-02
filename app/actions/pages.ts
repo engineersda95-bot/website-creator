@@ -49,6 +49,9 @@ export async function createPage(
     .single();
 
   if (error || !page) {
+    if (error?.code === '23505') {
+      return { success: false, error: 'Uno slug identico esiste già per questa lingua.' };
+    }
     return { success: false, error: error?.message || 'Errore durante la creazione della pagina' };
   }
 

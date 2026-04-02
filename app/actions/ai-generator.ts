@@ -455,11 +455,27 @@ ${data.creativeMode ? `
     const finalLogo = hasUserLogo ? data.logoUrl : '';
     const finalLogoType = hasUserLogo ? 'image' : 'text';
 
+    // WhatsApp CTA: detect whatsapp social and build wa.me link
+    const whatsappSocial = data.socials?.find(s => s.platform === 'whatsapp');
+    const whatsappNumber = whatsappSocial?.url
+      ? whatsappSocial.url.replace(/\D/g, '')
+      : (data.phone ? data.phone.replace(/\D/g, '') : null);
+    const hasWhatsApp = !!(whatsappSocial && whatsappNumber);
+    const whatsappUrl = hasWhatsApp ? `https://wa.me/${whatsappNumber}` : null;
+
+    // Default typography — ensures values are always saved to DB
+    const DEFAULT_TYPOGRAPHY = {
+      h1Size: 64, h2Size: 48, h3Size: 32, h4Size: 24, h5Size: 20, h6Size: 16, bodySize: 16,
+    };
+    const DEFAULT_TYPOGRAPHY_MOBILE = {
+      h1Size: 40, h2Size: 32, h3Size: 24, h4Size: 20, h5Size: 18, h6Size: 16, bodySize: 14,
+    };
+
     const finalSettings = {
       ...aiOutput.settings,
       appearance: finalAppearance,
-      primaryColor:   primaryCTABG,     // brand/button accent
-      secondaryColor: secondaryCTABG,   // secondary button
+      primaryColor:   primaryCTABG,
+      secondaryColor: secondaryCTABG,
       fontFamily,
       buttonRadius,
       buttonShadow,
@@ -477,7 +493,13 @@ ${data.creativeMode ? `
         dark:  { bg:  isDark ? themeBG : '#0c0c0e', text:  isDark ? themeText : '#ffffff'  },
         buttonText:          primaryCTAText,
         buttonTextSecondary: secondaryCTAText,
-      }
+      },
+      // Always persist typography defaults so CSS vars are applied immediately
+      typography: { ...DEFAULT_TYPOGRAPHY, ...(aiOutput.settings?.typography || {}) },
+      responsive: {
+        mobile: { typography: DEFAULT_TYPOGRAPHY_MOBILE },
+        tablet: {},
+      },
     };
 
     // --- PAGE ENRICHMENT ---
@@ -515,21 +537,20 @@ ${data.creativeMode ? `
           blockWithId.style.overlayOpacity = blockWithId.style.overlayOpacity || 65;
           blockWithId.style.overlayColor   = blockWithId.style.overlayColor   || '#000000';
           if (!blockWithId.style.textColor) {
-            // Always white text over dark overlay, regardless of theme
             blockWithId.style.textColor = getContrastColor(blockWithId.style.overlayColor || '#000000');
           }
         }
 
-        // Pattern: color and opacity deterministic
+        // Pattern: deterministic color, opacity, and scale
         if (blockWithId.style?.patternType && blockWithId.style.patternType !== 'none') {
           blockWithId.style.patternColor   = themeText;
           blockWithId.style.patternOpacity = isDark ? 8 : 7;
+          blockWithId.style.patternScale   = 15;
         }
 
-        // Block backgroundColor: enforce palette (only colors from theme)
+        // Block backgroundColor: enforce palette
         if (blockWithId.style?.backgroundColor) {
           if (!isInPalette(blockWithId.style.backgroundColor, [themeBG, themeText, accentBG])) {
-            // AI used an off-palette color — replace with accent background
             blockWithId.style.backgroundColor = accentBG;
           }
         }
@@ -539,15 +560,64 @@ ${data.creativeMode ? `
           blockWithId.content.showMap = true;
         }
 
+        // Columns: set deterministically by item count (don't touch mobile/tablet)
+        const itemCount = blockWithId.content?.items?.length;
+        if (itemCount && ['benefits', 'cards', 'how-it-works'].includes(blockWithId.type)) {
+          let cols = 3;
+          if (itemCount === 2) cols = 2;
+          else if (itemCount === 3) cols = 3;
+          else if (itemCount === 4) cols = blockWithId.type === 'cards' ? 2 : 4;
+          else if (itemCount >= 5) cols = 3;
+          blockWithId.style.columns = cols;
+          // Tablet: max 2, mobile: 1 (only set if not already provided)
+          blockWithId.responsiveStyles = {
+            tablet: { columns: Math.min(cols, 2), ...(blockWithId.responsiveStyles?.tablet || {}) },
+            mobile: { columns: 1, ...(blockWithId.responsiveStyles?.mobile || {}) },
+          };
+        }
+
         // URL validation for internal links
         blockWithId.content = validateBlockLinks(blockWithId.content, blockWithId.type, validSlugs, data.useAnchorNav, finalSectionId);
 
         return blockWithId;
       });
 
+      // image-text: alternate imageSide for consecutive blocks
+      let lastImageTextSide: 'left' | 'right' | null = null;
+      for (const b of interiorBlocks) {
+        if (b.type === 'image-text') {
+          if (lastImageTextSide === null) {
+            // Keep AI's choice for the first one, just record it
+            lastImageTextSide = (b.content?.imageSide === 'left' ? 'left' : 'right');
+          } else {
+            // Flip from previous
+            const nextSide: 'left' | 'right' = lastImageTextSide === 'left' ? 'right' : 'left';
+            b.content = { ...b.content, imageSide: nextSide };
+            lastImageTextSide = nextSide;
+          }
+        } else {
+          // Reset on different block type so non-consecutive image-text starts fresh
+          lastImageTextSide = null;
+        }
+      }
+
       // CTA for nav
       const ctaLabel = deriveCTALabel(data.siteObjective, data.language);
       const ctaUrl   = deriveCTAUrl(data.siteObjective, data.useAnchorNav, pages);
+
+      // WhatsApp: override CTA if whatsapp detected
+      const finalCtaLabel = hasWhatsApp && !ctaUrl.startsWith('/') && !ctaUrl.startsWith('#')
+        ? (data.language === 'en' ? 'WhatsApp us' : 'Scrivici su WhatsApp')
+        : ctaLabel;
+      const finalCtaUrl = hasWhatsApp && !ctaUrl.startsWith('/') && !ctaUrl.startsWith('#')
+        ? whatsappUrl!
+        : ctaUrl;
+
+      // Footer social links: ensure WhatsApp is included if provided
+      let finalSocialLinks = [...(finalBusinessDetails.socialLinks || [])];
+      if (hasWhatsApp && !finalSocialLinks.some(s => s.platform === 'whatsapp')) {
+        finalSocialLinks.push({ platform: 'whatsapp', url: whatsappUrl! });
+      }
 
       const navBlock = {
         id: uuidv4(),
@@ -559,8 +629,8 @@ ${data.creativeMode ? `
           logoImage:   finalLogo,
           links:       finalNavLinks,
           showContact: true,
-          ctaLabel,
-          ctaUrl,
+          ctaLabel:    finalCtaLabel,
+          ctaUrl:      finalCtaUrl,
           showCTA: true,
         },
         style: { padding: 20, isSticky: true, backgroundColor: undefined, textColor: undefined }
@@ -575,7 +645,7 @@ ${data.creativeMode ? `
           logoImage:  finalLogo,
           logoText:   finalBusinessName,
           links:      finalNavLinks,
-          socialLinks: finalBusinessDetails.socialLinks,
+          socialLinks: finalSocialLinks,
           copyright:  `© ${currentYear} ${finalBusinessName}. Tutti i diritti riservati.`,
         },
         style: { padding: 60, backgroundColor: undefined, textColor: undefined }
@@ -622,62 +692,114 @@ function validateBlockLinks(content: any, blockType: string, validSlugs: Set<str
   return result;
 }
 
-function picsumFallback(seed: string): string {
-  return `https://picsum.photos/seed/${encodeURIComponent(seed.toLowerCase().replace(/\s+/g, '-'))}/800/500`;
+function picsumFallback(seed: string, width = 800, height = 500): string {
+  const cleanSeed = seed.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '').slice(0, 40) || 'business';
+  return `https://picsum.photos/seed/${cleanSeed}/${width}/${height}`;
 }
 
-// Best-effort background image URL validation + cards image fallback
+function heroPicsumFallback(businessType: string): string {
+  // Landscape seeds per business type for better visual match
+  const seeds: Record<string, string> = {
+    Restaurant: 'restaurant-food',
+    LocalBusiness: 'local-business',
+    ProfessionalService: 'office-professional',
+    HealthAndBeautyBusiness: 'spa-beauty',
+    HomeAndConstructionBusiness: 'construction-home',
+    EducationalOrganization: 'education-classroom',
+    SportsActivityLocation: 'gym-fitness',
+    TravelAgency: 'travel-landscape',
+    Store: 'store-shopping',
+    Organization: 'team-office',
+  };
+  const seed = seeds[businessType] || 'business-hero';
+  return `https://picsum.photos/seed/${seed}/1600/900`;
+}
+
+// Best-effort image URL validation — fallback to Picsum on failure
 async function validateAndCleanBackgroundImages(enrichedPages: any[], businessType?: string) {
   const checks: Promise<void>[] = [];
+
   for (const page of enrichedPages) {
     for (const block of page.blocks || []) {
-      // Hero / section backgroundImage
-      if (block.content?.backgroundImage && block.content.backgroundImage.startsWith('http')) {
-        checks.push(
-          fetch(block.content.backgroundImage, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
-            .then(res => {
-              if (!res.ok) {
-                block.content.backgroundImage = '';
-                delete block.style.overlayOpacity;
-                delete block.style.overlayColor;
-                delete block.style.textColor;
-              }
-            })
-            .catch(() => {
-              // Network error: keep the URL (may still work client-side)
-            })
-        );
-      }
 
-      // Cards / any block with items[*].image
-      const items = block.content?.items;
-      if (Array.isArray(items)) {
-        for (const item of items) {
-          if (item.image && item.image.startsWith('http')) {
-            if (item.image.includes('picsum.photos')) continue;
-            const seed = (item.title || item.name || businessType || 'business');
-            checks.push(
-              fetch(item.image, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
-                .then(res => { if (!res.ok) item.image = picsumFallback(seed); })
-                .catch(() => { item.image = picsumFallback(seed); })
-            );
-          }
+      // Hero / section backgroundImage
+      if (block.type === 'hero') {
+        if (!block.content?.backgroundImage) {
+          // AI didn't generate an image — add Picsum fallback for hero
+          block.content = { ...block.content, backgroundImage: heroPicsumFallback(businessType || '') };
+          block.style.overlayOpacity = 65;
+          block.style.overlayColor   = '#000000';
+          block.style.textColor      = '#ffffff';
+        } else if (block.content.backgroundImage.startsWith('http') && !block.content.backgroundImage.includes('picsum.photos')) {
+          const fallback = heroPicsumFallback(businessType || '');
+          checks.push(
+            fetch(block.content.backgroundImage, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
+              .then(res => { if (!res.ok) block.content.backgroundImage = fallback; })
+              .catch(() => { block.content.backgroundImage = fallback; })
+          );
+        }
+      } else if (block.content?.backgroundImage && block.content.backgroundImage.startsWith('http')) {
+        // Non-hero section with backgroundImage — keep or clear (no forced fallback)
+        if (!block.content.backgroundImage.includes('picsum.photos')) {
+          checks.push(
+            fetch(block.content.backgroundImage, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
+              .then(res => {
+                if (!res.ok) {
+                  block.content.backgroundImage = '';
+                  delete block.style.overlayOpacity;
+                  delete block.style.overlayColor;
+                  delete block.style.textColor;
+                }
+              })
+              .catch(() => { /* keep on network error */ })
+          );
         }
       }
 
-      // image-text block imageUrl
-      if (block.type === 'image-text' && block.content?.imageUrl && block.content.imageUrl.startsWith('http')) {
-        if (!block.content.imageUrl.includes('picsum.photos')) {
-          const seed = (block.content.title || businessType || 'business');
+      // image-text block: field is `image`, not `imageUrl` — migrate and add fallback
+      if (block.type === 'image-text') {
+        // Migrate imageUrl → image (AI may use either field name)
+        if (block.content?.imageUrl && !block.content?.image) {
+          block.content.image = block.content.imageUrl;
+          delete block.content.imageUrl;
+        } else if (block.content?.imageUrl) {
+          delete block.content.imageUrl;
+        }
+        const imgSrc = block.content?.image || '';
+        const fallbackSeed = block.content?.title || businessType || 'business';
+        if (!imgSrc) {
+          block.content = { ...block.content, image: picsumFallback(fallbackSeed) };
+        } else if (imgSrc.startsWith('http') && !imgSrc.includes('picsum.photos')) {
           checks.push(
-            fetch(block.content.imageUrl, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
-              .then(res => { if (!res.ok) block.content.imageUrl = picsumFallback(seed); })
-              .catch(() => { block.content.imageUrl = picsumFallback(seed); })
+            fetch(imgSrc, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
+              .then(res => { if (!res.ok) block.content.image = picsumFallback(fallbackSeed); })
+              .catch(() => { block.content.image = picsumFallback(fallbackSeed); })
           );
+        }
+      }
+
+      // Blocks with items[*].image — only for types that visually show images (not quote/faq/etc.)
+      const IMAGE_ITEM_BLOCKS = ['cards', 'promo'];
+      if (IMAGE_ITEM_BLOCKS.includes(block.type)) {
+        const items = block.content?.items;
+        if (Array.isArray(items)) {
+          for (const item of items) {
+            const itemSeed = item.title || item.name || businessType || 'item';
+            if (!item.image) {
+              item.image = picsumFallback(itemSeed);
+            } else if (item.image.startsWith('http') && !item.image.includes('picsum.photos')) {
+              checks.push(
+                fetch(item.image, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
+                  .then(res => { if (!res.ok) item.image = picsumFallback(itemSeed); })
+                  .catch(() => { item.image = picsumFallback(itemSeed); })
+              );
+            }
+          }
         }
       }
     }
   }
+
   await Promise.allSettled(checks);
 }
 
