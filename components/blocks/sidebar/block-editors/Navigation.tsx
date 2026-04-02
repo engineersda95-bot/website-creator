@@ -9,6 +9,7 @@ import {
   Palette,
   Settings,
   Type,
+  Layout,
 } from 'lucide-react';
 import React from 'react';
 import { ImageUpload } from '@/components/shared/ImageUpload';
@@ -63,6 +64,61 @@ export const Navigation: React.FC<NavigationProps> = ({
     <div>
       {/* Components */}
       <CategoryHeader label="Componenti" />
+
+      <Section icon={Layout} label="Modalità" id="modes" isOpen={openSection === 'modes'} onToggle={toggleSection}>
+        {/* Layout Type (Moved from Links) */}
+        <div>
+          <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Tipo Visualizzazione</label>
+          <div className="grid grid-cols-2 gap-1.5">
+            <button 
+              onClick={() => updateContent({ layoutType: 'standard' })} 
+              className={cn(
+                "py-2 text-[10px] font-bold uppercase border rounded-lg transition-all", 
+                (content.layoutType || 'standard') === 'standard' ? "bg-zinc-900 text-white border-zinc-900" : "text-zinc-400 border-zinc-100 hover:border-zinc-300"
+              )}
+            >
+              Lista
+            </button>
+            <button 
+              onClick={() => updateContent({ layoutType: 'hamburger' })} 
+              className={cn(
+                "py-2 text-[10px] font-bold uppercase border rounded-lg transition-all", 
+                content.layoutType === 'hamburger' ? "bg-zinc-900 text-white border-zinc-900" : "text-zinc-400 border-zinc-100 hover:border-zinc-300"
+              )}
+            >
+              Hamburger
+            </button>
+          </div>
+        </div>
+
+        {/* Behavior (Moved from Layout & Spaziatura) */}
+        <div className="space-y-4 p-3 bg-zinc-50 rounded-xl border border-zinc-100 mt-4">
+          <div className="flex items-center justify-between gap-4">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase">Header Sticky (Fisso)</label>
+            <div
+              className={cn("w-10 h-5 rounded-full p-1 cursor-pointer transition-colors", getStyleValue('isSticky', false) ? "bg-zinc-900" : "bg-zinc-200")}
+              onClick={() => updateStyle({ isSticky: !getStyleValue('isSticky', false) })}
+            >
+              <div className={cn("w-3 h-3 bg-white rounded-full transition-transform", getStyleValue('isSticky', false) && "translate-x-5")} />
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase">Sfondo Trasparente</label>
+            <div
+              className={cn("w-10 h-5 rounded-full p-1 cursor-pointer transition-colors", getStyleValue('isTransparent', false) ? "bg-zinc-900" : "bg-zinc-200")}
+              onClick={() => {
+                const newVal = !getStyleValue('isTransparent', false);
+                updateStyle({
+                  isTransparent: newVal,
+                  scrolledOpacity: newVal ? 0 : 100,
+                });
+              }}
+            >
+              <div className={cn("w-3 h-3 bg-white rounded-full transition-transform", getStyleValue('isTransparent', false) && "translate-x-5")} />
+            </div>
+          </div>
+        </div>
+      </Section>
 
       <Section icon={ImageIcon} label="Logo" id="logo" isOpen={openSection === 'logo'} onToggle={toggleSection}>
         <div className="flex gap-2 p-1 bg-zinc-100 rounded-lg">
@@ -140,14 +196,6 @@ export const Navigation: React.FC<NavigationProps> = ({
             onChange={(links) => updateContent({ links })}
           />
         </ManagerWrapper>
-        {/* Layout Type */}
-        <div>
-          <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block">Layout Default</label>
-          <div className="grid grid-cols-2 gap-1.5">
-            <button onClick={() => updateContent({ layoutType: 'standard' })} className={cn("py-2 text-[10px] font-bold uppercase border rounded-lg transition-all", (content.layoutType || 'standard') === 'standard' ? "bg-zinc-900 text-white border-zinc-900" : "text-zinc-400 border-zinc-100 hover:border-zinc-300")}>Lista</button>
-            <button onClick={() => updateContent({ layoutType: 'hamburger' })} className={cn("py-2 text-[10px] font-bold uppercase border rounded-lg transition-all", content.layoutType === 'hamburger' ? "bg-zinc-900 text-white border-zinc-900" : "text-zinc-400 border-zinc-100 hover:border-zinc-300")}>Hamburger</button>
-          </div>
-        </div>
       </Section>
 
       <Section icon={MousePointer} label="CTA" id="cta" badge={content.cta || 'vuoto'} isOpen={openSection === 'cta'} onToggle={toggleSection}>
@@ -192,33 +240,6 @@ export const Navigation: React.FC<NavigationProps> = ({
             onChange={(e) => updateStyle({ hamburgerWidth: parseInt(e.target.value) || 0 })}
             className="w-20 px-3 py-1 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold text-zinc-900 outline-none focus:border-zinc-900 transition-colors"
           />
-        </div>
-
-        <div className="space-y-4 p-3 bg-zinc-50 rounded-xl border border-zinc-100">
-          <div className="flex items-center justify-between gap-4">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase">Header Sticky (Fisso)</label>
-            <div
-              className={cn("w-10 h-5 rounded-full p-1 cursor-pointer transition-colors", getStyleValue('isSticky', false) ? "bg-zinc-900" : "bg-zinc-200")}
-              onClick={() => updateStyle({ isSticky: !getStyleValue('isSticky', false) })}
-            >
-              <div className={cn("w-3 h-3 bg-white rounded-full transition-transform", getStyleValue('isSticky', false) && "translate-x-5")} />
-            </div>
-          </div>
-          <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase">Sfondo Trasparente</label>
-            <div
-              className={cn("w-10 h-5 rounded-full p-1 cursor-pointer transition-colors", getStyleValue('isTransparent', false) ? "bg-zinc-900" : "bg-zinc-200")}
-              onClick={() => {
-                const newVal = !getStyleValue('isTransparent', false);
-                updateStyle({
-                  isTransparent: newVal,
-                  scrolledOpacity: newVal ? 0 : 100,
-                });
-              }}
-            >
-              <div className={cn("w-3 h-3 bg-white rounded-full transition-transform", getStyleValue('isTransparent', false) && "translate-x-5")} />
-            </div>
-          </div>
         </div>
       </Section>
 
