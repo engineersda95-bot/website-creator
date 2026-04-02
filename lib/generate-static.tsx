@@ -95,12 +95,27 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     ${(() => {
-      // Preload hero background image for faster LCP
+      // Preload the first above-fold image for faster LCP.
+      // Priority: hero background → first promo item image → first image-text image.
       const heroBlock = page.blocks.find((b: any) => b.type === 'hero');
       const heroImg = heroBlock?.content?.backgroundImage;
-      if (!heroImg) return '';
-      const resolved = resolveImageUrl(heroImg, project || null, {}, true);
-      return `<link rel="preload" as="image" href="${resolved}" fetchpriority="high">`;
+      if (heroImg) {
+        const resolved = resolveImageUrl(heroImg, project || null, {}, true);
+        return `<link rel="preload" as="image" href="${resolved}" fetchpriority="high">`;
+      }
+      const promoBlock = page.blocks.find((b: any) => b.type === 'promo');
+      const promoImg = promoBlock?.content?.items?.[0]?.image;
+      if (promoImg) {
+        const resolved = resolveImageUrl(promoImg, project || null, {}, true);
+        return `<link rel="preload" as="image" href="${resolved}" fetchpriority="high">`;
+      }
+      const imageTextBlock = page.blocks.find((b: any) => b.type === 'image-text' || b.type === 'imagetext');
+      const imageTextImg = imageTextBlock?.content?.backgroundImage || imageTextBlock?.content?.image;
+      if (imageTextImg) {
+        const resolved = resolveImageUrl(imageTextImg, project || null, {}, true);
+        return `<link rel="preload" as="image" href="${resolved}" fetchpriority="high">`;
+      }
+      return '';
     })()}
     
     ${(() => {
@@ -198,6 +213,13 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
             backface-visibility: hidden;
         }
 
+        [data-siti-anim="none"] {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+            will-change: auto !important;
+        }
+
         [data-siti-anim="slide-up"]    { transform: translate3d(0, 30px, 0); }
         [data-siti-anim="slide-down"]  { transform: translate3d(0, -30px, 0); }
         [data-siti-anim="slide-left"]  { transform: translate3d(30px, 0, 0); }
@@ -260,72 +282,7 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     </div>
     ` : ''}
 
-    <script>
-      const handleScroll = () => {
-        const navs = document.querySelectorAll('nav.fixed');
-        const scrolled = window.scrollY > 20;
-        navs.forEach(nav => {
-          if (scrolled) {
-            nav.style.background = 'var(--block-bg)';
-            nav.style.boxShadow = '0 10px 30px -10px rgba(0,0,0,0.1)';
-            nav.style.backdropFilter = 'blur(10px)';
-            nav.style.paddingTop = '12px';
-            nav.style.paddingBottom = '12px';
-          } else {
-            const isTransparent = nav.getAttribute('data-transparent') === 'true';
-            nav.style.background = isTransparent ? 'transparent' : 'var(--block-bg)';
-            nav.style.boxShadow = 'none';
-            nav.style.backdropFilter = 'none';
-            nav.style.paddingTop = 'var(--nav-padding)';
-            nav.style.paddingBottom = 'var(--nav-padding)';
-          }
-        });
-      };
-      window.addEventListener('load', handleScroll);
-      handleScroll();
-
-      document.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-menu-toggle]');
-        if (!btn) return;
-        
-        const nav = btn.closest('nav');
-        const menu = nav ? nav.querySelector('[data-menu]') : null;
-        if (!menu) return;
-
-        const isOpen = menu.getAttribute('data-open') === 'true';
-        const nextState = !isOpen;
-        
-        menu.setAttribute('data-open', nextState);
-        btn.setAttribute('data-open', nextState);
-      });
-
-      // --- Intelligent Animation System ---
-      /** @type {IntersectionObserver} */
-      const animObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const el = entry.target;
-            // Using requestAnimationFrame to ensure the class is added in the next repaint
-            // for maximum smoothness and to avoid layout thrashing
-            requestAnimationFrame(() => {
-                el.classList.add('siti-anim-active');
-            });
-            animObserver.unobserve(el);
-          }
-        });
-      }, { 
-        threshold: 0.05,
-        rootMargin: '0px 0px -50px 0px' 
-      });
-
-      document.querySelectorAll('[data-siti-anim]').forEach(el => {
-        if (el.getAttribute('data-siti-anim') !== 'none') {
-            animObserver.observe(el);
-        } else {
-            el.classList.add('siti-anim-active');
-        }
-      });
-    </script>
+    <script>var _hs=function(){var ns=document.querySelectorAll('nav.fixed'),sc=window.scrollY>20;ns.forEach(function(n){if(sc){n.style.background='var(--block-bg)';n.style.boxShadow='0 10px 30px -10px rgba(0,0,0,0.1)';n.style.backdropFilter='blur(10px)';n.style.paddingTop='12px';n.style.paddingBottom='12px';}else{var t=n.getAttribute('data-transparent')==='true';n.style.background=t?'transparent':'var(--block-bg)';n.style.boxShadow='none';n.style.backdropFilter='none';n.style.paddingTop='var(--nav-padding)';n.style.paddingBottom='var(--nav-padding)';}});};window.addEventListener('load',_hs);_hs();document.addEventListener('click',function(e){var b=e.target.closest('[data-menu-toggle]');if(!b)return;var n=b.closest('nav'),m=n?n.querySelector('[data-menu]'):null;if(!m)return;var o=m.getAttribute('data-open')==='true',s=!o;m.setAttribute('data-open',s);b.setAttribute('data-open',s);});var _vh=window.innerHeight,_ao=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var el=e.target;requestAnimationFrame(function(){el.classList.add('siti-anim-active');});_ao.unobserve(el);}});},{threshold:0.05,rootMargin:'0px 0px -60px 0px'});document.querySelectorAll('[data-siti-anim]').forEach(function(el){var a=el.getAttribute('data-siti-anim');if(a==='none'){el.classList.add('siti-anim-active');return;}var r=el.getBoundingClientRect();if(r.top<_vh&&r.bottom>0){el.classList.add('siti-anim-active');}else{_ao.observe(el);}});</script>
     ${settings?.customScriptsBody || ''}
 </body>
 </html>
@@ -344,7 +301,7 @@ function renderBlock(block: Block, allPages: Page[], project: Project | undefine
   const blockId = `block-${block.id.substring(0, 8)}`;
   const responsiveCss = generateBlockCSS(blockId, block, project, commonVars);
   const styleWrapper = `<style>${responsiveCss}</style>`;
-  const blockWrapper = (inner: string) => `${styleWrapper}<div id="${blockId}" class="transition-all duration-500">${inner}</div>`;
+  const blockWrapper = (inner: string) => `${styleWrapper}<div id="${blockId}">${inner}</div>`;
 
   const Component = StaticRegistry[type];
   if (!Component) return `<!-- Block type ${type} ignored in static generation -->`;

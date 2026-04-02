@@ -21,8 +21,10 @@ import {
 } from '../SharedSidebarComponents';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { cn } from '@/lib/utils';
-import { Tag, List, Layout, Palette, Play, Settings, Type, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowUp, ArrowDown, Trash2, Plus, Columns, Layers } from 'lucide-react';
+import { Tag, List, Layout, Palette, Play, Settings, Type, AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowUp, ArrowDown, Trash2, Plus, Columns, Layers, Eye, EyeOff } from 'lucide-react';
 import { Block, Project } from '@/types/editor';
+import { useEditorStore } from '@/store/useEditorStore';
+import { resolveImageUrl } from '@/lib/image-utils';
 
 interface PromoProps {
   selectedBlock: Block;
@@ -30,6 +32,7 @@ interface PromoProps {
   updateStyle: (updates: any) => void;
   getStyleValue: (key: string, defaultValue?: any) => any;
   project: Project;
+  viewport?: 'desktop' | 'tablet' | 'mobile';
 }
 
 export const Promo: React.FC<PromoProps> = ({
@@ -37,9 +40,11 @@ export const Promo: React.FC<PromoProps> = ({
   updateContent,
   updateStyle,
   getStyleValue,
-  project
+  project,
+  viewport = 'desktop'
 }) => {
   const { openSection, toggleSection } = useUnifiedSections();
+  const { uploadImage, imageMemoryCache } = useEditorStore();
   const content = selectedBlock.content;
   const items = content.items || [];
 
@@ -77,11 +82,31 @@ export const Promo: React.FC<PromoProps> = ({
     <div className="pb-20">
       <CategoryHeader label="Componenti" />
 
+      <Section icon={Type} label="Titolo Sezione" id="title" isOpen={openSection === 'title'} onToggle={toggleSection}>
+        <SimpleInput
+          label="Testo Titolo"
+          placeholder="es: Le nostre Offerte"
+          value={content.title || ''}
+          onChange={(val) => updateContent({ title: val })}
+        />
+        <TypographyFields
+          label="Stile Titolo"
+          sizeKey="titleSize"
+          boldKey="titleBold"
+          italicKey="titleItalic"
+          tagKey="titleTag"
+          showTagSelector
+          updateStyle={updateStyle}
+          getStyleValue={getStyleValue}
+          defaultValue={42}
+        />
+      </Section>
+
       {/* LAYOUT & GRID */}
       <Section icon={Layout} label="Layout & Griglia" id="grid" isOpen={openSection === 'grid'} onToggle={toggleSection}>
         <SimpleSlider
-          label="Elementi per Riga (Desktop)"
-          value={getStyleValue('columns', 1)}
+          label={`Elementi per Riga (${viewport.charAt(0).toUpperCase() + viewport.slice(1)})`}
+          value={getStyleValue('columns', (viewport === 'tablet' ? 2 : 1))}
           min={1}
           max={6}
           onChange={(val: number) => updateStyle({ columns: val })}
@@ -134,6 +159,50 @@ export const Promo: React.FC<PromoProps> = ({
             suffix="px"
           />
 
+          <div className="h-px bg-zinc-100" />
+
+          {/* Overlay globale sulle immagini promo */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                Overlay Immagini
+                <button
+                  onClick={() => updateStyle({ overlayDisabled: !getStyleValue('overlayDisabled', true) })}
+                  className={cn(
+                    "p-1 rounded transition-colors",
+                    getStyleValue('overlayDisabled', true) ? "text-red-500 bg-red-50" : "text-emerald-500 bg-emerald-50"
+                  )}
+                >
+                  {getStyleValue('overlayDisabled', true) ? <EyeOff size={10} /> : <Eye size={10} />}
+                </button>
+              </label>
+            </div>
+            {!getStyleValue('overlayDisabled', true) && (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block tracking-tighter">Colore Overlay</label>
+                  <input
+                    type="color"
+                    className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
+                    value={getStyleValue('overlayColor', '#000000')}
+                    onChange={(e) => updateStyle({ overlayColor: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 flex justify-between tracking-widest">
+                    <span>Opacità</span>
+                    <span className="text-zinc-900 font-bold">{getStyleValue('overlayOpacity', 40)}%</span>
+                  </label>
+                  <input
+                    type="range" min="0" max="100" step="1"
+                    className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-zinc-900"
+                    value={getStyleValue('overlayOpacity', 40)}
+                    onChange={(e) => updateStyle({ overlayOpacity: parseInt(e.target.value) })}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
         </div>
       </Section>
@@ -165,8 +234,11 @@ export const Promo: React.FC<PromoProps> = ({
               <div className="space-y-4">
                 <ImageUpload
                   label="Immagine Sfondo"
-                  value={item.image}
-                  onChange={(val) => updateItem(i, { image: val })}
+                  value={resolveImageUrl(item.image, project, imageMemoryCache)}
+                  onChange={async (val, filename) => {
+                    const relativePath = await uploadImage(val, filename);
+                    updateItem(i, { image: relativePath });
+                  }}
                 />
                 <SimpleInput
                   label="Titolo"

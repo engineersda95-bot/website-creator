@@ -90,7 +90,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
   return (
     <section 
       id={block.id}
-      className={cn("w-full transition-all duration-500 overflow-hidden relative flex flex-col justify-center")}
+      className={cn("w-full overflow-hidden relative flex flex-col justify-center")}
       style={{
         background: 'var(--block-bg)',
         color: 'var(--block-color)',
@@ -114,7 +114,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
       />
       <div
         className={cn(
-          "w-full flex flex-col transition-all duration-500 relative z-10",
+          "w-full flex flex-col relative z-10",
           alignment === 'center' ? "mx-auto" : alignment === 'right' ? "ml-auto mr-0" : "mr-0 ml-0"
         )}
         style={{
@@ -129,7 +129,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
               fieldId="title"
               value={content.title || ''}
               onChange={(v) => onInlineEdit('title', v)}
-              className="w-full transition-all duration-500 rt-content"
+              className="w-full rt-content"
               style={{
                 fontSize: 'var(--title-fs)',
                 fontWeight: style.titleBold ? '700' : 'var(--title-fw)' as any,
@@ -143,7 +143,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
             />
           ) : (
             <TitleTag
-              className="w-full transition-all duration-500 rt-content"
+              className="w-full rt-content"
               style={{
                 fontSize: 'var(--title-fs)',
                 fontWeight: style.titleBold ? '700' : 'var(--title-fw)' as any,
@@ -160,7 +160,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
 
         <div
           className={cn(
-            "overflow-hidden relative transition-all duration-500",
+            "overflow-hidden relative",
             (content.type === 'map' || content.type === 'custom') && "flex-grow",
             alignment === 'center' ? "mx-auto" : alignment === 'right' ? "ml-auto mr-0" : "mr-auto ml-0"
           )}

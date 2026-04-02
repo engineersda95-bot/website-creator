@@ -55,8 +55,8 @@ export const PromoBlock: React.FC<PromoBlockProps> = ({
   const baseDelay = style.animationDelay || 0;
 
   const colsD = block.style?.columns || 1;
-  const colsT = block.responsiveStyles?.tablet?.columns || 2;
-  const colsM = block.responsiveStyles?.mobile?.columns || 1;
+  const colsT = block.responsiveStyles?.tablet?.columns ?? Math.min(colsD, 2);
+  const colsM = block.responsiveStyles?.mobile?.columns ?? 1;
 
   const activeCols = viewport === 'tablet' ? colsT : (viewport === 'mobile' ? colsM : colsD);
 
@@ -100,10 +100,66 @@ export const PromoBlock: React.FC<PromoBlockProps> = ({
         imageMemoryCache={imageMemoryCache}
       />
 
-      <div className={cn("relative z-10 w-full mx-auto ", !isFullBleed && "max-w-[var(--block-max-width)]")}>
+      <div className={cn("relative z-10 w-full mx-auto flex flex-col ", !isFullBleed && "max-w-[var(--block-max-width)]")}>
+        {/* Section Title */}
+        {content.title && (
+          <div
+            data-siti-anim={animType !== 'none' ? animType : 'none'}
+            data-siti-anim-duration={animDuration}
+            data-siti-anim-delay={baseDelay}
+            className="w-full mb-[var(--block-gap,32px)]"
+            style={{
+              '--siti-anim-duration': animDuration + 's',
+              '--siti-anim-delay': baseDelay + 's'
+            } as any}
+          >
+            {onInlineEdit ? (
+              <InlineEditable
+                fieldId="title"
+                value={content.title || ''}
+                onChange={(v) => onInlineEdit('title', v)}
+                className="font-heading leading-tight w-full rt-content"
+                style={{
+                  fontSize: 'var(--title-fs)',
+                  textAlign: (style.titleAlign || style.align || 'center') as any,
+                  fontWeight: style.titleBold ? '700' : '400',
+                  fontStyle: style.titleItalic ? 'italic' : 'normal',
+                  lineHeight: 'var(--title-lh)',
+                  letterSpacing: 'var(--title-ls)',
+                  textTransform: 'var(--title-upper)' as any,
+                  color: 'inherit'
+                }}
+                placeholder="Titolo sezione..."
+              />
+            ) : (
+              <React.Fragment>
+                {(() => {
+                  const TitleTag = (style.titleTag || 'h2') as any;
+                  return (
+                    <TitleTag
+                      className="font-heading leading-tight w-full rt-content"
+                      style={{
+                        fontSize: 'var(--title-fs)',
+                        textAlign: (style.titleAlign || style.align || 'center') as any,
+                        fontWeight: style.titleBold ? '700' : '400',
+                        fontStyle: style.titleItalic ? 'italic' : 'normal',
+                        lineHeight: 'var(--title-lh)',
+                        letterSpacing: 'var(--title-ls)',
+                        textTransform: 'var(--title-upper)' as any,
+                        color: 'inherit'
+                      }}
+                      dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+                    />
+                  );
+                })()}
+              </React.Fragment>
+            )}
+          </div>
+        )}
+
         <div
           className={cn(
-            "grid",
+            "grid overflow-y-hidden",
             viewport ? "" : cn(sm, md, lg)
           )}
           style={{
@@ -127,20 +183,12 @@ export const PromoBlock: React.FC<PromoBlockProps> = ({
             return (
               <div
                 key={i}
-                className={cn(
-                  "relative group/promo overflow-hidden flex flex-col",
-                  animType !== 'none' && "will-change-transform"
-                )}
+                className="relative group/promo overflow-hidden flex flex-col"
                 style={{
                   aspectRatio: isFullBleed ? 'auto' : (style.imageAspectRatio || '16/9'),
                   minHeight: isFullBleed ? 'var(--promo-min-h, 60vh)' : undefined,
                   borderRadius: isFullBleed ? '0' : (style.imageBorderRadius !== undefined ? `${style.imageBorderRadius}px` : '24px'),
-                  '--siti-anim-duration': animDuration + 's',
-                  '--siti-anim-delay': itemDelay + 's'
                 } as any}
-                data-siti-anim={animType !== 'none' ? animType : undefined}
-                data-siti-anim-duration={animType !== 'none' ? animDuration : undefined}
-                data-siti-anim-delay={animType !== 'none' ? itemDelay : undefined}
               >
                 {/* Image Background */}
                 <div className="absolute inset-0 z-0">
@@ -150,6 +198,7 @@ export const PromoBlock: React.FC<PromoBlockProps> = ({
                       project={project}
                       isStatic={isStatic}
                       loading={i === 0 ? "eager" : "lazy"}
+                      fetchPriority={i === 0 ? "high" : "auto"}
                       imageMemoryCache={imageMemoryCache}
                       alt={item.alt || item.title || ''}
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover/promo:scale-110 will-change-transform"
@@ -162,14 +211,16 @@ export const PromoBlock: React.FC<PromoBlockProps> = ({
                   )}
                 </div>
 
-                {/* Overlay */}
-                <div
-                  className="absolute inset-0 z-10 pointer-events-none"
-                  style={{
-                    backgroundColor: style.overlayColor || 'transparent',
-                    opacity: (style.overlayOpacity || 0) / 100
-                  }}
-                />
+                {/* Overlay (global style, applied to all items) */}
+                {!style.overlayDisabled && (
+                  <div
+                    className="absolute inset-0 z-10 pointer-events-none"
+                    style={{
+                      backgroundColor: style.overlayColor || '#000000',
+                      opacity: (style.overlayOpacity !== undefined ? style.overlayOpacity : 40) / 100
+                    }}
+                  />
+                )}
 
                 {/* Text Content Overlay */}
                 <div
@@ -178,6 +229,13 @@ export const PromoBlock: React.FC<PromoBlockProps> = ({
                     style.verticalAlign === 'top' ? 'justify-start' : (style.verticalAlign === 'bottom' ? 'justify-end' : 'justify-center'),
                     (style.align || 'center') === 'left' ? 'items-start text-left' : ((style.align || 'center') === 'right' ? 'items-end text-right' : 'items-center text-center')
                   )}
+                  data-siti-anim={animType !== 'none' ? animType : 'none'}
+                  data-siti-anim-duration={animDuration}
+                  data-siti-anim-delay={itemDelay}
+                  style={{
+                    '--siti-anim-duration': animDuration + 's',
+                    '--siti-anim-delay': itemDelay + 's',
+                  } as any}
                 >
                   <div className="w-full max-w-4xl pointer-events-auto">
                     {(() => {
@@ -243,7 +301,7 @@ export const PromoBlock: React.FC<PromoBlockProps> = ({
                       <div className="mt-4">
                         <CTA
                           label={item.cta}
-                          url={item.url}
+                          url={item.ctaUrl || item.url}
                           project={project}
                           viewport={viewport as any}
                           theme={item.ctaTheme || 'primary'}

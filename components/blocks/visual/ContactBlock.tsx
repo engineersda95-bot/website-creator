@@ -60,7 +60,7 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
       key={animKey}
       id={block.id}
       className={cn(
-        "w-full transition-all duration-500 overflow-hidden flex flex-col relative",
+        "w-full overflow-hidden flex flex-col relative",
         alignment === 'center' ? "mx-auto" : alignment === 'right' ? "ml-auto mr-0" : "ml-0 mr-auto"
       )}
       style={{
@@ -315,7 +315,7 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
           >
             <iframe 
               src={mapUrl} 
-              className="w-full h-full grayscale-[0.2] filter hover:grayscale-0 transition-all duration-700" 
+              className="w-full h-full grayscale-[0.2] filter hover:grayscale-0 transition-[filter] duration-700" 
               frameBorder="0" 
               scrolling="no" 
             ></iframe>

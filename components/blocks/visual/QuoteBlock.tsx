@@ -324,7 +324,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
 
             <div
               className={cn(
-                "flex gap-8 pb-4 items-stretch overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all",
+                "flex gap-8 pb-4 items-stretch overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-container no-scrollbar transition-all",
                 "flex-row"
               )}
             >

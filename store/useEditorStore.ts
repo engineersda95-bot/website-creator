@@ -423,7 +423,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const block = currentPage.blocks.find(b => b.id === id);
     if (block) {
       set({ copiedBlock: block });
-      localStorage.setItem('sv_copied_block', JSON.stringify(block));
+      try {
+        localStorage.setItem('sv_copied_block', JSON.stringify(block));
+      } catch {
+        // Block too large for localStorage (e.g. contains base64 images) — in-memory only
+      }
     }
   },
 

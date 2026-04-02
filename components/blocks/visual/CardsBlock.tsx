@@ -98,13 +98,13 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
     const cardContent = (
       <div 
         className={cn(
-          "flex flex-col group/card h-full transition-all duration-500",
+          "flex flex-col group/card h-full",
           align === 'center' ? "items-center text-center" : align === 'right' ? "items-end text-right" : "items-start text-left"
         )}
       >
         <div 
           className={cn(
-            "relative w-full overflow-hidden mb-6 transition-all duration-700 bg-zinc-100 flex items-center justify-center",
+            "relative w-full overflow-hidden mb-6 bg-zinc-100 flex items-center justify-center",
             hasImageShadow && "shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]"
           )}
           style={{
@@ -137,7 +137,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
             const ItemTitleTag = (style.itemTitleTag || 'h3') as any;
             return (
               <div 
-                className="mb-2 tracking-tight transition-all duration-500 leading-tight rt-content"
+                className="mb-2 tracking-tight leading-tight rt-content"
                 style={{ 
                   fontSize: 'var(--item-title-fs)',
                   fontWeight: 'var(--item-title-fw)',
@@ -149,7 +149,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
             );
           })()}
           <div 
-            className="opacity-70 leading-relaxed transition-all duration-500 rt-content"
+            className="opacity-70 leading-relaxed rt-content"
             style={{ 
               fontSize: style.cardSubtitleSize ? `${style.cardSubtitleSize}px` : undefined,
               fontWeight: style.cardSubtitleBold ? '700' : '400',
@@ -226,7 +226,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
                   fieldId="title"
                   value={content.title || ''}
                   onChange={(v) => onInlineEdit('title', v)}
-                  className="tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  className="tracking-tighter leading-tight rt-content"
                   style={{
                     fontSize: 'var(--title-fs)',
                     fontWeight: style.titleBold ? '700' : '400',
@@ -238,7 +238,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
                 />
               ) : (
                 <div
-                  className="tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  className="tracking-tighter leading-tight rt-content"
                   style={{
                     fontSize: 'var(--title-fs)',
                     fontWeight: style.titleBold ? '700' : '400',
@@ -293,7 +293,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
                     data-siti-anim-duration={animDuration}
                     data-siti-anim-delay={itemDelay}
                     className={cn(
-                      "flex flex-col transition-all duration-500 min-w-0 shrink-0 snap-center",
+                      "flex flex-col min-w-0 shrink-0 snap-center",
                       sliderWidth,
                       colsD === 1 && "lg:max-w-4xl lg:mx-auto",
                       (style.cardBgColor || isGradient) && "rounded-[var(--card-radius),_2rem] border border-black/5 dark:border-white/5",
@@ -346,7 +346,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
                   data-siti-anim-duration={animDuration}
                   data-siti-anim-delay={itemDelay}
                   className={cn(
-                    "flex flex-col transition-all duration-500 min-w-0 w-full",
+                    "flex flex-col min-w-0 w-full",
                     colsD === 1 && "lg:max-w-4xl lg:mx-auto",
                     (style.cardBgColor || isGradient) && "rounded-[var(--card-radius),_2rem] border border-black/5 dark:border-white/5",
                     (style.cardBgColor || isGradient) && (colsD > 4 ? "p-4 md:p-6" : "p-6 md:p-8")

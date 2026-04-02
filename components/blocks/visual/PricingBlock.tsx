@@ -60,7 +60,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
         data-siti-anim-duration={animDuration}
         data-siti-anim-delay={itemDelay}
         className={cn(
-          "flex flex-col h-full w-full transition-all duration-500 border relative",
+          "flex flex-col h-full w-full border relative",
           isHighlighted ? "shadow-xl z-20 border-2" : "shadow-sm hover:shadow-md"
         )}
         style={{
@@ -85,18 +85,18 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
 
           <div className="mb-8">
             <div 
-              className="transition-all duration-500 uppercase tracking-[0.2em] mb-4 opacity-50 rt-content"
+              className="uppercase tracking-[0.2em] mb-4 opacity-50 rt-content"
               style={{ fontSize: 'var(--plan-name-fs)', fontWeight: 'var(--plan-name-fw)', fontStyle: 'var(--plan-name-is)', color: 'inherit' }}
               dangerouslySetInnerHTML={{ __html: formatRichText(item.name || 'Piano') }}
             />
             <div className="flex items-baseline gap-1">
               <div 
-                className="transition-all duration-500 tracking-tighter rt-content"
+                className="tracking-tighter rt-content"
                 style={{ fontSize: 'var(--price-fs)', fontWeight: 'var(--price-fw)', fontStyle: 'var(--price-is)', color: 'inherit' }}
                 dangerouslySetInnerHTML={{ __html: formatRichText(item.price || '0\u20ac') }}
               />
               <div 
-                className="transition-all duration-500 opacity-50 rt-content"
+                className="opacity-50 rt-content"
                 style={{ fontSize: 'var(--period-fs)', fontWeight: 'var(--period-fw)', fontStyle: 'var(--period-is)', color: 'inherit' }}
                 dangerouslySetInnerHTML={{ __html: formatRichText(item.period || '') }}
               />
@@ -105,7 +105,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
 
           <ul className="space-y-4 mb-8">
             {(item.features || []).map((feature: string, idx: number) => (
-              <li key={idx} className="flex items-start gap-4 transition-all duration-500 opacity-80">
+              <li key={idx} className="flex items-start gap-4 opacity-80">
                 <div 
                   className="shrink-0 mt-1 w-5 h-5 rounded-full flex items-center justify-center text-white"
                   style={{ backgroundColor: isHighlighted ? 'var(--highlight-color)' : 'var(--card-color)', opacity: isHighlighted ? 1 : 0.2 }}
@@ -113,7 +113,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
                   <Check size={12} strokeWidth={3} />
                 </div>
                 <div 
-                  className="transition-all duration-500 leading-[1.6] rt-content"
+                  className="leading-[1.6] rt-content"
                   style={{ fontSize: 'var(--features-fs)', fontWeight: 'var(--features-fw)', fontStyle: 'var(--features-is)', color: 'inherit' }}
                   dangerouslySetInnerHTML={{ __html: formatRichText(feature) }} 
                 />
@@ -150,16 +150,16 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
             {content.title && (() => {
               const TitleTag = (style.titleTag || 'h2') as any;
               return onInlineEdit ? (
-                <InlineEditable fieldId="title" value={content.title || ''} onChange={(v) => onInlineEdit('title', v)} className="mb-6 tracking-tighter transition-all duration-500 leading-tight rt-content" style={{ fontSize: 'var(--title-fs)', fontWeight: style.titleBold ? '700' : '400', fontStyle: style.titleItalic ? 'italic' : 'normal', textAlign: align as any, color: 'inherit' }} placeholder="Titolo..." />
+                <InlineEditable fieldId="title" value={content.title || ''} onChange={(v) => onInlineEdit('title', v)} className="mb-6 tracking-tighter leading-tight rt-content" style={{ fontSize: 'var(--title-fs)', fontWeight: style.titleBold ? '700' : '400', fontStyle: style.titleItalic ? 'italic' : 'normal', textAlign: align as any, color: 'inherit' }} placeholder="Titolo..." />
               ) : (
-                <div className="mb-6 tracking-tighter transition-all duration-500 leading-tight rt-content" style={{ fontSize: 'var(--title-fs)', fontWeight: style.titleBold ? '700' : '400', fontStyle: style.titleItalic ? 'italic' : 'normal', textAlign: align as any, color: 'inherit' }} dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }} />
+                <div className="mb-6 tracking-tighter leading-tight rt-content" style={{ fontSize: 'var(--title-fs)', fontWeight: style.titleBold ? '700' : '400', fontStyle: style.titleItalic ? 'italic' : 'normal', textAlign: align as any, color: 'inherit' }} dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }} />
               );
             })()}
             {content.subtitle && (
               onInlineEdit ? (
-                <InlineEditable fieldId="subtitle" value={content.subtitle || ''} onChange={(v) => onInlineEdit('subtitle', v)} className={cn("opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap rt-content", align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto")} style={{ fontSize: 'var(--subtitle-fs)', fontWeight: style.subtitleBold ? '700' : '400', fontStyle: style.subtitleItalic ? 'italic' : 'normal', textAlign: align as any, color: 'inherit' }} placeholder="Sottotitolo..." richText multiline />
+                <InlineEditable fieldId="subtitle" value={content.subtitle || ''} onChange={(v) => onInlineEdit('subtitle', v)} className={cn("opacity-70 leading-relaxed whitespace-pre-wrap rt-content", align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto")} style={{ fontSize: 'var(--subtitle-fs)', fontWeight: style.subtitleBold ? '700' : '400', fontStyle: style.subtitleItalic ? 'italic' : 'normal', textAlign: align as any, color: 'inherit' }} placeholder="Sottotitolo..." richText multiline />
               ) : (
-                <div className={cn("opacity-70 leading-relaxed transition-all duration-500 whitespace-pre-wrap rt-content", align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto")} style={{ fontSize: 'var(--subtitle-fs)', fontWeight: style.subtitleBold ? '700' : '400', fontStyle: style.subtitleItalic ? 'italic' : 'normal', textAlign: align as any, color: 'inherit' }} dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }} />
+                <div className={cn("opacity-70 leading-relaxed whitespace-pre-wrap rt-content", align === 'center' ? "mx-auto" : align === 'right' ? "ml-auto" : "mr-auto")} style={{ fontSize: 'var(--subtitle-fs)', fontWeight: style.subtitleBold ? '700' : '400', fontStyle: style.subtitleItalic ? 'italic' : 'normal', textAlign: align as any, color: 'inherit' }} dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }} />
               )
             )}
           </div>

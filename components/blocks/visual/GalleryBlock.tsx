@@ -65,7 +65,7 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
         className={cn(
           "group relative overflow-hidden rounded-[var(--image-radius)] w-full",
           style.imageShadow && 'shadow-lg',
-          style.imageHover && 'transition-all duration-500 hover:scale-[1.02] hover:shadow-xl hover:z-10',
+          style.imageHover && 'transition-[transform,box-shadow] duration-300 hover:scale-[1.02] hover:shadow-xl hover:z-10',
           !opts?.noMargin && variant === 'masonry' && 'mb-[var(--gallery-gap)] break-inside-avoid',
           opts?.fillHeight && 'h-full',
         )}
@@ -140,7 +140,7 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
                 fieldId="title"
                 value={content.title || ''}
                 onChange={(v) => onInlineEdit('title', v)}
-                className="font-heading leading-tight w-full transition-all duration-500 rt-content"
+                className="font-heading leading-tight w-full rt-content"
                 style={{
                   fontSize: 'var(--title-fs)',
                   textAlign: 'var(--block-align)' as any,

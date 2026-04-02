@@ -20,7 +20,7 @@ export const DividerBlock: React.FC<DividerBlockProps> = ({ block, project, view
 
   return (
     <section id={block.id} 
-      className={cn("w-full flex transition-all duration-500 relative overflow-hidden", alignClass)}
+      className={cn("w-full flex relative overflow-hidden", alignClass)}
       style={{
         background: 'var(--block-bg)',
         paddingTop: 'var(--block-pt)',

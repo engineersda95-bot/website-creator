@@ -27,13 +27,14 @@ export const SitiImage: React.FC<SitiImageProps> = ({
   if (!src) return null;
 
   const resolved = resolveImageUrl(src, project || null, imageMemoryCache, isStatic);
+  const isEager = loading === 'eager' || (props as any).fetchPriority === 'high';
 
   return (
     <img
       src={resolved}
       alt={props.alt || ""}
       loading={loading || "lazy"}
-      decoding="async"
+      decoding={isEager ? "sync" : "async"}
       className={className}
       {...props}
     />

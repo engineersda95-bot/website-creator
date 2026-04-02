@@ -132,6 +132,7 @@ export const ConfigSidebar: React.FC = () => {
                   updateStyle={updateStyle}
                   getStyleValue={getStyleValue}
                   project={project}
+                  viewport={viewport}
                />
             ) : (
                <div className="p-6 text-zinc-400 text-xs text-center italic">

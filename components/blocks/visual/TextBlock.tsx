@@ -38,7 +38,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
   return (
     <section
       key={animKey}
-      className={cn("w-full transition-all duration-500 overflow-hidden relative")}
+      className={cn("w-full overflow-hidden relative")}
       style={{
         background: 'var(--block-bg)',
         color: 'var(--block-color)',
@@ -64,7 +64,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
       />
       <div
         id={block.id} // EDITOR TARGET - Restricts width only here
-        className={cn("w-full mx-auto relative z-10 flex flex-col transition-all duration-500")}
+        className={cn("w-full mx-auto relative z-10 flex flex-col")}
         style={{
           paddingLeft: 'var(--block-px)',
           paddingRight: 'var(--block-px)',
@@ -91,7 +91,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
                 fieldId="title"
                 value={content.title || ''}
                 onChange={(v) => onInlineEdit('title', v)}
-                className="tracking-tighter transition-all duration-500 rt-content w-full"
+                className="tracking-tighter rt-content w-full"
                 style={{
                   fontSize: 'var(--title-fs)',
                   fontWeight: 'var(--title-fw)' as any,
@@ -104,7 +104,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
               />
             ) : (
               <div
-                className="tracking-tighter transition-all duration-500 rt-content"
+                className="tracking-tighter rt-content"
                 style={{
                   fontSize: 'var(--title-fs)',
                   fontWeight: 'var(--title-fw)' as any,
@@ -134,7 +134,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
               fieldId="text"
               value={content.text}
               onChange={(v) => onInlineEdit('text', v)}
-              className="rt-content max-w-none transition-all duration-500 w-full"
+              className="rt-content max-w-none w-full"
               style={{
                 fontSize: 'var(--content-fs)',
                 fontWeight: 'var(--content-fw)' as any,
@@ -149,7 +149,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({ content, block, project, v
             />
           ) : (
             <div
-              className="rt-content max-w-none transition-all duration-500"
+              className="rt-content max-w-none"
               style={{
                 fontSize: 'var(--content-fs)',
                 fontWeight: 'var(--content-fw)' as any,

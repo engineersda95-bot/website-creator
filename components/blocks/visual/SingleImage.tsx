@@ -57,7 +57,7 @@ export const SingleImage: React.FC<SingleImageBlockProps> = ({
   const ImageElement = (
     <div 
       className={cn(
-        "relative w-full transition-all duration-700 bg-zinc-100 flex items-center justify-center group/image",
+        "relative w-full bg-zinc-100 flex items-center justify-center group/image",
         hasImageShadow && "shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]"
       )}
       style={{

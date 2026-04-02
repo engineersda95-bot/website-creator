@@ -115,7 +115,7 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
   const CardsItem = ({ item }: { item: any }) => (
     <div
       className={cn(
-        "flex flex-col transition-all duration-500 h-full",
+        "flex flex-col h-full",
         align === 'center' ? "items-center text-center" : align === 'right' ? "items-end text-right" : "items-start text-left",
         isCard && "border border-black/5 dark:border-white/5 shadow-sm hover:shadow-xl hover:-translate-y-1 backdrop-blur-sm"
       )}
@@ -214,7 +214,7 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
                   fieldId="title"
                   value={content.title || ''}
                   onChange={(v) => onInlineEdit('title', v)}
-                  className="mb-4 tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  className="mb-4 tracking-tighter leading-tight rt-content"
                   style={{
                     fontSize: 'var(--title-fs)',
                     fontWeight: style.titleBold ? '700' : '400',
@@ -225,7 +225,7 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
                 />
               ) : (
                 <div
-                  className="mb-4 tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  className="mb-4 tracking-tighter leading-tight rt-content"
                   style={{
                     fontSize: 'var(--title-fs)',
                     fontWeight: style.titleBold ? '700' : '400',
@@ -242,7 +242,7 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
                   fieldId="subtitle"
                   value={content.subtitle || ''}
                   onChange={(v) => onInlineEdit('subtitle', v)}
-                  className="opacity-70 max-w-2xl mx-auto leading-relaxed transition-all duration-500 rt-content"
+                  className="opacity-70 max-w-2xl mx-auto leading-relaxed rt-content"
                   style={{
                     fontSize: style.subtitleSize ? `${style.subtitleSize}px` : (isMobile ? '18px' : '20px'),
                     fontWeight: style.subtitleBold ? '700' : '400',
@@ -256,7 +256,7 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
                 />
               ) : (
                 <div
-                  className="opacity-70 max-w-2xl mx-auto leading-relaxed transition-all duration-500 rt-content"
+                  className="opacity-70 max-w-2xl mx-auto leading-relaxed rt-content"
                   style={{
                     fontSize: style.subtitleSize ? `${style.subtitleSize}px` : (isMobile ? '18px' : '20px'),
                     fontWeight: style.subtitleBold ? '700' : '400',
@@ -314,7 +314,7 @@ export const Benefits: React.FC<BenefitsBlockProps> = ({
                       '--siti-anim-delay': itemDelay + 's'
                     } as any}
                     className={cn(
-                      "flex flex-col transition-all duration-500 min-w-0 shrink-0 snap-center",
+                      "flex flex-col min-w-0 shrink-0 snap-center",
                       sliderWidth,
                       colsD === 1 && "lg:max-w-4xl lg:mx-auto"
                     )}

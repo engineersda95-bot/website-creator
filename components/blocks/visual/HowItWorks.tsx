@@ -112,7 +112,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
   // ─── CARDS variant (default) ──────────────────────────────────────
   const CardsStep = ({ item, index, layoutType }: { item: any; index: number; layoutType: string }) => (
     <div className={cn(
-      "relative flex flex-col transition-all duration-500",
+      "relative flex flex-col",
       layoutType === 'grid' ? (
         align === 'center' ? "items-center text-center group" :
         align === 'right' ? "items-end text-right group" :
@@ -235,7 +235,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
                 '--siti-anim-delay': baseDelay + 's'
               } as any}
               className={cn(
-                  "mb-16 tracking-tighter transition-all duration-500 leading-tight rt-content w-full",
+                  "mb-16 tracking-tighter leading-tight rt-content w-full",
                   align === 'center' ? "text-center" : align === 'right' ? "text-right" : "text-left"
               )}
             >
@@ -244,7 +244,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
                   fieldId="title"
                   value={content.title || ''}
                   onChange={(v) => onInlineEdit('title', v)}
-                  className="tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  className="tracking-tighter leading-tight rt-content"
                   style={{
                     fontSize: 'var(--title-fs)',
                     fontWeight: style.titleBold ? '700' : '400',
@@ -255,7 +255,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
                 />
               ) : (
                 <div
-                  className="tracking-tighter transition-all duration-500 leading-tight rt-content"
+                  className="tracking-tighter leading-tight rt-content"
                   style={{
                     fontSize: 'var(--title-fs)',
                     fontWeight: style.titleBold ? '700' : '400',
@@ -335,7 +335,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
                     data-siti-anim-duration={animDuration}
                     data-siti-anim-delay={itemDelay}
                     className={cn(
-                      "flex flex-col transition-all duration-500 min-w-0 shrink-0 snap-center",
+                      "flex flex-col min-w-0 shrink-0 snap-center",
                       sliderWidth
                     )}
                     style={{

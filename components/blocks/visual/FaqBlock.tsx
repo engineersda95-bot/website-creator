@@ -44,7 +44,7 @@ const FAQWrapper: React.FC<{
   return (
     <section
       key={animKey}
-      className={cn("w-full relative transition-all duration-500 overflow-hidden")}
+      className={cn("w-full relative overflow-hidden")}
       style={{
         background: 'var(--block-bg)',
         paddingTop: 'var(--block-pt)',
@@ -69,7 +69,7 @@ const FAQWrapper: React.FC<{
       />
       <div
         id={block.id} // EDITOR TARGET - Restricts width only here
-        className="relative z-10 w-full mx-auto flex flex-col transition-all duration-500"
+        className="relative z-10 w-full mx-auto flex flex-col"
         style={{
           paddingLeft: 'var(--block-px)',
           paddingRight: 'var(--block-px)',
@@ -97,7 +97,7 @@ const FAQWrapper: React.FC<{
                 fieldId="title"
                 value={content.title || ''}
                 onChange={(v) => onInlineEdit('title', v)}
-                className="tracking-tight transition-all duration-500 w-full rt-content"
+                className="tracking-tight w-full rt-content"
                 style={{
                   fontSize: 'var(--title-fs)',
                   fontWeight: 'var(--title-fw)' as any,
@@ -112,7 +112,7 @@ const FAQWrapper: React.FC<{
               />
             ) : (
               <div
-                className="tracking-tight transition-all duration-500 w-full rt-content"
+                className="tracking-tight w-full rt-content"
                 style={{
                   fontSize: 'var(--title-fs)',
                   fontWeight: 'var(--title-fw)' as any,

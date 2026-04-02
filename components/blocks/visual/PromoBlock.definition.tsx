@@ -14,13 +14,14 @@ export const promoDefinition: BlockDefinition = {
   defaults: {
     content: {
       items: [
-        { 
-          image: '', 
-          title: 'Special Offer', 
+        {
+          image: '',
+          title: 'Special Offer',
           text: 'Approfitta della promozione',
           url: ''
         }
-      ]
+      ],
+      title: ''
     },
     style: {
       padding: 60,
@@ -31,13 +32,20 @@ export const promoDefinition: BlockDefinition = {
       imageAspectRatio: '16/9',
       imageBorderRadius: 24,
       itemTitleTag: 'h3',
-      overlayColor: 'rgba(0,0,0,0.4)',
+      overlayDisabled: true,
+      overlayColor: '#000000',
+      overlayOpacity: 40,
       verticalAlign: 'center',
       horizontalAlign: 'center',
       itemTitleBold: true,
       itemTitleItalic: false,
       itemTitleSize: null,
       itemTextSize: null,
+      titleSize: 42,
+      titleTag: 'h2',
+      titleBold: true,
+      titleItalic: false,
+      titleAlign: null,
       textColorOverride: '#ffffff',
       minHeight: 60,
       animationType: 'none',
@@ -45,8 +53,8 @@ export const promoDefinition: BlockDefinition = {
       animationDelay: 0
     },
     responsiveStyles: {
-      tablet: { columns: 2 },
-      mobile: { columns: 1 }
+      tablet: { },
+      mobile: { }
     }
   },
   styleMapper: (style, block, project, viewport) => {

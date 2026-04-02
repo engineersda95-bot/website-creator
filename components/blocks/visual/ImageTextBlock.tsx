@@ -65,7 +65,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
       key={animKey}
       id={block.id}
       className={cn(
-        "relative overflow-hidden transition-all duration-500",
+        "relative overflow-hidden",
       )}
       style={{
         background: 'var(--block-bg)',
@@ -119,7 +119,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
           >
             <div
               className={cn(
-                "relative w-full overflow-hidden transition-all duration-700 h-auto",
+                "relative w-full overflow-hidden h-auto",
                 hasImageShadow && "shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]"
               )}
               style={{
@@ -178,7 +178,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                     fieldId="title"
                     value={content.title || ''}
                     onChange={(v) => onInlineEdit('title', v)}
-                    className="tracking-tighter transition-all duration-500 leading-[1.1] rt-content"
+                    className="tracking-tighter leading-[1.1] rt-content"
                     style={{
                       fontSize: 'var(--title-fs)',
                       fontWeight: 'var(--title-fw)' as any,
@@ -193,7 +193,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   />
                 ) : (
                   <div
-                    className="tracking-tighter transition-all duration-500 leading-[1.1] rt-content"
+                    className="tracking-tighter leading-[1.1] rt-content"
                     style={{
                       fontSize: 'var(--title-fs)',
                       fontWeight: 'var(--title-fw)' as any,
@@ -225,7 +225,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                     fieldId="text"
                     value={content.text || ''}
                     onChange={(v) => onInlineEdit('text', v)}
-                    className="rt-content max-w-none transition-all duration-500 w-full"
+                    className="rt-content max-w-none w-full"
                     style={textStyle}
                     placeholder="Descrizione..."
                     multiline
@@ -233,7 +233,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   />
                 ) : (
                   <div
-                    className="rt-content max-w-none transition-all duration-500"
+                    className="rt-content max-w-none"
                     style={textStyle}
                     dangerouslySetInnerHTML={{ __html: formatRichText(content.text) }}
                   />

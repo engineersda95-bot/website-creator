@@ -91,7 +91,7 @@ export const PdfBlock = ({ block, project, isStatic, viewport, onInlineEdit }: a
     <section 
       style={containerStyle} 
       className={cn(
-        "w-full relative overflow-hidden group/pdf transition-all duration-500",
+        "w-full relative overflow-hidden group/pdf",
         hasBg && !style.textColor && "text-white"
       )}
     >

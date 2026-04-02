@@ -53,7 +53,7 @@ const HeroBg: React.FC<{
         imageMemoryCache={imageMemoryCache}
         alt={content.backgroundAlt || ''}
         loading="eager" fetchPriority="high"
-        className={cn("absolute inset-0 z-0 w-full h-full pointer-events-none transition-all duration-700", imageClassName)}
+        className={cn("absolute inset-0 z-0 w-full h-full pointer-events-none", imageClassName)}
         style={{
           objectFit: (style.backgroundSize === 'auto' ? 'none' : style.backgroundSize) || 'cover',
           objectPosition: style.backgroundPosition || 'center',
@@ -63,7 +63,7 @@ const HeroBg: React.FC<{
       />
       {!style.overlayDisabled && (
         <div
-          className={cn("absolute inset-0 z-[1] transition-all duration-500 pointer-events-none", className)}
+          className={cn("absolute inset-0 z-[1] pointer-events-none", className)}
           style={{
             backgroundColor: style.overlayType === 'gradient' ? 'transparent' : (style.overlayColor || '#000000'),
             backgroundImage: style.overlayType === 'gradient'
@@ -145,7 +145,7 @@ const PatternLayer: React.FC<{ style: any }> = ({ style }) => {
   if (!pattern || pattern.id === 'none') return null;
   return (
     <div
-      className="absolute inset-0 z-0 pointer-events-none transition-all duration-500 background-pattern"
+      className="absolute inset-0 z-0 pointer-events-none background-pattern"
       style={pattern.getStyle(style.patternColor || style.textColor || '#000000', style.patternOpacity || 10, style.patternScale || 40)}
     />
   );
@@ -199,14 +199,14 @@ const HeroText: React.FC<{
         <InlineEditable
           value={content.title}
           onChange={(v) => onInlineEdit('title', v)}
-          className="tracking-tighter leading-[0.9] transition-all duration-500 rt-content w-full"
+          className="tracking-tighter leading-[0.9] rt-content w-full"
           style={titleStyle}
           placeholder="Titolo..."
           fieldId="title"
         />
       ) : (
         <div
-          className="tracking-tighter leading-[0.9] transition-all duration-500 rt-content"
+          className="tracking-tighter leading-[0.9] rt-content"
           style={titleStyle}
           dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
         />
@@ -227,7 +227,7 @@ const HeroText: React.FC<{
           <InlineEditable
             value={content.subtitle}
             onChange={(v) => onInlineEdit('subtitle', v)}
-            className={cn("max-w-2xl leading-relaxed transition-all duration-500 rt-content w-full", subtitleClass)}
+            className={cn("max-w-2xl leading-relaxed rt-content w-full", subtitleClass)}
             style={subtitleStyle}
             placeholder="Sottotitolo..."
             richText
@@ -236,7 +236,7 @@ const HeroText: React.FC<{
           />
         ) : (
           <div
-            className={cn("max-w-2xl leading-relaxed transition-all duration-500 rt-content", subtitleClass)}
+            className={cn("max-w-2xl leading-relaxed rt-content", subtitleClass)}
             style={subtitleStyle}
             dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
           />
@@ -266,7 +266,7 @@ const CenteredHero: React.FC<HeroProps> = ({ content, block, project, viewport, 
     <section
       key={animKey}
       id={block.id}
-      className="relative flex flex-col overflow-hidden transition-all duration-500"
+      className="relative flex flex-col overflow-hidden"
       style={{
         background: 'var(--block-bg)',
         minHeight: 'var(--hero-min-height)',
@@ -280,7 +280,7 @@ const CenteredHero: React.FC<HeroProps> = ({ content, block, project, viewport, 
       <PatternLayer style={style} />
       <HeroBg content={content} style={style} project={project} isStatic={isStatic} imageMemoryCache={imageMemoryCache} />
       <div
-        className={cn("mx-auto relative z-10 w-full flex flex-col transition-all duration-500", hasBg && !style.textColor && "text-white")}
+        className={cn("mx-auto relative z-10 w-full flex flex-col", hasBg && !style.textColor && "text-white")}
         style={{ gap: 'var(--block-gap)', paddingLeft: 'var(--block-px)', paddingRight: 'var(--block-px)', alignItems: 'var(--block-items)' as any, textAlign: 'var(--block-align)' as any }}
       >
         <HeroText content={content} style={style} anim={anim} onInlineEdit={onInlineEdit} />
@@ -310,7 +310,7 @@ const SplitHero: React.FC<HeroProps> = ({ content, block, project, viewport, isS
     <section
       key={animKey}
       id={block.id}
-      className="relative overflow-hidden transition-all duration-500"
+      className="relative overflow-hidden"
       style={{ background: 'var(--block-bg)', color: 'var(--block-color)', minHeight: 'var(--hero-min-height)' }}
     >
       {content.sectionId && <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />}
@@ -318,7 +318,7 @@ const SplitHero: React.FC<HeroProps> = ({ content, block, project, viewport, isS
       <div className={cn("mx-auto relative z-10 w-full h-full", isMobile ? "flex flex-col" : "grid grid-cols-2")} style={{ minHeight: 'var(--hero-min-height)' }}>
         {/* Text side */}
         <div
-          className="flex flex-col justify-center transition-all duration-500"
+          className="flex flex-col justify-center"
           style={{ paddingTop: 'var(--block-pt)', paddingBottom: 'var(--block-pb)', paddingLeft: 'var(--block-px)', paddingRight: 'var(--block-px)', gap: 'var(--block-gap)', textAlign: 'var(--block-align)' as any, alignItems: 'var(--block-items)' as any }}
         >
           <HeroText content={content} style={style} subtitleClass="!ml-0 !mr-0" anim={anim} onInlineEdit={onInlineEdit} />
@@ -334,7 +334,7 @@ const SplitHero: React.FC<HeroProps> = ({ content, block, project, viewport, isS
               imageMemoryCache={imageMemoryCache}
               alt={content.backgroundAlt || ''}
               loading="eager" fetchPriority="high"
-              className="absolute inset-0 w-full h-full pointer-events-none transition-all duration-700"
+              className="absolute inset-0 w-full h-full pointer-events-none"
               style={{ objectFit: 'cover', objectPosition: style.backgroundPosition || 'center' } as any}
             />
           </div>
@@ -365,7 +365,7 @@ const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, i
     <section
       key={animKey}
       id={block.id}
-      className="relative overflow-hidden transition-all duration-500"
+      className="relative overflow-hidden"
       style={{ background: 'var(--block-bg)', color: 'var(--block-color)' }}
     >
       {content.sectionId && <span id={content.sectionId} className="absolute -top-[100px] left-0 w-full h-0 pointer-events-none" />}
@@ -380,7 +380,7 @@ const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, i
             imageMemoryCache={imageMemoryCache}
             alt={content.backgroundAlt || ''}
             loading="eager" fetchPriority="high"
-            className="absolute inset-0 w-full h-full pointer-events-none transition-all duration-700"
+            className="absolute inset-0 w-full h-full pointer-events-none"
             style={{ objectFit: 'cover', objectPosition: style.backgroundPosition || 'center' } as any}
           />
           {!style.overlayDisabled && (
@@ -395,7 +395,7 @@ const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, i
       )}
       {/* Text below */}
       <div
-        className="relative z-10 mx-auto w-full flex flex-col transition-all duration-500"
+        className="relative z-10 mx-auto w-full flex flex-col"
         style={{ paddingTop: hasBg ? 'var(--block-gap)' : 'var(--block-pt)', paddingBottom: 'var(--block-pb)', paddingLeft: 'var(--block-px)', paddingRight: 'var(--block-px)', gap: 'var(--block-gap)', alignItems: 'var(--block-items)' as any, textAlign: 'var(--block-align)' as any }}
       >
         <HeroText content={content} style={style} anim={anim} onInlineEdit={onInlineEdit} />
