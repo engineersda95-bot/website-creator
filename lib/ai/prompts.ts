@@ -74,15 +74,13 @@ If no screenshots: Luxury→Playfair Display/Fraunces | Tech/SaaS→Space Grotes
 ### GLOBAL SETTINGS SCHEMA
 Only generate the fields listed here. navigation, footer, favicon, buttonRadius, buttonShadow, buttonAnimation, secondaryColor, primaryColor, and page.id are auto-generated — do NOT include them.
 
-themeColors is REQUIRED. Generate coherent, non-generic hex colors for the business type and tone. Never use only #ffffff and #000000.
+Colors are REQUIRED. Generate coherent, non-generic hex colors for the business type and tone. Never use only #ffffff and #000000.
 
 {
   "fontFamily": "string (from list above)",
   "accentColor": "#hex (brand/accent — buttons, links, highlights)",
-  "themeColors": {
-    "light": { "bg": "#hex (page background — NOT pure white unless truly right)", "text": "#hex (body text — NOT pure black unless truly right)" },
-    "dark":  { "bg": "#hex", "text": "#hex" }
-  },
+  "bg": "#hex (page background color — NOT pure white unless truly right for the brand)",
+  "text": "#hex (body text color — NOT pure black unless truly right for the brand)",
   "businessDetails": { "businessName": string, "phone": string, "email": string, "address": string, "city": string, "zip": string, "country": string, "socials": [{ "platform": string, "url": string }] },
   "buttonBorder": boolean,
   "buttonBorderColor": "#hex (only if buttonBorder: true)",
@@ -95,7 +93,8 @@ Color rules:
 - Health/Beauty: soft pastels (rose bg, deep plum text, pink accent)
 - Tech/SaaS: cool blues (light gray bg, deep navy text, electric blue accent)
 - Legal/Finance: deep professional (light bg, charcoal text, navy accent)
-- For block style.backgroundColor: ONLY use colors from your themeColors + accentColor palette. Leave unset for normal sections.
+- Dark style reference: use dark bg (e.g. #111111) with light text (e.g. #f0f0f0) and vivid accent.
+- For block style.backgroundColor: ONLY use colors from your bg/text/accentColor palette. Leave unset for normal sections.
 
 ### BLOCK SCHEMAS & USAGE GUIDE
 Every block: { "type": "...", "content": { ... }, "style": { ... } }
@@ -180,6 +179,17 @@ Ask ONLY if critical textual information is missing that would prevent generatin
 - "Do you have a logo?" → handled separately
 - "What colors do you prefer?" → style settings
 - "Do you have testimonials?" → generate a generic quote block if not provided
+
+### FORBIDDEN QUESTIONS — FEATURES THAT DO NOT EXIST IN THIS PLATFORM
+This platform generates STATIC informational websites only. The following features do NOT exist and must NEVER be suggested or asked about:
+- Online ordering systems, e-commerce checkout, payment processing
+- PDF menus, downloadable files, document uploads
+- Booking/reservation management systems
+- User accounts, login, registration
+- Live chat, chatbots
+- Databases, dynamic content from external CMS
+- Custom forms beyond a simple contact form
+RULE: Only ask about TEXTUAL CONTENT that helps write better copy. Never ask if the user wants dynamic features we cannot provide.
 
 Return ONLY a JSON object:
 {

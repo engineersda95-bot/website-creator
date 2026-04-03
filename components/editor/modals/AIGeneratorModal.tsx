@@ -134,7 +134,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const inputClass = "w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl focus:border-zinc-400 outline-none transition-all placeholder:text-zinc-300";
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-  const MAX_SCREENSHOTS = 5;
+  const MAX_SCREENSHOTS = 1;
 
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1020,42 +1020,39 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest pl-1">Ispirazione Stile</label>
-                  <span className="text-[10px] text-zinc-400">Massimo 5 file</span>
+                  <span className="text-[10px] text-zinc-400">1 immagine di riferimento</span>
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-4">
-                  <label className="relative group cursor-pointer">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                    <div className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-zinc-200 rounded-2xl bg-zinc-50/50 group-hover:bg-white group-hover:border-zinc-900 transition-all text-center">
-                      <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-zinc-100 flex items-center justify-center text-zinc-400 group-hover:text-zinc-900 transition-colors">
-                        <ImageIcon size={24} />
+                  {screenshotUrls.length === 0 && (
+                    <label className="relative group cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                      <div className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-zinc-200 rounded-2xl bg-zinc-50/50 group-hover:bg-white group-hover:border-zinc-900 transition-all text-center">
+                        <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-zinc-100 flex items-center justify-center text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                          <ImageIcon size={24} />
+                        </div>
+                        <div>
+                          <div className="text-[13px] font-black text-zinc-900 uppercase tracking-tight">Trascina o Clicca</div>
+                          <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Carica un'immagine di riferimento per lo stile</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-[13px] font-black text-zinc-900 uppercase tracking-tight">Trascina o Clicca</div>
-                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Carica immagini di riferimento per lo stile</div>
-                      </div>
-                    </div>
-                  </label>
+                    </label>
+                  )}
 
                   {screenshotUrls.length > 0 && (
-                    <div className="grid grid-cols-5 gap-2">
-                      {screenshotUrls.map((url, i) => (
-                        <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-zinc-200 group/img shadow-sm animate-in zoom-in-50 duration-200">
-                          <img src={url} alt="Reference" className="w-full h-full object-cover" />
-                          <button
-                            onClick={() => setScreenshotUrls(prev => prev.filter((_, idx) => idx !== i))}
-                            className="absolute top-1 right-1 p-1 bg-white/90 border border-zinc-100 rounded-lg text-red-500 opacity-0 group-hover/img:opacity-100 transition-opacity"
-                          >
-                            <X size={10} />
-                          </button>
-                        </div>
-                      ))}
+                    <div className="relative rounded-xl overflow-hidden border border-zinc-200 group/img shadow-sm animate-in zoom-in-50 duration-200 aspect-video">
+                      <img src={screenshotUrls[0]} alt="Reference" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => { setScreenshotUrls([]); setScreenshotStoragePaths([]); }}
+                        className="absolute top-2 right-2 p-1.5 bg-white/90 border border-zinc-100 rounded-lg text-red-500 opacity-0 group-hover/img:opacity-100 transition-opacity shadow-sm"
+                      >
+                        <X size={12} />
+                      </button>
                     </div>
                   )}
                 </div>

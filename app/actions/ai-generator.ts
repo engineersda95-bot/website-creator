@@ -1,6 +1,7 @@
 'use server';
 
 import { AI_VALIDATION_PROMPT, AI_WEBSITE_GENERATOR_SYSTEM_PROMPT } from '@/lib/ai/prompts';
+import { getUnsplashUrl, getHeroUnsplashUrl } from '@/lib/ai/unsplash-images';
 import { createClient } from '@/lib/supabase/server';
 import { canUseAI, canCreateProject } from '@/lib/permissions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -179,27 +180,36 @@ const MAX_DESCRIPTION_LENGTH = 5000;
 const MAX_EXTRA_PAGES = 10;
 const ALLOWED_DOMAINS = ['supabase.co', 'supabase.in'];
 
-// Deterministic CTA label from site objective
-function deriveCTALabel(siteObjective?: string, language?: string): string {
-  const isIt = !language || language === 'it';
-  const obj = (siteObjective || '').toLowerCase();
-  if (obj.includes('prenotat') || obj.includes('book') || obj.includes('reserv')) return isIt ? 'Prenota ora' : 'Book now';
-  if (obj.includes('contact') || obj.includes('contat')) return isIt ? 'Contattaci' : 'Contact us';
-  if (obj.includes('prevent') || obj.includes('quote')) return isIt ? 'Richiedi preventivo' : 'Get a quote';
-  if (obj.includes('acquist') || obj.includes('buy') || obj.includes('shop')) return isIt ? 'Acquista' : 'Buy now';
-  return isIt ? 'Scopri di più' : 'Learn more';
-}
+// Canonical sectionId per block type (deterministic, language: it)
+const BLOCK_TYPE_CANONICAL_ID: Record<string, string> = {
+  contact:      'contatti',
+  faq:          'faq',
+  benefits:     'vantaggi',
+  cards:        'servizi',
+  'how-it-works': 'come-funziona',
+  quote:        'recensioni',
+  pricing:      'prezzi',
+  promo:        'offerte',
+  text:         'chi-siamo',
+  'image-text': 'info',
+  hero:         'hero',
+  navigation:   'nav',
+  footer:       'footer',
+};
 
-function deriveCTAUrl(siteObjective?: string, useAnchorNav?: boolean, pages?: any[]): string {
-  const obj = (siteObjective || '').toLowerCase();
-  const isContact = obj.includes('contact') || obj.includes('contat') || obj.includes('prenotat') || obj.includes('book') || obj.includes('prevent') || obj.includes('quote');
-  if (useAnchorNav) return '#contatti';
-  if (isContact && pages) {
-    const contactPage = pages.find((p: any) => p.slug?.includes('contat') || p.slug?.includes('contact') || p.slug?.includes('prenotat'));
-    if (contactPage) return `/${contactPage.slug}`;
-  }
-  return '#contatti';
-}
+// Human-readable nav label per block type (used in anchor nav)
+const BLOCK_TYPE_CANONICAL_LABEL: Record<string, string> = {
+  contact:        'Contatti',
+  faq:            'FAQ',
+  benefits:       'Vantaggi',
+  cards:          'Servizi',
+  'how-it-works': 'Come funziona',
+  quote:          'Recensioni',
+  pricing:        'Prezzi',
+  promo:          'Offerte',
+  text:           'Chi siamo',
+  'image-text':   'Info',
+};
 
 export async function generateProjectWithAI(data: AIGenerationData) {
   // Input validation
@@ -267,10 +277,7 @@ CONTACT INFO:
 Email: ${data.email || 'Not provided'}
 Phone: ${data.phone || 'Not provided'} (Clean: ${cleanPhone})
 Address: ${data.address || ''}, ${data.city || ''} ${data.zip || ''}, ${data.country || 'Italia'}
-Socials: ${data.socials?.map(s => {
-          if (s.platform === 'whatsapp') return `WhatsApp: wa.me/${s.url.replace(/\D/g, '')}`;
-          return `${s.platform}: ${s.url}`;
-        }).join(', ') || 'None'}
+Socials: ${data.socials?.map(s => `${s.platform}: ${s.url}`).join(', ') || 'None'}
 
 EXTRA PAGES REQUESTED:
 ${data.extraPages?.map(p => `- ${p.name}: ${p.description}`).join('\n') || 'None'}
@@ -280,9 +287,12 @@ You MUST return exactly ${1 + (data.extraPages?.length || 0)} pages:
 1. Home (slug: "home")
 ${data.extraPages?.map((p, i) => `${i + 2}. ${p.name} (slug: "${p.name.toLowerCase().replace(/\s+/g, '-')}")`).join('\n') || ''}
 ${data.useAnchorNav !== undefined ? `
-PAGE TYPE: ${data.useAnchorNav ? 'SINGLE PAGE with anchor navigation. Use #section-id format for all internal links (e.g. #chi-siamo, #servizi, #contatti).' : 'SINGLE PAGE without anchor navigation.'}
+PAGE TYPE: ${data.useAnchorNav ? `SINGLE PAGE with anchor navigation. Use these exact anchor IDs for internal links:
+  #vantaggi (benefits), #servizi (cards), #come-funziona (how-it-works), #recensioni (quote), #faq (faq), #contatti (contact), #prezzi (pricing), #offerte (promo), #chi-siamo (text), #info (image-text).
+  If the same block type appears more than once, append -2, -3, etc. (e.g. #info-2).
+  hero.ctaUrl MUST use one of these anchors — choose the one most relevant to the site objective.` : 'SINGLE PAGE without anchor navigation.'}
 ` : ''}
-${!data.fontFamily ? `
+${!data.fontFamily && !(data.screenshotUrls?.length) ? `
 FONT: Choose the most appropriate font from the available list based on tone and business type.
 ` : ''}
 ${data.creativeMode ? `
@@ -303,7 +313,7 @@ ${data.creativeMode ? `
 
     // Add Screenshots (as base64)
     if (data.screenshotUrls && data.screenshotUrls.length > 0) {
-      promptParts.push({ text: "Use these screenshots for global design extraction (typography, colors, padding, etc.):" });
+      promptParts.push({ text: "This is a style reference screenshot. Extract its dominant colors (background, text, accent) and use them EXACTLY for themeColors.light.bg, themeColors.light.text, and accentColor — overriding all defaults. Also extract font category, spacing, and overall tone." });
       for (const url of data.screenshotUrls) {
         const screenshotData = await fetchImageAsBase64(url);
         if (screenshotData) promptParts.push({ inlineData: screenshotData });
@@ -338,7 +348,8 @@ ${data.creativeMode ? `
           model.generateContent(parts),
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`Timeout: ${modelName}`)), MODEL_TIMEOUT))
         ]);
-        return JSON.parse(result.response.text());
+        const raw = result.response.text().trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '');
+        return JSON.parse(raw);
       };
 
       let usedModel = PRIMARY_MODEL;
@@ -390,11 +401,13 @@ ${data.creativeMode ? `
     };
 
     // Nav links (deterministic)
-    const allPageLinks = pages.map((p: any) => ({
-      label: p.slug === 'home' ? 'Home' : (p.title || p.slug.charAt(0).toUpperCase() + p.slug.slice(1)),
-      url: p.slug === 'home' ? '/home' : (p.slug.startsWith('/') ? p.slug : `/${p.slug}`)
-    }));
-    const finalNavLinks = (pages.length > 1) ? allPageLinks : (aiOutput.settings?.navigation?.links?.length > 0 ? aiOutput.settings.navigation.links : allPageLinks);
+    const allPageLinks = pages
+      .filter((p: any) => p.slug !== 'home')
+      .map((p: any) => ({
+        label: p.title || p.slug.charAt(0).toUpperCase() + p.slug.slice(1),
+        url: p.slug.startsWith('/') ? p.slug : `/${p.slug}`
+      }));
+    const finalNavLinks = (pages.length > 1) ? allPageLinks : [];
 
     const finalBusinessName = data.businessName || aiDetails.businessName || 'My Website';
 
@@ -420,13 +433,17 @@ ${data.creativeMode ? `
     };
     const typeColors = DEFAULT_COLORS_BY_TYPE[data.businessType] || { bg: '#f8f9fa', text: '#1a1a2e', accent: '#3b82f6' };
 
-    const aiBG     = aiOutput.settings?.themeColors?.light?.bg   || typeColors.bg;
-    const aiText   = aiOutput.settings?.themeColors?.light?.text || typeColors.text;
-    const aiAccent = aiOutput.settings?.accentColor              || typeColors.accent;
+    const aiBG     = aiOutput.settings?.bg    || aiOutput.settings?.themeColors?.light?.bg   || null;
+    const aiText   = aiOutput.settings?.text  || aiOutput.settings?.themeColors?.light?.text || null;
+    const aiAccent = aiOutput.settings?.accentColor || null;
 
-    const themeBG   = userBG     || aiBG;
-    const themeText = userText   || aiText;
-    const accentBG  = userAccent || aiAccent;
+    const themeBG   = userBG     || aiBG     || typeColors.bg;
+    const themeText = userText   || aiText   || typeColors.text;
+    const accentBG  = userAccent || aiAccent || typeColors.accent;
+
+    console.log('[AI Generator] Colors source — BG:', userBG ? 'user' : aiBG ? 'AI' : 'default', themeBG);
+    console.log('[AI Generator] Colors source — Text:', userText ? 'user' : aiText ? 'AI' : 'default', themeText);
+    console.log('[AI Generator] Colors source — Accent:', userAccent ? 'user' : aiAccent ? 'AI' : 'default', accentBG);
 
     // 2. Button colors
     const primaryCTABG   = accentBG;
@@ -450,18 +467,16 @@ ${data.creativeMode ? `
       || (AVAILABLE_FONTS.includes(aiOutput.settings?.fontFamily) ? aiOutput.settings.fontFamily : null)
       || TONE_FONT_FALLBACK[tone]
       || 'Outfit';
+    console.log('[AI Generator] Font source:', data.fontFamily ? 'user' : AVAILABLE_FONTS.includes(aiOutput.settings?.fontFamily) ? 'AI' : TONE_FONT_FALLBACK[tone] ? 'tone-fallback' : 'hardcoded', fontFamily);
 
     const hasUserLogo = !!data.logoUrl;
     const finalLogo = hasUserLogo ? data.logoUrl : '';
     const finalLogoType = hasUserLogo ? 'image' : 'text';
 
-    // WhatsApp CTA: detect whatsapp social and build wa.me link
+    // WhatsApp: build canonical wa.me URL if social provided (used for link validation)
     const whatsappSocial = data.socials?.find(s => s.platform === 'whatsapp');
-    const whatsappNumber = whatsappSocial?.url
-      ? whatsappSocial.url.replace(/\D/g, '')
-      : (data.phone ? data.phone.replace(/\D/g, '') : null);
-    const hasWhatsApp = !!(whatsappSocial && whatsappNumber);
-    const whatsappUrl = hasWhatsApp ? `https://wa.me/${whatsappNumber}` : null;
+    const whatsappNumber = whatsappSocial?.url ? whatsappSocial.url.replace(/\D/g, '') : null;
+    const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}` : null;
 
     // Default typography — ensures values are always saved to DB
     const DEFAULT_TYPOGRAPHY = {
@@ -508,22 +523,12 @@ ${data.creativeMode ? `
     const enrichedPages = pages.map((page: any) => {
       const pageId = uuidv4();
       const slugCounts: Record<string, number> = {};
-      const anchorIdsFromNav = finalNavLinks
-        .filter((l: any) => l.url?.startsWith('#'))
-        .map((l: any) => l.url.slice(1));
 
       const interiorBlocks = page.blocks?.map((b: any) => {
-        // Deterministic Section ID
-        let baseSlug = b.content?.title
-          ? b.content.title.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-')
-          : b.type;
-        const matchingAnchor = anchorIdsFromNav.find((aId: string) => {
-          const aIdSlug = aId.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
-          return baseSlug.includes(aIdSlug) || aIdSlug.includes(baseSlug);
-        });
-        if (matchingAnchor && !Object.values(slugCounts).includes(matchingAnchor as any)) baseSlug = matchingAnchor;
-        slugCounts[baseSlug] = (slugCounts[baseSlug] || 0) + 1;
-        const finalSectionId = slugCounts[baseSlug] > 1 ? `${baseSlug}-${slugCounts[baseSlug]}` : baseSlug;
+        // Deterministic Section ID: canonical per block type, counter for duplicates
+        const canonical = BLOCK_TYPE_CANONICAL_ID[b.type] || b.type;
+        slugCounts[canonical] = (slugCounts[canonical] || 0) + 1;
+        const finalSectionId = slugCounts[canonical] > 1 ? `${canonical}-${slugCounts[canonical]}` : canonical;
 
         const blockWithId = {
           ...b,
@@ -601,22 +606,15 @@ ${data.creativeMode ? `
         }
       }
 
-      // CTA for nav
-      const ctaLabel = deriveCTALabel(data.siteObjective, data.language);
-      const ctaUrl   = deriveCTAUrl(data.siteObjective, data.useAnchorNav, pages);
+      // CTA: take label + url from AI hero block
+      const heroBlock = interiorBlocks.find((b: any) => b.type === 'hero');
+      const finalCtaLabel = heroBlock?.content?.cta || '';
+      const finalCtaUrl   = heroBlock?.content?.ctaUrl || '';
 
-      // WhatsApp: override CTA if whatsapp detected
-      const finalCtaLabel = hasWhatsApp && !ctaUrl.startsWith('/') && !ctaUrl.startsWith('#')
-        ? (data.language === 'en' ? 'WhatsApp us' : 'Scrivici su WhatsApp')
-        : ctaLabel;
-      const finalCtaUrl = hasWhatsApp && !ctaUrl.startsWith('/') && !ctaUrl.startsWith('#')
-        ? whatsappUrl!
-        : ctaUrl;
-
-      // Footer social links: ensure WhatsApp is included if provided
+      // Footer social links
       let finalSocialLinks = [...(finalBusinessDetails.socialLinks || [])];
-      if (hasWhatsApp && !finalSocialLinks.some(s => s.platform === 'whatsapp')) {
-        finalSocialLinks.push({ platform: 'whatsapp', url: whatsappUrl! });
+      if (whatsappUrl && !finalSocialLinks.some(s => s.platform === 'whatsapp')) {
+        finalSocialLinks.push({ platform: 'whatsapp', url: whatsappUrl });
       }
 
       const navBlock = {
@@ -629,8 +627,8 @@ ${data.creativeMode ? `
           logoImage:   finalLogo,
           links:       finalNavLinks,
           showContact: true,
-          ctaLabel:    finalCtaLabel,
-          ctaUrl:      finalCtaUrl,
+          cta:    finalCtaLabel,
+          ctaUrl: finalCtaUrl,
           showCTA: true,
         },
         style: { padding: 20, isSticky: true, backgroundColor: undefined, textColor: undefined }
@@ -653,6 +651,57 @@ ${data.creativeMode ? `
 
       return { ...page, id: pageId, blocks: [navBlock, ...interiorBlocks, footerBlock] };
     });
+
+    // Post-assembly: resolve anchor nav + CTA + validate all #anchor links
+    const LINKABLE_TYPES = ['benefits', 'cards', 'how-it-works', 'image-text', 'text', 'faq', 'contact', 'quote', 'pricing', 'promo'];
+
+    for (const enrichedPage of enrichedPages) {
+      const allBlocks: any[] = enrichedPage.blocks || [];
+      const navBlock = allBlocks.find((b: any) => b.type === 'navigation');
+
+      // Build set of valid sectionIds for this page
+      const validSectionIds = new Set<string>(
+        allBlocks.filter(b => b.content?.sectionId).map((b: any) => b.content.sectionId as string)
+      );
+
+      // Single-page: rebuild nav anchor links from canonical sectionIds
+      if (pages.length === 1 && navBlock) {
+        const anchorLinks = allBlocks
+          .filter((b: any) => LINKABLE_TYPES.includes(b.type) && b.content?.sectionId)
+          .slice(0, 6)
+          .map((b: any) => ({
+            label: BLOCK_TYPE_CANONICAL_LABEL[b.type] || String(b.content.title || b.type),
+            url: `#${b.content.sectionId}`,
+          }));
+        if (anchorLinks.length > 0) {
+          navBlock.content = { ...navBlock.content, links: anchorLinks };
+        }
+
+      }
+
+      // Validate all #anchor ctaUrls in every block — clear if sectionId doesn't exist
+      for (const block of allBlocks) {
+        if (!block.content) continue;
+        for (const field of ['ctaUrl', 'url', 'ctaUrl2']) {
+          const val = block.content[field];
+          if (val && val.startsWith('#')) {
+            const anchor = val.slice(1);
+            if (!validSectionIds.has(anchor)) {
+              block.content[field] = '';
+            }
+          }
+        }
+        // Also validate items[*].url
+        if (Array.isArray(block.content.items)) {
+          for (const item of block.content.items) {
+            if (item.url && item.url.startsWith('#')) {
+              const anchor = item.url.slice(1);
+              if (!validSectionIds.has(anchor)) item.url = '';
+            }
+          }
+        }
+      }
+    }
 
     // Validate background images (best-effort, non-blocking)
     await validateAndCleanBackgroundImages(enrichedPages, data.businessType);
@@ -697,22 +746,14 @@ function picsumFallback(seed: string, width = 800, height = 500): string {
   return `https://picsum.photos/seed/${cleanSeed}/${width}/${height}`;
 }
 
-function heroPicsumFallback(businessType: string): string {
-  // Landscape seeds per business type for better visual match
-  const seeds: Record<string, string> = {
-    Restaurant: 'restaurant-food',
-    LocalBusiness: 'local-business',
-    ProfessionalService: 'office-professional',
-    HealthAndBeautyBusiness: 'spa-beauty',
-    HomeAndConstructionBusiness: 'construction-home',
-    EducationalOrganization: 'education-classroom',
-    SportsActivityLocation: 'gym-fitness',
-    TravelAgency: 'travel-landscape',
-    Store: 'store-shopping',
-    Organization: 'team-office',
-  };
-  const seed = seeds[businessType] || 'business-hero';
-  return `https://picsum.photos/seed/${seed}/1600/900`;
+// Hero fallback: curated Unsplash ID per business type
+function heroFallbackUrl(businessType: string): string {
+  return getHeroUnsplashUrl(businessType);
+}
+
+// Item/section image fallback: curated Unsplash ID by business type + seed
+function imageFallbackUrl(businessType: string, seed: string): string {
+  return getUnsplashUrl(businessType, seed);
 }
 
 // Best-effort image URL validation — fallback to Picsum on failure
@@ -725,13 +766,12 @@ async function validateAndCleanBackgroundImages(enrichedPages: any[], businessTy
       // Hero / section backgroundImage
       if (block.type === 'hero') {
         if (!block.content?.backgroundImage) {
-          // AI didn't generate an image — add Picsum fallback for hero
-          block.content = { ...block.content, backgroundImage: heroPicsumFallback(businessType || '') };
+          block.content = { ...block.content, backgroundImage: heroFallbackUrl(businessType || '') };
           block.style.overlayOpacity = 65;
           block.style.overlayColor   = '#000000';
           block.style.textColor      = '#ffffff';
-        } else if (block.content.backgroundImage.startsWith('http') && !block.content.backgroundImage.includes('picsum.photos')) {
-          const fallback = heroPicsumFallback(businessType || '');
+        } else if (block.content.backgroundImage.startsWith('http')) {
+          const fallback = heroFallbackUrl(businessType || '');
           checks.push(
             fetch(block.content.backgroundImage, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
               .then(res => { if (!res.ok) block.content.backgroundImage = fallback; })
@@ -766,14 +806,14 @@ async function validateAndCleanBackgroundImages(enrichedPages: any[], businessTy
           delete block.content.imageUrl;
         }
         const imgSrc = block.content?.image || '';
-        const fallbackSeed = block.content?.title || businessType || 'business';
+        const fallbackSeed = block.content?.title || 'section';
         if (!imgSrc) {
-          block.content = { ...block.content, image: picsumFallback(fallbackSeed) };
-        } else if (imgSrc.startsWith('http') && !imgSrc.includes('picsum.photos')) {
+          block.content = { ...block.content, image: imageFallbackUrl(businessType || '', fallbackSeed) };
+        } else if (imgSrc.startsWith('http')) {
           checks.push(
             fetch(imgSrc, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
-              .then(res => { if (!res.ok) block.content.image = picsumFallback(fallbackSeed); })
-              .catch(() => { block.content.image = picsumFallback(fallbackSeed); })
+              .then(res => { if (!res.ok) block.content.image = imageFallbackUrl(businessType || '', fallbackSeed); })
+              .catch(() => { block.content.image = imageFallbackUrl(businessType || '', fallbackSeed); })
           );
         }
       }
@@ -784,14 +824,14 @@ async function validateAndCleanBackgroundImages(enrichedPages: any[], businessTy
         const items = block.content?.items;
         if (Array.isArray(items)) {
           for (const item of items) {
-            const itemSeed = item.title || item.name || businessType || 'item';
+            const itemSeed = item.title || item.name || 'item';
             if (!item.image) {
-              item.image = picsumFallback(itemSeed);
-            } else if (item.image.startsWith('http') && !item.image.includes('picsum.photos')) {
+              item.image = imageFallbackUrl(businessType || '', itemSeed);
+            } else if (item.image.startsWith('http')) {
               checks.push(
                 fetch(item.image, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
-                  .then(res => { if (!res.ok) item.image = picsumFallback(itemSeed); })
-                  .catch(() => { item.image = picsumFallback(itemSeed); })
+                  .then(res => { if (!res.ok) item.image = imageFallbackUrl(businessType || '', itemSeed); })
+                  .catch(() => { item.image = imageFallbackUrl(businessType || '', itemSeed); })
               );
             }
           }
@@ -816,15 +856,9 @@ export async function validateProjectDescription(data: {
   country?: string;
   socials?: any[];
 }) {
-  const cacheKey = getCacheKey('val', {
-    prompt: AI_VALIDATION_PROMPT,
-    businessName: data.businessName, businessType: data.businessType,
-    description: data.description, extraPages: data.extraPages,
-    email: data.email, phone: data.phone, address: data.address,
-    city: data.city, zip: data.zip, country: data.country, socials: data.socials,
-  });
-  const cached = readCache(cacheKey);
-  if (cached) { console.log('[AI Validation] Using cached response'); return cached; }
+  // Validation cache disabled for production
+  // const cacheKey = getCacheKey('val', { ... });
+  // const cached = readCache(cacheKey); if (cached) return cached;
 
   const prompt = `
 ${AI_VALIDATION_PROMPT}
@@ -865,7 +899,7 @@ Extra Pages: ${data.extraPages?.map(p => `- ${p.name}: ${p.description}`).join('
         catch { return { isReady: true, questions: [] }; }
       } else { throw primaryErr; }
     }
-    writeCache(cacheKey, result);
+    // writeCache(cacheKey, result);
     return result;
   } catch (error: any) {
     console.error('[AI Validation] Error:', error);

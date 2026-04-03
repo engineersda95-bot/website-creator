@@ -170,7 +170,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
               '--siti-anim-delay': baseDelay + 's',
             } as any}
           >
-            <div className="space-y-4 w-full" style={{ alignItems: 'inherit' }}>
+            <div className="space-y-6 w-full" style={{ alignItems: 'inherit' }}>
               {content.title && (() => {
                 const TitleTag = (style.titleTag || 'h2') as any;
                 return onInlineEdit ? (
