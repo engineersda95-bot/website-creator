@@ -84,12 +84,45 @@ export const EditorCanvas: React.FC = () => {
   const [isHelpOpen, setIsHelpOpen] = React.useState(false);
   const [zoom, setZoom] = React.useState(100);
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const canvasRef = React.useRef<HTMLDivElement>(null);
 
+  const CANVAS_WIDTH = { desktop: 1440, tablet: 768, mobile: 390 };
   const ZOOM_STEPS = [50, 67, 75, 80, 90, 100, 110, 125, 150];
-  const zoomIn = () => { setZoom(prev => ZOOM_STEPS.find(z => z > prev) || prev); };
-  const zoomOut = () => { setZoom(prev => [...ZOOM_STEPS].reverse().find(z => z < prev) || prev); };
+  const zoomIn = () => { const next = ZOOM_STEPS.find(z => z > zoom); if (next) setZoom(next); };
+  const zoomOut = () => { const prev = [...ZOOM_STEPS].reverse().find(z => z < zoom); if (prev) setZoom(prev); };
 
-  const currentScale = zoom / 100;
+  const canvasW = CANVAS_WIDTH[viewport as keyof typeof CANVAS_WIDTH] || 1440;
+
+  // Sidebar pixel widths — must match BlockSidebar (w-[17rem]=272) and ConfigSidebar (w-80=320)
+  const LEFT_SIDEBAR_W = leftSidebarCollapsed ? 48 : 272;
+  const RIGHT_SIDEBAR_W = rightSidebarCollapsed ? 48 : 320;
+
+  // Auto-zoom: calculated directly from window width minus sidebar widths.
+  // transform:scale() is purely visual — does NOT affect font-size or layout.
+  React.useEffect(() => {
+    const recalc = () => {
+      const available = window.innerWidth - LEFT_SIDEBAR_W - RIGHT_SIDEBAR_W - 32;
+      if (available <= 0) return;
+      const fit = Math.floor((available / canvasW) * 100);
+      setZoom(Math.min(100, fit));
+    };
+    recalc();
+    window.addEventListener('resize', recalc);
+    return () => window.removeEventListener('resize', recalc);
+  }, [viewport, LEFT_SIDEBAR_W, RIGHT_SIDEBAR_W, canvasW]);
+
+  // Track canvas natural height so the wrapper can match the scaled visual height,
+  // preventing the outer container from showing incorrect vertical scroll space.
+  const [canvasNaturalHeight, setCanvasNaturalHeight] = React.useState<number | null>(null);
+  React.useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(() => setCanvasNaturalHeight(el.scrollHeight));
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const scale = zoom / 100;
   React.useEffect(() => { setIsMounted(true); }, []);
 
   // Prevent navigation for all links inside the editor canvas
@@ -197,9 +230,9 @@ export const EditorCanvas: React.FC = () => {
         updateProjectSettings={updateProjectSettings}
       />
 
-      <div 
+      <div
         ref={containerRef}
-        className="flex-1 overflow-y-auto p-12 flex justify-center scroll-smooth bg-zinc-100/50 custom-scrollbar relative"
+        className="flex-1 overflow-y-auto overflow-x-auto py-6 scroll-smooth bg-zinc-100/50 custom-scrollbar relative"
       >
         <style>{`
           #editor-content { font-family: '${font}', sans-serif !important; }
@@ -219,7 +252,7 @@ export const EditorCanvas: React.FC = () => {
           #editor-content .insert-menu button:hover * { color: #ffffff !important; }
           #editor-content .block-wrapper:hover { outline: 2px solid #3b82f6; }
           .block-wrapper { background-color: inherit; }
-          .canvas-desktop { width: 1280px; }
+          .canvas-desktop { width: 1440px; }
           .canvas-tablet { width: 768px; }
           .canvas-mobile { width: 390px; }
           #editor-content a { pointer-events: none !important; }
@@ -250,10 +283,20 @@ export const EditorCanvas: React.FC = () => {
           }
         `}</style>
 
+        {/* Wrapper: occupies the scaled visual dimensions; margin:auto centers it when smaller than container */}
+        <div style={{
+          width: canvasW * scale,
+          height: canvasNaturalHeight != null ? canvasNaturalHeight * scale : undefined,
+          margin: '0 auto',
+          position: 'relative',
+          alignSelf: 'flex-start',
+        }}>
         <main
+          ref={canvasRef}
           id="editor-content"
           className={cn(
-            "shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] min-h-screen relative pb-20 transition-all duration-500 origin-top",
+            "shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] min-h-screen relative",
+            currentPage.blocks.length === 0 || currentPage.blocks[currentPage.blocks.length - 1]?.type !== 'footer' ? "pb-20" : "",
             isDark ? "dark" : "light",
             viewport === 'desktop' ? "canvas-desktop" :
               viewport === 'tablet' ? "canvas-tablet" : "canvas-mobile"
@@ -261,8 +304,9 @@ export const EditorCanvas: React.FC = () => {
           style={{
             backgroundColor: themeBg,
             display: 'flow-root',
-            transform: `scale(${currentScale})`,
-            transformOrigin: 'top center',
+            transform: scale !== 1 ? `scale(${scale})` : undefined,
+            transformOrigin: scale !== 1 ? 'top left' : undefined,
+            overflowX: 'hidden',
           }}
         >
           {currentPage.blocks.length === 0 ? (
@@ -298,18 +342,19 @@ export const EditorCanvas: React.FC = () => {
             </div>
           ) : (
             <div className="relative bg-inherit">
-              {/* Insertion Point Start */}
+              {/* Insertion Point Start — hidden if first block is navigation */}
+              {currentPage.blocks[0]?.type !== 'navigation' && (
               <div
-                className="relative h-0 flex items-center justify-center group/insert z-[60]"
+                className="relative h-0 flex items-center justify-center group/insert z-[510]"
                 onMouseEnter={() => setHoverIndex(0)}
                 onMouseLeave={() => setHoverIndex(null)}
               >
                 <div className={cn("absolute h-[3px] bg-blue-500 w-full transition-opacity opacity-0 group-hover/insert:opacity-100", showMenuAt === 0 && "opacity-100")} />
                 <button
                   onClick={() => setShowMenuAt(showMenuAt === 0 ? null : 0)}
-                  className={cn("absolute w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-xl transition-all opacity-0 group-hover/insert:opacity-100 scale-50 group-hover/insert:scale-100 hover:scale-110 z-[70]", showMenuAt === 0 && "opacity-100 scale-100 rotate-45 bg-zinc-900")}
+                  className={cn("absolute w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-xl transition-all opacity-0 group-hover/insert:opacity-100 scale-50 group-hover/insert:scale-100 hover:scale-110 z-[510]", showMenuAt === 0 && "opacity-100 scale-100 rotate-45 bg-zinc-900")}
                 >
-                  <Plus size={16} />
+                  <Plus size={20} />
                 </button>
 
                 {showMenuAt === 0 && (
@@ -339,6 +384,7 @@ export const EditorCanvas: React.FC = () => {
                   </div>
                 )}
               </div>
+              )}
 
               {currentPage.blocks.map((block, index) => (
                 <React.Fragment key={block.id}>
@@ -359,18 +405,18 @@ export const EditorCanvas: React.FC = () => {
                         imageMemoryCache={imageMemoryCache}
                       />
 
-                  {/* Insertion Points */}
-                  <div
-                    className="relative h-0 flex items-center justify-center group/insert z-[60]"
+                  {/* Insertion Points — hidden only after footer (last block) */}
+                  {block.type !== 'footer' && <div
+                    className="relative h-0 flex items-center justify-center group/insert z-[510]"
                     onMouseEnter={() => setHoverIndex(index + 1)}
                     onMouseLeave={() => setHoverIndex(null)}
                   >
                     <div className={cn("absolute h-[3px] bg-blue-500 w-full transition-opacity opacity-0 group-hover/insert:opacity-100", showMenuAt === index + 1 && "opacity-100")} />
                     <button
                       onClick={() => setShowMenuAt(showMenuAt === index + 1 ? null : index + 1)}
-                      className={cn("absolute w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(37,99,235,0.4)] transition-all opacity-0 group-hover/insert:opacity-100 scale-50 group-hover/insert:scale-100 hover:scale-110 z-[75]", showMenuAt === index + 1 && "opacity-100 scale-100 rotate-45 bg-zinc-900 shadow-none")}
+                      className={cn("absolute w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(37,99,235,0.4)] transition-all opacity-0 group-hover/insert:opacity-100 scale-50 group-hover/insert:scale-100 hover:scale-110 z-[510]", showMenuAt === index + 1 && "opacity-100 scale-100 rotate-45 bg-zinc-900 shadow-none")}
                     >
-                      <Plus size={16} />
+                      <Plus size={20} />
                     </button>
 
                     {showMenuAt === index + 1 && (
@@ -400,7 +446,7 @@ export const EditorCanvas: React.FC = () => {
                         )}
                       </div>
                     )}
-                  </div>
+                  </div>}
                 </React.Fragment>
               ))}
 
@@ -419,6 +465,7 @@ export const EditorCanvas: React.FC = () => {
             </div>
           )}
         </main>
+        </div>
       </div>
       {/* Help Center Modal */}
       <HelpCenter

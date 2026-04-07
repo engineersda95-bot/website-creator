@@ -93,12 +93,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
   const blockId = `nav-${block.id.replace(/[^a-zA-Z0-9]/g, '')}`;
 
-  const links = (content.links && content.links.length > 0) 
-    ? content.links 
-    : (allPages || []).map(p => ({
-        label: p.title,
-        url: p.slug === 'home' ? '/' : `/${p.slug}`
-      }));
+  const links = content.links || [];
 
   const logoSize = style.logoSize ?? content.logoSize ?? 40;
   const logoTextSize = style.logoTextSize ?? content.logoTextSize ?? 24;
@@ -296,7 +291,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             {/* Hamburger Button (Static) */}
             <button 
               data-menu-toggle
-              className="p-2 rounded-lg relative z-[10005] flex items-center justify-center transition-all active:scale-95 text-inherit outline-none"
+              className="rounded-lg relative z-[10005] flex items-center justify-center transition-all active:scale-95 text-inherit outline-none"
               style={{ display: 'var(--nav-hamburger-display)' as any }}
             >
               <StaticMenuIcon />

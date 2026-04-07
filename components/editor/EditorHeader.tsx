@@ -92,9 +92,10 @@ export function EditorHeader({
         {(() => {
           const allPages = useEditorStore.getState().projectPages || [];
           const cp = useEditorStore.getState().currentPage;
+          const globals = useEditorStore.getState().siteGlobals;
           const score = cp
             ? getCompletionScore(runPageChecks(targetProject, allPages, cp))
-            : getCompletionScore(runGlobalChecks(targetProject, allPages));
+            : getCompletionScore(runGlobalChecks(targetProject, allPages, globals));
           return <CompletionBadge score={score} onClick={onChecklistClick} />;
         })()}
 

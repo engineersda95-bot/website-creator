@@ -5,7 +5,7 @@ import { getProjectDomain } from '@/lib/url-utils';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/server';
-import { Page } from '@/types/editor';
+import { Page, SiteGlobal } from '@/types/editor';
 import crypto from 'crypto';
 
 
@@ -29,7 +29,8 @@ export async function deployToCloudflare(projectId: string) {
     const { data: pages, error: pagesError } = await supabase
       .from('pages')
       .select('*')
-      .eq('project_id', projectId);
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: true });
 
     if (pagesError || !pages || pages.length === 0) {
       throw new Error('Could not find any pages for this project');
@@ -43,6 +44,13 @@ export async function deployToCloudflare(projectId: string) {
       .single();
 
     if (projectError || !project) throw new Error('Could not find project to deploy or unauthorized access');
+
+    // Fetch site_globals (nav/footer per language) for this project
+    const { data: siteGlobals } = await supabase
+      .from('site_globals')
+      .select('*')
+      .eq('project_id', projectId);
+    const globals: SiteGlobal[] = siteGlobals || [];
 
     const projectName = project.subdomain;
     const isFirstPublish = !project.live_url;
@@ -74,7 +82,7 @@ export async function deployToCloudflare(projectId: string) {
     const defaultLanguage = project.settings?.defaultLanguage || 'it';
 
     for (const page of pages) {
-      const htmlContent = generateStaticHtml(page as Page, pages as any as Page[], project);
+      const htmlContent = generateStaticHtml(page as Page, pages as any as Page[], project, globals);
 
       // Find all /assets/... strings in the HTML (captures the filename)
       const assetRegex = /\/assets\/([^"\s?]+)/g;

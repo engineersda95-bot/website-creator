@@ -66,14 +66,14 @@ export const Footer: React.FC<FooterProps> = ({
 
   return (
     <div>
-      {/* Sync Info */}
-      <div className="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-2xl">
+      {/* Global Info */}
+      <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-2xl">
         <div className="flex gap-3">
-          <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-            <Globe size={14} className="text-amber-600" />
+          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+            <Globe size={14} className="text-blue-600" />
           </div>
-          <p className="text-[11px] text-amber-800 leading-normal">
-            La configurazione di questo blocco è <strong>sincronizzata</strong> tra tutte le pagine in <strong>{useEditorStore.getState().currentPage?.language?.toUpperCase() || 'IT'}</strong>.
+          <p className="text-[11px] text-blue-800 leading-normal">
+            Questo blocco è <strong>globale</strong>: le modifiche si applicano a tutte le pagine in <strong>{useEditorStore.getState().currentPage?.language?.toUpperCase() || 'IT'}</strong>.
           </p>
         </div>
       </div>
@@ -141,13 +141,11 @@ export const Footer: React.FC<FooterProps> = ({
       </Section>
 
       <Section icon={Link2} label="Links" id="links" isOpen={openSection === 'links'} onToggle={toggleSection}>
-        <ManagerWrapper label="Link Rapidi">
-          <LinkListManager
-            label="Link"
-            links={content.links || []}
-            onChange={(links) => updateContent({ links })}
-          />
-        </ManagerWrapper>
+        <LinkListManager
+          label="Link Rapidi"
+          links={content.links || []}
+          onChange={(links) => updateContent({ links })}
+        />
         <SimpleInput
           label="Titolo Link Rapidi (Opzionale)"
           value={content.linksTitle || ''}
@@ -157,12 +155,10 @@ export const Footer: React.FC<FooterProps> = ({
       </Section>
 
       <Section icon={Share2} label="Social" id="social" isOpen={openSection === 'social'} onToggle={toggleSection}>
-        <ManagerWrapper label="Link Social">
-          <SocialLinksManager
-            links={content.socialLinks || []}
-            onChange={(socialLinks) => updateContent({ socialLinks })}
-          />
-        </ManagerWrapper>
+        <SocialLinksManager
+          links={content.socialLinks || []}
+          onChange={(socialLinks) => updateContent({ socialLinks })}
+        />
       </Section>
 
       <Section icon={Copyright} label="Copyright" id="copyright" isOpen={openSection === 'copyright'} onToggle={toggleSection}>

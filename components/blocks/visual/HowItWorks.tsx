@@ -296,7 +296,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
             })}
           </div>
         ) : isSlider ? (
-          <div className="relative group/slider">
+          <div className="relative group/slider overflow-hidden">
             <div className="absolute top-1/2 left-2 md:left-4 lg:-left-6 -translate-y-1/2 z-30 transition-all duration-300">
               <button 
                 data-arrow="left" 
@@ -322,7 +322,7 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
 
             <div
               className={cn(
-                "flex pb-4 items-stretch flex-row overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all"
+                "w-full flex pb-4 items-stretch flex-row overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all"
               )}
               style={{ gap: 'var(--block-gap, 2rem)', paddingLeft: `${style.sliderPadding ?? 48}px`, paddingRight: `${style.sliderPadding ?? 48}px` }}
             >

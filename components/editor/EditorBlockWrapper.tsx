@@ -93,8 +93,8 @@ export const EditorBlockWrapper = React.memo(({
         onInlineEdit={onInlineEdit}
       />
 
-      {/* Block Controls */}
-      <div className={cn(
+      {/* Block Controls — hidden for global blocks (navigation/footer) */}
+      {block.type !== 'navigation' && block.type !== 'footer' && <div className={cn(
         "absolute flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100 bg-zinc-900/90 backdrop-blur-md shadow-2xl rounded-2xl p-2 border border-white/20 z-[10001] transform",
         index === 0 ? "left-6 bottom-6 -translate-x-4 group-hover:translate-x-0" : "right-6 top-6 translate-x-4 group-hover:translate-x-0"
       )}>
@@ -150,7 +150,7 @@ export const EditorBlockWrapper = React.memo(({
             <Trash2 size={18} />
           </button>
         )}
-      </div>
+      </div>}
     </div>
   );
 });

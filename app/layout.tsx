@@ -77,8 +77,11 @@ export default function RootLayout({
     <html
       lang="it"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}
+      style={{ colorScheme: 'light' }}
     >
       <head>
+        {/* Force light color scheme regardless of OS dark mode — the editor UI is always light */}
+        <meta name="color-scheme" content="light" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

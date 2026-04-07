@@ -29,12 +29,14 @@ export function EditorClient({
   initialUser,
   initialProject,
   initialPages,
-  initialPageId
+  initialPageId,
+  initialSiteGlobals = [],
 }: {
   initialUser: any;
   initialProject: any;
   initialPages: any[];
   initialPageId: string;
+  initialSiteGlobals?: any[];
 }) {
   const {
     setProject,
@@ -81,12 +83,12 @@ export function EditorClient({
     if (initialUser && !user) setUser(initialUser);
   }, [initialUser, user, setUser]);
 
-  // Hydrate project + pages + specific page
+  // Hydrate project + pages + specific page + site globals
   useEffect(() => {
     if (initialProject && initialPages && (!project || project.id !== initialProject.id || currentPage?.id !== initialPageId)) {
-      hydrateEditor(initialProject, initialPages, initialPageId);
+      hydrateEditor(initialProject, initialPages, initialPageId, initialSiteGlobals);
     }
-  }, [initialProject, initialPages, initialPageId, project, currentPage, hydrateEditor]);
+  }, [initialProject, initialPages, initialPageId, initialSiteGlobals, project, currentPage, hydrateEditor]);
 
   useEffect(() => { initialize(); }, [initialize]);
 

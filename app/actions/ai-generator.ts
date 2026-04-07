@@ -107,6 +107,23 @@ const TONE_FONT_FALLBACK: Record<string, string> = {
   formale: 'Lora',
 };
 
+// --- AI DEBUG: save prompts + responses to file (TEST ONLY) ---
+// Enable with AI_DEBUG_SAVE_PROMPTS=true in .env.local — disable before production
+const AI_DEBUG_SAVE = process.env.AI_DEBUG_SAVE_PROMPTS === 'true';
+const AI_DEBUG_DIR = path.join(process.cwd(), '.ai-debug');
+
+function aiDebugSave(type: 'validation' | 'generation', stage: 'prompt' | 'response' | 'meta', data: any) {
+  if (!AI_DEBUG_SAVE) return;
+  try {
+    if (!fs.existsSync(AI_DEBUG_DIR)) fs.mkdirSync(AI_DEBUG_DIR, { recursive: true });
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    const ext = stage === 'prompt' ? 'txt' : 'json';
+    const filePath = path.join(AI_DEBUG_DIR, `${ts}-${type}-${stage}.${ext}`);
+    const content = stage === 'prompt' ? String(data) : JSON.stringify(data, null, 2);
+    fs.writeFileSync(filePath, content, 'utf-8');
+  } catch (e) { console.warn('[AI Debug] Could not save debug file:', e); }
+}
+
 // --- AI RESPONSE CACHE (dev/test only) ---
 const CACHE_DIR = path.join(process.cwd(), '.ai-cache');
 
@@ -138,6 +155,9 @@ export interface AIGenerationData {
   logoUrl?: string;
   screenshotUrls?: string[];
   language?: string;
+  // Storage paths for assets uploaded before AI generation (moved server-side after success)
+  logoStoragePath?: string;
+  screenshotStoragePaths?: string[];
   // Contact & Social
   email?: string;
   phone?: string;
@@ -158,6 +178,8 @@ export interface AIGenerationData {
   services?: string[];
   useAnchorNav?: boolean;
   creativeMode?: boolean;
+  // Q&A collected during validation step — passed to generation for context and structured extraction
+  validationAnswers?: { question: string; answer: string }[];
 }
 
 async function fetchImageAsBase64(url: string): Promise<{ mimeType: string; data: string } | null> {
@@ -196,6 +218,10 @@ const BLOCK_TYPE_CANONICAL_ID: Record<string, string> = {
   navigation:   'nav',
   footer:       'footer',
 };
+
+// Deterministic pattern assignment — cycles every 3 content blocks starting from the 2nd
+const PATTERN_CYCLE: string[] = ['dots', 'topography', 'grid', 'waves', 'diagonal'];
+const PATTERN_SKIP_TYPES = new Set(['hero', 'navigation', 'footer']);
 
 // Human-readable nav label per block type (used in anchor nav)
 const BLOCK_TYPE_CANONICAL_LABEL: Record<string, string> = {
@@ -256,6 +282,7 @@ export async function generateProjectWithAI(data: AIGenerationData) {
   try {
     const cleanPhone = data.phone ? data.phone.replace(/\D/g, '') : '';
     const currentYear = new Date().getFullYear();
+    const hasStyleReference = !!(data.screenshotUrls?.length || data.logoUrl);
 
     const promptParts: any[] = [
       { text: AI_WEBSITE_GENERATOR_SYSTEM_PROMPT },
@@ -279,6 +306,11 @@ Phone: ${data.phone || 'Not provided'} (Clean: ${cleanPhone})
 Address: ${data.address || ''}, ${data.city || ''} ${data.zip || ''}, ${data.country || 'Italia'}
 Socials: ${data.socials?.map(s => `${s.platform}: ${s.url}`).join(', ') || 'None'}
 
+${data.validationAnswers?.length ? `
+ADDITIONAL INFO PROVIDED BY USER (answers to pre-generation questions — treat as authoritative):
+${data.validationAnswers.map(a => `Q: ${a.question}\nA: ${a.answer}`).join('\n')}
+If any answer contains contact details (phone, email, address, city, zip) that are missing from the CONTACT INFO fields above, extract them into businessDetails in settings.
+` : ''}
 EXTRA PAGES REQUESTED:
 ${data.extraPages?.map(p => `- ${p.name}: ${p.description}`).join('\n') || 'None'}
 
@@ -290,14 +322,36 @@ ${data.useAnchorNav !== undefined ? `
 PAGE TYPE: ${data.useAnchorNav ? `SINGLE PAGE with anchor navigation. Use these exact anchor IDs for internal links:
   #vantaggi (benefits), #servizi (cards), #come-funziona (how-it-works), #recensioni (quote), #faq (faq), #contatti (contact), #prezzi (pricing), #offerte (promo), #chi-siamo (text), #info (image-text).
   If the same block type appears more than once, append -2, -3, etc. (e.g. #info-2).
-  hero.ctaUrl MUST use one of these anchors — choose the one most relevant to the site objective.` : 'SINGLE PAGE without anchor navigation.'}
+  hero.ctaUrl MUST use one of these anchors — choose the one most relevant to the site objective.` : 'MULTI-PAGE. Use /slug links for ctaUrl.'}
 ` : ''}
-${!data.fontFamily && !(data.screenshotUrls?.length) ? `
-FONT: Choose the most appropriate font from the available list based on tone and business type.
-` : ''}
-${data.creativeMode ? `
-### CREATIVE MODE: Be bold and inventive. Use rich, varied content. Max 10 blocks per page.
-` : ''}
+${!data.creativeMode ? `
+### CONTENT QUALITY
+All content must be ready to go live immediately, without editing by the user.
+- NEVER output placeholders or template text of any kind.
+- If information is missing → use only what can be reasonably inferred from the user input or is commonly known about the indicated business sector. Do not invent specifics that the user would need to verify or replace.
+- Never invent attributed content (reviews, quotes, names, specific data points). Only include it if the user provided it.
+` : `
+### CREATIVE MODE
+Apply conversion-focused landing page best practices for the business type. Prioritise persuasion, clarity, and trust signals.
+You have full creative freedom to invent content that makes the site feel real, compelling, and sector-appropriate.
+Max 10 blocks per page.
+Still FORBIDDEN: invented prices, invented phone numbers, invented addresses, bracket placeholders.
+`}
+${hasStyleReference ? `
+### STYLE EXTRACTION
+A style reference image is attached. From it:
+- Extract dominant colors → output bg, text, accentColor in settings.
+- Identify font category → pick closest match from this list (exact case, any other value is rejected):
+  Sans: Outfit, Inter, Plus Jakarta Sans, DM Sans, Montserrat, Roboto, Open Sans, Poppins, Lato, Sora, Manrope, Archivo, Lexend, Urbanist, Figtree, Work Sans, Public Sans, Ubuntu, Kanit, Heebo, IBM Plex Sans, Quicksand
+  Serif: Playfair Display, Fraunces, Cormorant Garamond, Lora, Merriweather, Crimson Text, Spectral, Arvo, BioRhyme, Old Standard TT, Cinzel
+  Display: Unbounded, Bebas Neue, Syne, Space Grotesk, Abril Fatface, Righteous, Comfortaa, Fredoka One
+  Mono: Space Mono, JetBrains Mono, Fira Code, Inconsolata
+  Handwriting: Caveat, Pacifico, Shadows Into Light, Grand Hotel
+Colors must be coherent. Never output only #ffffff and #000000.
+` : `
+### COLORS AND FONT
+Do NOT output accentColor, bg, text, or fontFamily — they are set automatically by the platform.
+`}
 `
       }
     ];
@@ -313,7 +367,7 @@ ${data.creativeMode ? `
 
     // Add Screenshots (as base64)
     if (data.screenshotUrls && data.screenshotUrls.length > 0) {
-      promptParts.push({ text: "This is a style reference screenshot. Extract its dominant colors (background, text, accent) and use them EXACTLY for themeColors.light.bg, themeColors.light.text, and accentColor — overriding all defaults. Also extract font category, spacing, and overall tone." });
+      promptParts.push({ text: "Style reference screenshot attached. Extract its dominant colors (background, text, accent) — output them as bg, text, accentColor in settings." });
       for (const url of data.screenshotUrls) {
         const screenshotData = await fetchImageAsBase64(url);
         if (screenshotData) promptParts.push({ inlineData: screenshotData });
@@ -353,6 +407,13 @@ ${data.creativeMode ? `
       };
 
       let usedModel = PRIMARY_MODEL;
+      const genStartMs = Date.now();
+
+      // Save prompt for debug (text parts only — skip base64 images)
+      aiDebugSave('generation', 'prompt',
+        promptParts.filter((p: any) => typeof p.text === 'string').map((p: any) => p.text).join('\n\n---\n\n')
+      );
+
       // Primary: 1 attempt + 1 JSON retry
       try {
         try {
@@ -371,6 +432,10 @@ ${data.creativeMode ? `
           aiOutput = await callModel(FALLBACK_MODEL, promptParts);
         } else { throw primaryErr; }
       }
+
+      aiDebugSave('generation', 'response', aiOutput);
+      aiDebugSave('generation', 'meta', { model: usedModel, elapsedMs: Date.now() - genStartMs });
+      console.log(`[AI Generator] Model used: ${usedModel}`);
       // writeCache(cacheKey, aiOutput);
     }
 
@@ -389,6 +454,8 @@ ${data.creativeMode ? `
 
     // Business details
     const aiDetails = aiOutput.settings?.businessDetails || {};
+    // businessDetails: user form fields take priority, then AI-extracted (which may include data
+    // from validation answers the AI saw in the prompt), then empty string.
     const finalBusinessDetails = {
       businessName: aiDetails.businessName || data.businessName,
       email: data.email || aiDetails.email || '',
@@ -433,17 +500,20 @@ ${data.creativeMode ? `
     };
     const typeColors = DEFAULT_COLORS_BY_TYPE[data.businessType] || { bg: '#f8f9fa', text: '#1a1a2e', accent: '#3b82f6' };
 
-    const aiBG     = aiOutput.settings?.bg    || aiOutput.settings?.themeColors?.light?.bg   || null;
-    const aiText   = aiOutput.settings?.text  || aiOutput.settings?.themeColors?.light?.text || null;
-    const aiAccent = aiOutput.settings?.accentColor || null;
+    // Colors from AI only when a screenshot/logo was provided (style reference extraction).
+    // Without a style reference, colors are always deterministic from DEFAULT_COLORS_BY_TYPE.
+    // hasStyleReference is computed above before the prompt construction.
+    const aiBG     = hasStyleReference ? (aiOutput.settings?.bg    || aiOutput.settings?.themeColors?.light?.bg   || null) : null;
+    const aiText   = hasStyleReference ? (aiOutput.settings?.text  || aiOutput.settings?.themeColors?.light?.text || null) : null;
+    const aiAccent = hasStyleReference ? (aiOutput.settings?.accentColor || null) : null;
 
     const themeBG   = userBG     || aiBG     || typeColors.bg;
     const themeText = userText   || aiText   || typeColors.text;
     const accentBG  = userAccent || aiAccent || typeColors.accent;
 
-    console.log('[AI Generator] Colors source — BG:', userBG ? 'user' : aiBG ? 'AI' : 'default', themeBG);
-    console.log('[AI Generator] Colors source — Text:', userText ? 'user' : aiText ? 'AI' : 'default', themeText);
-    console.log('[AI Generator] Colors source — Accent:', userAccent ? 'user' : aiAccent ? 'AI' : 'default', accentBG);
+    console.log('[AI Generator] Colors source — BG:', userBG ? 'user' : aiBG ? 'AI (screenshot)' : 'default', themeBG);
+    console.log('[AI Generator] Colors source — Text:', userText ? 'user' : aiText ? 'AI (screenshot)' : 'default', themeText);
+    console.log('[AI Generator] Colors source — Accent:', userAccent ? 'user' : aiAccent ? 'AI (screenshot)' : 'default', accentBG);
 
     // 2. Button colors
     const primaryCTABG   = accentBG;
@@ -462,12 +532,14 @@ ${data.creativeMode ? `
     const buttonShadow = isDark ? 'none' : (tone === 'formale' || tone === 'formal' ? 'none' : 'M');
     const buttonAnimation = (tone === 'creativo' || tone === 'creative') ? 'bounce' : (tone === 'amichevole' || tone === 'friendly') ? 'pulse' : 'none';
 
-    // 5. Font validation
+    // 5. Font: from AI only when a style reference was provided (screenshot/logo detection).
+    // Without a style reference, font is always deterministic from TONE_FONT_FALLBACK.
+    const aiFontValid = hasStyleReference && AVAILABLE_FONTS.includes(aiOutput.settings?.fontFamily);
     const fontFamily = data.fontFamily
-      || (AVAILABLE_FONTS.includes(aiOutput.settings?.fontFamily) ? aiOutput.settings.fontFamily : null)
+      || (aiFontValid ? aiOutput.settings.fontFamily : null)
       || TONE_FONT_FALLBACK[tone]
       || 'Outfit';
-    console.log('[AI Generator] Font source:', data.fontFamily ? 'user' : AVAILABLE_FONTS.includes(aiOutput.settings?.fontFamily) ? 'AI' : TONE_FONT_FALLBACK[tone] ? 'tone-fallback' : 'hardcoded', fontFamily);
+    console.log('[AI Generator] Font source:', data.fontFamily ? 'user' : aiFontValid ? 'AI (screenshot)' : TONE_FONT_FALLBACK[tone] ? 'tone-fallback' : 'hardcoded', fontFamily);
 
     const hasUserLogo = !!data.logoUrl;
     const finalLogo = hasUserLogo ? data.logoUrl : '';
@@ -523,6 +595,7 @@ ${data.creativeMode ? `
     const enrichedPages = pages.map((page: any) => {
       const pageId = uuidv4();
       const slugCounts: Record<string, number> = {};
+      let patternEligibleIdx = 0; // counts non-hero/nav/footer blocks for pattern assignment
 
       const interiorBlocks = page.blocks?.map((b: any) => {
         // Deterministic Section ID: canonical per block type, counter for duplicates
@@ -546,11 +619,23 @@ ${data.creativeMode ? `
           }
         }
 
-        // Pattern: deterministic color, opacity, and scale
-        if (blockWithId.style?.patternType && blockWithId.style.patternType !== 'none') {
-          blockWithId.style.patternColor   = themeText;
-          blockWithId.style.patternOpacity = isDark ? 8 : 7;
-          blockWithId.style.patternScale   = 15;
+        // Pattern: fully deterministic — type, color, opacity, scale all assigned by code.
+        // AI output for patternType is ignored. Every 3rd content block (starting at index 1) gets a pattern.
+        if (!PATTERN_SKIP_TYPES.has(blockWithId.type)) {
+          const shouldHavePattern = patternEligibleIdx % 3 === 1;
+          blockWithId.style.patternType = shouldHavePattern
+            ? PATTERN_CYCLE[patternEligibleIdx % PATTERN_CYCLE.length]
+            : 'none';
+          if (shouldHavePattern) {
+            blockWithId.style.patternColor   = themeText;
+            blockWithId.style.patternOpacity = isDark ? 8 : 7;
+            blockWithId.style.patternScale   = 15;
+          } else {
+            delete blockWithId.style.patternColor;
+            delete blockWithId.style.patternOpacity;
+            delete blockWithId.style.patternScale;
+          }
+          patternEligibleIdx++;
         }
 
         // Block backgroundColor: enforce palette
@@ -631,7 +716,7 @@ ${data.creativeMode ? `
           ctaUrl: finalCtaUrl,
           showCTA: true,
         },
-        style: { padding: 20, isSticky: true, backgroundColor: undefined, textColor: undefined }
+        style: { padding: 20, isSticky: true, backgroundColor: themeBG, textColor: themeText }
       };
 
       const footerBlock = {
@@ -646,7 +731,7 @@ ${data.creativeMode ? `
           socialLinks: finalSocialLinks,
           copyright:  `© ${currentYear} ${finalBusinessName}. Tutti i diritti riservati.`,
         },
-        style: { padding: 60, backgroundColor: undefined, textColor: undefined }
+        style: { padding: 60, backgroundColor: themeBG, textColor: themeText }
       };
 
       return { ...page, id: pageId, blocks: [navBlock, ...interiorBlocks, footerBlock] };
@@ -706,10 +791,84 @@ ${data.creativeMode ? `
     // Validate background images (best-effort, non-blocking)
     await validateAndCleanBackgroundImages(enrichedPages, data.businessType);
 
+    // ── Save directly to DB (no round-trip through client) ───────────────────
+
+    const projId = uuidv4();
+    const cleanBusinessName = (data.businessName || 'Nuovo Sito').trim();
+    const subdomain = cleanBusinessName.toLowerCase()
+      .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + projId.substring(0, 6);
+
+    // Logo migration: move from ai-temp to project folder server-side
+    let processedSettings = finalSettings;
+    let processedPages = enrichedPages;
+
+    if (data.logoStoragePath && finalSettings.logo) {
+      const logoFilename = data.logoStoragePath.split('/').pop() as string;
+      const destPath = `${user.id}/${projId}/${logoFilename}`;
+      const newLogoRelativePath = `/assets/${logoFilename}`;
+      const { error: moveError } = await supabase.storage
+        .from('project-assets')
+        .move(data.logoStoragePath, destPath);
+      if (!moveError) {
+        const oldLogoUrl = finalSettings.logo as string;
+        const serialized = JSON.stringify({ settings: finalSettings, pages: enrichedPages })
+          .replaceAll(oldLogoUrl, newLogoRelativePath);
+        const parsed = JSON.parse(serialized);
+        processedSettings = parsed.settings;
+        processedPages = parsed.pages;
+      }
+    }
+
+    // Screenshot cleanup (fire and forget)
+    if (data.screenshotStoragePaths?.length) {
+      supabase.storage.from('project-assets').remove(data.screenshotStoragePaths).catch(() => {});
+    }
+
+    // Save project
+    const { error: projError } = await supabase.from('projects').insert({
+      id: projId,
+      user_id: user.id,
+      name: cleanBusinessName,
+      subdomain,
+      settings: processedSettings,
+    });
+    if (projError) throw new Error(projError.message);
+
+    // Extract nav/footer from first page (same for all pages — AI generates one global set)
+    const lang = data.language || 'it';
+    const firstBlocks: any[] = processedPages[0]?.blocks || [];
+    const aiNav = firstBlocks.find((b: any) => b.type === 'navigation');
+    const aiFooter = firstBlocks.find((b: any) => b.type === 'footer');
+
+    const globalsToInsert: any[] = [];
+    if (aiNav) globalsToInsert.push({ project_id: projId, language: lang, type: 'navigation', content: aiNav.content, style: aiNav.style });
+    if (aiFooter) globalsToInsert.push({ project_id: projId, language: lang, type: 'footer', content: aiFooter.content, style: aiFooter.style });
+    if (globalsToInsert.length > 0) {
+      await supabase.from('site_globals').insert(globalsToInsert);
+    }
+
+    // Save pages WITHOUT nav/footer blocks
+    const pagesToInsert = processedPages.map((p: any) => ({
+      id: p.id,
+      project_id: projId,
+      title: p.slug === 'home' ? 'Home' : p.title,
+      slug: p.slug,
+      blocks: (p.blocks || []).filter((b: any) => b.type !== 'navigation' && b.type !== 'footer'),
+      seo: {
+        title: p.seo?.title || `${p.title} — ${cleanBusinessName}`,
+        description: p.seo?.description || `${p.title} di ${cleanBusinessName}`,
+      },
+      language: lang,
+    }));
+    if (pagesToInsert.length > 0) {
+      const { error: pagesError } = await supabase.from('pages').insert(pagesToInsert);
+      if (pagesError) console.error('[AI Generator] Pages insert error:', pagesError);
+    }
+
     // Increment credits
     await supabase.rpc('increment_ai_usage', { p_user_id: user.id });
 
-    return { success: true, data: { settings: finalSettings, pages: enrichedPages } };
+    return { success: true, projectId: projId };
 
   } catch (error: any) {
     console.error('[AI Generator] Error:', error);
@@ -806,7 +965,8 @@ async function validateAndCleanBackgroundImages(enrichedPages: any[], businessTy
           delete block.content.imageUrl;
         }
         const imgSrc = block.content?.image || '';
-        const fallbackSeed = block.content?.title || 'section';
+        // Use sectionId (unique per block: info, info-2, etc.) + title for a unique seed
+        const fallbackSeed = `${block.content?.sectionId || block.type}-${block.content?.title || 'section'}`;
         if (!imgSrc) {
           block.content = { ...block.content, image: imageFallbackUrl(businessType || '', fallbackSeed) };
         } else if (imgSrc.startsWith('http')) {
@@ -823,8 +983,10 @@ async function validateAndCleanBackgroundImages(enrichedPages: any[], businessTy
       if (IMAGE_ITEM_BLOCKS.includes(block.type)) {
         const items = block.content?.items;
         if (Array.isArray(items)) {
-          for (const item of items) {
-            const itemSeed = item.title || item.name || 'item';
+          // Include block sectionId + item index in seed so same-titled items get different images
+          const blockSectionId = block.content?.sectionId || block.type;
+          items.forEach((item: any, idx: number) => {
+            const itemSeed = `${blockSectionId}-${idx}-${item.title || item.name || 'item'}`;
             if (!item.image) {
               item.image = imageFallbackUrl(businessType || '', itemSeed);
             } else if (item.image.startsWith('http')) {
@@ -834,7 +996,7 @@ async function validateAndCleanBackgroundImages(enrichedPages: any[], businessTy
                   .catch(() => { item.image = imageFallbackUrl(businessType || '', itemSeed); })
               );
             }
-          }
+          });
         }
       }
     }
@@ -848,6 +1010,10 @@ export async function validateProjectDescription(data: {
   businessType: string;
   description: string;
   extraPages?: { name: string; description: string }[];
+  siteObjective?: string;
+  tone?: string;
+  strengths?: string[];
+  services?: string[];
   email?: string;
   phone?: string;
   address?: string;
@@ -867,6 +1033,10 @@ PROJECT DETAILS:
 Business Name: ${data.businessName}
 Business Type: ${data.businessType}
 Description: ${data.description}
+Site Objective: ${data.siteObjective || 'Not provided'}
+Tone of Voice: ${data.tone || 'Not provided'}
+Key Strengths / USP: ${data.strengths?.filter(s => s.trim()).join(' | ') || 'Not provided'}
+Services Offered: ${data.services?.filter(s => s.trim()).join(' | ') || 'Not provided'}
 Email: ${data.email || 'Not provided'}
 Phone: ${data.phone || 'Not provided'}
 Address: ${data.address || 'Not provided'}
@@ -888,17 +1058,25 @@ Extra Pages: ${data.extraPages?.map(p => `- ${p.name}: ${p.description}`).join('
     return JSON.parse(result.response.text());
   };
 
+  aiDebugSave('validation', 'prompt', prompt);
+
   try {
     let result: any;
+    let usedModel = PRIMARY_MODEL;
+    const valStartMs = Date.now();
     try {
       result = await callValidation(PRIMARY_MODEL);
     } catch (primaryErr: any) {
       if (isRetryableError(primaryErr) || primaryErr instanceof SyntaxError) {
         console.warn(`[AI Validation] falling back to ${FALLBACK_MODEL}`);
+        usedModel = FALLBACK_MODEL;
         try { result = await callValidation(FALLBACK_MODEL); }
         catch { return { isReady: true, questions: [] }; }
       } else { throw primaryErr; }
     }
+    aiDebugSave('validation', 'response', result);
+    aiDebugSave('validation', 'meta', { model: usedModel, elapsedMs: Date.now() - valStartMs, isReady: result?.isReady, questions: result?.questions?.length ?? 0 });
+    console.log(`[AI Validation] isReady: ${result?.isReady}, questions: ${result?.questions?.length ?? 0}`);
     // writeCache(cacheKey, result);
     return result;
   } catch (error: any) {

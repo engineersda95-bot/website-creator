@@ -78,15 +78,10 @@ export const FooterBlock: React.FC<FooterProps> = ({
 }) => {
    const { style } = getBlockStyles(block, project, viewport || 'desktop');
 
-   const navLogoImage = allPages?.flatMap(p => p.blocks).find(b => b.type === 'navigation')?.content?.logoImage;
+   const navLogoImage = (content as any)._navLogoFallback || allPages?.flatMap(p => p.blocks).find(b => b.type === 'navigation')?.content?.logoImage;
    const displayLogoImage = content.logoImage || navLogoImage;
 
-   const links = (content.links && content.links.length > 0) 
-     ? content.links 
-     : (allPages || []).map(p => ({
-         label: p.title,
-         url: p.slug === 'home' ? '/' : `/${p.slug}`
-       }));
+   const links = content.links || [];
 
     const alignValue = (style.align || 'center').toLowerCase();
     const isCentered = alignValue === 'center' || alignValue === 'centrale';

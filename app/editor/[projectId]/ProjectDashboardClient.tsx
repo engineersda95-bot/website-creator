@@ -18,7 +18,7 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { GlobalSettings } from '@/components/blocks/sidebar/GlobalSettings';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { resolveImageUrl } from '@/lib/image-utils';
-import { Page, Project, Block } from '@/types/editor';
+import { Page, Project } from '@/types/editor';
 import { toast } from '@/components/shared/Toast';
 import { PageCard } from '@/components/editor/cards/PageCard';
 import { PageSeoModal } from '@/components/editor/modals/PageSeoModal';
@@ -28,11 +28,11 @@ import { DomainSection } from '@/components/blocks/sidebar/settings/DomainSectio
 import { SeoSection } from '@/components/blocks/sidebar/settings/SeoSection';
 import { confirm } from '@/components/shared/ConfirmDialog';
 import { createPage } from '@/app/actions/pages';
+import { TranslatePageModal } from '@/components/editor/modals/TranslatePageModal';
 import type { UserLimits } from '@/lib/permissions';
 import { ChecklistModal } from '@/components/editor/ChecklistModal';
 import { CompletionBadge, SiteChecklist } from '@/components/editor/SiteChecklist';
 import { getCompletionScore, runGlobalChecks, runPageChecks, CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/site-checklist';
-import { LANGUAGES, BUSINESS_TYPES } from '@/lib/editor-constants';
 
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
@@ -45,11 +45,13 @@ export function ProjectDashboardClient({
   initialUser,
   initialProject,
   initialPages,
+  initialSiteGlobals = [],
   userLimits,
 }: {
   initialUser: any;
   initialProject: Project;
   initialPages: Page[];
+  initialSiteGlobals?: any[];
   userLimits: UserLimits | null;
 }) {
   const router = useRouter();
@@ -103,10 +105,10 @@ export function ProjectDashboardClient({
   const [isPublishing, setIsPublishing] = useState(false);
   const [deletingPageId, setDeletingPageId] = useState<string | null>(null);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
-  const [newLang, setNewLang] = useState(initialProject.settings?.defaultLanguage || 'it');
   const [activeTab, setActiveTab] = useState<'pages' | 'checklist' | 'settings'>('pages');
   const [showChecklist, setShowChecklist] = useState(false);
   const [seoOpenId, setSeoOpenId] = useState<string | null>(null);
+  const [translatePage, setTranslatePage] = useState<Page | null>(null);
 
   const isPublished = !!localProject?.live_url;
 
@@ -118,9 +120,9 @@ export function ProjectDashboardClient({
 
   useEffect(() => {
     if (initialProject && (!storeProject || storeProject.id !== initialProject.id)) {
-      hydrateEditor(initialProject, initialPages);
+      hydrateEditor(initialProject, initialPages, undefined, initialSiteGlobals);
     }
-  }, [initialProject, initialPages, storeProject, hydrateEditor]);
+  }, [initialProject, initialPages, initialSiteGlobals, storeProject, hydrateEditor]);
 
   // Sync project from store when settings change locally
   useEffect(() => {
@@ -133,38 +135,22 @@ export function ProjectDashboardClient({
     e.preventDefault();
     if (!newTitle.trim()) return;
 
+    const lang = localProject.settings?.defaultLanguage || 'it';
     const slug = newSlug.trim() || newTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    
-    // Validazione slug duplicato nella stessa lingua
-    const existingPage = pages.find(p => p.slug === slug && p.language === newLang);
+
+    const existingPage = pages.find(p => p.slug === slug && p.language === lang);
     if (existingPage) {
-      toast(`Una pagina con lo slug "/${slug}" esiste già in ${newLang.toUpperCase()}`, 'error');
+      toast(`Una pagina con lo slug "/${slug}" esiste già`, 'error');
       return;
     }
 
-    const pageId = uuidv4();
-
-    // Seleziona nav e footer da clonare
-    // 1. Cerca nella lingua selezionata
-    const sameLangPage = pages.find((p: Page) => p.language === newLang);
-    let navToClone = sameLangPage?.blocks.find((b: Block) => b.type === 'navigation');
-    let footerToClone = sameLangPage?.blocks.find((b: Block) => b.type === 'footer');
-
-    // 2. Se non li trova, cerca in qualsiasi pagina
-    if (!navToClone) navToClone = pages.flatMap((p: Page) => p.blocks).find((b: Block) => b.type === 'navigation');
-    if (!footerToClone) footerToClone = pages.flatMap((p: Page) => p.blocks).find((b: Block) => b.type === 'footer');
-
-    const initialBlocks = [];
-    if (navToClone) initialBlocks.push({ ...navToClone, id: uuidv4() });
-    if (footerToClone) initialBlocks.push({ ...footerToClone, id: uuidv4() });
-
     const result = await createPage({
-      id: pageId,
+      id: uuidv4(),
       projectId: localProject.id,
       title: newTitle.trim(),
       slug,
-      language: newLang,
-      blocks: initialBlocks,
+      language: lang,
+      blocks: [],
     });
 
     if (!result.success) {
@@ -176,14 +162,25 @@ export function ProjectDashboardClient({
     setIsCreating(false);
     setNewTitle('');
     setNewSlug('');
-    setNewLang(localProject.settings?.defaultLanguage || 'it');
   };
 
   const handleDeletePage = async (pageId: string) => {
     if (!await confirm({ title: 'Elimina pagina', message: 'Vuoi eliminare questa pagina?', confirmLabel: 'Elimina', variant: 'danger' })) return;
     setDeletingPageId(pageId);
+
+    // Cleanup translations_group_id: if only 1 sibling remains, unlink it
+    const deletedPage = pages.find(p => p.id === pageId);
+    const groupId = (deletedPage as any)?.translations_group_id;
+    if (groupId) {
+      const siblings = pages.filter(p => p.id !== pageId && (p as any).translations_group_id === groupId);
+      if (siblings.length === 1) {
+        await supabase.from('pages').update({ translations_group_id: null }).eq('id', siblings[0].id);
+        setPages(prev => prev.map(p => p.id === siblings[0].id ? { ...p, translations_group_id: null } as any : p));
+      }
+    }
+
     await supabase.from('pages').delete().eq('id', pageId);
-    setPages(pages.filter(p => p.id !== pageId));
+    setPages(prev => prev.filter(p => p.id !== pageId));
     setDeletingPageId(null);
   };
 
@@ -274,7 +271,7 @@ export function ProjectDashboardClient({
               {isPublished ? 'Online' : 'Bozza'}
             </div>
             <CompletionBadge
-              score={getCompletionScore(runGlobalChecks(localProject, pages))}
+              score={getCompletionScore(runGlobalChecks(localProject, pages, initialSiteGlobals))}
               onClick={() => setShowChecklist(true)}
             />
           </div>
@@ -350,7 +347,7 @@ export function ProjectDashboardClient({
             <Check size={15} />
             Checklist
             {(() => {
-              const gScore = getCompletionScore(runGlobalChecks(localProject, pages));
+              const gScore = getCompletionScore(runGlobalChecks(localProject, pages, initialSiteGlobals));
               const pageScoresArr = pages.map(p => getCompletionScore(runPageChecks(localProject, pages, p)));
               const avgPage = pageScoresArr.length > 0 ? Math.round(pageScoresArr.reduce((a, b) => a + b, 0) / pageScoresArr.length) : 0;
               const combined = Math.round((gScore + avgPage) / 2);
@@ -367,7 +364,7 @@ export function ProjectDashboardClient({
         </div>
 
         {activeTab === 'checklist' && (() => {
-          const gResults = runGlobalChecks(localProject, pages);
+          const gResults = runGlobalChecks(localProject, pages, initialSiteGlobals);
           const gScore = getCompletionScore(gResults);
           const gPassed = gResults.filter(r => !r.item.informational && r.passed).length;
           const pageScoresData = pages.map(p => ({
@@ -594,30 +591,6 @@ export function ProjectDashboardClient({
                         />
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 font-mono">Lingua</label>
-                      <div className="flex gap-2">
-                        {(localProject.settings?.languages || ['it']).map((langCode: string) => {
-                          const langDef = LANGUAGES.find(l => l.value === langCode);
-                          return (
-                            <button
-                              key={langCode}
-                              type="button"
-                              onClick={() => setNewLang(langCode)}
-                              className={cn(
-                                "flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-bold transition-all",
-                                newLang === langCode 
-                                  ? "bg-zinc-900 border-zinc-900 text-white shadow-sm"
-                                  : "bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300"
-                              )}
-                            >
-                              <span>{langDef?.flag || '🌐'}</span>
-                              <span className="uppercase">{langCode}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
                   </div>
                   <div className="flex gap-3 mt-6">
                     <button
@@ -648,6 +621,7 @@ export function ProjectDashboardClient({
                   formatDate={formatDate}
                   onOpenSeo={(id) => setSeoOpenId(id)}
                   onDelete={handleDeletePage}
+                  onTranslate={(localProject.settings?.languages || ['it']).length > 1 ? (p) => setTranslatePage(p) : undefined}
                   isDeleting={deletingPageId === page.id}
                   onInternalNavigate={handleInternalNavigation}
                   score={getCompletionScore(runPageChecks(localProject, pages, page))}
@@ -743,6 +717,24 @@ export function ProjectDashboardClient({
           project={localProject}
           pages={pages}
           onClose={() => setShowChecklist(false)}
+        />
+      )}
+
+      {translatePage && (
+        <TranslatePageModal
+          page={translatePage}
+          projectId={localProject.id}
+          availableLanguages={localProject.settings?.languages || ['it']}
+          onClose={() => setTranslatePage(null)}
+          onSuccess={(newPage, sourceGroupId) => {
+            // Update source page with new translations_group_id if it was just assigned
+            setPages(prev => prev.map(p =>
+              p.id === translatePage.id && !(p as any).translations_group_id
+                ? { ...p, translations_group_id: sourceGroupId } as any
+                : p
+            ).concat([newPage]));
+            setTranslatePage(null);
+          }}
         />
       )}
     </div>

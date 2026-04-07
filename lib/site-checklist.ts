@@ -3,7 +3,7 @@
  * Aggiungi/rimuovi/riordina i check facilmente qui.
  */
 
-import { Project, Page } from '@/types/editor';
+import { Project, Page, SiteGlobal } from '@/types/editor';
 
 export interface CheckItem {
   id: string;
@@ -28,6 +28,7 @@ export interface CheckItem {
 export interface CheckContext {
   project: Project;
   pages: Page[];
+  siteGlobals?: SiteGlobal[];
   // For page-scoped checks
   page?: Page;
 }
@@ -48,7 +49,9 @@ const GLOBAL_CHECKS: CheckItem[] = [
     description: 'Aggiungi un blocco navigazione per permettere ai visitatori di muoversi tra le pagine',
     category: 'content',
     scope: 'global',
-    check: ({ pages }) => pages.some(p => p.blocks?.some(b => b.type === 'navigation')),
+    check: ({ pages, siteGlobals }) => siteGlobals !== undefined
+      ? siteGlobals.some(g => g.type === 'navigation')
+      : pages.some(p => p.blocks?.some(b => b.type === 'navigation')),
   },
   {
     id: 'has-footer',
@@ -56,7 +59,9 @@ const GLOBAL_CHECKS: CheckItem[] = [
     description: 'Un footer con contatti e link migliora la professionalità del sito',
     category: 'content',
     scope: 'global',
-    check: ({ pages }) => pages.some(p => p.blocks?.some(b => b.type === 'footer')),
+    check: ({ pages, siteGlobals }) => siteGlobals !== undefined
+      ? siteGlobals.some(g => g.type === 'footer')
+      : pages.some(p => p.blocks?.some(b => b.type === 'footer')),
   },
   {
     id: 'has-contact',
@@ -268,8 +273,8 @@ export function getPageChecks(): CheckItem[] {
   return PAGE_CHECKS;
 }
 
-export function runGlobalChecks(project: Project, pages: Page[]): CheckResult[] {
-  const ctx: CheckContext = { project, pages };
+export function runGlobalChecks(project: Project, pages: Page[], siteGlobals?: SiteGlobal[]): CheckResult[] {
+  const ctx: CheckContext = { project, pages, siteGlobals };
   return GLOBAL_CHECKS.map(item => ({
     item,
     passed: item.check(ctx),

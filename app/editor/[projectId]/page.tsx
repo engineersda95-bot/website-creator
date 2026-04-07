@@ -23,8 +23,9 @@ export default async function ProjectDashboardPage({
 
   if (!project) redirect('/editor');
 
-  const [{ data: pages }, userLimits] = await Promise.all([
+  const [{ data: pages }, { data: siteGlobals }, userLimits] = await Promise.all([
     supabase.from('pages').select('*').eq('project_id', projectId).order('created_at', { ascending: true }),
+    supabase.from('site_globals').select('*').eq('project_id', projectId),
     getUserLimits(user.id),
   ]);
 
@@ -33,6 +34,7 @@ export default async function ProjectDashboardPage({
       initialUser={user}
       initialProject={project}
       initialPages={pages || []}
+      initialSiteGlobals={siteGlobals || []}
       userLimits={userLimits}
     />
   );

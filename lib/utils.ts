@@ -154,7 +154,7 @@ export function getButtonClass(project: any, animationOverride?: string) {
   }
 
   return cn(
-    "font-bold transition-all active:scale-95 border-0 outline-none no-underline inline-flex items-center justify-center shadow-sm",
+    "font-bold transition-all active:scale-95 border-0 outline-none no-underline inline-flex items-center justify-center",
     animClass
   );
 }

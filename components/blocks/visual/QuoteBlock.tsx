@@ -298,7 +298,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
         })()}
 
         {isSlider ? (
-          <div className="relative group/quote">
+          <div className="relative group/quote overflow-hidden">
             <div className="absolute top-1/2 left-2 md:-left-6 -translate-y-1/2 z-30 transition-all duration-300">
               <button
                 data-arrow="left"
@@ -324,7 +324,7 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
 
             <div
               className={cn(
-                "flex gap-8 pb-4 items-stretch overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-container no-scrollbar transition-all",
+                "w-full flex gap-8 pb-4 items-stretch overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-container no-scrollbar transition-all",
                 "flex-row"
               )}
             >

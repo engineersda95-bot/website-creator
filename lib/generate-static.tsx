@@ -1,26 +1,52 @@
 import 'server-only';
-import { Block, Page, Project, ProjectSettings } from '@/types/editor';
+import { Block, Page, Project, ProjectSettings, SiteGlobal } from '@/types/editor';
 import React from 'react';
 import { toPx } from '@/lib/utils';
 import { generateBlockCSS, computeCommonVars } from '@/lib/responsive-utils';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { getProjectDomain } from '@/lib/url-utils';
 
-export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: Project): string {
+export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: Project, siteGlobals: SiteGlobal[] = []): string {
   const { renderToStaticMarkup } = require('react-dom/server');
+
+  const settings = (project?.settings || {}) as ProjectSettings;
+  const defLang = settings.defaultLanguage || 'it';
+  const pageLang = page.language || defLang;
+
+  // Build the full block list: inject nav/footer from siteGlobals around page content
+  const navGlobal = siteGlobals.find(g => g.language === pageLang && g.type === 'navigation');
+  const footerGlobal = siteGlobals.find(g => g.language === pageLang && g.type === 'footer');
+  const navBlock: Block | undefined = navGlobal
+    ? { id: 'global-nav', type: 'navigation', content: navGlobal.content, style: navGlobal.style }
+    : undefined;
+  const footerBlock: Block | undefined = footerGlobal
+    ? {
+        id: 'global-footer',
+        type: 'footer',
+        content: {
+          ...footerGlobal.content,
+          _navLogoFallback: footerGlobal.content?.logoImage ? undefined : navGlobal?.content?.logoImage,
+          _language: pageLang,
+        },
+        style: footerGlobal.style,
+      }
+    : undefined;
+  const pageContent = page.blocks.filter(b => b.type !== 'navigation' && b.type !== 'footer');
+  const allBlocksToRender: Block[] = [
+    ...(navBlock ? [navBlock] : []),
+    ...pageContent,
+    ...(footerBlock ? [footerBlock] : []),
+  ];
+
   // Compute common CSS variables for deduplication
-  const commonVars = computeCommonVars(page.blocks, project);
+  const commonVars = computeCommonVars(allBlocksToRender, project);
   const commonVarsCss = Object.entries(commonVars).map(([k, v]) => `${k}:${v};`).join('');
 
-  const blocksHtml = page.blocks.map(block => renderBlock(block, allPages, project, renderToStaticMarkup, commonVars)).join('\n');
-  
-  const settings = (project?.settings || {}) as ProjectSettings;
+  const blocksHtml = allBlocksToRender.map(block => renderBlock(block, allPages, project, renderToStaticMarkup, commonVars)).join('\n');
   const font = settings.fontFamily || 'Outfit';
   const pColor = settings.primaryColor || '#3b82f6';
   const sColor = settings.secondaryColor || '#10b981';
   const floating = settings.floatingCTA;
-  const defLang = settings.defaultLanguage || 'it';
-  const pageLang = page.language || defLang;
 
   const bDetails = settings.businessDetails || {};
   const bType = settings.businessType || 'LocalBusiness';
@@ -30,11 +56,18 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
   const langSubpath = pageLang === defLang ? '' : `/${pageLang}`;
   const fullPageUrl = `${baseUrl}${langSubpath}${pagePath}`;
 
-  // Find all variants of this page (including current one)
+  // Find all variants: prefer translations_group_id, fallback to slug matching
   const allVariants = allPages.filter(p => {
+    if (page.translations_group_id && p.translations_group_id) {
+      return page.translations_group_id === p.translations_group_id;
+    }
     if (page.slug === 'home' && p.slug === 'home') return true;
     return p.slug === page.slug;
   });
+
+  // x-default points to the default-language variant
+  const defaultVariant = allVariants.find(v => (v.language || defLang) === defLang) || allVariants[0];
+  const xDefaultPath = defaultVariant?.slug === 'home' ? '' : `/${defaultVariant?.slug || page.slug}`;
 
   return `
 <!DOCTYPE html>
@@ -43,14 +76,14 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="canonical" href="${fullPageUrl}">
-    
+
     ${allVariants.map(v => {
       const vLang = v.language || defLang;
       const vSubpath = vLang === defLang ? '' : `/${vLang}`;
       const vPath = v.slug === 'home' ? '' : `/${v.slug}`;
       return `<link rel="alternate" hreflang="${vLang}" href="${baseUrl}${vSubpath}${vPath}" />`;
     }).join('\n    ')}
-    <link rel="alternate" hreflang="x-default" href="${baseUrl}${page.slug === 'home' ? '' : `/${page.slug}`}" />
+    <link rel="alternate" hreflang="x-default" href="${baseUrl}${xDefaultPath}" />
 
     <title>${page.seo?.title || settings?.metaTitle || page.title}</title>
     <meta name="description" content="${page.seo?.description || settings?.metaDescription || ''}">
@@ -97,19 +130,19 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     ${(() => {
       // Preload the first above-fold image for faster LCP.
       // Priority: hero background → first promo item image → first image-text image.
-      const heroBlock = page.blocks.find((b: any) => b.type === 'hero');
+      const heroBlock = allBlocksToRender.find((b: any) => b.type === 'hero');
       const heroImg = heroBlock?.content?.backgroundImage;
       if (heroImg) {
         const resolved = resolveImageUrl(heroImg, project || null, {}, true);
         return `<link rel="preload" as="image" href="${resolved}" fetchpriority="high">`;
       }
-      const promoBlock = page.blocks.find((b: any) => b.type === 'promo');
+      const promoBlock = allBlocksToRender.find((b: any) => b.type === 'promo');
       const promoImg = promoBlock?.content?.items?.[0]?.image;
       if (promoImg) {
         const resolved = resolveImageUrl(promoImg, project || null, {}, true);
         return `<link rel="preload" as="image" href="${resolved}" fetchpriority="high">`;
       }
-      const imageTextBlock = page.blocks.find((b: any) => b.type === 'image-text' || b.type === 'imagetext');
+      const imageTextBlock = allBlocksToRender.find((b: any) => b.type === 'image-text' || b.type === 'imagetext');
       const imageTextImg = imageTextBlock?.content?.backgroundImage || imageTextBlock?.content?.image;
       if (imageTextImg) {
         const resolved = resolveImageUrl(imageTextImg, project || null, {}, true);
@@ -332,6 +365,9 @@ export function generateSitemap(pages: Page[], project: Project): string {
       const url = `${baseUrl}${langSubpath}${pagePath}`;
 
       const allVariants = pages.filter(p => {
+        if (page.translations_group_id && p.translations_group_id) {
+          return page.translations_group_id === p.translations_group_id;
+        }
         if (page.slug === 'home' && p.slug === 'home') return true;
         return p.slug === page.slug;
       });
@@ -342,7 +378,9 @@ export function generateSitemap(pages: Page[], project: Project): string {
         return `    <xhtml:link rel="alternate" hreflang="${vLang}" href="${baseUrl}${vSubpath}${vPath}" />`;
       }).join('\n');
 
-      const xDefaultLink = `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${page.slug === 'home' ? '' : `/${page.slug}`}" />`;
+      const defaultVar = allVariants.find(v => (v.language || defLang) === defLang) || allVariants[0];
+      const xDefaultPath = defaultVar?.slug === 'home' ? '' : `/${defaultVar?.slug || page.slug}`;
+      const xDefaultLink = `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${xDefaultPath}" />`;
 
       return `
   <url>

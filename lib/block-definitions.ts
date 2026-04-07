@@ -56,6 +56,7 @@ export const getBlockDefinition = (type: string): BlockDefinition => {
 
 export const getBlockLibrary = (): BlockDefinition[] => {
   return Object.values(BLOCK_DEFINITIONS).filter(def =>
-    def.visual !== null && typeof def.visual === 'function'
+    def.visual !== null && typeof def.visual === 'function' &&
+    def.type !== 'navigation' && def.type !== 'footer'
   );
 };

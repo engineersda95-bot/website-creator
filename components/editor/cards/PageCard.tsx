@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { FileText, Clock, Globe, Loader2, Trash2, Search } from 'lucide-react';
+import { FileText, Clock, Languages, Loader2, Trash2, Search } from 'lucide-react';
 import { Page } from '@/types/editor';
 import { cn } from '@/lib/utils';
 
@@ -12,13 +12,14 @@ interface PageCardProps {
   formatDate: (d: string) => string;
   onOpenSeo: (id: string) => void;
   onDelete: (id: string) => void;
+  onTranslate?: (page: Page) => void;
   isDeleting?: boolean;
   onInternalNavigate: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   score?: number;
   onScoreClick?: () => void;
 }
 
-export function PageCard({ page, projectId, formatDate, onOpenSeo, onDelete, isDeleting, onInternalNavigate, score, onScoreClick }: PageCardProps) {
+export function PageCard({ page, projectId, formatDate, onOpenSeo, onDelete, onTranslate, isDeleting, onInternalNavigate, score, onScoreClick }: PageCardProps) {
   const langEmoji: Record<string, string> = {
     it: '🇮🇹',
     en: '🇬🇧',
@@ -74,6 +75,15 @@ export function PageCard({ page, projectId, formatDate, onOpenSeo, onDelete, isD
           )}
         </div>
         <div className="flex items-center gap-1">
+          {onTranslate && (
+            <button
+              onClick={() => onTranslate(page)}
+              className="p-1.5 rounded-md text-zinc-300 hover:text-blue-500 hover:bg-white transition-all shadow-sm"
+              title="Traduci pagina"
+            >
+              <Languages size={14} />
+            </button>
+          )}
           <button
             onClick={() => onOpenSeo(page.id)}
             className="p-1.5 rounded-md text-zinc-300 hover:text-zinc-500 hover:bg-white transition-all shadow-sm"

@@ -82,7 +82,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       <button 
         data-menu-toggle
         className={cn(
-          "p-2 rounded-lg relative z-[10005] flex items-center justify-center transition-all active:scale-95 outline-none"
+          "rounded-lg relative z-[10005] flex items-center justify-center transition-all active:scale-95 outline-none"
         )}
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         style={{ 

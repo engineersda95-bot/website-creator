@@ -2,6 +2,8 @@
 
 # AI response cache (dev/test only — discard after use)
 .ai-cache/
+# AI debug prompt/response dumps (TEST ONLY — disable AI_DEBUG_SAVE_PROMPTS before production)
+.ai-debug/
 
 # dependencies
 /node_modules

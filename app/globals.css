@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
-:root {
+:root, html {
   --background: #ffffff;
   --foreground: #171717;
+  /* Force light color scheme: prevents OS dark mode from styling native form elements
+     (inputs, selects, buttons, scrollbars) with dark backgrounds/light text */
+  color-scheme: light !important;
+}
+
+/* Ensure text inputs inherit color rather than relying on browser dark-mode defaults */
+input, select, textarea {
+  color: inherit;
 }
 
 @theme inline {
@@ -10,13 +18,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 /* Ultra-Minimal & Premium Scrollbar (Global) */

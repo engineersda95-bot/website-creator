@@ -166,7 +166,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
         )}
 
         {isSlider ? (
-          <div className="relative group/slider">
+          <div className="relative group/slider overflow-hidden">
             <div className="absolute top-1/2 left-2 md:left-4 lg:-left-6 -translate-y-1/2 z-30 transition-all duration-300">
               <button data-arrow="left" className={cn("p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow", isDark ? "bg-zinc-900 border-white/10" : "bg-white border-black/5")}>
                 <ChevronLeft size={24} />
@@ -177,7 +177,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
                 <ChevronRight size={24} />
               </button>
             </div>
-            <div className={cn("flex gap-6 md:gap-8 items-stretch flex-row overflow-x-auto no-scrollbar transition-all scroll-container snap-x snap-mandatory")}>
+            <div className={cn("w-full flex gap-6 md:gap-8 items-stretch flex-row overflow-x-auto no-scrollbar transition-all scroll-container snap-x snap-mandatory")}>
               {items.map((item: any, i: number) => (
                 <div key={i} className={cn("shrink-0 h-auto flex snap-center", sliderWidth)}>
                   {renderItem(item, i)}

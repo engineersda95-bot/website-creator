@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
-import { Block, Page, Project, ProjectSettings, BlockType } from '@/types/editor';
+import { Block, Page, Project, ProjectSettings, BlockType, SiteGlobal } from '@/types/editor';
 import { v4 as uuidv4 } from 'uuid';
 import { TEMPLATES, getBlocksFromTemplate } from '@/lib/templates';
 import { BLOCK_DEFINITIONS } from '@/lib/block-definitions';
@@ -17,6 +17,7 @@ interface EditorState {
   isSaving: boolean;
   isInitialized: boolean;
   hasUnsavedChanges: boolean;
+  siteGlobals: SiteGlobal[];
   pageHistories: Record<string, { steps: any[], index: number }>;
   takeSnapshot: () => void;
   copiedBlock: Block | null;
@@ -30,6 +31,7 @@ interface EditorState {
   setRightSidebarCollapsed: (v: boolean) => void;
   setUnsavedChanges: (val: boolean) => void;
   setProject: (project: Project) => void;
+  setSiteGlobals: (globals: SiteGlobal[]) => void;
   listProjectPages: (projectId: string) => Promise<void>;
   loadPage: (projectId: string, slug: string, template?: string) => Promise<void>;
   addPage: (title: string, slug: string) => Promise<void>;
@@ -60,9 +62,30 @@ interface EditorState {
   duplicateBlock: (id: string) => void;
   copyBlock: (id: string) => void;
   pasteBlock: (atIndex?: number) => void;
-  hydrateEditor: (project: Project, pages: Page[], pageId?: string) => void;
+  hydrateEditor: (project: Project, pages: Page[], pageId?: string, siteGlobals?: SiteGlobal[]) => void;
   publishProject: () => Promise<{ success: boolean; url?: string; error?: string }>;
   uploadImage: (base64: string, filename?: string) => Promise<string>;
+}
+
+// Inject nav/footer from siteGlobals into a page's block list (for editor display)
+function injectGlobals(blocks: Block[], language: string, siteGlobals: SiteGlobal[]): Block[] {
+  const lang = language || 'it';
+  const nav = siteGlobals.find(g => g.language === lang && g.type === 'navigation');
+  const footer = siteGlobals.find(g => g.language === lang && g.type === 'footer');
+  const cleaned = blocks.filter(b => b.type !== 'navigation' && b.type !== 'footer');
+  const footerContent = footer
+    ? { ...footer.content, _navLogoFallback: footer.content?.logoImage ? undefined : nav?.content?.logoImage, _language: lang }
+    : undefined;
+  return [
+    ...(nav ? [{ id: `global-nav-${lang}`, type: 'navigation' as BlockType, content: nav.content, style: nav.style }] : []),
+    ...cleaned,
+    ...(footer ? [{ id: `global-footer-${lang}`, type: 'footer' as BlockType, content: footerContent, style: footer.style }] : []),
+  ];
+}
+
+// Strip nav/footer from blocks before saving page to DB
+function stripGlobals(blocks: Block[]): Block[] {
+  return blocks.filter(b => b.type !== 'navigation' && b.type !== 'footer');
 }
 
 const triggerAutoSave = (get: () => EditorState, set?: any) => {
@@ -86,7 +109,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   isSaving: false,
   isInitialized: false,
   hasUnsavedChanges: false,
+  siteGlobals: [],
   setUnsavedChanges: (val) => set({ hasUnsavedChanges: val }),
+  setSiteGlobals: (globals) => set({ siteGlobals: globals }),
   viewport: 'desktop',
   setViewport: (v) => set({ viewport: v }),
   pageHistories: {},
@@ -176,7 +201,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
 
     if (pageData) {
-      set({ currentPage: pageData, isLoading: false, hasUnsavedChanges: false });
+      // Load site_globals if not yet in state (e.g. direct navigation)
+      let globals = get().siteGlobals;
+      if (globals.length === 0) {
+        const { data: globalsData } = await supabase.from('site_globals').select('*').eq('project_id', pageData.project_id);
+        if (globalsData?.length) {
+          globals = globalsData;
+          set({ siteGlobals: globalsData });
+        }
+      }
+      const defLang = get().project?.settings?.defaultLanguage || 'it';
+      const injectedPage = { ...pageData, blocks: injectGlobals(pageData.blocks || [], pageData.language || defLang, globals) };
+      set({ currentPage: injectedPage, isLoading: false, hasUnsavedChanges: false });
       get().takeSnapshot(); // Snapshot iniziale per la nuova pagina
     } else if (template) {
       const blocks = getBlocksFromTemplate(template as keyof typeof TEMPLATES);
@@ -197,24 +233,17 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   addPage: async (title, slug) => {
-    const { project, projectPages } = get();
+    const { project, siteGlobals } = get();
     if (!project) return;
 
-    // Cerca un blocco navigation e footer da clonare
-    const navBlockToClone = projectPages.flatMap(p => p.blocks).find(b => b.type === 'navigation');
-    const footerBlockToClone = projectPages.flatMap(p => p.blocks).find(b => b.type === 'footer');
-
-    const newBlocks = [];
-    if (navBlockToClone) newBlocks.push({ ...navBlockToClone, id: uuidv4() });
-    if (footerBlockToClone) newBlocks.push({ ...footerBlockToClone, id: uuidv4() });
-
+    const lang = project.settings?.defaultLanguage || 'it';
     const newPage = {
       id: uuidv4(),
       project_id: project.id,
       slug,
       title,
-      language: project.settings?.defaultLanguage || 'it',
-      blocks: newBlocks,
+      language: lang,
+      blocks: [],
       updated_at: new Date().toISOString()
     };
 
@@ -243,46 +272,39 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     // Capture the version at the start of the save
     const versionAtStart = version;
 
+    const lang = currentPage.language || 'it';
+
+    // Save nav/footer to site_globals (centralized) — strip them from page blocks
+    const navBlock = currentPage.blocks.find(b => b.type === 'navigation');
+    const footerBlock = currentPage.blocks.find(b => b.type === 'footer');
+    const globalsToSave: any[] = [];
+    if (navBlock) globalsToSave.push({ project_id: currentPage.project_id, language: lang, type: 'navigation', content: navBlock.content, style: navBlock.style, updated_at: new Date().toISOString() });
+    if (footerBlock) globalsToSave.push({ project_id: currentPage.project_id, language: lang, type: 'footer', content: footerBlock.content, style: footerBlock.style, updated_at: new Date().toISOString() });
+
+    if (globalsToSave.length > 0) {
+      await supabase.from('site_globals').upsert(globalsToSave, { onConflict: 'project_id,language,type' });
+      // Update siteGlobals in memory
+      set(state => ({
+        siteGlobals: state.siteGlobals.reduce((acc, g) => {
+          if (g.language === lang && (g.type === 'navigation' || g.type === 'footer')) return acc;
+          acc.push(g);
+          return acc;
+        }, [] as SiteGlobal[]).concat(
+          globalsToSave.map(g => ({ ...g, id: state.siteGlobals.find(sg => sg.language === g.language && sg.type === g.type)?.id || 'temp' }))
+        )
+      }));
+    }
+
     const pagesToSave = [{
       id: currentPage.id,
       project_id: currentPage.project_id,
       slug: currentPage.slug,
       title: currentPage.title,
-      blocks: currentPage.blocks,
+      blocks: stripGlobals(currentPage.blocks),
       seo: currentPage.seo,
       language: currentPage.language,
       updated_at: new Date().toISOString()
     }];
-
-    const navBlock = currentPage.blocks.find(b => b.type === 'navigation');
-    const footerBlock = currentPage.blocks.find(b => b.type === 'footer');
-
-    if (navBlock || footerBlock) {
-      for (const p of projectPages) {
-        if (p.id === currentPage.id) continue;
-        // Sync only pages with the same language
-        if (p.language !== currentPage.language) continue;
-        
-        let changed = false;
-        const newBlocks = p.blocks.map(b => {
-          if (b.type === 'navigation' && navBlock) { changed = true; return { ...navBlock, id: b.id }; }
-          if (b.type === 'footer' && footerBlock) { changed = true; return { ...footerBlock, id: b.id }; }
-          return b;
-        });
-        if (changed) {
-          pagesToSave.push({
-            id: p.id,
-            project_id: p.project_id,
-            slug: p.slug,
-            title: p.title,
-            blocks: newBlocks,
-            seo: p.seo,
-            language: p.language,
-            updated_at: new Date().toISOString()
-          });
-        }
-      }
-    }
 
     // ── Save project settings if changed ──
     if (project && user) {
@@ -310,20 +332,20 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           
           // Update local state WITH pieces from server (e.g. updated_at) but WITHOUT overwriting 
           // the content if it's already moved forward.
-          currentPage: state.currentPage.id === savedData[0].id 
-            ? { 
-                ...state.currentPage, 
+          currentPage: state.currentPage.id === savedData[0].id
+            ? {
+                ...state.currentPage,
                 updated_at: savedData[0].updated_at,
-                // We only update blocks if the user didn't change them in the meantine
-                blocks: hasNewChanges ? state.currentPage.blocks : savedData[0].blocks,
+                // Re-inject globals when using server blocks (which no longer contain nav/footer)
+                blocks: hasNewChanges
+                  ? state.currentPage.blocks
+                  : injectGlobals(savedData[0].blocks || [], lang, state.siteGlobals),
                 seo: hasNewChanges ? state.currentPage.seo : savedData[0].seo,
-              } 
+              }
             : state.currentPage,
-          
+
           projectPages: state.projectPages.map(p => {
             const saved = savedData.find(s => s.id === p.id);
-            // Same logic: if it's the current page we already handled it, if it's another page
-            // (like nav/footer sync) we just update the metadata
             return saved ? { ...p, updated_at: saved.updated_at } : p;
           })
         };
@@ -556,28 +578,23 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       return newBlock;
     });
 
-    const isGlobal = targetBlock && (targetBlock.type === 'navigation' || targetBlock.type === 'footer');
-    let updatedProjectPages = projectPages;
+    const updatedProjectPages = projectPages.map(page =>
+      page.id === currentPage.id ? { ...currentPage, blocks } : page
+    );
 
-    if (isGlobal || projectPages.find(p => p.id === currentPage.id)) {
-      updatedProjectPages = projectPages.map(page => {
-        if (page.id === currentPage.id) {
-          return { ...currentPage, blocks };
-        }
-        if (isGlobal && page.language === currentPage.language) {
-          return {
-            ...page,
-            blocks: page.blocks.map(b => b.type === targetBlock.type ? { ...targetBlock, id: b.id } : b)
-          };
-        }
-        return page;
-      });
+    // If nav/footer was updated, mirror to siteGlobals in memory so other pages see it immediately
+    if (targetBlock && (targetBlock.type === 'navigation' || targetBlock.type === 'footer')) {
+      const lang = currentPage.language || 'it';
+      const { siteGlobals } = get();
+      const updatedGlobals = siteGlobals.map(g =>
+        g.language === lang && g.type === targetBlock.type
+          ? { ...g, content: targetBlock.content, style: targetBlock.style }
+          : g
+      );
+      set({ currentPage: { ...currentPage, blocks }, projectPages: updatedProjectPages, siteGlobals: updatedGlobals });
+    } else {
+      set({ currentPage: { ...currentPage, blocks }, projectPages: updatedProjectPages });
     }
-
-    set({
-      currentPage: { ...currentPage, blocks },
-      projectPages: updatedProjectPages
-    });
     triggerAutoSave(get, set);
   },
 
@@ -606,28 +623,23 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       return newBlock;
     });
 
-    const isGlobal = targetBlock && (targetBlock.type === 'navigation' || targetBlock.type === 'footer');
-    let updatedProjectPages = projectPages;
+    const updatedProjectPages = projectPages.map(page =>
+      page.id === currentPage.id ? { ...currentPage, blocks } : page
+    );
 
-    if (isGlobal || projectPages.find(p => p.id === currentPage.id)) {
-      updatedProjectPages = projectPages.map(page => {
-        if (page.id === currentPage.id) {
-          return { ...currentPage, blocks };
-        }
-        if (isGlobal && page.language === currentPage.language) {
-          return {
-            ...page,
-            blocks: page.blocks.map(b => b.type === targetBlock.type ? { ...targetBlock, id: b.id } : b)
-          };
-        }
-        return page;
-      });
+    // If nav/footer style was updated, mirror to siteGlobals in memory
+    if (targetBlock && (targetBlock.type === 'navigation' || targetBlock.type === 'footer')) {
+      const lang = currentPage.language || 'it';
+      const { siteGlobals } = get();
+      const updatedGlobals = siteGlobals.map(g =>
+        g.language === lang && g.type === targetBlock.type
+          ? { ...g, content: targetBlock.content, style: targetBlock.style }
+          : g
+      );
+      set({ currentPage: { ...currentPage, blocks }, projectPages: updatedProjectPages, siteGlobals: updatedGlobals });
+    } else {
+      set({ currentPage: { ...currentPage, blocks }, projectPages: updatedProjectPages });
     }
-
-    set({
-      currentPage: { ...currentPage, blocks },
-      projectPages: updatedProjectPages
-    });
     triggerAutoSave(get, set);
   },
 
@@ -725,11 +737,15 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
 
-  hydrateEditor: (project, pages, pageId) => {
+  hydrateEditor: (project, pages, pageId, siteGlobals = []) => {
     const targetPage = pageId
       ? pages.find(p => p.id === pageId) || pages[0] || null
       : pages.find(p => p.slug === 'home') || pages[0] || null;
-    set({ project, projectPages: pages, currentPage: targetPage });
+    const defLang = project.settings?.defaultLanguage || 'it';
+    const injectedPage = targetPage
+      ? { ...targetPage, blocks: injectGlobals(targetPage.blocks || [], targetPage.language || defLang, siteGlobals) }
+      : null;
+    set({ project, projectPages: pages, currentPage: injectedPage, siteGlobals });
   },
 
   publishProject: async () => {

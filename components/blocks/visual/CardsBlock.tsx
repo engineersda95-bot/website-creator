@@ -254,7 +254,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
         })()}
 
         {isSlider ? (
-          <div className="relative group/slider">
+          <div className="relative group/slider overflow-hidden">
             {/* Slider Navigation Arrows */}
             <div className="absolute top-1/2 left-2 md:left-4 lg:-left-6 -translate-y-1/2 z-30 transition-all duration-300">
               <button 
@@ -281,7 +281,7 @@ export const CardsBlock: React.FC<CardsBlockProps> = ({
 
             <div 
               className={cn(
-                "flex gap-6 md:gap-8 pb-4 items-stretch flex-row overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all"
+                "w-full flex gap-6 md:gap-8 pb-4 items-stretch flex-row overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all"
               )} 
             >
               {items.map((item: any, i: number) => {

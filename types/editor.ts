@@ -41,12 +41,23 @@ export interface Page {
   title: string;
   blocks: Block[];
   language?: string; // e.g. 'it', 'en'
+  translations_group_id?: string; // groups page variants across languages
   seo?: {
     title?: string;
     description?: string;
     image?: string;
     indexable?: boolean;
   };
+  updated_at: string;
+}
+
+export interface SiteGlobal {
+  id: string;
+  project_id: string;
+  language: string;
+  type: 'navigation' | 'footer';
+  content: any;
+  style: any;
   updated_at: string;
 }
 

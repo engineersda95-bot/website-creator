@@ -136,8 +136,10 @@ export function ProjectListClient({
       ? getBlocksFromTemplate(selectedTemplate as keyof typeof TEMPLATES)
       : [];
 
+    const defaultLang = businessLanguages[0] || 'it';
+
     const initialPages: any[] = [
-      { id: uuidv4(), title: 'Home', slug: 'home', blocks: templateBlocks },
+      { id: uuidv4(), title: 'Home', slug: 'home', blocks: templateBlocks, language: defaultLang },
     ];
 
     const extraPages = TEMPLATE_PAGES[selectedTemplate];
@@ -148,8 +150,20 @@ export function ProjectListClient({
           title: ep.title,
           slug: ep.slug,
           blocks: ep.blocks.map((b: any) => ({ ...b, id: uuidv4() })),
+          language: defaultLang,
         });
       }
+    }
+
+    // For blank template or if template has no nav/footer blocks, create empty placeholders in site_globals
+    const hasNav = initialPages.some(p => p.blocks?.some((b: any) => b.type === 'navigation'));
+    const hasFooter = initialPages.some(p => p.blocks?.some((b: any) => b.type === 'footer'));
+    if (!hasNav || !hasFooter) {
+      const placeholders: any[] = [];
+      if (!hasNav) placeholders.push({ type: 'navigation', content: { logoText: businessName || newName.trim(), links: [{ label: 'Home', url: '/' }] }, style: { padding: 20, hPadding: 40 } });
+      if (!hasFooter) placeholders.push({ type: 'footer', content: { copyright: `© ${new Date().getFullYear()} ${businessName || newName.trim()}`, links: [{ label: 'Home', url: '/' }] }, style: { padding: 60, hPadding: 80 } });
+      // Inject them into the first page so createProject picks them up and saves to site_globals
+      initialPages[0].blocks = [...placeholders, ...(initialPages[0].blocks || [])];
     }
 
     const result = await createProject({
@@ -173,71 +187,10 @@ export function ProjectListClient({
     setIsCreating(false);
   };
 
-  const handleCreateProjectFromAI = async (aiData: any) => {
-    setIsCreating(true);
+  const handleCreateProjectFromAI = async (aiData: { projectId: string }) => {
+    // Project was already saved to DB by the server action — just redirect
     setShowAIGenerator(false);
-
-    const projId = uuidv4();
-    const cleanBusinessName = (aiData.businessName || 'Nuovo Sito IA').trim();
-    const subdomain = cleanBusinessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + projId.substring(0, 6);
-
-    // Migrate logo from ai-temp to the project folder and replace all references
-    let processedAiData = aiData;
-    if (aiData.logoStoragePath && aiData.settings?.logo) {
-      const oldLogoUrl: string = aiData.settings.logo;
-      const logoFilename = aiData.logoStoragePath.split('/').pop() as string;
-      const destPath = `${initialUser.id}/${projId}/${logoFilename}`;
-      const newLogoRelativePath = `/assets/${logoFilename}`;
-
-      const { error: moveError } = await supabase.storage
-        .from('project-assets')
-        .move(aiData.logoStoragePath, destPath);
-
-      if (!moveError) {
-        // Replace every occurrence of the old ai-temp logo URL with the relative path
-        const serialized = JSON.stringify(aiData).replaceAll(oldLogoUrl, newLogoRelativePath);
-        processedAiData = JSON.parse(serialized);
-      }
-    }
-
-    // Clean up ai-temp screenshots (fire and forget)
-    if (aiData.screenshotStoragePaths?.length > 0) {
-      supabase.storage
-        .from('project-assets')
-        .remove(aiData.screenshotStoragePaths)
-        .catch(() => {}); // best-effort cleanup
-    }
-
-    const initialPages = processedAiData.pages.map((p: any) => ({
-      id: p.id || uuidv4(),
-      title: p.slug === 'home' ? 'Home' : p.title,
-      slug: p.slug,
-      blocks: p.blocks,
-      seo: {
-        title: p.seo?.title || `${p.title} — ${processedAiData.businessName}`,
-        description: p.seo?.description || `${p.title} di ${processedAiData.businessName}`,
-      },
-      language: processedAiData.language || 'it',
-    }));
-
-    const result = await createProject({
-      projectId: projId,
-      name: cleanBusinessName,
-      subdomain,
-      settings: processedAiData.settings,
-      initialPages,
-    });
-
-    if (!result.success) {
-      toast(result.error || 'Errore durante la creazione del sito', 'error');
-      setIsCreating(false);
-      return;
-    }
-
-    setProjects([result.project, ...projects]);
-    setShowCreate(false);
-    router.push(`/editor/${projId}`);
-    setIsCreating(false);
+    router.push(`/editor/${aiData.projectId}`);
   };
 
   const formatDate = (d: string) => {

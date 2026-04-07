@@ -23,12 +23,11 @@ export default async function PageEditorPage({
 
   if (!project) redirect('/editor');
 
-  // Fetch all pages for this project (needed for nav/footer syncing)
-  const { data: pages } = await supabase
-    .from('pages')
-    .select('*')
-    .eq('project_id', projectId)
-    .order('created_at', { ascending: true });
+  // Fetch all pages and site_globals for this project
+  const [{ data: pages }, { data: siteGlobals }] = await Promise.all([
+    supabase.from('pages').select('*').eq('project_id', projectId).order('created_at', { ascending: true }),
+    supabase.from('site_globals').select('*').eq('project_id', projectId),
+  ]);
 
   const allPages = pages || [];
   const targetPage = allPages.find(p => p.id === pageId);
@@ -41,6 +40,7 @@ export default async function PageEditorPage({
       initialProject={project}
       initialPages={allPages}
       initialPageId={pageId}
+      initialSiteGlobals={siteGlobals || []}
     />
   );
 }

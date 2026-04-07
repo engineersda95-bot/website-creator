@@ -120,6 +120,8 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const [progress, setProgress] = useState(0);
   const [isValidating, setIsValidating] = useState(false);
   const [validationQuestions, setValidationQuestions] = useState<any[]>([]);
+  const [validationAnswers, setValidationAnswers] = useState<{ question: string; answer: string }[]>([]);
+  const [validationInputs, setValidationInputs] = useState<Record<string, string>>({});
   const [showValidation, setShowValidation] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
@@ -205,6 +207,10 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
         businessType,
         description,
         extraPages: pagesToValidate,
+        siteObjective,
+        tone,
+        strengths: strengths.filter(s => s.trim()),
+        services: services.filter(s => s.trim()),
         email: businessEmail,
         phone: businessPhone,
         address: businessAddress,
@@ -234,16 +240,21 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   };
 
   const handleValidationAnswer = (id: string, value: string) => {
-    const q = validationQuestions.find(v => v.id === id);
-    if (id && value.trim()) {
-      setDescription(prev => (prev + '\n\n- ' + (q?.question ?? 'Risposta') + ': ' + value));
-      const remaining = validationQuestions.filter(v => v.id !== id);
-      setValidationQuestions(remaining);
-      if (remaining.length === 0) {
-        setShowValidation(false);
-        setStepIndex(3);
+    setValidationInputs(prev => ({ ...prev, [id]: value }));
+  };
+
+  const commitValidationAnswers = () => {
+    const collected: { question: string; answer: string }[] = [];
+    for (const q of validationQuestions) {
+      const id = q.id || q.text;
+      const value = (validationInputs[id] || '').trim();
+      if (value) {
+        collected.push({ question: q.question ?? id, answer: value });
       }
     }
+    setValidationAnswers(collected);
+    setShowValidation(false);
+    setStepIndex(3);
   };
 
   const toggleListening = (type: 'description' | 'extra' = 'description') => {
@@ -345,6 +356,10 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
         services: filledServices.length > 0 ? filledServices : undefined,
         useAnchorNav: extraPages.length === 0 ? useAnchorNav : undefined,
         creativeMode: creativeMode || undefined,
+        validationAnswers: validationAnswers.length > 0 ? validationAnswers : undefined,
+        // Pass storage paths so server can migrate assets directly
+        logoStoragePath: logoStoragePath || undefined,
+        screenshotStoragePaths: screenshotStoragePaths?.length ? screenshotStoragePaths : undefined,
       });
 
       clearTimeout(timeout);
@@ -352,13 +367,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
       if (result.success) {
         setProgress(100);
         setTimeout(() => {
-          onSuccess({
-            ...result.data,
-            businessName,
-            language,
-            logoStoragePath,
-            screenshotStoragePaths,
-          });
+          onSuccess({ projectId: result.projectId });
         }, 800);
       } else {
         setError(result.error || 'Errore imprevisto');
@@ -544,11 +553,9 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                   autoFocus={i === 0}
                   placeholder={q.placeholder || "Scrivi qui la risposta..."}
                   className={inputClass}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleValidationAnswer(q.id || `q-${i}`, (e.target as HTMLInputElement).value);
-                    }
-                  }}
+                  value={validationInputs[q.id || `q-${i}`] || ''}
+                  onChange={(e) => handleValidationAnswer(q.id || `q-${i}`, e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') commitValidationAnswers(); }}
                 />
               </div>
             ))}
@@ -558,8 +565,8 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
               <ChevronLeft size={14} />
               Modifica
             </button>
-            <button onClick={() => { setShowValidation(false); setStepIndex(3); }} className="flex items-center gap-1.5 px-5 py-2 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all">
-              Salta e continua
+            <button onClick={commitValidationAnswers} className="flex items-center gap-1.5 px-5 py-2 text-sm font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all">
+              Continua
               <ChevronRight size={14} />
             </button>
           </div>

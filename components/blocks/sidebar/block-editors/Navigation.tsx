@@ -52,7 +52,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   project,
 }) => {
   const content = selectedBlock.content;
-  const { uploadImage, isUploading } = useEditorStore();
+  const { uploadImage, isUploading, siteGlobals, currentPage } = useEditorStore();
   const { openSection, setOpenSection, toggleSection } = useUnifiedSections();
 
   React.useEffect(() => {
@@ -66,14 +66,14 @@ export const Navigation: React.FC<NavigationProps> = ({
 
   return (
     <div>
-      {/* Sync Info */}
-      <div className="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-2xl">
+      {/* Global Info */}
+      <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-2xl">
         <div className="flex gap-3">
-          <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-            <Globe size={14} className="text-amber-600" />
+          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+            <Globe size={14} className="text-blue-600" />
           </div>
-          <p className="text-[11px] text-amber-800 leading-normal">
-            La configurazione di questo blocco è <strong>sincronizzata</strong> tra tutte le pagine in <strong>{useEditorStore.getState().currentPage?.language?.toUpperCase() || 'IT'}</strong>.
+          <p className="text-[11px] text-blue-800 leading-normal">
+            Questo blocco è <strong>globale</strong>: le modifiche si applicano a tutte le pagine in <strong>{useEditorStore.getState().currentPage?.language?.toUpperCase() || 'IT'}</strong>.
           </p>
         </div>
       </div>
@@ -205,13 +205,11 @@ export const Navigation: React.FC<NavigationProps> = ({
       </Section>
 
       <Section icon={Link2} label="Links" id="links" isOpen={openSection === 'links'} onToggle={toggleSection}>
-        <ManagerWrapper label="Link Navigazione">
-          <LinkListManager
-            label="Link Navigazione"
-            links={content.links || []}
-            onChange={(links) => updateContent({ links })}
-          />
-        </ManagerWrapper>
+        <LinkListManager
+          label="Link Navigazione"
+          links={content.links || []}
+          onChange={(links) => updateContent({ links })}
+        />
         <div className="mt-4">
           <SimpleSlider
             label="Gap tra Link"
@@ -230,8 +228,13 @@ export const Navigation: React.FC<NavigationProps> = ({
             onClick={() => {
               const newVal = !content.showSocial;
               const update: any = { showSocial: newVal };
-              if (newVal && (!content.socialLinks || content.socialLinks.length === 0) && project?.settings?.socialLinks) {
-                update.socialLinks = project.settings.socialLinks;
+              if (newVal && (!content.socialLinks || content.socialLinks.length === 0)) {
+                // Fallback: copy social links from footer globals if available
+                const footerGlobal = siteGlobals?.find(
+                  (g: any) => g.language === (currentPage?.language || 'it') && g.type === 'footer'
+                );
+                const footerSocial = footerGlobal?.content?.socialLinks;
+                if (footerSocial?.length) update.socialLinks = footerSocial;
               }
               updateContent(update);
             }}
@@ -242,12 +245,10 @@ export const Navigation: React.FC<NavigationProps> = ({
 
         {content.showSocial && (
           <>
-            <ManagerWrapper label="Link Social">
-              <SocialLinksManager
-                links={content.socialLinks || []}
-                onChange={(socialLinks) => updateContent({ socialLinks })}
-              />
-            </ManagerWrapper>
+            <SocialLinksManager
+              links={content.socialLinks || []}
+              onChange={(socialLinks) => updateContent({ socialLinks })}
+            />
             <div className="mt-4 space-y-2">
               <SimpleSlider
                 label="Dimensione Icone"
