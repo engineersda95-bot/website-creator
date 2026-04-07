@@ -132,12 +132,10 @@ DECLARE
   v_delta BIGINT;
   v_project_id TEXT;
 BEGIN
-  -- Il path è nel formato "{projectId}/{filename}" — estraiamo il projectId
-  -- metadata->>'size' può essere NULL al momento del trigger (Supabase lo popola in modo asincrono),
-  -- quindi usiamo octet_length(NEW.metadata::text) come fallback approssimativo.
+  -- Il path è nel formato "{userId}/{projectId}/{filename}" — estraiamo il projectId (posizione 2)
 
   IF TG_OP = 'INSERT' AND NEW.bucket_id = 'project-assets' THEN
-    v_project_id := split_part(NEW.name, '/', 1);
+    v_project_id := split_part(NEW.name, '/', 2);
     v_new_size := COALESCE((NEW.metadata->>'size')::BIGINT, 0);
 
     SELECT user_id INTO v_user_id FROM public.projects WHERE id::text = v_project_id;
@@ -147,7 +145,7 @@ BEGIN
 
   ELSIF TG_OP = 'UPDATE' AND NEW.bucket_id = 'project-assets' THEN
     -- upsert: sottraiamo la vecchia dimensione e aggiungiamo la nuova
-    v_project_id := split_part(NEW.name, '/', 1);
+    v_project_id := split_part(NEW.name, '/', 2);
     v_new_size := COALESCE((NEW.metadata->>'size')::BIGINT, 0);
     v_old_size := COALESCE((OLD.metadata->>'size')::BIGINT, 0);
     v_delta := v_new_size - v_old_size;
@@ -158,7 +156,7 @@ BEGIN
     END IF;
 
   ELSIF TG_OP = 'DELETE' AND OLD.bucket_id = 'project-assets' THEN
-    v_project_id := split_part(OLD.name, '/', 1);
+    v_project_id := split_part(OLD.name, '/', 2);
     v_old_size := COALESCE((OLD.metadata->>'size')::BIGINT, 0);
 
     SELECT user_id INTO v_user_id FROM public.projects WHERE id::text = v_project_id;
