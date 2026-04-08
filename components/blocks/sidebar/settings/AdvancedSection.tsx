@@ -45,9 +45,10 @@ export const AdvancedSection: React.FC<AdvancedSectionProps> = ({
 
                      <div className="space-y-6">
                         <div className="space-y-4">
-                           <label className="text-[12px] font-black text-zinc-900 uppercase tracking-widest pl-1 block">Header Script (HEAD)</label>
+                           <label className="text-[12px] font-black text-zinc-500 uppercase tracking-widest pl-1 block">Header Script (HEAD)</label>
                            <textarea
-                              className="w-full h-40 p-4 border border-zinc-200 rounded-2xl text-[13px] font-mono bg-zinc-900 text-zinc-300 focus:border-zinc-500 transition-all outline-none resize-none shadow-inner"
+                              className="w-full h-40 p-4 border border-zinc-200 rounded-2xl text-[13px] font-mono focus:border-zinc-500 transition-all outline-none resize-none shadow-inner"
+                              style={{ backgroundColor: '#18181b', color: '#d4d4d8', colorScheme: 'dark' }}
                               value={project?.settings?.customScriptsHead || ''}
                               onChange={(e) => updateProjectSettings({ customScriptsHead: e.target.value })}
                               placeholder="<script>... analytics, pixel, cookie banner ... </script>"
@@ -55,9 +56,10 @@ export const AdvancedSection: React.FC<AdvancedSectionProps> = ({
                         </div>
 
                         <div className="space-y-4 pt-4 border-t border-zinc-50">
-                           <label className="text-[12px] font-black text-zinc-900 uppercase tracking-widest pl-1 block">Footer Script (BODY)</label>
+                           <label className="text-[12px] font-black text-zinc-500 uppercase tracking-widest pl-1 block">Footer Script (BODY)</label>
                            <textarea
-                              className="w-full h-40 p-4 border border-zinc-200 rounded-2xl text-[13px] font-mono bg-zinc-900 text-zinc-300 focus:border-zinc-500 transition-all outline-none resize-none shadow-inner"
+                              className="w-full h-40 p-4 border border-zinc-200 rounded-2xl text-[13px] font-mono focus:border-zinc-500 transition-all outline-none resize-none shadow-inner"
+                              style={{ backgroundColor: '#18181b', color: '#d4d4d8', colorScheme: 'dark' }}
                               value={project?.settings?.customScriptsBody || ''}
                               onChange={(e) => updateProjectSettings({ customScriptsBody: e.target.value })}
                               placeholder="<!-- widget chat, conversion scripts -->"
