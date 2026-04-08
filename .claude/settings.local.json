@@ -7,7 +7,12 @@
       "Bash(find c:/Users/User/Desktop/Proximatica/siti-vetrina -name *checklist* -o -name *seo*)",
       "Bash(find /c/Users/User/Desktop/Proximatica/siti-vetrina -type f \\\\\\(-name *.sql -o -name *migration* -o -name *rls* -o -name *trigger* \\\\\\))",
       "Bash(grep -l \"image\\\\|Image\" /c/Users/User/Desktop/Proximatica/siti-vetrina/components/blocks/sidebar/block-editors/*.tsx)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(find /Users/dariocrosetto/Desktop/Projects/AndreaEDario/website-creator -name *blog* -o -name *BlogPost*)",
+      "Bash(find /Users/dariocrosetto/Desktop/Projects/AndreaEDario/website-creator/lib -name *blog* -o -name *generate*)",
+      "Bash(ls:*)",
+      "Bash(grep -A 10 \"dangerouslySetInnerHTML.*script\" /Users/dariocrosetto/Desktop/Projects/AndreaEDario/website-creator/components/blocks/visual/*.tsx)",
+      "Bash(grep -n \"customScripts\\\\|custom_scripts\" /Users/dariocrosetto/Desktop/Projects/AndreaEDario/website-creator/app/editor/[projectId]/ProjectDashboardClient.tsx)"
     ]
   }
 }

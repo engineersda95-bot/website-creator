@@ -68,7 +68,7 @@ Tutte le Server Actions sono in [`app/actions/`](../app/actions/).
 | `pages.ts` | `translatePage` | Crea una traduzione di una pagina esistente |
 | `deploy.ts` | `deployToCloudflare` | Genera HTML statico e deploya su Cloudflare Pages |
 | `ai-generator.ts` | `generateProjectWithAI` | Genera un sito completo con Gemini AI |
-| `ai-generator.ts` | `validateWithAI` | Valida/migliora contenuto con AI (chiamata separata) |
+| `ai-generator.ts` | `validateProjectDescription` | Valida la descrizione utente prima della generazione AI |
 
 ---
 
@@ -420,7 +420,7 @@ project-assets/
 - [`app/actions/projects.ts`](../app/actions/projects.ts) — `createProject`
 - [`app/actions/pages.ts`](../app/actions/pages.ts) — `createPage`, `translatePage`
 - [`app/actions/deploy.ts`](../app/actions/deploy.ts) — `deployToCloudflare`
-- [`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts) — `generateProjectWithAI`, `validateWithAI`
+- [`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts) — `generateProjectWithAI`, `validateProjectDescription`
 
 ### Edge Functions
 - [`supabase/functions/cleanup-storage/index.ts`](../supabase/functions/cleanup-storage/index.ts) — pulizia asset orfani

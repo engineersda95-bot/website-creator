@@ -99,6 +99,19 @@ app/editor/
 
 > **Pattern**: i `page.tsx` sono Server Components che caricano dati da Supabase e passano tutto al Client Component (`*Client.tsx`) via props. Nessun fetch avviene nei Client Components.
 
+### `app/blog/`
+
+Blog pubblico di marketing di SitiVetrina (non editabile dagli utenti). Articoli hardcoded in Next.js.
+
+```
+app/blog/
+├── page.tsx              → Lista articoli del blog di SitiVetrina
+└── [slug]/
+    └── page.tsx          → Pagina singolo articolo (con schema.org BlogPosting)
+```
+
+> **Nota**: questo NON è il blog degli utenti. È il blog di SitiVetrina stesso, usato per SEO e content marketing della piattaforma.
+
 ### `app/api/`
 
 | File | Responsabilità |
