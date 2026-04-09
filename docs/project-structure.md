@@ -47,7 +47,7 @@ website-creator/
 │   │
 │   ├── editor/                   → Componenti UI dell'editor (non legati a un blocco)
 │   │   ├── cards/                → Card per progetti e pagine
-│   │   └── modals/               → Modali (AI generator, SEO, traduzione, quick edit)
+│   │   └── modals/               → Modali (AI generator, SEO, traduzione pagine, traduzione articoli blog)
 │   │
 │   ├── shared/                   → Componenti globali riusabili (editor + visual + build statica)
 │   ├── auth/                     → Componenti autenticazione
@@ -76,10 +76,10 @@ Server Actions di Next.js — **nessun client bundle**, eseguono solo lato serve
 
 | File | Responsabilità |
 |---|---|
-| [`deploy.ts`](../app/actions/deploy.ts) | Pipeline deploy su Cloudflare Pages (genera HTML, scarica asset, chiama Wrangler) |
+| [`deploy.ts`](../app/actions/deploy.ts) | Pipeline deploy su Cloudflare Pages (genera HTML pagine + blog, scarica asset, chiama Wrangler) |
 | [`pages.ts`](../app/actions/pages.ts) | CRUD pagine: `createPage`, `updatePage`, `deletePage`, `translatePage` |
 | [`projects.ts`](../app/actions/projects.ts) | CRUD progetti: creazione (con globals iniziali), aggiornamento impostazioni |
-| [`ai-generator.ts`](../app/actions/ai-generator.ts) | Generazione pagine via AI (chiama Claude, restituisce blocchi strutturati) |
+| [`ai-generator.ts`](../app/actions/ai-generator.ts) | Generazione pagine via AI + miglioramento/traduzione testi articoli blog |
 
 ### `app/editor/`
 
@@ -90,11 +90,15 @@ app/editor/
 ├── page.tsx                          → Server component: carica progetti, passa a ProjectListClient
 ├── ProjectListClient.tsx             → Lista progetti, creazione nuovo progetto
 ├── [projectId]/
-│   ├── page.tsx                      → Server component: carica progetto + pagine
-│   ├── ProjectDashboardClient.tsx    → Dashboard progetto: lista pagine per lingua, impostazioni
-│   └── [pageId]/
-│       ├── page.tsx                  → Server component: carica pagina + globals
-│       └── EditorClient.tsx          → Editor visuale principale
+│   ├── page.tsx                      → Server component: carica progetto + pagine + blog_posts
+│   ├── ProjectDashboardClient.tsx    → Dashboard progetto: lista pagine per lingua, tab Blog
+│   ├── [pageId]/
+│   │   ├── page.tsx                  → Server component: carica pagina + globals
+│   │   └── EditorClient.tsx          → Editor visuale principale
+│   └── blog/
+│       └── [postId]/
+│           ├── page.tsx              → Server component: carica post + progetto
+│           └── BlogPostEditorClient.tsx → Editor articolo: TipTap WYSIWYG, dettatura, sidebar SEO
 ```
 
 > **Pattern**: i `page.tsx` sono Server Components che caricano dati da Supabase e passano tutto al Client Component (`*Client.tsx`) via props. Nessun fetch avviene nei Client Components.
@@ -313,10 +317,11 @@ Logica core, utility e motori del sistema.
 |---|---|
 | [`block-definitions.ts`](../lib/block-definitions.ts) | Registry centrale `BLOCK_DEFINITIONS` + `getBlockLibrary()` + `getBlockDefinition()` |
 | [`base-style-mapper.ts`](../lib/base-style-mapper.ts) | `getBaseStyleVars()` — converte `block.style` in ~30 CSS variables standard |
-| [`generate-static.tsx`](../lib/generate-static.tsx) | Genera l'HTML statico di ogni pagina (usato durante il deploy) |
+| [`generate-static.tsx`](../lib/generate-static.tsx) | Genera l'HTML statico di ogni pagina (usato durante il deploy); esporta `renderBlock` |
+| [`generate-blog-static.tsx`](../lib/generate-blog-static.tsx) | Genera HTML statici blog: listing (`/blog/index.html`) e post (`/blog/{slug}.html`) con nav/footer da `siteGlobals` |
 | [`utils.ts`](../lib/utils.ts) | `formatRichText()`, `toPx()`, `formatLink()`, `cn()` e altre utility |
 | [`image-utils.ts`](../lib/image-utils.ts) | `resolveImageUrl()`, `optimizeImageToWebP()` |
-| [`permissions.ts`](../lib/permissions.ts) | `getUserLimits()`, `UserLimits`, `canCreatePage()` |
+| [`permissions.ts`](../lib/permissions.ts) | `getUserLimits()`, `UserLimits`, `canCreatePage()`, `canCreateArticle()` |
 | [`templates.ts`](../lib/templates.ts) | Template di pagina predefiniti (struttura blocchi iniziale) |
 | [`site-checklist.ts`](../lib/site-checklist.ts) | Logica checklist completamento sito |
 | [`background-patterns.ts`](../lib/background-patterns.ts) | Definizioni pattern decorativi (SVG inline) |

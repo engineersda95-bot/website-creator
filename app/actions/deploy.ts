@@ -1,11 +1,10 @@
 'use server';
 
 import { generateStaticHtml, generateSitemap, generateRobotsTxt } from '@/lib/generate-static';
+import { generateBlogListingHtml, generateBlogPostHtml } from '@/lib/generate-blog-static';
 import { getProjectDomain } from '@/lib/url-utils';
-import { UserMenu } from '@/components/auth/UserMenu';
-import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/server';
-import { Page, SiteGlobal } from '@/types/editor';
+import { Page, SiteGlobal, BlogPost } from '@/types/editor';
 import crypto from 'crypto';
 
 
@@ -52,6 +51,15 @@ export async function deployToCloudflare(projectId: string) {
       .eq('project_id', projectId);
     const globals: SiteGlobal[] = siteGlobals || [];
 
+    // Fetch published blog posts (needed for blog-list blocks + blog page generation)
+    const { data: blogPostsData } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('project_id', projectId)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false });
+    const blogPosts: BlogPost[] = blogPostsData || [];
+
     const projectName = project.subdomain;
     const isFirstPublish = !project.live_url;
 
@@ -78,21 +86,30 @@ export async function deployToCloudflare(projectId: string) {
 
     const assetsToDownload = new Set<string>(); // set of filenames (img_hash.ext)
 
-    // First pass: generate HTML and find all relative asset paths
-    const defaultLanguage = project.settings?.defaultLanguage || 'it';
-
-    for (const page of pages) {
-      const htmlContent = generateStaticHtml(page as Page, pages as any as Page[], project, globals);
-
-      // Find all /assets/... strings in the HTML (captures the filename)
+    // Helper to collect asset filenames from generated HTML
+    const collectAssets = (html: string) => {
       const assetRegex = /\/assets\/([^"\s?]+)/g;
       let match;
-      while ((match = assetRegex.exec(htmlContent)) !== null) {
+      while ((match = assetRegex.exec(html)) !== null) {
         const assetName = match[1];
-        if (assetName !== 'styles.css') {
-          assetsToDownload.add(assetName);
-        }
+        if (assetName !== 'styles.css') assetsToDownload.add(assetName);
       }
+    };
+
+    // First pass: generate HTML for each page and collect assets
+    const defaultLanguage = project.settings?.defaultLanguage || 'it';
+    const siteLanguages = project.settings?.languages || [defaultLanguage];
+    const isMultilingual = siteLanguages.length > 1;
+
+    for (const page of pages) {
+      // Filter blog posts by page language for multilingual sites
+      const pageLangForPosts = page.language || defaultLanguage;
+      const pageBlogPosts = isMultilingual
+        ? blogPosts.filter(p => (p.language || defaultLanguage) === pageLangForPosts)
+        : blogPosts;
+
+      const htmlContent = generateStaticHtml(page as Page, pages as any as Page[], project, globals, pageBlogPosts);
+      collectAssets(htmlContent);
 
       const pageLang = page.language || defaultLanguage;
       let targetDir = tempDir;
@@ -103,13 +120,66 @@ export async function deployToCloudflare(projectId: string) {
         if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
       }
 
-      const filename = page.slug === 'home' ? 'index.html' : `${page.slug}.html`;
-      fs.writeFileSync(path.join(targetDir, filename), htmlContent);
-      console.log(`Generated ${filename} in ${pageLang}`);
+      // The 'blog' slug page goes to /blog/index.html to avoid conflict with /blog/ directory
+      if (page.slug === 'blog') {
+        const blogPageDir = path.join(targetDir, 'blog');
+        if (!fs.existsSync(blogPageDir)) fs.mkdirSync(blogPageDir, { recursive: true });
+        fs.writeFileSync(path.join(blogPageDir, 'index.html'), htmlContent);
+        console.log(`Generated ${pageLang !== defaultLanguage ? pageLang + '/' : ''}blog/index.html`);
+      } else {
+        const filename = page.slug === 'home' ? 'index.html' : `${page.slug}.html`;
+        fs.writeFileSync(path.join(targetDir, filename), htmlContent);
+        console.log(`Generated ${filename} in ${pageLang}`);
+      }
     }
 
-    // 3.1. Generate Sitemap, Robots.txt & _headers (for Cloudflare mime types)
-    const sitemapContent = generateSitemap(pages as any as Page[], project);
+    // 3.1. Generate blog pages (listing, individual posts, author pages)
+    if (blogPosts.length > 0) {
+      const langsToGenerate = isMultilingual ? siteLanguages : [defaultLanguage];
+
+      for (const lang of langsToGenerate) {
+        const langPosts = blogPosts.filter(p => (p.language || defaultLanguage) === lang);
+        if (langPosts.length === 0 && lang !== defaultLanguage) continue;
+
+        const langSubfolder = lang === defaultLanguage ? '' : lang;
+        const langUrlPrefix = langSubfolder ? `/${langSubfolder}` : '';
+        const blogDir = langSubfolder
+          ? path.join(tempDir, langSubfolder, 'blog')
+          : path.join(tempDir, 'blog');
+        if (!fs.existsSync(blogDir)) fs.mkdirSync(blogDir, { recursive: true });
+
+        // Blog listing: only generate standalone if no 'blog' page exists for this language
+        const hasBlogPageForLang = pages.some((p: any) => p.slug === 'blog' && (p.language || defaultLanguage) === lang);
+        if (!hasBlogPageForLang && langPosts.length > 0) {
+          const defaultBlogPage = pages.find((p: any) => p.slug === 'blog');
+          if (defaultBlogPage) {
+            // Clone the default blog page with the target language
+            const clonedPage = { ...defaultBlogPage, language: lang } as Page;
+            const listingHtml = generateStaticHtml(clonedPage, pages as any as Page[], project, globals, langPosts);
+            fs.writeFileSync(path.join(blogDir, 'index.html'), listingHtml);
+            collectAssets(listingHtml);
+            console.log(`Generated ${langSubfolder ? langSubfolder + '/' : ''}blog/index.html (cloned from default)`);
+          } else {
+            const listingHtml = generateBlogListingHtml(langPosts, pages as Page[], project, langUrlPrefix, globals);
+            fs.writeFileSync(path.join(blogDir, 'index.html'), listingHtml);
+            collectAssets(listingHtml);
+            console.log(`Generated ${langSubfolder ? langSubfolder + '/' : ''}blog/index.html (standalone)`);
+          }
+        }
+
+        // Individual post pages
+        for (const post of langPosts) {
+          const postHtml = generateBlogPostHtml(post, langPosts, project, langUrlPrefix, pages as Page[], globals);
+          fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), postHtml);
+          collectAssets(postHtml);
+          console.log(`Generated ${langSubfolder ? langSubfolder + '/' : ''}blog/${post.slug}.html`);
+        }
+
+      }
+    }
+
+    // 3.2. Generate Sitemap, Robots.txt & _headers (for Cloudflare mime types)
+    const sitemapContent = generateSitemap(pages as any as Page[], project, blogPosts);
     const robotsContent = generateRobotsTxt(project, pages as any as Page[]);
     const headersContent = `
 /sitemap.xml

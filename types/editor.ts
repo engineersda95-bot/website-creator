@@ -21,7 +21,8 @@ export type BlockType =
   'how-it-works' |
   'pdf' |
   'pricing' |
-  'promo';
+  'promo' |
+  'blog-list';
 
 export interface Block {
   id: string;
@@ -137,4 +138,23 @@ export interface Project {
   live_url?: string;
   last_published_at?: string;
   created_at: string;
+}
+
+export interface BlogPost {
+  id: string;
+  project_id: string;
+  slug: string;
+  title: string;
+  excerpt?: string;
+  cover_image?: string;
+  categories?: string[];
+  authors?: { name: string; slug: string; bio?: string; avatar?: string }[];
+  status: 'draft' | 'published';
+  published_at?: string | null;
+  blocks?: Block[];
+  seo?: { title?: string; description?: string; image?: string; indexable?: boolean };
+  language?: string;
+  translation_group?: string;
+  created_at: string;
+  updated_at?: string;
 }

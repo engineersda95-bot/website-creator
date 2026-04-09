@@ -34,8 +34,14 @@
     "react-dom": "19.2.4",
     "tailwind-merge": "^3.5.0",
     "uuid": "^13.0.0",
+    "marked": "^17.0.5",
     "wrangler": "^3.109.0",
     "zustand": "^5.0.12"
+  },
+  "pnpm": {
+    "overrides": {
+      "undici": "^6"
+    }
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -6,7 +6,7 @@ import { generateBlockCSS, computeCommonVars } from '@/lib/responsive-utils';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { getProjectDomain } from '@/lib/url-utils';
 
-export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: Project, siteGlobals: SiteGlobal[] = []): string {
+export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: Project, siteGlobals: SiteGlobal[] = [], blogPosts?: any[]): string {
   const { renderToStaticMarkup } = require('react-dom/server');
 
   const settings = (project?.settings || {}) as ProjectSettings;
@@ -42,7 +42,7 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
   const commonVars = computeCommonVars(allBlocksToRender, project);
   const commonVarsCss = Object.entries(commonVars).map(([k, v]) => `${k}:${v};`).join('');
 
-  const blocksHtml = allBlocksToRender.map(block => renderBlock(block, allPages, project, renderToStaticMarkup, commonVars)).join('\n');
+  const blocksHtml = allBlocksToRender.map(block => renderBlock(block, allPages, project, renderToStaticMarkup, commonVars, blogPosts, pageLang)).join('\n');
   const font = settings.fontFamily || 'Outfit';
   const pColor = settings.primaryColor || '#3b82f6';
   const sColor = settings.secondaryColor || '#10b981';
@@ -329,8 +329,8 @@ const StaticRegistry: Record<string, React.FC<any>> = Object.entries(BLOCK_DEFIN
   return acc;
 }, {} as Record<string, React.FC<any>>);
 
-function renderBlock(block: Block, allPages: Page[], project: Project | undefined, renderToStaticMarkup: any, commonVars?: Record<string, string>): string {
-  const { type, content } = block;
+export function renderBlock(block: Block, allPages: Page[], project: Project | undefined, renderToStaticMarkup: any, commonVars?: Record<string, string>, blogPosts?: any[], pageLang?: string): string {
+  const { type } = block;
   const blockId = `block-${block.id.substring(0, 8)}`;
   const responsiveCss = generateBlockCSS(blockId, block, project, commonVars);
   const styleWrapper = `<style>${responsiveCss}</style>`;
@@ -339,19 +339,25 @@ function renderBlock(block: Block, allPages: Page[], project: Project | undefine
   const Component = StaticRegistry[type];
   if (!Component) return `<!-- Block type ${type} ignored in static generation -->`;
 
+  // Inject page language into blog-list blocks for multilingual filtering
+  const effectiveBlock = type === 'blog-list' && pageLang
+    ? { ...block, content: { ...block.content, language: pageLang } }
+    : block;
+
   return blockWrapper(renderToStaticMarkup(
     <Component
-      content={content}
-      block={block}
+      content={effectiveBlock.content}
+      block={effectiveBlock}
       project={project}
       allPages={allPages}
       isStatic={true}
       imageMemoryCache={{}}
+      allBlogPosts={blogPosts || []}
     />
   ));
 }
 
-export function generateSitemap(pages: Page[], project: Project): string {
+export function generateSitemap(pages: Page[], project: Project, blogPosts?: any[]): string {
   const baseUrl = getProjectDomain(project);
   const defLang = project.settings?.defaultLanguage || 'it';
   const now = new Date().toISOString().split('T')[0];
@@ -393,9 +399,41 @@ ${xDefaultLink}
   </url>`;
     }).join('');
 
+  // Blog post URLs
+  const blogUrls = (blogPosts || [])
+    .filter(p => p.status === 'published' && p.seo?.indexable !== false)
+    .map(post => {
+      const postLang = post.language || defLang;
+      const langPrefix = postLang === defLang ? '' : `/${postLang}`;
+      return `
+  <url>
+    <loc>${baseUrl}${langPrefix}/blog/${post.slug}</loc>
+    <lastmod>${post.updated_at ? post.updated_at.split('T')[0] : now}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+    }).join('');
+
+  // Blog listing URLs per language (one entry per language that has published posts)
+  const siteLanguages = project.settings?.languages || [defLang];
+  const blogListUrls = (blogPosts && blogPosts.length > 0)
+    ? siteLanguages
+        .filter(lang => (blogPosts || []).some((p: any) => (p.language || defLang) === lang && p.status === 'published'))
+        .map(lang => {
+          const langPrefix = lang === defLang ? '' : `/${lang}`;
+          return `
+  <url>
+    <loc>${baseUrl}${langPrefix}/blog</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+        }).join('')
+    : '';
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-${urls}
+${urls}${blogListUrls}${blogUrls}
 </urlset>`.trim();
 }
 

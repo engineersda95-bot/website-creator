@@ -131,6 +131,48 @@ Il footer riceve un fallback per il logo: se non ha un logo proprio, usa quello 
 
 ---
 
+## Generazione pagine blog
+
+File: `lib/generate-blog-static.tsx`
+
+Le pagine blog sono generate separatamente dalle pagine del sito, con funzioni dedicate che producono HTML standalone (non passano dal `StaticRegistry`).
+
+### Funzioni esportate
+
+| Funzione | Output |
+|---|---|
+| `generateBlogListingHtml(posts, pages, project, langPrefix, siteGlobals)` | `/blog/index.html` — lista articoli con filtri categoria/autore/ricerca |
+| `generateBlogPostHtml(post, allPosts, project, langPrefix, pages, siteGlobals)` | `/blog/{slug}.html` — singolo articolo con articoli correlati |
+
+### Nav e footer nelle pagine blog
+
+Entrambe le funzioni ricevono `siteGlobals: SiteGlobal[]` e usano `renderBlock` (esportata da `generate-static.tsx`) per iniettare nav e footer nella lingua corretta — stesso meccanismo delle pagine normali.
+
+```typescript
+const navGlobal = siteGlobals.find(g => g.language === postLang && g.type === 'navigation');
+// → renderBlock(navBlock, allPages, project, renderToStaticMarkup)
+```
+
+`react-dom/server` viene importato con `require()` inline (non `import` statico) per compatibilità Next.js App Router.
+
+### CSS scoping nelle pagine blog
+
+Il reset `* { margin: 0; padding: 0 }` è rimosso e sostituito con selettori scoped (`article *`, `.blog-page *`) per evitare che la reset globale interferisca con il layout hamburger della nav (che usa classi Tailwind da `styles.css`).
+
+### Tipografia
+
+Stessa pipeline di `generate-static.tsx`: CSS variables `--global-h1-fs`, `--global-h2-fs`, `--global-h3-fs`, `--global-body-fs` dai `settings.typography` del progetto, con breakpoint tablet (1024px) e mobile (768px).
+
+### Corpo articolo
+
+Il campo `blocks[0].content.text` può contenere HTML (TipTap) o Markdown legacy. Rilevamento automatico:
+```typescript
+const isMarkdown = !/<[a-z][\s\S]*>/i.test(text.trim().slice(0, 50));
+const rendered = isMarkdown ? marked.parse(text, { breaks: true }) : text;
+```
+
+---
+
 ## Struttura HTML output
 
 ```html

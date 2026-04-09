@@ -15,7 +15,10 @@ auth.users
               ├── (1:N) pages
               │          └── translations_group_id (collega traduzioni)
               │
-              └── (1:N) site_globals (nav/footer per lingua)
+              ├── (1:N) site_globals (nav/footer per lingua)
+              │
+              └── (1:N) blog_posts
+                         └── translation_group (collega articoli in lingue diverse)
 
 storage.buckets
   └── project-assets (immagini e file utente)
@@ -85,6 +88,35 @@ Unique: `(project_id, language, type)` — una nav e un footer per lingua.
 Index: `site_globals_project_id_idx`, `site_globals_project_lang_idx`.
 
 RLS: accesso solo ai globals dei propri progetti.
+
+---
+
+### blog_posts
+
+Articoli del blog. Uno per lingua per progetto, collegati tramite `translation_group`.
+
+- **id** UUID PK — `uuid_generate_v4()`
+- **project_id** UUID FK → `projects(id)` ON DELETE CASCADE
+- **slug** TEXT — unico per `(project_id, slug, language)`
+- **title** TEXT
+- **excerpt** TEXT nullable
+- **cover_image** TEXT nullable — path asset `/assets/{filename}`
+- **categories** JSONB default `'[]'` — `string[]`
+- **authors** JSONB default `'[]'` — `{ name, slug, bio?, avatar? }[]`
+- **status** TEXT — `'draft'` o `'published'`
+- **published_at** TIMESTAMPTZ nullable
+- **blocks** JSONB default `'[]'` — nella pratica un blocco `{ type:'text', content:{ text: '<markdown>' } }`
+- **seo** JSONB default `'{}'` — `{ title?, description?, image?, indexable? }`
+- **language** TEXT default `'it'`
+- **translation_group** UUID nullable — collega articoli che sono traduzioni dello stesso contenuto
+- **created_at** TIMESTAMPTZ default `now()`
+- **updated_at** TIMESTAMPTZ default `now()`
+
+Index: `blog_posts_project_lang_idx`, `blog_posts_translation_group_idx`, `blog_posts_project_published_idx`.
+
+RLS: accesso solo agli articoli dei propri progetti.
+
+Migration: `supabase/migration_blog.sql` — eseguire dopo `permissions_system.sql`.
 
 ---
 
@@ -241,6 +273,7 @@ Ritorna report: `{ projects_scanned, files_removed, ai_temp_removed, errors[] }`
 9. **permissions_system.sql** — Crea plans, estende profiles, aggiunge RLS/funzioni/trigger
 10. **cleanup_legacy_ai_column.sql** — Rimuove colonne AI legacy da profiles
 11. **fix_storage_security.sql** — Crea bucket e policy storage
+12. **migration_blog.sql** — Crea blog_posts con RLS, indici e trigger updated_at
 
 ---
 

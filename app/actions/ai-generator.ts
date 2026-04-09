@@ -1086,3 +1086,152 @@ Extra Pages: ${data.extraPages?.map(p => `- ${p.name}: ${p.description}`).join('
     return { isReady: true, questions: [] };
   }
 }
+
+// ─── Blog article text improvement ───────────────────────────────────────────
+
+export type AITextAction = 'improve' | 'expand' | 'summarize' | 'rewrite';
+export type AITextTone = 'professional' | 'casual' | 'formal' | 'persuasive' | 'technical';
+
+interface ImproveTextInput {
+  text: string;
+  action: AITextAction;
+  tone: AITextTone;
+  language: string;
+  customInstruction?: string;
+}
+
+export async function improveTextWithAI(input: ImproveTextInput): Promise<{ result: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Non autenticato');
+
+  const aiCheck = await canUseAI(user.id);
+  if (!aiCheck.allowed) throw new Error(aiCheck.reason);
+
+  const { text, action, tone, language, customInstruction } = input;
+
+  if (!text || text.replace(/<[^>]*>/g, '').trim().length < 10) {
+    throw new Error('Il testo è troppo corto per essere migliorato.');
+  }
+
+  const actionMap: Record<AITextAction, string> = {
+    improve: 'Migliora la scrittura: rendi il testo più fluido, chiaro e coinvolgente. Correggi errori grammaticali e migliora la struttura delle frasi.',
+    expand: 'Espandi il testo: aggiungi dettagli, esempi e paragrafi per rendere il contenuto più completo e approfondito. Almeno il doppio della lunghezza.',
+    summarize: 'Riassumi il testo: mantieni i concetti chiave ma riduci significativamente la lunghezza. Massimo 1/3 della lunghezza originale.',
+    rewrite: 'Riscrivi completamente il testo: mantieni il significato ma cambia completamente la struttura e le parole usate.',
+  };
+
+  const toneMap: Record<AITextTone, string> = {
+    professional: 'Tono professionale: competente, autorevole, bilanciato.',
+    casual: 'Tono informale/colloquiale: amichevole, accessibile, diretto.',
+    formal: 'Tono formale/istituzionale: elegante, distaccato, preciso.',
+    persuasive: "Tono persuasivo/marketing: coinvolgente, orientato all'azione, emotivo.",
+    technical: 'Tono tecnico: preciso, dettagliato, con terminologia specifica del settore.',
+  };
+
+  const langMap: Record<string, string> = {
+    it: 'italiano', en: 'inglese', es: 'spagnolo', fr: 'francese', de: 'tedesco',
+  };
+
+  const prompt = `Sei un copywriter professionista. Devi lavorare su un testo per un articolo di blog.
+
+AZIONE: ${actionMap[action]}
+TONO: ${toneMap[tone]}
+LINGUA: Scrivi in ${langMap[language] || language}.
+${customInstruction ? `ISTRUZIONE AGGIUNTIVA: ${customInstruction}` : ''}
+
+REGOLE DI STRUTTURA:
+- DIVIDI SEMPRE il testo in sezioni chiare con titoli ## (h2) e sottotitoli ### (h3)
+- Ogni sezione deve avere un titolo descrittivo e accattivante
+- Alterna tra paragrafi, liste puntate, liste numerate e citazioni per rendere il testo dinamico
+- Usa **grassetto** per i concetti chiave e *corsivo* per enfasi
+- Inserisci almeno 3-5 sezioni con ## anche se il testo originale non le ha
+- Ogni sezione deve avere 2-4 paragrafi
+
+REGOLE DI FORMATO:
+- Restituisci SOLO il testo risultante in formato Markdown puro
+- NON usare HTML — solo Markdown (##, ###, **, *, -, 1., >, [testo](url))
+- NON aggiungere commenti, spiegazioni, note o blocchi di codice
+- NON iniziare con \`\`\`markdown — restituisci direttamente il contenuto
+- Mantieni lo stesso argomento del testo originale
+
+TESTO ORIGINALE:
+${text}`;
+
+  const genAI = getGenAI();
+  const model = genAI.getGenerativeModel({ model: FALLBACK_MODEL });
+
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.7, maxOutputTokens: 8000 },
+  });
+
+  let output = result.response.text();
+  if (!output || output.trim().length < 10) throw new Error('La risposta AI è vuota.');
+  output = output.trim().replace(/^```(?:markdown|md)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+
+  await supabase.rpc('increment_ai_usage', { p_user_id: user.id });
+
+  return { result: output.trim() };
+}
+
+// ─── Blog post AI translation ─────────────────────────────────────────────────
+
+interface TranslateBlogInput {
+  title: string;
+  excerpt: string;
+  body: string;
+  sourceLang: string;
+  targetLang: string;
+}
+
+export async function translateBlogPostWithAI(input: TranslateBlogInput): Promise<{ title: string; excerpt: string; body: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Non autenticato');
+
+  const aiCheck = await canUseAI(user.id);
+  if (!aiCheck.allowed) throw new Error(aiCheck.reason);
+
+  const { title, excerpt, body, sourceLang, targetLang } = input;
+
+  const langMap: Record<string, string> = {
+    it: 'italiano', en: 'inglese', es: 'spagnolo', fr: 'francese', de: 'tedesco',
+  };
+
+  const prompt = `Sei un traduttore professionista. Traduci il seguente articolo di blog da ${langMap[sourceLang] || sourceLang} a ${langMap[targetLang] || targetLang}.
+
+REGOLE:
+- Mantieni ESATTAMENTE la stessa struttura Markdown (##, ###, **, *, -, liste, link, ecc.)
+- Traduci in modo naturale, non letterale — adatta le espressioni alla lingua di destinazione
+- NON aggiungere commenti o note
+- Rispondi SOLO con un JSON valido con 3 campi: title, excerpt, body
+
+TITOLO ORIGINALE:
+${title}
+
+ESTRATTO ORIGINALE:
+${excerpt}
+
+CORPO ORIGINALE (Markdown):
+${body}
+
+Rispondi con JSON:
+{"title": "...", "excerpt": "...", "body": "..."}`;
+
+  const genAI = getGenAI();
+  const model = genAI.getGenerativeModel({ model: FALLBACK_MODEL });
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.3, maxOutputTokens: 10000, responseMimeType: 'application/json' },
+  });
+
+  const output = result.response.text().trim();
+  const parsed = JSON.parse(output);
+  if (!parsed.title || !parsed.body) throw new Error('Risposta AI incompleta');
+  parsed.body = parsed.body.replace(/^```(?:markdown|md)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+
+  await supabase.rpc('increment_ai_usage', { p_user_id: user.id });
+
+  return parsed;
+}

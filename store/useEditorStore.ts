@@ -776,12 +776,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       let finalBase64 = base64;
 
       try {
-        // Optimize to WebP with 80% quality
         const optimized = await optimizeImageToWebP(base64, 0.8);
         finalBlob = optimized.blob;
         finalExtension = optimized.extension;
 
-        // Convert Blob back to base64 for memory cache
         const reader = new FileReader();
         finalBase64 = await new Promise((resolve) => {
           reader.onloadend = () => resolve(reader.result as string);
@@ -802,41 +800,28 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       }
 
       const hash = await getImageHash(base64);
-
-      // Always use hash-based naming to prevent accidental overwrites
       const cleanFilename = `img_${hash}.${finalExtension}`;
-
       const relativePath = `/assets/${cleanFilename}`;
       const bucketPath = `${project.user_id}/${project.id}/${cleanFilename}`;
 
-      // 1. Update memory cache for instant preview with optimized version
       set(state => ({
-        imageMemoryCache: {
-          ...state.imageMemoryCache,
-          [relativePath]: finalBase64
-        }
+        imageMemoryCache: { ...state.imageMemoryCache, [relativePath]: finalBase64 }
       }));
 
-      // 2. Upload to Supabase Storage if not exists
       const { error: uploadError } = await supabase.storage
         .from('project-assets')
-        .upload(bucketPath, finalBlob, {
-          cacheControl: '3600',
-          upsert: true
-        });
+        .upload(bucketPath, finalBlob, { cacheControl: '3600', upsert: true });
 
       const isAlreadyExists = uploadError?.message === 'The resource already exists'
         || uploadError?.message?.includes('row-level security policy');
-      if (uploadError && !isAlreadyExists) {
-        throw uploadError;
-      }
+      if (uploadError && !isAlreadyExists) throw uploadError;
 
       set({ isUploading: false });
       return relativePath;
     } catch (err) {
       console.error('[Store] uploadImage error:', err);
       set({ isUploading: false });
-      return base64; // Fallback to base64 if upload fails
+      return base64;
     }
   },
 

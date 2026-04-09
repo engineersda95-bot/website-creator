@@ -13,6 +13,12 @@ input, select, textarea {
   color: inherit;
 }
 
+/* Global placeholder visibility fix — overrides any placeholder:text-zinc-2xx/3xx Tailwind classes */
+::placeholder {
+  color: #71717a !important; /* zinc-500 — clearly readable but visually distinct from content */
+  opacity: 1 !important;     /* Firefox reduces opacity by default */
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -122,10 +128,32 @@ body {
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: #adb5bd;
+  color: #71717a;
   pointer-events: none;
   height: 0;
 }
+
+/* Blog post TipTap editor — prose styling inside the editable area */
+.blog-tiptap-editor .ProseMirror {
+  min-height: 500px;
+  padding: 1.5rem 2rem;
+  color: #374151;
+  line-height: 1.55;   /* tighter: Shift+Enter (stessa <p>) non sembra un nuovo paragrafo */
+  font-size: 0.9375rem;
+}
+.blog-tiptap-editor .ProseMirror h2 { font-size: 1.5em; font-weight: 700; color: #111827; margin-top: 1.5em; margin-bottom: 0.5em; line-height: 1.25; letter-spacing: -0.025em; }
+.blog-tiptap-editor .ProseMirror h3 { font-size: 1.25em; font-weight: 700; color: #111827; margin-top: 1.25em; margin-bottom: 0.4em; line-height: 1.25; }
+.blog-tiptap-editor .ProseMirror p { margin-top: 0.6em; margin-bottom: 0; }  /* Enter = gap visibile, Shift+Enter = solo line-height */
+.blog-tiptap-editor .ProseMirror p:first-child { margin-top: 0; }
+.blog-tiptap-editor .ProseMirror strong { font-weight: 700; color: #111827; }
+.blog-tiptap-editor .ProseMirror em { font-style: italic; }
+.blog-tiptap-editor .ProseMirror code { font-family: monospace; font-size: 0.875em; background: #f3f4f6; padding: 0.125em 0.25em; border-radius: 3px; }
+.blog-tiptap-editor .ProseMirror ul { list-style-type: disc; padding-left: 1.5em; margin: 0.75em 0; }
+.blog-tiptap-editor .ProseMirror ol { list-style-type: decimal; padding-left: 1.5em; margin: 0.75em 0; }
+.blog-tiptap-editor .ProseMirror li { margin: 0.25em 0; }
+.blog-tiptap-editor .ProseMirror blockquote { border-left: 4px solid #d1d5db; padding-left: 1em; color: #6b7280; font-style: italic; margin: 1em 0; }
+.blog-tiptap-editor .ProseMirror a { color: #2563eb; text-decoration: underline; cursor: pointer; }
+.blog-tiptap-editor .ProseMirror hr { border: none; border-top: 2px solid #e5e7eb; margin: 2em 0; }
 
 
 /* Image Reveal & Placeholder System (Fail-Safe) */
@@ -205,5 +233,37 @@ body {
 #editor-content [data-siti-anim="slide-right"] { animation-name: siti-anim-slide-right; }
 #editor-content [data-siti-anim="zoom-in"]     { animation-name: siti-anim-zoom-in; }
 
-/* In the editor, we also need to pass the duration/delay from data attributes to CSS variables 
+/* In the editor, we also need to pass the duration/delay from data attributes to CSS variables
    unless we use inline styles. I'll use inline styles for these specific ones. */
+
+/* ── Prose styles for blog post markdown preview in editor ──────────────────
+   Replaces @tailwindcss/typography (v0.5.x not compatible with Tailwind v4 @plugin).
+   Only used in BlogPostEditorClient markdown preview — not on the published site. */
+.prose { max-width: 65ch; color: #374151; line-height: 1.75; }
+.prose-sm { font-size: 0.875rem; line-height: 1.7142857; }
+.prose :where(h1,h2,h3,h4) { color: #111827; font-weight: 700; line-height: 1.25; margin-top: 1.5em; margin-bottom: 0.5em; }
+.prose h1 { font-size: 2em; }
+.prose h2 { font-size: 1.5em; }
+.prose h3 { font-size: 1.25em; }
+.prose h4 { font-size: 1em; }
+.prose p { margin-top: 0.75em; margin-bottom: 0.75em; }
+.prose a { color: #2563eb; text-decoration: underline; }
+.prose strong { font-weight: 700; color: #111827; }
+.prose em { font-style: italic; }
+.prose ul { list-style-type: disc; padding-left: 1.5em; margin-top: 0.75em; margin-bottom: 0.75em; }
+.prose ol { list-style-type: decimal; padding-left: 1.5em; margin-top: 0.75em; margin-bottom: 0.75em; }
+.prose li { margin-top: 0.25em; margin-bottom: 0.25em; }
+.prose blockquote { border-left: 4px solid #d1d5db; padding-left: 1em; color: #6b7280; font-style: italic; margin: 1em 0; }
+.prose code { font-family: monospace; font-size: 0.875em; background: #f3f4f6; padding: 0.125em 0.25em; border-radius: 3px; }
+.prose pre { background: #1f2937; color: #f9fafb; padding: 1em; border-radius: 0.375rem; overflow-x: auto; }
+.prose pre code { background: none; padding: 0; color: inherit; }
+.prose hr { border-color: #e5e7eb; margin: 2em 0; }
+.prose img { border-radius: 0.375rem; max-width: 100%; }
+.prose-headings\:tracking-tight :where(h1,h2,h3,h4) { letter-spacing: -0.025em; }
+.prose-headings\:text-zinc-900 :where(h1,h2,h3,h4) { color: #18181b; }
+.prose-p\:text-zinc-600 p { color: #52525b; }
+.prose-a\:text-blue-600 a { color: #2563eb; }
+.prose-strong\:text-zinc-800 strong { color: #27272a; }
+.prose-blockquote\:border-zinc-300 blockquote { border-color: #d4d4d8; }
+.prose-blockquote\:text-zinc-500 blockquote { color: #71717a; }
+.max-w-none { max-width: none; }

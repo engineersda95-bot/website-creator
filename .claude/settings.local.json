@@ -12,7 +12,17 @@
       "Bash(find /Users/dariocrosetto/Desktop/Projects/AndreaEDario/website-creator/lib -name *blog* -o -name *generate*)",
       "Bash(ls:*)",
       "Bash(grep -A 10 \"dangerouslySetInnerHTML.*script\" /Users/dariocrosetto/Desktop/Projects/AndreaEDario/website-creator/components/blocks/visual/*.tsx)",
-      "Bash(grep -n \"customScripts\\\\|custom_scripts\" /Users/dariocrosetto/Desktop/Projects/AndreaEDario/website-creator/app/editor/[projectId]/ProjectDashboardClient.tsx)"
+      "Bash(grep -n \"customScripts\\\\|custom_scripts\" /Users/dariocrosetto/Desktop/Projects/AndreaEDario/website-creator/app/editor/[projectId]/ProjectDashboardClient.tsx)",
+      "Bash(grep -rn \"\\\\.each\\\\\\(\\\\\\)\\\\|forEach\\\\|for \\(const\" /c/Users/Gabriele/Desktop/projects/website-creator/app/actions/*.ts)",
+      "Bash(grep -rn \"console.log\\\\|console.warn\\\\|console.error\" /c/Users/Gabriele/Desktop/projects/website-creator/app/actions/*.ts)",
+      "Bash(xargs git:*)",
+      "Bash(git grep:*)",
+      "Bash(node -e \"try { const p = require\\('c:/Users/Gabriele/Desktop/projects/website-creator/node_modules/@supabase/supabase-js/node_modules/undici/package.json'\\); console.log\\('supabase undici:', p.version\\); } catch\\(e\\) { console.log\\('not found'\\); }; try { const p = require\\('c:/Users/Gabriele/Desktop/projects/website-creator/node_modules/undici/package.json'\\); console.log\\('root undici:', p.version\\); } catch\\(e\\) { console.log\\('root not found'\\); }\")",
+      "Bash(node -e \"const p = require\\('c:/Users/Gabriele/Desktop/projects/website-creator/node_modules/undici/package.json'\\); console.log\\(Object.keys\\(p.dependencies || {}\\)\\)\")",
+      "Bash(grep -l \"blog_posts\" c:/Users/Gabriele/Desktop/projects/website-creator/supabase/*.sql)",
+      "WebFetch(domain:community.cloudflare.com)",
+      "WebFetch(domain:developers.cloudflare.com)",
+      "WebFetch(domain:dash.cloudflare.com)"
     ]
   }
 }

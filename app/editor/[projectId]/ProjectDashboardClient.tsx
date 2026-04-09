@@ -7,9 +7,9 @@ import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ArrowLeft, Plus, FileText, ExternalLink, Rocket, Save,
-  Loader2, Trash2, LayoutGrid, Clock, Palette, Globe, X,
+  Loader2, Trash2, Languages, LayoutGrid, Clock, Palette, Globe, X,
   Monitor, Tablet, Smartphone, Check, Settings,
-  CheckCircle2, Circle, ChevronDown, Bell
+  CheckCircle2, Circle, ChevronDown, Bell, BookOpen, PenLine, Eye, EyeOff, Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { deployToCloudflare } from '@/app/actions/deploy';
@@ -18,7 +18,7 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { GlobalSettings } from '@/components/blocks/sidebar/GlobalSettings';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { resolveImageUrl } from '@/lib/image-utils';
-import { Page, Project } from '@/types/editor';
+import { Page, Project, BlogPost } from '@/types/editor';
 import { toast } from '@/components/shared/Toast';
 import { PageCard } from '@/components/editor/cards/PageCard';
 import { PageSeoModal } from '@/components/editor/modals/PageSeoModal';
@@ -29,6 +29,7 @@ import { SeoSection } from '@/components/blocks/sidebar/settings/SeoSection';
 import { confirm } from '@/components/shared/ConfirmDialog';
 import { createPage } from '@/app/actions/pages';
 import { TranslatePageModal } from '@/components/editor/modals/TranslatePageModal';
+import { TranslateBlogPostModal } from '@/components/editor/modals/TranslateBlogPostModal';
 import type { UserLimits } from '@/lib/permissions';
 import { ChecklistModal } from '@/components/editor/ChecklistModal';
 import { CompletionBadge, SiteChecklist } from '@/components/editor/SiteChecklist';
@@ -46,12 +47,14 @@ export function ProjectDashboardClient({
   initialProject,
   initialPages,
   initialSiteGlobals = [],
+  initialBlogPosts = [],
   userLimits,
 }: {
   initialUser: any;
   initialProject: Project;
   initialPages: Page[];
   initialSiteGlobals?: any[];
+  initialBlogPosts?: BlogPost[];
   userLimits: UserLimits | null;
 }) {
   const router = useRouter();
@@ -105,10 +108,14 @@ export function ProjectDashboardClient({
   const [isPublishing, setIsPublishing] = useState(false);
   const [deletingPageId, setDeletingPageId] = useState<string | null>(null);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pages' | 'checklist' | 'settings'>('pages');
+  const [activeTab, setActiveTab] = useState<'pages' | 'blog' | 'checklist' | 'settings'>('pages');
   const [showChecklist, setShowChecklist] = useState(false);
   const [seoOpenId, setSeoOpenId] = useState<string | null>(null);
   const [translatePage, setTranslatePage] = useState<Page | null>(null);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
+  const [blogLangFilter, setBlogLangFilter] = useState<string>('all');
+  const [translateBlogPost, setTranslateBlogPost] = useState<BlogPost | null>(null);
+  const [deletingBlogPostId, setDeletingBlogPostId] = useState<string | null>(null);
 
   const isPublished = !!localProject?.live_url;
 
@@ -322,6 +329,21 @@ export function ProjectDashboardClient({
           >
             <LayoutGrid size={15} />
             Pagine
+          </button>
+          <button
+            onClick={() => setActiveTab('blog')}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all -mb-px",
+              activeTab === 'blog'
+                ? "border-zinc-900 text-zinc-900"
+                : "border-transparent text-zinc-400 hover:text-zinc-600"
+            )}
+          >
+            <BookOpen size={15} />
+            Blog
+            {blogPosts.length > 0 && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-zinc-100 text-zinc-500">{blogPosts.length}</span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -539,6 +561,170 @@ export function ProjectDashboardClient({
           );
         })()}
 
+        {activeTab === 'blog' && (() => {
+          /* ── BLOG TAB ── */
+          const defaultLang = localProject.settings?.defaultLanguage || 'it';
+          const siteLanguages = localProject.settings?.languages || [defaultLang];
+          const isMultilingual = siteLanguages.length > 1;
+          const filteredPosts = blogLangFilter === 'all' ? blogPosts : blogPosts.filter(p => (p.language || defaultLang) === blogLangFilter);
+          const atArticleLimit = userLimits?.max_articles_per_project !== null && blogPosts.length >= (userLimits?.max_articles_per_project ?? Infinity);
+
+          return (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-lg font-bold text-zinc-900">Blog</h2>
+                  <p className="text-sm text-zinc-500 mt-0.5">
+                    {blogPosts.length === 0
+                      ? 'Crea il tuo primo articolo'
+                      : `${blogPosts.length}${userLimits?.max_articles_per_project ? ` / ${userLimits.max_articles_per_project}` : ''} ${blogPosts.length === 1 ? 'articolo' : 'articoli'}`}
+                  </p>
+                </div>
+                <button
+                  disabled={atArticleLimit}
+                  onClick={async () => {
+                    if (atArticleLimit) { toast(`Hai raggiunto il limite di ${userLimits?.max_articles_per_project} articoli per sito del tuo piano`, 'error'); return; }
+                    // Auto-create /blog page if it doesn't exist
+                    const hasBlogPage = pages.some(p => p.slug === 'blog');
+                    if (!hasBlogPage) {
+                      const blogPageId = crypto.randomUUID();
+                      const blogListBlock = {
+                        id: crypto.randomUUID(),
+                        type: 'blog-list',
+                        content: { title: 'Il nostro Blog', maxPosts: 100, isBlogPage: true },
+                        style: {},
+                      };
+                      await supabase.from('pages').insert({
+                        id: blogPageId,
+                        project_id: localProject.id,
+                        slug: 'blog',
+                        title: 'Blog',
+                        blocks: [blogListBlock],
+                        seo: { title: `Blog — ${localProject.name}`, description: 'Tutti gli articoli del nostro blog.' },
+                      });
+                    }
+                    // Create new draft blog post
+                    const postLang = blogLangFilter !== 'all' ? blogLangFilter : defaultLang;
+                    const postId = crypto.randomUUID();
+                    const { data } = await supabase.from('blog_posts').insert({
+                      id: postId,
+                      project_id: localProject.id,
+                      slug: `articolo-${Date.now()}`,
+                      title: 'Nuovo Articolo',
+                      status: 'draft',
+                      language: postLang,
+                      blocks: [],
+                    }).select('id, slug, title, excerpt, cover_image, language, status, published_at, authors, categories, translation_group, created_at, updated_at').single();
+                    if (data) {
+                      setBlogPosts([data as BlogPost, ...blogPosts]);
+                      router.push(`/editor/${localProject.id}/blog/${postId}`);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 text-sm font-bold border rounded-lg transition-all",
+                    atArticleLimit
+                      ? "bg-zinc-50 border-zinc-200 text-zinc-300 cursor-not-allowed"
+                      : "bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
+                  )}
+                >
+                  <Plus size={16} />
+                  Nuovo Articolo
+                </button>
+              </div>
+
+              {/* Language filter (only when multilingual) */}
+              {isMultilingual && blogPosts.length > 0 && (
+                <div className="flex gap-2 mb-5 flex-wrap">
+                  <button onClick={() => setBlogLangFilter('all')} className={cn("px-3 py-1 rounded-full text-xs font-bold border transition-all", blogLangFilter === 'all' ? "bg-zinc-900 text-white border-zinc-900" : "bg-white border-zinc-200 text-zinc-500 hover:border-zinc-400")}>Tutti</button>
+                  {siteLanguages.map((lang: string) => (
+                    <button key={lang} onClick={() => setBlogLangFilter(lang)} className={cn("px-3 py-1 rounded-full text-xs font-bold border transition-all uppercase", blogLangFilter === lang ? "bg-zinc-900 text-white border-zinc-900" : "bg-white border-zinc-200 text-zinc-500 hover:border-zinc-400")}>{lang}</button>
+                  ))}
+                </div>
+              )}
+
+              {filteredPosts.length === 0 ? (
+                <div className="text-center py-20 text-zinc-400">
+                  <BookOpen size={32} className="mx-auto mb-3 opacity-30" />
+                  <p className="text-sm font-semibold">{blogPosts.length === 0 ? 'Nessun articolo ancora' : 'Nessun articolo in questa lingua'}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredPosts.map(post => (
+                    <div
+                      key={post.id}
+                      className={cn(
+                        "group bg-white border border-zinc-200 rounded-2xl overflow-hidden hover:border-zinc-300 hover:shadow-md transition-all flex flex-col",
+                        deletingBlogPostId === post.id && "opacity-50 pointer-events-none"
+                      )}
+                    >
+                      {/* Card body — clickable to editor */}
+                      <Link href={`/editor/${localProject.id}/blog/${post.id}`} className="flex-1">
+                        {post.cover_image && (
+                          <div className="aspect-video bg-zinc-100 overflow-hidden">
+                            <img
+                              src={resolveImageUrl(post.cover_image, localProject, {}, false)}
+                              alt={post.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                        )}
+                        <div className="p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            {post.status === 'published'
+                              ? <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full"><Eye size={10} />Pubblicato</span>
+                              : <span className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full"><EyeOff size={10} />Bozza</span>
+                            }
+                            {isMultilingual && post.language && (
+                              <span className="text-[10px] font-bold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full uppercase">{(post.language || '').split('-')[0]}</span>
+                            )}
+                          </div>
+                          <h3 className="font-bold text-zinc-900 text-sm line-clamp-2 mb-1">{post.title}</h3>
+                          {post.excerpt && <p className="text-xs text-zinc-500 line-clamp-2">{post.excerpt}</p>}
+                          {post.published_at && (
+                            <div className="flex items-center gap-1 mt-2 text-[11px] text-zinc-400">
+                              <Calendar size={10} />
+                              {new Date(post.published_at).toLocaleDateString('it-IT')}
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+
+                      {/* Action bar — same style as PageCard */}
+                      <div className="px-4 py-3 border-t border-zinc-100 flex items-center justify-between bg-zinc-50/30">
+                        <span className="text-[11px] text-zinc-400 font-mono">/blog/{post.slug}</span>
+                        <div className="flex items-center gap-1">
+                          {isMultilingual && (
+                            <button
+                              onClick={() => setTranslateBlogPost(post)}
+                              className="p-1.5 rounded-md text-zinc-400 hover:text-blue-500 hover:bg-white transition-all shadow-sm"
+                              title="Traduci articolo"
+                            >
+                              <Languages size={16} />
+                            </button>
+                          )}
+                          <button
+                            onClick={async () => {
+                              if (!await (confirm as any)({ title: 'Elimina articolo', message: `Vuoi eliminare "${post.title}"?`, confirmLabel: 'Elimina', variant: 'danger' })) return;
+                              setDeletingBlogPostId(post.id);
+                              await supabase.from('blog_posts').delete().eq('id', post.id);
+                              setBlogPosts(prev => prev.filter(p => p.id !== post.id));
+                              setDeletingBlogPostId(null);
+                            }}
+                            className="p-1.5 rounded-md text-zinc-400 hover:text-red-500 hover:bg-white transition-all shadow-sm"
+                            title="Elimina articolo"
+                          >
+                            {deletingBlogPostId === post.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {activeTab === 'pages' && (
           /* ── PAGES TAB ── */
           <div>
@@ -734,6 +920,28 @@ export function ProjectDashboardClient({
                 : p
             ).concat([newPage]));
             setTranslatePage(null);
+          }}
+        />
+      )}
+
+      {translateBlogPost && (
+        <TranslateBlogPostModal
+          post={translateBlogPost}
+          allPosts={blogPosts}
+          projectId={localProject.id}
+          availableLanguages={localProject.settings?.languages || ['it']}
+          onClose={() => setTranslateBlogPost(null)}
+          onSuccess={(newPost) => {
+            // Also update source post's translation_group in local state
+            setBlogPosts(prev => {
+              const updated = prev.map(p =>
+                p.id === translateBlogPost.id && !p.translation_group
+                  ? { ...p, translation_group: newPost.translation_group }
+                  : p
+              );
+              return [...updated, newPost];
+            });
+            setTranslateBlogPost(null);
           }}
         />
       )}

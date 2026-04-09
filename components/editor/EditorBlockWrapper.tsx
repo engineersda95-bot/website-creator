@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { getBlockComponent } from '@/components/blocks/BlockRegistry';
 import { getBlockCSSVariables } from '@/lib/responsive-utils';
 import { useEditorStore } from '@/store/useEditorStore';
+import { supabase } from '@/lib/supabase';
 
 interface EditorBlockWrapperProps {
   block: any;
@@ -45,6 +46,24 @@ export const EditorBlockWrapper = React.memo(({
   const updateBlock = useEditorStore(state => state.updateBlock);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  // Blog posts for blog-list block preview in editor
+  const currentPage = useEditorStore(state => state.currentPage);
+  const [editorBlogPosts, setEditorBlogPosts] = useState<any[]>([]);
+  useEffect(() => {
+    if (block.type !== 'blog-list' || !project?.id) return;
+    supabase
+      .from('blog_posts')
+      .select('id, slug, title, excerpt, cover_image, language, status, published_at, authors, categories')
+      .eq('project_id', project.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { if (data) setEditorBlogPosts(data); });
+  }, [block.type, project?.id]);
+
+  // Inject page language into blog-list block for multilingual filtering
+  const effectiveBlock = block.type === 'blog-list' && currentPage?.language
+    ? { ...block, content: { ...block.content, language: currentPage.language } }
+    : block;
+
   const onInlineEdit = React.useCallback((field: string, value: string) => {
     updateBlock(block.id, { [field]: value });
   }, [block.id, updateBlock]);
@@ -82,8 +101,8 @@ export const EditorBlockWrapper = React.memo(({
       )}
 
       <Component
-        content={block.content}
-        block={block}
+        content={effectiveBlock.content}
+        block={effectiveBlock}
         isEditing={true}
         isStatic={false}
         project={project}
@@ -91,6 +110,7 @@ export const EditorBlockWrapper = React.memo(({
         viewport={viewport}
         imageMemoryCache={imageMemoryCache}
         onInlineEdit={onInlineEdit}
+        allBlogPosts={editorBlogPosts}
       />
 
       {/* Block Controls — hidden for global blocks (navigation/footer) */}

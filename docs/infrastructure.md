@@ -39,11 +39,29 @@ Quando l'utente clicca "Pubblica", parte una Server Action (`app/actions/deploy.
 
 Per ogni pagina chiama `generateStaticHtml()` (vedi doc `static-generation.md` per i dettagli).
 
-File generati:
+File generati (pagine):
 - `index.html` (pagina home)
 - `{slug}.html` (altre pagine)
 - `{lingua}/index.html` (home in altre lingue)
 - `{lingua}/{slug}.html` (pagine in altre lingue)
+
+### Step 3.1 — Genera pagine blog
+
+Se il progetto ha articoli pubblicati (`blog_posts` con `status = 'published'`), per ogni lingua attiva:
+
+1. **Listing** — `generateBlogListingHtml()` → `blog/index.html` (o `{lingua}/blog/index.html`)
+   - Se esiste già una pagina con `slug = 'blog'`, la listing è quella pagina (generata dal normale `generateStaticHtml`)
+   - Altrimenti viene generata la listing standalone
+2. **Post** — `generateBlogPostHtml()` → `blog/{slug}.html` per ogni articolo della lingua
+   - Nav e footer iniettati da `siteGlobals` (stesso meccanismo delle pagine normali)
+   - Corpo articolo: HTML da TipTap o Markdown legacy (rilevamento automatico)
+   - Articoli correlati per categoria (max 3) in coda all'articolo
+
+File generati (blog):
+- `blog/index.html`
+- `blog/{slug}.html` (per ogni articolo)
+- `{lingua}/blog/index.html` (per lingue non default)
+- `{lingua}/blog/{slug}.html`
 
 ### Step 4 — Genera sitemap, robots.txt, _headers
 

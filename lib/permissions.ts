@@ -71,6 +71,28 @@ export async function canCreatePage(userId: string, projectId: string): Promise<
   return { allowed: true };
 }
 
+export async function canCreateArticle(userId: string, projectId: string): Promise<PermissionCheck> {
+  const supabase = await createClient();
+  const limits = await getUserLimits(userId);
+  if (!limits) return { allowed: false, reason: 'Profilo non trovato' };
+
+  if (limits.max_articles_per_project === null) return { allowed: true };
+
+  const { count } = await supabase
+    .from('blog_posts')
+    .select('id', { count: 'exact', head: true })
+    .eq('project_id', projectId);
+
+  if ((count ?? 0) >= limits.max_articles_per_project) {
+    return {
+      allowed: false,
+      reason: `Hai raggiunto il limite di ${limits.max_articles_per_project} articoli per sito`,
+    };
+  }
+
+  return { allowed: true };
+}
+
 export async function canUseAI(userId: string): Promise<PermissionCheck> {
   const limits = await getUserLimits(userId);
   if (!limits) return { allowed: false, reason: 'Profilo non trovato' };

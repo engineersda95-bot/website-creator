@@ -117,6 +117,7 @@ export async function optimizeImageToWebP(
   });
 }
 
+
 export function isRelativeAsset(url: string): boolean {
   return url.startsWith('/assets/');
 }

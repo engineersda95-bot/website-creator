@@ -67,6 +67,17 @@ Colonne rilevanti per il multilang:
 
 > **Nota**: `translations_group_id` viene assegnato solo nel momento in cui si crea la prima traduzione di una pagina (lazy assignment). Pagine create senza traduzioni hanno `null`.
 
+### Tabella `blog_posts`
+
+Colonne rilevanti per il multilang:
+
+| Colonna | Tipo | Descrizione |
+|---|---|---|
+| `language` | `TEXT` | Codice lingua ISO dell'articolo |
+| `translation_group` | `UUID` (nullable) | Collega articoli nella stessa famiglia di traduzioni (stesso concetto di `translations_group_id` per le pagine) |
+
+> **Nota**: `translation_group` ha lazy assignment — viene assegnato alla prima traduzione. L'articolo originale viene aggiornato con il proprio `id` come `translation_group` nel momento in cui si crea la prima traduzione.
+
 **Indice:**
 ```sql
 CREATE INDEX IF NOT EXISTS pages_translations_group_id_idx ON pages(translations_group_id);
@@ -189,6 +200,17 @@ Dalla dashboard del progetto, il pulsante "Traduci" su una page card apre `Trans
 - Permette di scegliere la lingua target, impostare titolo e slug
 - Chiama la server action `translatePage`
 - Al ritorno aggiorna l'elenco pagine nel client
+
+### Creazione traduzione di un articolo blog
+
+Dalla dashboard (tab Blog), il pulsante "Traduci" su una card articolo apre `TranslateBlogPostModal`:
+
+- File: [`components/editor/modals/TranslateBlogPostModal.tsx`](../components/editor/modals/TranslateBlogPostModal.tsx)
+- Filtra le lingue disponibili escludendo quelle già tradotte (leggendo `translation_group` sul DB)
+- Suggerisce slug automatico (`{slug-originale}-{lang}`)
+- Crea un articolo bozza nella lingua target con `translation_group` condiviso
+- Aggiorna `translation_group` dell'articolo originale se è `null` (lazy assignment)
+- **Non** copia il corpo dell'articolo: il traduttore scrive il testo direttamente nell'editor
 
 ### Filtro per lingua nella dashboard
 
@@ -357,3 +379,7 @@ Ogni pagina produce un file HTML indipendente — l'ordine di generazione non ha
 ### Sidebar Editors (Nav/Footer)
 - [`components/blocks/sidebar/block-editors/Navigation.tsx`](../components/blocks/sidebar/block-editors/Navigation.tsx) — Editor sidebar navigazione
 - [`components/blocks/sidebar/block-editors/Footer.tsx`](../components/blocks/sidebar/block-editors/Footer.tsx) — Editor sidebar footer
+
+### Blog multilang
+- [`components/editor/modals/TranslateBlogPostModal.tsx`](../components/editor/modals/TranslateBlogPostModal.tsx) — Modal traduzione articolo blog
+- [`lib/generate-blog-static.tsx`](../lib/generate-blog-static.tsx) — Genera HTML blog per lingua con nav/footer corretti da `siteGlobals`
