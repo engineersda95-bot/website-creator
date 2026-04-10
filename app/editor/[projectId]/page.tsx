@@ -27,7 +27,7 @@ export default async function ProjectDashboardPage({
     supabase.from('pages').select('*').eq('project_id', projectId).order('created_at', { ascending: true }),
     supabase.from('site_globals').select('*').eq('project_id', projectId),
     supabase.from('blog_posts')
-      .select('id, slug, title, excerpt, cover_image, language, status, published_at, authors, categories, translation_group, created_at, updated_at')
+      .select('id, project_id, slug, title, excerpt, cover_image, language, status, published_at, authors, categories, translation_group, created_at, updated_at')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false }),
     getUserLimits(user.id),
