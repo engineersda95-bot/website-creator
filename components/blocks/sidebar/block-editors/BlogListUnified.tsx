@@ -137,7 +137,7 @@ export const BlogListUnified: React.FC<BlogListUnifiedProps> = ({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-[11px] font-semibold truncate">{post.title || 'Senza titolo'}</div>
-                          {(post.categories?.length ?? 0) > 0 && <div className={cn("text-[9px]", isSelected ? "text-white/50" : "text-zinc-400")}>{post.categories.join(', ')}</div>}
+                          {(post.categories?.length ?? 0) > 0 && <div className={cn("text-[9px]", isSelected ? "text-white/50" : "text-zinc-400")}>{(post.categories || []).join(', ')}</div>}
                         </div>
                       </button>
                     );

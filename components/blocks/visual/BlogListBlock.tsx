@@ -118,9 +118,9 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
 
         {/* Content */}
         <div className="flex-1 flex flex-col">
-          {post.categories?.length > 0 && (
+          {(post.categories?.length ?? 0) > 0 && (
             <span className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ opacity: 0.5 }}>
-              {post.categories.join(' · ')}
+              {(post.categories || []).join(' · ')}
             </span>
           )}
           <h3
@@ -281,11 +281,11 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
                   </button>
                   {allAuthors.map(author => (
                     <button
-                      key={author}
-                      data-author-filter={author.toLowerCase()}
+                      key={author.name}
+                      data-author-filter={author.name.toLowerCase()}
                       className="siti-filter-pill px-3 py-1.5 rounded-full text-[11px] font-bold transition-all"
                     >
-                      {author}
+                      {author.name}
                     </button>
                   ))}
                 </div>
@@ -298,7 +298,7 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
         {posts.length > 0 ? (
           <div className="grid gap-8" data-blog-grid style={{ gridTemplateColumns: isStatic ? `repeat(var(--blog-columns, ${colsD}), minmax(0, 1fr))` : `repeat(${currentCols}, minmax(0, 1fr))` }}>
             {posts.map((post, i) => (
-              <div key={post.id} data-blog-card data-categories={(post.categories || []).map(c => c.toLowerCase()).join(',')} data-authors={(post.authors || []).map((a: string) => a.toLowerCase()).join(',')} data-title={(post.title || '').toLowerCase()}>
+              <div key={post.id} data-blog-card data-categories={(post.categories || []).map(c => c.toLowerCase()).join(',')} data-authors={(post.authors || []).map(a => a.name.toLowerCase()).join(',')} data-title={(post.title || '').toLowerCase()}>
                 <PostCard post={post} index={i} />
               </div>
             ))}

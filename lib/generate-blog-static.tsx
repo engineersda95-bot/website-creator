@@ -57,13 +57,13 @@ export function generateBlogListingHtml(
     const coverUrl = post.cover_image ? resolveImageUrl(post.cover_image, project, {}, true) : '';
 
     return `
-      <article class="blog-card" data-category="${(post.categories || []).map(c => c.toLowerCase()).join(',')}" data-authors="${(post.authors || []).map(a => a.toLowerCase()).join(',')}" data-title="${(post.title || '').toLowerCase()}">
+      <article class="blog-card" data-category="${(post.categories || []).map(c => c.toLowerCase()).join(',')}" data-authors="${(post.authors || []).map(a => a.name.toLowerCase()).join(',')}" data-title="${(post.title || '').toLowerCase()}">
         <a href="${langPrefix}/blog/${post.slug}" class="block group">
           <div class="aspect-[16/10] rounded-2xl overflow-hidden mb-4" style="background: color-mix(in srgb, ${themeText} 5%, transparent);">
             ${coverUrl ? `<img src="${coverUrl}" alt="${post.title}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />` : `<div class="w-full h-full flex items-center justify-center"><svg width="32" height="32" fill="none" stroke="${themeText}" stroke-width="1.5" opacity="0.15"><rect x="4" y="4" width="24" height="24" rx="4"/><circle cx="12" cy="12" r="3"/><path d="M4 20l6-6 4 4 4-4 6 6"/></svg></div>`}
           </div>
           <div class="space-y-2">
-            ${(post.categories || []).length > 0 ? `<span class="text-xs font-bold uppercase tracking-wider" style="opacity: 0.5;">${post.categories.join(' · ')}</span>` : ''}
+            ${(post.categories || []).length > 0 ? `<span class="text-xs font-bold uppercase tracking-wider" style="opacity: 0.5;">${(post.categories || []).join(' · ')}</span>` : ''}
             <h2 class="text-lg font-bold leading-tight transition-colors group-hover:opacity-80">${post.title}</h2>
             ${post.excerpt ? `<p class="text-sm leading-relaxed" style="opacity: 0.6;">${post.excerpt}</p>` : ''}
             <div class="flex items-center gap-3 text-xs" style="opacity: 0.4;">
@@ -87,7 +87,7 @@ export function generateBlogListingHtml(
   const authorFilters = allAuthors.length > 1 ? `
     <div class="flex flex-wrap gap-2" id="blog-author-filters" style="margin-bottom: 32px;">
       <button class="blog-filter active" data-author-filter="all" style="padding: 6px 16px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid color-mix(in srgb, ${themeText} 15%, transparent); transition: all 0.2s;">Tutti gli autori</button>
-      ${allAuthors.map(a => `<button class="blog-filter" data-author-filter="${a.toLowerCase()}" style="padding: 6px 16px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid color-mix(in srgb, ${themeText} 15%, transparent); transition: all 0.2s;">${a}</button>`).join('\n')}
+      ${allAuthors.map(a => `<button class="blog-filter" data-author-filter="${a.name.toLowerCase()}" style="padding: 6px 16px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid color-mix(in srgb, ${themeText} 15%, transparent); transition: all 0.2s;">${a.name}</button>`).join('\n')}
     </div>
   ` : '';
 
@@ -289,7 +289,7 @@ export function generateBlogPostHtml(
   }
 
   // Render body blocks (markdown → HTML)
-  const bodyHtml = post.blocks.map(block => {
+  const bodyHtml = (post.blocks || []).map(block => {
     if (block.type === 'text' && block.content?.text) {
       const text = block.content.text;
       // Detect if content is markdown (no HTML tags) or legacy HTML
@@ -338,8 +338,8 @@ export function generateBlogPostHtml(
   <meta property="og:type" content="article">
   ${ogImage ? `<meta property="og:image" content="${ogImage.startsWith('http') ? ogImage : baseUrl + ogImage}">` : ''}
   <meta property="article:published_time" content="${post.published_at || post.created_at}">
-  ${(post.categories || []).length > 0 ? post.categories.map(c => `<meta property="article:section" content="${c}">`).join('\n  ') : ''}
-  ${(post.authors || []).length > 0 ? (post.authors || []).map(a => `<meta property="article:author" content="${a}">`).join('\n  ') : ''}
+  ${(post.categories || []).length > 0 ? (post.categories || []).map(c => `<meta property="article:section" content="${c}">`).join('\n  ') : ''}
+  ${(post.authors || []).length > 0 ? (post.authors || []).map(a => `<meta property="article:author" content="${a.name}">`).join('\n  ') : ''}
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${seoTitle}">
@@ -354,7 +354,7 @@ export function generateBlogPostHtml(
     "image": ogImage ? (ogImage.startsWith('http') ? ogImage : baseUrl + ogImage) : undefined,
     "datePublished": post.published_at || post.created_at,
     "dateModified": post.updated_at,
-    "author": (post.authors || []).length > 0 ? (post.authors || []).map(a => ({ "@type": "Person", "name": a })) : undefined,
+    "author": (post.authors || []).length > 0 ? (post.authors || []).map(a => ({ "@type": "Person", "name": a.name })) : undefined,
     "publisher": { "@type": "Organization", "name": settings?.metaTitle || project?.name },
     "mainEntityOfPage": { "@type": "WebPage", "@id": `${baseUrl}/blog/${post.slug}` }
   })}
@@ -408,14 +408,14 @@ export function generateBlogPostHtml(
   <article style="max-width: 720px; margin: 0 auto; padding: 48px 24px;">
     <a href="${langPrefix}/blog" style="font-size: 12px; font-weight: 600; opacity: 0.4; margin-bottom: 24px; display: inline-block; text-decoration: none; color: inherit;">&larr; Torna al blog</a>
 
-    ${(post.categories || []).length > 0 ? `<div style="margin-bottom: 12px;"><span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.5;">${post.categories.join(' · ')}</span></div>` : ''}
+    ${(post.categories || []).length > 0 ? `<div style="margin-bottom: 12px;"><span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.5;">${(post.categories || []).join(' · ')}</span></div>` : ''}
 
     <h1 style="font-size: var(--global-h1-fs); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 16px;">${post.title}</h1>
 
     ${post.excerpt ? `<p style="font-size: 1.15rem; opacity: 0.5; line-height: 1.6; margin-bottom: 24px;">${post.excerpt}</p>` : ''}
 
     <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; opacity: 0.5; margin-bottom: 48px; padding-bottom: 24px; border-bottom: 1px solid color-mix(in srgb, ${themeText} 8%, transparent);">
-      ${(post.authors || []).length > 0 ? `<span style="font-weight: 600;">${(post.authors || []).join(', ')}</span><span>&middot;</span>` : ''}
+      ${(post.authors || []).length > 0 ? `<span style="font-weight: 600;">${(post.authors || []).map(a => a.name).join(', ')}</span><span>&middot;</span>` : ''}
       <span>${date}</span>
     </div>
 
@@ -445,8 +445,8 @@ export function generateBlogAuthorPages(
   const pages: Record<string, string> = {};
 
   for (const author of allAuthors) {
-    const slug = author.toLowerCase().replace(/\s+/g, '-');
-    const filtered = publishedPosts.filter(p => (p.authors || []).includes(author));
+    const slug = author.name.toLowerCase().replace(/\s+/g, '-');
+    const filtered = publishedPosts.filter(p => (p.authors || []).some(a => a.name === author.name));
     const settings = (project?.settings || {}) as ProjectSettings;
     const font = settings?.fontFamily || 'Outfit';
     const pColor = settings?.primaryColor || '#3b82f6';
@@ -485,11 +485,11 @@ export function generateBlogAuthorPages(
               ${coverUrl ? `<img src="${coverUrl}" alt="${post.title}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />` : `<div class="w-full h-full flex items-center justify-center"><svg width="32" height="32" fill="none" stroke="${themeText}" stroke-width="1.5" opacity="0.15"><rect x="4" y="4" width="24" height="24" rx="4"/></svg></div>`}
             </div>
             <div class="space-y-2">
-              ${(post.categories || []).length > 0 ? `<span class="text-xs font-bold uppercase tracking-wider" style="color: ${pColor};">${post.categories.join(' · ')}</span>` : ''}
+              ${(post.categories || []).length > 0 ? `<span class="text-xs font-bold uppercase tracking-wider" style="color: ${pColor};">${(post.categories || []).join(' · ')}</span>` : ''}
               <h2 class="text-lg font-bold leading-tight transition-colors group-hover:opacity-80">${post.title}</h2>
               ${post.excerpt ? `<p class="text-sm leading-relaxed" style="opacity: 0.6;">${post.excerpt}</p>` : ''}
               <div class="flex items-center gap-3 text-xs" style="opacity: 0.4;">
-                <span>${(post.authors || []).map(a => `<a href="/blog/author/${a.toLowerCase().replace(/\s+/g, '-')}" style="text-decoration:none;color:inherit;">${a}</a>`).join(', ')}</span>
+                <span>${(post.authors || []).map(a => `<a href="/blog/author/${a.name.toLowerCase().replace(/\s+/g, '-')}" style="text-decoration:none;color:inherit;">${a.name}</a>`).join(', ')}</span>
                 <span>&middot;</span>
                 <span>${date}</span>
               </div>
