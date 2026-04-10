@@ -108,6 +108,13 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
   }, []);
 
   const navigateBack = useCallback(async () => {
+    // Forzevolmente spengo il microfono prima di uscire o aprire il popup
+    shouldRecordRef.current = false;
+    setIsRecording(false);
+    if (recognitionRef.current) {
+      try { recognitionRef.current.abort(); } catch(e) {}
+    }
+
     if (hasChangesRef.current) {
       const ok = await confirm({ title: 'Modifiche non salvate', message: 'Hai delle modifiche non salvate. Sei sicuro di voler lasciare la pagina?', confirmLabel: 'Lascia', variant: 'danger' });
       if (!ok) return;
@@ -459,6 +466,15 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
   const recognitionRef = useRef<any>(null);
   // Ref-based "should be recording" flag — lets onend restart without stale closure
   const shouldRecordRef = useRef(false);
+
+  // Tracking state for real-time dictation session
+  const dictationSessionRef = useRef({
+    startPos: -1,
+    currentEndPos: -1,
+    finalizedText: '',
+    needsSpace: false
+  });
+
   const speechSupported = mounted && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
 
   const langToSpeechCode = (lang: string) => {
@@ -473,22 +489,45 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
     const recognition = new SpeechRecognition();
     recognition.lang = langToSpeechCode(lang);
     recognition.continuous = true;
-    recognition.interimResults = false;
+    recognition.interimResults = true; // REALE-TIME ORA!
 
     recognition.onresult = (event: any) => {
-      let finalText = '';
+      const ed = editorRef.current;
+      if (!ed) return;
+
+      const session = dictationSessionRef.current;
+
+      // Initialize session if needed (first callback of a continuous session)
+      if (session.startPos === -1) {
+        const { from } = ed.state.selection;
+        session.startPos = from;
+        session.currentEndPos = from;
+        const charBefore = from > 1 ? ed.state.doc.textBetween(from - 1, from) : '';
+        session.needsSpace = charBefore !== '' && charBefore !== ' ' && charBefore !== '\n';
+      }
+
+      let interimTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) finalText += event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          session.finalizedText += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
       }
-      if (finalText.trim()) {
-        const ed = editorRef.current;
-        if (!ed) return;
-        const { state } = ed;
-        const { from } = state.selection;
-        const charBefore = from > 1 ? state.doc.textBetween(from - 1, from) : '';
-        const needsSpace = charBefore !== '' && charBefore !== ' ' && charBefore !== '\n';
-        ed.chain().focus().insertContent((needsSpace ? ' ' : '') + finalText.trim()).run();
-      }
+
+      const currentTranscription = (session.finalizedText + interimTranscript).trim();
+      if (!currentTranscription) return;
+
+      const fullTextToInsert = (session.needsSpace ? ' ' : '') + currentTranscription;
+      
+      // Update editor content at the tracked position
+      ed.chain()
+        .focus()
+        .insertContentAt({ from: session.startPos, to: session.currentEndPos }, fullTextToInsert)
+        .run();
+      
+      // Update end position based on newly inserted text length
+      session.currentEndPos = session.startPos + fullTextToInsert.length;
     };
 
     recognition.onerror = (event: any) => {
@@ -524,10 +563,28 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) { toast('Speech-to-text non supportato dal browser', 'error'); return; }
 
+    // Reset session tracking
+    dictationSessionRef.current = {
+      startPos: -1,
+      currentEndPos: -1,
+      finalizedText: '',
+      needsSpace: false
+    };
+
     shouldRecordRef.current = true;
     setIsRecording(true);
     startRecognition(postLang);
   }, [postLang, startRecognition]);
+
+  // Cleanup microphone on unmount
+  useEffect(() => {
+    return () => {
+      shouldRecordRef.current = false;
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch(e) {}
+      }
+    };
+  }, []);
 
   // AI Improve modal
   const [aiModalOpen, setAiModalOpen] = useState(false);
@@ -648,7 +705,6 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
         published_at: post.published_at,
         blocks: post.blocks,
         seo: post.seo,
-        display_settings: post.display_settings ?? {},
         language: post.language,
         updated_at: new Date().toISOString(),
       })

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Palette, Layout, Type, Settings as SettingsIcon, Mic, MicOff, Plus, Loader2, Sparkles, Wand2, Info, Image as ImageIcon, AlertCircle, X, ChevronRight, ChevronLeft, Check, Trash2, ChevronDown, ChevronUp, Settings } from 'lucide-react';
 import { FontManager } from '../../blocks/sidebar/ui/FontManager';
 import { cn } from '@/lib/utils';
@@ -125,6 +125,16 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const [showValidation, setShowValidation] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
+  const recognitionRef = useRef<any>(null);
+
+  // Cleanup microphone on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch(e) {}
+      }
+    };
+  }, []);
 
   // Advanced Settings State
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -301,9 +311,18 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
 
     rec.start();
     setRecognition(rec);
+    recognitionRef.current = rec;
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      try { recognitionRef.current.abort(); } catch(e) {}
+    }
+    setIsListening(false);
   };
 
   const handleStartGeneration = async () => {
+    stopListening();
     setError(null);
     setIsGenerating(true);
 
@@ -384,6 +403,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   };
 
   const handleNextStep = async () => {
+    stopListening();
     setError(null);
     if (stepIndex === 2) {
       // Auto-save page if fields are filled (add or update) 
@@ -606,7 +626,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
               ))}
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-zinc-100 rounded-md transition-colors text-zinc-400">
+          <button onClick={() => { stopListening(); onClose(); }} className="p-1.5 hover:bg-zinc-100 rounded-md transition-colors text-zinc-400">
             <X size={16} />
           </button>
         </div>
