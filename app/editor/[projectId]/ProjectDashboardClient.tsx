@@ -110,6 +110,7 @@ export function ProjectDashboardClient({
   const [isDeletingProject, setIsDeletingProject] = useState(false);
   const [activeTab, setActiveTab] = useState<'pages' | 'blog' | 'checklist' | 'settings'>('pages');
   const [showChecklist, setShowChecklist] = useState(false);
+  const [checklistPageId, setChecklistPageId] = useState<string | undefined>(undefined);
   const [seoOpenId, setSeoOpenId] = useState<string | null>(null);
   const [translatePage, setTranslatePage] = useState<Page | null>(null);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
@@ -277,10 +278,7 @@ export function ProjectDashboardClient({
               <div className={cn("w-1.5 h-1.5 rounded-full", isPublished ? "bg-emerald-500" : "bg-amber-400 animate-pulse")} />
               {isPublished ? 'Online' : 'Bozza'}
             </div>
-            <CompletionBadge
-              score={getCompletionScore(runGlobalChecks(localProject, pages, initialSiteGlobals))}
-              onClick={() => setShowChecklist(true)}
-            />
+
           </div>
 
           <div className="flex items-center gap-2">
@@ -811,7 +809,7 @@ export function ProjectDashboardClient({
                   isDeleting={deletingPageId === page.id}
                   onInternalNavigate={handleInternalNavigation}
                   score={getCompletionScore(runPageChecks(localProject, pages, page))}
-                  onScoreClick={() => setShowChecklist(true)}
+                  onScoreClick={() => { setChecklistPageId(page.id); setShowChecklist(true); }}
                 />
               ))}
             </div>
@@ -902,7 +900,8 @@ export function ProjectDashboardClient({
         <ChecklistModal
           project={localProject}
           pages={pages}
-          onClose={() => setShowChecklist(false)}
+          onClose={() => { setShowChecklist(false); setChecklistPageId(undefined); }}
+          initialPageId={checklistPageId}
         />
       )}
 

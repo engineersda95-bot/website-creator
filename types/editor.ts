@@ -126,6 +126,15 @@ export interface ProjectSettings {
     h6Size?: number;
     bodySize?: number;
   };
+  blogPostDisplay?: {
+    coverImageMode?: 'hero' | 'contained';
+    bodyMaxWidth?: number;
+    bodyPaddingX?: number;
+    bodyPaddingXMobile?: number;
+    bodyPaddingY?: number;
+    bodyPaddingYMobile?: number;
+    showToc?: boolean;
+  };
 }
 
 export interface Project {
@@ -153,6 +162,13 @@ export interface BlogPost {
   published_at?: string | null;
   blocks?: Block[];
   seo?: { title?: string; description?: string; image?: string; indexable?: boolean };
+  display_settings?: {
+    showToc?: boolean;
+    coverImageMode?: 'hero' | 'contained';
+    bodyMaxWidth?: number;
+    bodyPaddingX?: number;
+    bodyAlign?: 'left' | 'center' | 'right';
+  };
   language?: string;
   translation_group?: string;
   created_at: string;

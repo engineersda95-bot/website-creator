@@ -169,7 +169,7 @@ export async function deployToCloudflare(projectId: string) {
 
         // Individual post pages
         for (const post of langPosts) {
-          const postHtml = generateBlogPostHtml(post, langPosts, project, langUrlPrefix, pages as Page[], globals);
+          const postHtml = generateBlogPostHtml(post, project, langUrlPrefix, pages as Page[], globals);
           fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), postHtml);
           collectAssets(postHtml);
           console.log(`Generated ${langSubfolder ? langSubfolder + '/' : ''}blog/${post.slug}.html`);

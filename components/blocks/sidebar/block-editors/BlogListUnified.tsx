@@ -4,17 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import {
   Type, AlignLeft, Filter, Layers, Palette, Settings, Play,
-  List, Hash, Eye, EyeOff
+  List, ExternalLink
 } from 'lucide-react';
 import {
   AnchorManager, AnimationManager, BackgroundManager, BorderShadowManager,
-  LayoutFields, LayoutGridSlider, PatternManager,
+  CTAManager, LayoutFields, LayoutGridSlider, PatternManager,
   RichTextarea, SimpleInput, SimpleSlider, TypographyFields
 } from '../SharedSidebarComponents';
 import { UnifiedSection as Section, useUnifiedSections, CategoryHeader, ManagerWrapper } from '../SharedSidebarComponents';
 import { useEditorStore } from '@/store/useEditorStore';
 import { supabase } from '@/lib/supabase';
-import { BlogPost } from '@/types/editor';
 
 interface BlogListUnifiedProps {
   selectedBlock: any;
@@ -33,21 +32,23 @@ export const BlogListUnified: React.FC<BlogListUnifiedProps> = ({
   const currentPage = useEditorStore(state => state.currentPage);
   const isBlogPage = currentPage?.slug === 'blog';
 
-  // Fetch blog posts for manual selection
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  // Fetch blog posts to derive available categories
+  const [categories, setCategories] = useState<string[]>([]);
   useEffect(() => {
     if (!project?.id) return;
     supabase
       .from('blog_posts')
-      .select('id, title, categories, status, cover_image')
+      .select('categories')
       .eq('project_id', project.id)
-      .order('created_at', { ascending: false })
-      .then(({ data }) => { if (data) setBlogPosts(data as BlogPost[]); });
+      .then(({ data }) => {
+        if (data) {
+          const cats = [...new Set((data as any[]).flatMap(p => p.categories || []).filter(Boolean))];
+          setCategories(cats);
+        }
+      });
   }, [project?.id]);
 
-  const categories = [...new Set(blogPosts.flatMap(p => p.categories || []).filter(Boolean))];
   const filterMode = content.filterMode || 'all';
-  const manualPostIds = content.manualPostIds || [];
 
   return (
     <div>
@@ -55,16 +56,14 @@ export const BlogListUnified: React.FC<BlogListUnifiedProps> = ({
 
       <Section icon={Type} label="Titolo" id="title" isOpen={openSection === 'title'} onToggle={toggleSection}>
         <SimpleInput label="Testo" value={content.title || ''} onChange={(val) => updateContent({ title: val })} placeholder="Dal nostro Blog" />
-        <TypographyFields label="Stile" sizeKey="titleSize" boldKey="titleBold" italicKey="titleItalic" tagKey="titleTag" showTagSelector defaultTag="h2" getStyleValue={getStyleValue} updateStyle={updateStyle} />
       </Section>
 
       <Section icon={AlignLeft} label="Sottotitolo" id="subtitle" isOpen={openSection === 'subtitle'} onToggle={toggleSection}>
         <RichTextarea label="Testo" value={content.subtitle || ''} onChange={(val) => updateContent({ subtitle: val })} placeholder="Descrizione..." />
-        <TypographyFields label="Stile" sizeKey="subtitleSize" boldKey="subtitleBold" italicKey="subtitleItalic" getStyleValue={getStyleValue} updateStyle={updateStyle} defaultValue={18} />
       </Section>
 
       <Section icon={Filter} label="Impostazioni" id="filter" isOpen={openSection === 'filter'} onToggle={toggleSection}>
-        {/* Filter mode — only outside /blog page */}
+        {/* Filter mode — pre-filter by category (hidden on /blog which already has interactive filters) */}
         {!isBlogPage && (
           <>
             <div>
@@ -73,7 +72,6 @@ export const BlogListUnified: React.FC<BlogListUnifiedProps> = ({
                 {[
                   { id: 'all', label: 'Tutti' },
                   { id: 'category', label: 'Categoria' },
-                  { id: 'manual', label: 'Selezione' },
                 ].map(m => (
                   <button
                     key={m.id}
@@ -109,200 +107,49 @@ export const BlogListUnified: React.FC<BlogListUnifiedProps> = ({
                 )}
               </div>
             )}
-
-            {filterMode === 'manual' && (
-              <div>
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5 block">Seleziona articoli</label>
-                <div className="space-y-1 max-h-60 overflow-y-auto custom-scrollbar">
-                  {blogPosts.map(post => {
-                    const isSelected = manualPostIds.includes(post.id);
-                    return (
-                      <button
-                        key={post.id}
-                        onClick={() => {
-                          const newIds = isSelected
-                            ? manualPostIds.filter((id: string) => id !== post.id)
-                            : [...manualPostIds, post.id];
-                          updateContent({ manualPostIds: newIds });
-                        }}
-                        className={cn(
-                          "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all",
-                          isSelected ? "bg-zinc-900 text-white" : "hover:bg-zinc-50 text-zinc-600"
-                        )}
-                      >
-                        <div className={cn("w-4 h-4 rounded border flex items-center justify-center shrink-0 text-[10px]",
-                          isSelected ? "bg-white text-zinc-900 border-white" : "border-zinc-300"
-                        )}>
-                          {isSelected && '✓'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[11px] font-semibold truncate">{post.title || 'Senza titolo'}</div>
-                          {(post.categories?.length ?? 0) > 0 && <div className={cn("text-[9px]", isSelected ? "text-white/50" : "text-zinc-400")}>{(post.categories || []).join(', ')}</div>}
-                        </div>
-                      </button>
-                    );
-                  })}
-                  {blogPosts.length === 0 && (
-                    <p className="text-[10px] text-zinc-400 italic py-4 text-center">Nessun post trovato.</p>
-                  )}
-                </div>
-              </div>
-            )}
           </>
         )}
 
-        {/* Max posts — hidden on blog page (always 100) */}
-        {!isBlogPage && (
-          <SimpleSlider
-            label="Articoli visibili (max)"
-            value={content.maxPosts || 6}
-            onChange={(val: number) => updateContent({ maxPosts: val })}
-            min={1} max={20} step={1}
-          />
-        )}
+        {/* Max posts — always visible, default differs by context */}
+        <SimpleSlider
+          label="Articoli visibili (max)"
+          value={content.maxPosts ?? (isBlogPage ? 100 : 6)}
+          onChange={(val: number) => updateContent({ maxPosts: val })}
+          min={1} max={100} step={1}
+          suffix=""
+        />
 
-        {/* Show search / categories — separate toggles */}
-        {isBlogPage && (
-          <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl mb-3">
-            <div className="text-[10px] font-bold text-blue-700">Pagina Blog principale</div>
-            <div className="text-[9px] text-blue-500">Tutti gli articoli sono mostrati in questa pagina.</div>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl">
-          <div>
-            <div className="text-[10px] font-bold text-zinc-700">Barra di ricerca</div>
-            <div className="text-[9px] text-zinc-400">Permette di cercare per titolo</div>
-          </div>
-          <input
-            type="checkbox"
-            checked={content.showSearch !== false}
-            onChange={(e) => updateContent({ showSearch: e.target.checked })}
-            className="w-4 h-4 rounded border-zinc-300 text-zinc-900"
-          />
-        </div>
-
-        <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl">
-          <div>
-            <div className="text-[10px] font-bold text-zinc-700">Filtri categoria</div>
-            <div className="text-[9px] text-zinc-400">Mostra pill per filtrare per categoria</div>
-          </div>
-          <input
-            type="checkbox"
-            checked={content.showCategoryFilter !== false}
-            onChange={(e) => updateContent({ showCategoryFilter: e.target.checked })}
-            className="w-4 h-4 rounded border-zinc-300 text-zinc-900"
-          />
-        </div>
-
-        <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl">
-          <div>
-            <div className="text-[10px] font-bold text-zinc-700">Filtri autore</div>
-            <div className="text-[9px] text-zinc-400">Mostra pill per filtrare per autore</div>
-          </div>
-          <input
-            type="checkbox"
-            checked={content.showAuthorFilter === true}
-            onChange={(e) => updateContent({ showAuthorFilter: e.target.checked })}
-            className="w-4 h-4 rounded border-zinc-300 text-zinc-900"
-          />
-        </div>
-
-        <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl">
-          <div>
-            <div className="text-[10px] font-bold text-zinc-700">Mostra autore</div>
-            <div className="text-[9px] text-zinc-400">Nome dell'autore sotto ogni articolo</div>
-          </div>
-          <input
-            type="checkbox"
-            checked={content.showAuthor !== false}
-            onChange={(e) => updateContent({ showAuthor: e.target.checked })}
-            className="w-4 h-4 rounded border-zinc-300 text-zinc-900"
-          />
-        </div>
-
-        <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl">
-          <div>
-            <div className="text-[10px] font-bold text-zinc-700">Mostra data</div>
-            <div className="text-[9px] text-zinc-400">Data di pubblicazione sotto ogni articolo</div>
-          </div>
-          <input
-            type="checkbox"
-            checked={content.showDate !== false}
-            onChange={(e) => updateContent({ showDate: e.target.checked })}
-            className="w-4 h-4 rounded border-zinc-300 text-zinc-900"
-          />
-        </div>
-
-        {/* Tag color (category labels on cards) */}
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Colore tag categorie</label>
-          <div className="flex items-center gap-2">
-            {['primary', 'text', 'custom'].map(opt => (
-              <button
-                key={opt}
-                onClick={() => updateContent({ tagColorMode: opt })}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all",
-                  (content.tagColorMode || 'primary') === opt
-                    ? "border-zinc-900 bg-zinc-900 text-white"
-                    : "border-zinc-200 text-zinc-500 hover:border-zinc-300"
-                )}
-              >
-                {opt === 'primary' ? 'Primario' : opt === 'text' ? 'Testo' : 'Custom'}
-              </button>
-            ))}
-            {content.tagColorMode === 'custom' && (
+        {/* Show/hide toggles */}
+        <div className="space-y-2">
+          {([
+            { key: 'showSearch', label: 'Barra di ricerca', desc: 'Permette di cercare per titolo' },
+            { key: 'showCategoryFilter', label: 'Filtri categoria', desc: 'Mostra pill per filtrare per categoria' },
+            { key: 'showAuthor', label: 'Mostra autore', desc: 'Nome autore sotto ogni articolo' },
+            { key: 'showDate', label: 'Mostra data', desc: 'Data di pubblicazione sotto ogni articolo' },
+          ] as { key: string; label: string; desc: string }[]).map(({ key, label, desc }) => (
+            <div key={key} className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl">
+              <div>
+                <div className="text-[10px] font-bold text-zinc-700">{label}</div>
+                <div className="text-[9px] text-zinc-400">{desc}</div>
+              </div>
               <input
-                type="color"
-                value={content.tagColor || '#3b82f6'}
-                onChange={(e) => updateContent({ tagColor: e.target.value })}
-                className="w-8 h-8 rounded-lg border border-zinc-200 cursor-pointer bg-transparent"
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Filter pills colors */}
-        {(content.showCategoryFilter !== false || content.showAuthorFilter === true) && (
-          <div className="space-y-3 p-3 bg-zinc-50 rounded-xl">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Colore filtri</label>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-zinc-600">Selezionato (sfondo)</span>
-              <input
-                type="color"
-                value={content.filterActiveColor || '#000000'}
-                onChange={(e) => updateContent({ filterActiveColor: e.target.value })}
-                className="w-7 h-7 rounded-lg border border-zinc-200 cursor-pointer bg-transparent"
+                type="checkbox"
+                checked={content[key] !== false}
+                onChange={(e) => updateContent({ [key]: e.target.checked })}
+                className="w-4 h-4 rounded border-zinc-300 text-zinc-900"
               />
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-zinc-600">Selezionato (testo)</span>
-              <input
-                type="color"
-                value={content.filterActiveTextColor || '#ffffff'}
-                onChange={(e) => updateContent({ filterActiveTextColor: e.target.value })}
-                className="w-7 h-7 rounded-lg border border-zinc-200 cursor-pointer bg-transparent"
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-zinc-600">Non selezionato (bordo)</span>
-              <input
-                type="color"
-                value={content.filterInactiveColor || '#d4d4d8'}
-                onChange={(e) => updateContent({ filterInactiveColor: e.target.value })}
-                className="w-7 h-7 rounded-lg border border-zinc-200 cursor-pointer bg-transparent"
-              />
-            </div>
-          </div>
-        )}
+          ))}
+        </div>
+      </Section>
 
-        {/* Show view all link — hidden on blog page */}
-        {!isBlogPage && (
+      {/* CTA section — hidden on /blog page */}
+      {!isBlogPage && (
+        <Section icon={ExternalLink} label="CTA" id="cta" isOpen={openSection === 'cta'} onToggle={toggleSection}>
           <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl">
             <div>
-              <div className="text-[10px] font-bold text-zinc-700">Link "Vedi tutti"</div>
-              <div className="text-[9px] text-zinc-400">Mostra link alla pagina /blog</div>
+              <div className="text-[10px] font-bold text-zinc-700">Mostra bottone "Vedi tutti"</div>
+              <div className="text-[9px] text-zinc-400">Appare in alto a destra del titolo sezione</div>
             </div>
             <input
               type="checkbox"
@@ -311,8 +158,21 @@ export const BlogListUnified: React.FC<BlogListUnifiedProps> = ({
               className="w-4 h-4 rounded border-zinc-300 text-zinc-900"
             />
           </div>
-        )}
-      </Section>
+          {content.showViewAll !== false && (
+            <CTAManager
+              content={content}
+              updateContent={updateContent}
+              style={selectedBlock.style}
+              updateStyle={updateStyle}
+              getStyleValue={getStyleValue}
+              label="Bottone CTA"
+              ctaKey="viewAllCta"
+              urlKey="viewAllCtaUrl"
+              themeKey="viewAllCtaTheme"
+            />
+          )}
+        </Section>
+      )}
 
       <Section icon={List} label="Griglia" id="grid" isOpen={openSection === 'grid'} onToggle={toggleSection}>
         <LayoutGridSlider
@@ -322,10 +182,24 @@ export const BlogListUnified: React.FC<BlogListUnifiedProps> = ({
           getStyleValue={getStyleValue}
           viewport={viewport}
         />
-        <TypographyFields label="Titolo Card" sizeKey="itemTitleSize" boldKey="itemTitleBold" italicKey="itemTitleItalic" tagKey="itemTitleTag" showTagSelector defaultTag="h3" getStyleValue={getStyleValue} updateStyle={updateStyle} />
       </Section>
 
       <CategoryHeader label="Stile della Sezione" />
+
+      <Section icon={Type} label="Tipografia" id="typography" isOpen={openSection === 'typography'} onToggle={toggleSection}>
+        <TypographyFields label="Titolo" sizeKey="titleSize" boldKey="titleBold" italicKey="titleItalic" tagKey="titleTag" showTagSelector defaultTag="h2" getStyleValue={getStyleValue} updateStyle={updateStyle} />
+        <TypographyFields label="Sottotitolo" sizeKey="subtitleSize" boldKey="subtitleBold" italicKey="subtitleItalic" getStyleValue={getStyleValue} updateStyle={updateStyle} defaultValue={18} />
+        <TypographyFields label="Titolo card" sizeKey="itemTitleSize" boldKey="itemTitleBold" italicKey="itemTitleItalic" tagKey="itemTitleTag" showTagSelector defaultTag="h3" getStyleValue={getStyleValue} updateStyle={updateStyle} />
+        {content.showAuthor !== false && (
+          <TypographyFields label="Autore" sizeKey="authorSize" boldKey="authorBold" italicKey="authorItalic" getStyleValue={getStyleValue} updateStyle={updateStyle} defaultValue={14} />
+        )}
+        {content.showDate !== false && (
+          <TypographyFields label="Data" sizeKey="dateSize" boldKey="dateBold" italicKey="dateItalic" getStyleValue={getStyleValue} updateStyle={updateStyle} defaultValue={14} />
+        )}
+        {content.showCategoryFilter !== false && (
+          <TypographyFields label="Filtri categoria" sizeKey="filterFontSize" boldKey="filterFontBold" italicKey="filterFontItalic" getStyleValue={getStyleValue} updateStyle={updateStyle} defaultValue={11} />
+        )}
+      </Section>
 
       <Section icon={Layers} label="Layout & Spaziatura" id="layout" isOpen={openSection === 'layout'} onToggle={toggleSection}>
         <LayoutFields getStyleValue={getStyleValue} updateStyle={updateStyle} />

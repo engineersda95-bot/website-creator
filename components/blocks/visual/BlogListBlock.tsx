@@ -4,8 +4,8 @@ import { cn, formatRichText } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { BlockBackground } from '@/components/shared/BlockBackground';
 import { InlineEditable } from '@/components/shared/InlineEditable';
+import { CTA, getCTAOverrides } from '@/components/shared/CTA';
 import { resolveImageUrl } from '@/lib/image-utils';
-import { ArrowRight } from 'lucide-react';
 
 interface BlogListBlockProps {
   block: Block;
@@ -25,10 +25,9 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
 
   const isBlogPage = content.isBlogPage === true;
-  const maxPosts = isBlogPage ? 100 : (content.maxPosts || 6);
-  const filterMode = isBlogPage ? 'all' : (content.filterMode || 'all');
+  const maxPosts = content.maxPosts ?? (isBlogPage ? 100 : 6);
+  const filterMode = content.filterMode || 'all';
   const filterCategory = content.filterCategory || '';
-  const manualPostIds = content.manualPostIds || [];
 
   // Filter by language when multilingual
   const blockLang = content.language || '';
@@ -43,12 +42,6 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
   }
   if (filterMode === 'category' && filterCategory) {
     posts = posts.filter(p => (p.categories || []).some(c => c.toLowerCase() === filterCategory.toLowerCase()));
-  } else if (filterMode === 'manual') {
-    if (manualPostIds.length > 0) {
-      posts = manualPostIds.map((id: string) => posts.find(p => p.id === id)).filter(Boolean) as BlogPost[];
-    } else {
-      posts = []; // Manual mode with no selection = empty
-    }
   }
   posts = posts.slice(0, maxPosts);
 
@@ -74,6 +67,37 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
   const blogLangPrefix = isMultilingual && blockLang && blockLang !== defaultLang ? `/${blockLang}` : '';
   const showAuthor = content.showAuthor !== false;
   const showDate = content.showDate !== false;
+
+  // Filter pill styles — font size now from style (TypographyFields), rest from content
+  const filterFontSize = style.filterFontSize || 11;
+  const filterBorderRadius = content.filterBorderRadius !== undefined ? content.filterBorderRadius : 999;
+  const filterPaddingX = content.filterPaddingX || 12;
+  const filterPaddingY = content.filterPaddingY || 6;
+  const filterPillStyle = {
+    fontSize: `${filterFontSize}px`,
+    fontWeight: style.filterFontBold ? 700 : 700,
+    fontStyle: style.filterFontItalic ? 'italic' : 'normal',
+    borderRadius: `${filterBorderRadius}px`,
+    padding: `${filterPaddingY}px ${filterPaddingX}px`,
+  };
+
+  // Author/date typography
+  const authorStyle: React.CSSProperties = {
+    fontSize: style.authorSize ? `${style.authorSize}px` : '0.875rem',
+    fontWeight: style.authorBold ? 700 : 600,
+    fontStyle: style.authorItalic ? 'italic' : 'normal',
+  };
+  const dateStyle: React.CSSProperties = {
+    fontSize: style.dateSize ? `${style.dateSize}px` : '0.875rem',
+    fontWeight: style.dateBold ? 700 : 400,
+    fontStyle: style.dateItalic ? 'italic' : 'normal',
+  };
+
+  // CTA "vedi tutti"
+  const showViewAll = content.showViewAll !== false && !isBlogPage;
+  const viewAllCtaLabel = content.viewAllCta || 'Vedi tutti gli articoli';
+  const viewAllCtaUrl = content.viewAllCtaUrl || `${blogLangPrefix}/blog`;
+  const viewAllCtaTheme = content.viewAllCtaTheme || 'primary';
 
   const PostCard = ({ post, index }: { post: BlogPost; index: number }) => {
     const coverUrl = post.cover_image ? resolveImageUrl(post.cover_image, project, imageMemoryCache, isStatic) : '';
@@ -119,7 +143,7 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
         {/* Content */}
         <div className="flex-1 flex flex-col">
           {(post.categories?.length ?? 0) > 0 && (
-            <span className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ opacity: 0.5 }}>
+            <span className="font-bold uppercase tracking-wider mb-1.5" style={{ fontSize: `${filterFontSize}px`, fontStyle: style.filterFontItalic ? 'italic' : 'normal', opacity: 0.5 }}>
               {(post.categories || []).join(' · ')}
             </span>
           )}
@@ -135,12 +159,12 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
             </p>
           )}
           {(showAuthor || showDate) && (
-            <div className="flex items-center gap-3 mt-auto" style={{ fontSize: '0.9375rem', opacity: 0.5 }}>
+            <div className="flex items-center gap-3 mt-auto" style={{ opacity: 0.5 }}>
               {showAuthor && (post.authors || []).length > 0 && (
-                <span style={{ fontWeight: 600 }}>{(post.authors || []).join(', ')}</span>
+                <span style={authorStyle}>{(post.authors || []).map((a: any) => typeof a === 'string' ? a : a?.name).join(', ')}</span>
               )}
               {showAuthor && (post.authors || []).length > 0 && showDate && formattedDate && <span>&middot;</span>}
-              {showDate && formattedDate && <span>{formattedDate}</span>}
+              {showDate && formattedDate && <span style={dateStyle}>{formattedDate}</span>}
             </div>
           )}
         </div>
@@ -173,64 +197,84 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
       />
 
       <div className="relative z-10 w-full mx-auto">
-        {/* Title + Subtitle */}
-        {(content.title || content.subtitle) && (
+        {/* Title row: title+subtitle left, CTA right */}
+        {(content.title || content.subtitle || showViewAll) && (
           <div
             data-siti-anim={animType}
             data-siti-anim-duration={animDuration}
             data-siti-anim-delay={baseDelay}
-            className={cn("mb-12", style.align === 'center' ? "text-center" : style.align === 'right' ? "text-right" : "text-left")}
+            className={cn(
+              "flex items-start gap-6",
+              (content.showSearch !== false || content.showCategoryFilter !== false) ? "mb-8" : content.subtitle ? "mb-8" : "mb-6",
+              style.align === 'center' ? "justify-center" : style.align === 'right' ? "flex-row-reverse" : "justify-between"
+            )}
             style={{ '--siti-anim-duration': animDuration + 's', '--siti-anim-delay': baseDelay + 's' } as any}
           >
-            {content.title && (
-              onInlineEdit ? (
-                <InlineEditable
-                  fieldId="title"
-                  value={content.title || ''}
-                  onChange={(v) => onInlineEdit('title', v)}
-                  className="mb-3 tracking-tighter transition-all duration-500 leading-tight rt-content"
-                  style={{ fontSize: 'var(--title-fs)', fontWeight: 'var(--title-fw)', color: 'inherit' }}
-                  placeholder="Titolo..."
+            {/* Title + subtitle */}
+            <div className={cn("flex-1", style.align === 'center' ? "text-center" : style.align === 'right' ? "text-right" : "text-left")}>
+              {content.title && (
+                onInlineEdit ? (
+                  <InlineEditable
+                    fieldId="title"
+                    value={content.title || ''}
+                    onChange={(v) => onInlineEdit('title', v)}
+                    className="mb-3 tracking-tighter transition-all duration-500 leading-tight rt-content"
+                    style={{ fontSize: 'var(--title-fs)', fontWeight: 'var(--title-fw)', color: 'inherit' }}
+                    placeholder="Titolo..."
+                  />
+                ) : (
+                  <div
+                    className="mb-3 tracking-tighter transition-all duration-500 leading-tight rt-content"
+                    style={{ fontSize: 'var(--title-fs)', fontWeight: 'var(--title-fw)', color: 'inherit' }}
+                    dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+                  />
+                )
+              )}
+              {content.subtitle && (
+                onInlineEdit ? (
+                  <InlineEditable
+                    fieldId="subtitle"
+                    value={content.subtitle || ''}
+                    onChange={(v) => onInlineEdit('subtitle', v)}
+                    className="opacity-60 max-w-2xl leading-relaxed transition-all duration-500 rt-content"
+                    style={{ fontSize: 'var(--subtitle-fs)', color: 'inherit', marginLeft: style.align === 'center' ? 'auto' : '0', marginRight: style.align === 'center' ? 'auto' : '0' }}
+                    placeholder="Sottotitolo..."
+                    richText
+                    multiline
+                  />
+                ) : (
+                  <div
+                    className="opacity-60 max-w-2xl leading-relaxed transition-all duration-500 rt-content"
+                    style={{ fontSize: 'var(--subtitle-fs)', color: 'inherit', marginLeft: style.align === 'center' ? 'auto' : '0', marginRight: style.align === 'center' ? 'auto' : '0' }}
+                    dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+                  />
+                )
+              )}
+            </div>
+
+            {/* CTA "Vedi tutti" — aligned to top-right of title row */}
+            {showViewAll && viewAllCtaLabel && (
+              <div className="flex-shrink-0 self-start pt-1">
+                <CTA
+                  label={viewAllCtaLabel}
+                  url={viewAllCtaUrl}
+                  project={project}
+                  viewport={viewport}
+                  theme={viewAllCtaTheme as any}
+                  isStatic={isStatic}
+                  {...getCTAOverrides(content, style, 'viewAllCta', viewAllCtaTheme)}
                 />
-              ) : (
-                <div
-                  className="mb-3 tracking-tighter transition-all duration-500 leading-tight rt-content"
-                  style={{ fontSize: 'var(--title-fs)', fontWeight: 'var(--title-fw)', color: 'inherit' }}
-                  dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-                />
-              )
-            )}
-            {content.subtitle && (
-              onInlineEdit ? (
-                <InlineEditable
-                  fieldId="subtitle"
-                  value={content.subtitle || ''}
-                  onChange={(v) => onInlineEdit('subtitle', v)}
-                  className="opacity-60 max-w-2xl leading-relaxed transition-all duration-500 rt-content"
-                  style={{ fontSize: 'var(--subtitle-fs)', color: 'inherit', marginLeft: style.align === 'center' ? 'auto' : '0', marginRight: style.align === 'center' ? 'auto' : '0' }}
-                  placeholder="Sottotitolo..."
-                  richText
-                  multiline
-                />
-              ) : (
-                <div
-                  className="opacity-60 max-w-2xl leading-relaxed transition-all duration-500 rt-content"
-                  style={{ fontSize: 'var(--subtitle-fs)', color: 'inherit', marginLeft: style.align === 'center' ? 'auto' : '0', marginRight: style.align === 'center' ? 'auto' : '0' }}
-                  dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
-                />
-              )
+              </div>
             )}
           </div>
         )}
 
-        {/* Filters — search, category and author pills controlled independently */}
+        {/* Filters — search and category pills */}
         {filterMode === 'all' && posts.length > 0 && (() => {
           const showSearch = content.showSearch !== false;
           const showCats = content.showCategoryFilter !== false;
-          const showAuthors = content.showAuthorFilter === true;
           const allCategories = [...new Set(allBlogPosts.flatMap(p => p.categories || []).filter(Boolean))];
-          const allAuthors = [...new Set(allBlogPosts.flatMap(p => p.authors || []).filter(Boolean))];
-          if (!showSearch && !showCats && !showAuthors) return null;
+          if (!showSearch && !showCats) return null;
           return (
             <div className="mb-8 space-y-4">
               {showSearch && (
@@ -245,48 +289,15 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
               )}
               {/* Inject filter color CSS */}
               <style dangerouslySetInnerHTML={{ __html: `
-                .siti-filter-pill { border: 1px solid ${filterInactiveBorder || 'color-mix(in srgb, currentColor 15%, transparent)'}; background: transparent; color: inherit; cursor: pointer; }
+                .siti-filter-pill { border: 1px solid ${filterInactiveBorder || 'color-mix(in srgb, currentColor 15%, transparent)'}; background: transparent; color: inherit; cursor: pointer; font-weight: 700; transition: all 0.2s; }
                 .siti-filter-pill.active { background: ${filterActiveBg || themeText}; color: ${filterActiveText || themeBg}; border-color: ${filterActiveBg || themeText}; }
                 .siti-filter-pill:not(.active):hover { background: color-mix(in srgb, currentColor 6%, transparent); }
               ` }} />
               {showCats && allCategories.length > 0 && (
                 <div className="flex flex-wrap gap-2" data-blog-filters>
-                  <button
-                    data-filter="all"
-                    className="siti-filter-pill active px-3 py-1.5 rounded-full text-[11px] font-bold transition-all"
-                  >
-                    Tutti
-                  </button>
+                  <button data-filter="all" className="siti-filter-pill active" style={filterPillStyle}>Tutti</button>
                   {allCategories.map(cat => (
-                    <button
-                      key={cat}
-                      data-filter={cat.toLowerCase()}
-                      className="siti-filter-pill px-3 py-1.5 rounded-full text-[11px] font-bold transition-all"
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {showCats && allCategories.length > 0 && showAuthors && allAuthors.length > 0 && (
-                <div className="w-full" style={{ height: '1px', background: 'color-mix(in srgb, currentColor 10%, transparent)' }} />
-              )}
-              {showAuthors && allAuthors.length > 0 && (
-                <div className="flex flex-wrap gap-2" data-blog-author-filters>
-                  <button
-                    data-author-filter="all"
-                    className="siti-filter-pill active px-3 py-1.5 rounded-full text-[11px] font-bold transition-all"
-                  >
-                    Tutti gli autori
-                  </button>
-                  {allAuthors.map(author => (
-                    <button
-                      key={author.name}
-                      data-author-filter={author.name.toLowerCase()}
-                      className="siti-filter-pill px-3 py-1.5 rounded-full text-[11px] font-bold transition-all"
-                    >
-                      {author.name}
-                    </button>
+                    <button key={cat} data-filter={cat.toLowerCase()} className="siti-filter-pill" style={filterPillStyle}>{cat}</button>
                   ))}
                 </div>
               )}
@@ -307,7 +318,6 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
           <div className="text-center py-16" style={{ opacity: 0.25 }}>
             <p className="text-sm font-bold uppercase tracking-widest">
               {isStatic ? 'Nessun articolo pubblicato' :
-               filterMode === 'manual' && manualPostIds.length === 0 ? 'Seleziona gli articoli dalla sidebar' :
                filterMode === 'category' && filterCategory ? `Nessun articolo nella categoria "${filterCategory}"` :
                allBlogPosts.length === 0 ? 'Nessun articolo. Crea post dal tab Blog nella dashboard.' :
                'Nessun articolo trovato con i filtri attuali'}
@@ -321,27 +331,20 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
             (function(){
               var cards=document.querySelectorAll('[data-blog-card]');
               var filters=document.querySelectorAll('[data-filter]');
-              var authorFilters=document.querySelectorAll('[data-author-filter]');
               var search=document.querySelector('[data-blog-search]');
               var activeCat='all';
-              var activeAuthor='all';
               try{
-                var params=new URLSearchParams(window.location.search);
-                var ua=params.get('author');
-                if(ua)activeAuthor=decodeURIComponent(ua).toLowerCase();
-                var uc=params.get('category');
+                var uc=new URLSearchParams(window.location.search).get('category');
                 if(uc)activeCat=decodeURIComponent(uc).toLowerCase();
               }catch(e){}
               function run(){
                 var q=(search?search.value:'').toLowerCase();
                 cards.forEach(function(c){
                   var cats=(c.getAttribute('data-categories')||'').split(',');
-                  var authors=(c.getAttribute('data-authors')||'').split(',');
                   var t=c.getAttribute('data-title')||'';
                   var mc=activeCat==='all'||cats.indexOf(activeCat)!==-1;
-                  var ma=activeAuthor==='all'||authors.indexOf(activeAuthor)!==-1;
                   var ms=!q||t.indexOf(q)!==-1;
-                  c.style.display=(mc&&ma&&ms)?'':'none';
+                  c.style.display=(mc&&ms)?'':'none';
                 });
               }
               filters.forEach(function(b){
@@ -352,43 +355,16 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
                   run();
                 });
               });
-              authorFilters.forEach(function(b){
-                b.addEventListener('click',function(){
-                  authorFilters.forEach(function(x){x.classList.remove('active');});
-                  b.classList.add('active');
-                  activeAuthor=b.getAttribute('data-author-filter');
-                  run();
-                });
-              });
               if(activeCat!=='all'){
                 filters.forEach(function(b){
                   b.classList.remove('active');
                   if(b.getAttribute('data-filter')===activeCat)b.classList.add('active');
                 });
               }
-              if(activeAuthor!=='all'){
-                authorFilters.forEach(function(b){
-                  b.classList.remove('active');
-                  if(b.getAttribute('data-author-filter')===activeAuthor)b.classList.add('active');
-                });
-              }
               if(search)search.addEventListener('input',run);
               run();
             })();
           </script>` }} />
-        )}
-
-        {/* View all CTA */}
-        {content.showViewAll !== false && posts.length > 0 && (
-          <div className={cn("mt-10", style.align === 'center' ? "text-center" : style.align === 'right' ? "text-right" : "text-left")}>
-            <a
-              href={`${blogLangPrefix}/blog`}
-              className="inline-flex items-center gap-2 font-semibold transition-opacity hover:opacity-80"
-              style={{ background: pColor, color: '#fff', padding: '0.65em 1.4em', borderRadius: '0.6em', fontSize: '0.875rem' }}
-            >
-              Vedi tutti gli articoli <ArrowRight size={14} />
-            </a>
-          </div>
         )}
       </div>
     </section>

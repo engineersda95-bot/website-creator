@@ -83,13 +83,6 @@ export function generateBlogListingHtml(
     </div>
   ` : '';
 
-  const allAuthors = [...new Set(publishedPosts.flatMap(p => p.authors || []).filter(Boolean))];
-  const authorFilters = allAuthors.length > 1 ? `
-    <div class="flex flex-wrap gap-2" id="blog-author-filters" style="margin-bottom: 32px;">
-      <button class="blog-filter active" data-author-filter="all" style="padding: 6px 16px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid color-mix(in srgb, ${themeText} 15%, transparent); transition: all 0.2s;">Tutti gli autori</button>
-      ${allAuthors.map(a => `<button class="blog-filter" data-author-filter="${a.name.toLowerCase()}" style="padding: 6px 16px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid color-mix(in srgb, ${themeText} 15%, transparent); transition: all 0.2s;">${a.name}</button>`).join('\n')}
-    </div>
-  ` : '';
 
   return `<!DOCTYPE html>
 <html lang="${settings?.defaultLanguage || 'it'}" class="scroll-smooth">
@@ -151,8 +144,6 @@ export function generateBlogListingHtml(
     ${publishedPosts.length > 3 ? `<input type="text" class="blog-search" id="blog-search" placeholder="Cerca articoli..." style="margin-bottom: 24px;" />` : ''}
 
     ${categoryFilters}
-    ${categoryFilters && authorFilters ? `<div style="width:100%;height:1px;background:color-mix(in srgb, ${themeText} 10%, transparent);margin-bottom:16px;"></div>` : ''}
-    ${authorFilters}
 
     ${publishedPosts.length === 0 ? `
       <div style="text-align: center; padding: 80px 0; opacity: 0.3;">
@@ -173,18 +164,12 @@ export function generateBlogListingHtml(
     (function() {
       var cards = document.querySelectorAll('.blog-card');
       var catFilters = document.querySelectorAll('[data-filter]');
-      var authorBtns = document.querySelectorAll('[data-author-filter]');
       var search = document.getElementById('blog-search');
       var empty = document.getElementById('blog-empty');
       var activeCat = 'all';
-      var activeAuthor = 'all';
 
-      // Check for ?author= or ?category= URL params
       try {
-        var params = new URLSearchParams(window.location.search);
-        var urlAuthor = params.get('author');
-        if (urlAuthor) activeAuthor = decodeURIComponent(urlAuthor).toLowerCase();
-        var urlCat = params.get('category');
+        var urlCat = new URLSearchParams(window.location.search).get('category');
         if (urlCat) activeCat = decodeURIComponent(urlCat).toLowerCase();
       } catch(e) {}
 
@@ -193,12 +178,10 @@ export function generateBlogListingHtml(
         var visible = 0;
         cards.forEach(function(card) {
           var cats = (card.getAttribute('data-category') || '').split(',');
-          var authors = (card.getAttribute('data-authors') || '').split(',');
           var title = card.getAttribute('data-title');
           var matchCat = activeCat === 'all' || cats.indexOf(activeCat) !== -1;
-          var matchAuthor = activeAuthor === 'all' || authors.indexOf(activeAuthor) !== -1;
           var matchSearch = !query || title.indexOf(query) !== -1;
-          if (matchCat && matchAuthor && matchSearch) { card.classList.remove('hidden'); visible++; }
+          if (matchCat && matchSearch) { card.classList.remove('hidden'); visible++; }
           else { card.classList.add('hidden'); }
         });
         if (empty) empty.style.display = visible === 0 ? 'block' : 'none';
@@ -213,26 +196,10 @@ export function generateBlogListingHtml(
         });
       });
 
-      authorBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          authorBtns.forEach(function(b) { b.classList.remove('active'); });
-          btn.classList.add('active');
-          activeAuthor = btn.getAttribute('data-author-filter');
-          applyFilters();
-        });
-      });
-
-      // Pre-select matching buttons from URL params
       if (activeCat !== 'all') {
         catFilters.forEach(function(b) {
           b.classList.remove('active');
           if (b.getAttribute('data-filter') === activeCat) b.classList.add('active');
-        });
-      }
-      if (activeAuthor !== 'all') {
-        authorBtns.forEach(function(b) {
-          b.classList.remove('active');
-          if (b.getAttribute('data-author-filter') === activeAuthor) b.classList.add('active');
         });
       }
 
@@ -247,13 +214,36 @@ export function generateBlogListingHtml(
 /**
  * Generate a single blog post page (/blog/[slug].html)
  */
+/** Inject id attributes into h2/h3/h4 headings for TOC anchor links */
+function injectHeadingIds(html: string): string {
+  const counts: Record<string, number> = {};
+  return html.replace(/<(h[234])(.*?)>([\s\S]*?)<\/\1>/gi, (_, tag, attrs, inner) => {
+    const text = inner.replace(/<[^>]+>/g, '').trim();
+    const base = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'heading';
+    counts[base] = (counts[base] || 0) + 1;
+    const id = counts[base] === 1 ? base : `${base}-${counts[base]}`;
+    return `<${tag}${attrs} id="${id}">${inner}</${tag}>`;
+  });
+}
+
+/** Extract TOC items from HTML with injected ids */
+function extractTocItems(html: string): { level: number; text: string; id: string }[] {
+  const items: { level: number; text: string; id: string }[] = [];
+  const regex = /<h([234])[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h[234]>/gi;
+  let match;
+  while ((match = regex.exec(html)) !== null) {
+    items.push({ level: parseInt(match[1]), text: match[3].replace(/<[^>]+>/g, '').trim(), id: match[2] });
+  }
+  return items;
+}
+
 export function generateBlogPostHtml(
   post: BlogPost,
-  allPosts: BlogPost[],
   project: Project,
   langPrefix: string = '',
   allPages: Page[] = [],
-  siteGlobals: SiteGlobal[] = []
+  siteGlobals: SiteGlobal[] = [],
+  isStatic: boolean = true
 ): string {
   const settings = (project?.settings || {}) as ProjectSettings;
   const font = settings?.fontFamily || 'Outfit';
@@ -264,8 +254,17 @@ export function generateBlogPostHtml(
   const themeBg = isDark ? (settings?.themeColors?.dark?.bg || '#0c0c0e') : (settings?.themeColors?.light?.bg || '#ffffff');
   const themeText = isDark ? (settings?.themeColors?.dark?.text || '#ffffff') : (settings?.themeColors?.light?.text || '#000000');
 
+  const bpd = settings?.blogPostDisplay || {};
+  const coverMode = bpd.coverImageMode || 'hero';
+  const bodyMaxWidth = bpd.bodyMaxWidth ?? null; // null = 100% width
+  const bodyPaddingX = bpd.bodyPaddingX ?? 24;
+  const bodyPaddingXMobile = bpd.bodyPaddingXMobile ?? 16;
+  const bodyPaddingY = bpd.bodyPaddingY ?? 80;
+  const bodyPaddingYMobile = bpd.bodyPaddingYMobile ?? 48;
+  const bodyMaxWidthCss = bodyMaxWidth ? `max-width: ${bodyMaxWidth}px;` : 'max-width: 100%;';
+
   const date = new Date(post.published_at || post.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
-  const coverUrl = post.cover_image ? resolveImageUrl(post.cover_image, project, {}, true) : '';
+  const coverUrl = post.cover_image ? resolveImageUrl(post.cover_image, project, {}, isStatic) : '';
   const ogImage = post.seo?.image || coverUrl || '';
   const seoTitle = post.seo?.title || post.title;
   const seoDesc = post.seo?.description || post.excerpt;
@@ -288,38 +287,29 @@ export function generateBlogPostHtml(
     }
   }
 
-  // Render body blocks (markdown → HTML)
-  const bodyHtml = (post.blocks || []).map(block => {
+  // Render body blocks (markdown → HTML), inject heading ids
+  const rawBodyHtml = (post.blocks || []).map(block => {
     if (block.type === 'text' && block.content?.text) {
       const text = block.content.text;
-      // Detect if content is markdown (no HTML tags) or legacy HTML
       const isMarkdown = !/<[a-z][\s\S]*>/i.test(text.trim().slice(0, 50));
       const rendered = isMarkdown ? marked.parse(text, { breaks: true }) as string : text;
-      return `<div class="blog-body rt-content" style="max-width: 100%;">${rendered}</div>`;
+      return rendered;
     }
     return '';
   }).join('\n');
 
-  // Related posts (same category, max 3)
-  const related = allPosts
-    .filter(p => p.id !== post.id && p.status === 'published' && (p.categories || []).some(c => (post.categories || []).includes(c)))
-    .slice(0, 3);
+  const bodyHtmlWithIds = injectHeadingIds(rawBodyHtml);
+  const bodyHtml = `<div class="blog-body rt-content" style="max-width: 100%;">${bodyHtmlWithIds}</div>`;
 
-  const relatedHtml = related.length > 0 ? `
-    <div style="margin-top: 80px; padding-top: 40px; border-top: 1px solid color-mix(in srgb, ${themeText} 8%, transparent);">
-      <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 24px;">Articoli correlati</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 24px;">
-        ${related.map(r => {
-          const rCover = r.cover_image ? resolveImageUrl(r.cover_image, project, {}, true) : '';
-          return `
-            <a href="${langPrefix}/blog/${r.slug}" style="display: block;">
-              ${rCover ? `<div style="aspect-ratio: 16/10; border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: color-mix(in srgb, ${themeText} 5%, transparent);"><img src="${rCover}" alt="${r.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;" /></div>` : ''}
-              <h4 style="font-size: 14px; font-weight: 600;">${r.title}</h4>
-            </a>
-          `;
-        }).join('\n')}
-      </div>
-    </div>
+  // TOC
+  const showToc = bpd.showToc === true;
+  const tocItems = showToc ? extractTocItems(bodyHtmlWithIds) : [];
+  const tocHtml = tocItems.length > 0 ? `
+    <nav class="blog-toc" aria-label="Indice dei contenuti">
+      <ol class="blog-toc-list">
+        ${tocItems.map(item => `<li class="blog-toc-item blog-toc-level-${item.level}"><a href="#${item.id}" class="blog-toc-link">${item.text}</a></li>`).join('\n        ')}
+      </ol>
+    </nav>
   ` : '';
 
   return `<!DOCTYPE html>
@@ -360,7 +350,7 @@ export function generateBlogPostHtml(
   })}
   </script>
 
-  <link rel="icon" href="${resolveImageUrl(settings?.favicon, project || null, {}, true) || '/favicon.ico'}">
+  <link rel="icon" href="${resolveImageUrl(settings?.favicon, project || null, {}, isStatic) || '/favicon.ico'}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -373,6 +363,7 @@ export function generateBlogPostHtml(
       --global-h1-fs: ${toPx(settings?.typography?.h1Size, '2.5rem')};
       --global-h2-fs: ${toPx(settings?.typography?.h2Size, '1.75rem')};
       --global-h3-fs: ${toPx(settings?.typography?.h3Size, '1.35rem')};
+      --global-h4-fs: ${toPx(settings?.typography?.h4Size, '1.05rem')};
       --global-body-fs: ${toPx(settings?.typography?.bodySize, '1rem')};
     }
     ${settings?.responsive?.tablet?.typography ? `@media (max-width: 1024px) { :root {
@@ -389,24 +380,44 @@ export function generateBlogPostHtml(
     } }` : ''}
     body { font-family: var(--font-main); background: ${themeBg}; color: ${themeText}; font-size: var(--global-body-fs); }
     article, article * { font-family: inherit; box-sizing: border-box; }
-    .blog-body p { margin-bottom: 1.2em; line-height: 1.75; }
-    .blog-body h2 { font-size: var(--global-h2-fs); font-weight: 700; margin: 2em 0 0.5em; line-height: 1.2; }
-    .blog-body h3 { font-size: var(--global-h3-fs); font-weight: 600; margin: 1.5em 0 0.5em; line-height: 1.2; }
-    .blog-body ul, .blog-body ol { padding-left: 1.5em; margin-bottom: 1.2em; }
-    .blog-body li { margin-bottom: 0.4em; }
+    .blog-body p { font-size: var(--global-body-fs); margin-bottom: 0.6em; line-height: 1.7; }
+    .blog-body br { display: block; content: ''; margin-top: 0.3em; }
+    .blog-body h1 { font-size: var(--global-h1-fs); font-weight: 800; margin: 0 0 0.4em; line-height: 1.1; letter-spacing: -0.02em; }
+    .blog-body h2 { font-size: var(--global-h2-fs); font-weight: 700; margin: 0 0 0.3em; line-height: 1.2; }
+    .blog-body h3 { font-size: var(--global-h3-fs); font-weight: 600; margin: 0 0 0.25em; line-height: 1.2; }
+    .blog-body h4 { font-size: var(--global-h4-fs); font-weight: 600; margin: 0 0 0.2em; line-height: 1.2; }
+    .blog-body ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1.2em; }
+    .blog-body ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1.2em; }
+    .blog-body ul ul { list-style-type: circle; }
+    .blog-body ul ul ul { list-style-type: square; }
+    .blog-body li { font-size: var(--global-body-fs); margin-bottom: 0.4em; display: list-item; }
     .blog-body blockquote { border-left: 3px solid ${pColor}; padding-left: 1em; margin: 1.5em 0; opacity: 0.8; font-style: italic; }
-    .blog-body img { max-width: 100%; border-radius: 12px; margin: 1.5em 0; }
+    .blog-body img:not([data-inline-image]) { max-width: 100%; border-radius: 12px; margin: 1.5em 0; }
     .blog-body a { color: ${pColor}; text-decoration: underline; }
     .blog-body strong { font-weight: 600; }
+    .blog-body [data-inline-image-wrap] { display: flex; margin: 1.5em 0; }
+    .blog-body [data-inline-image-wrap][data-align="left"] { justify-content: flex-start; }
+    .blog-body [data-inline-image-wrap][data-align="center"] { justify-content: center; }
+    .blog-body [data-inline-image-wrap][data-align="right"] { justify-content: flex-end; }
+    .blog-body [data-inline-image] { height: auto; border-radius: 8px; display: block; max-width: 100%; }
+    .blog-toc { background: color-mix(in srgb, ${themeText} 4%, transparent); border-radius: 12px; padding: 16px 20px; margin: 0 0 40px; }
+    .blog-toc-title { display: none; }
+    .blog-toc-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+    .blog-toc-item { margin: 0; }
+    .blog-toc-level-3 { padding-left: 12px; }
+    .blog-toc-level-4 { padding-left: 24px; }
+    .blog-toc-link { font-size: 0.85rem; color: inherit; text-decoration: none; opacity: 0.7; transition: opacity 0.15s; }
+    .blog-toc-link:hover { opacity: 1; }
+    @media (max-width: 768px) { article { padding-left: ${bodyPaddingXMobile}px !important; padding-right: ${bodyPaddingXMobile}px !important; padding-top: ${bodyPaddingYMobile}px !important; padding-bottom: ${bodyPaddingYMobile}px !important; } }
   </style>
 </head>
 <body>
   ${navHtml}
 
-  ${coverUrl ? `<div style="width: 100%; aspect-ratio: 3/1; overflow: hidden;"><img src="${coverUrl}" alt="${post.title}" loading="eager" fetchpriority="high" style="width: 100%; height: 100%; object-fit: cover;" /></div>` : ''}
+  ${coverUrl && coverMode === 'hero' ? `<div style="width: 100%; aspect-ratio: 3/1; overflow: hidden;"><img src="${coverUrl}" alt="${post.title}" loading="eager" fetchpriority="high" style="width: 100%; height: 100%; object-fit: cover;" /></div>` : ''}
 
-  <article style="max-width: 720px; margin: 0 auto; padding: 48px 24px;">
-    <a href="${langPrefix}/blog" style="font-size: 12px; font-weight: 600; opacity: 0.4; margin-bottom: 24px; display: inline-block; text-decoration: none; color: inherit;">&larr; Torna al blog</a>
+  <article style="${bodyMaxWidthCss} margin: 0 auto; padding: ${bodyPaddingY}px ${bodyPaddingX}px;">
+    ${coverUrl && coverMode === 'contained' ? `<div style="border-radius: 16px; overflow: hidden; margin-bottom: 40px; aspect-ratio: 3/1;"><img src="${coverUrl}" alt="${post.title}" loading="eager" fetchpriority="high" style="width: 100%; height: 100%; object-fit: cover;" /></div>` : ''}
 
     ${(post.categories || []).length > 0 ? `<div style="margin-bottom: 12px;"><span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.5;">${(post.categories || []).join(' · ')}</span></div>` : ''}
 
@@ -419,9 +430,9 @@ export function generateBlogPostHtml(
       <span>${date}</span>
     </div>
 
-    ${bodyHtml}
+    ${tocHtml}
 
-    ${relatedHtml}
+    ${bodyHtml}
   </article>
 
   ${footerHtml}

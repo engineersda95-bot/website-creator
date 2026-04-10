@@ -3,7 +3,7 @@
  * Aggiungi/rimuovi/riordina i check facilmente qui.
  */
 
-import { Project, Page, SiteGlobal } from '@/types/editor';
+import { Project, Page, SiteGlobal, BlockType } from '@/types/editor';
 
 export interface CheckItem {
   id: string;
@@ -15,6 +15,8 @@ export interface CheckItem {
   check: (ctx: CheckContext) => boolean;
   // If true, shown as reminder but not counted in the score
   informational?: boolean;
+  // If returns true, the check is skipped entirely (not shown, not counted)
+  skipIf?: (ctx: CheckContext) => boolean;
   // Optional: link/action to fix
   fix?: {
     label: string;
@@ -88,9 +90,9 @@ const GLOBAL_CHECKS: CheckItem[] = [
     description: 'Il titolo dovrebbe essere tra 40 e 70 caratteri (ideale: 50-60). Attuale: troppo corto o lungo.',
     category: 'seo',
     scope: 'global',
+    skipIf: ({ project }) => !((project.settings as any)?.metaTitle?.trim()),
     check: ({ project }) => {
       const title = (project.settings as any)?.metaTitle?.trim() || '';
-      if (!title) return true; // non applicabile — il check presenza gestisce il caso vuoto
       return title.length >= 40 && title.length <= 70;
     },
     fix: { label: 'Correggi titolo', action: 'open-section', target: 'seo' },
@@ -110,9 +112,9 @@ const GLOBAL_CHECKS: CheckItem[] = [
     description: 'La descrizione dovrebbe essere tra 110 e 160 caratteri. Attuale: troppo corta o lunga.',
     category: 'seo',
     scope: 'global',
+    skipIf: ({ project }) => !((project.settings as any)?.metaDescription?.trim()),
     check: ({ project }) => {
       const desc = (project.settings as any)?.metaDescription?.trim() || '';
-      if (!desc) return true; // non applicabile — il check presenza gestisce il caso vuoto
       return desc.length >= 110 && desc.length <= 160;
     },
     fix: { label: 'Correggi descrizione', action: 'open-section', target: 'seo' },
@@ -189,25 +191,9 @@ const GLOBAL_CHECKS: CheckItem[] = [
 
 // ─── PAGE CHECKS (per-page) ─────────────────────────────────────────────
 
+const CONTENT_BLOCKS: BlockType[] = ['hero', 'text', 'image', 'image-text', 'gallery', 'features', 'contact', 'reviews', 'product-carousel', 'faq', 'quote', 'cards', 'benefits', 'how-it-works', 'pricing', 'promo', 'blog-list', 'logos'];
+
 const PAGE_CHECKS: CheckItem[] = [
-  {
-    id: 'page-has-cta',
-    label: 'Call-to-action presente',
-    description: 'Ogni pagina dovrebbe avere almeno un pulsante che guida il visitatore',
-    category: 'content',
-    scope: 'page',
-    check: ({ page }) => !!page?.blocks?.some(b => b.content?.cta || b.type === 'contact'),
-  },
-  {
-    id: 'page-has-images',
-    label: 'Immagini presenti',
-    description: 'Le immagini rendono il contenuto più attraente e professionale',
-    category: 'content',
-    scope: 'page',
-    check: ({ page }) => !!page?.blocks?.some(b =>
-      b.content?.backgroundImage || b.content?.image || (b.content?.images?.length > 0 && b.content.images.some((i: any) => i.image))
-    ),
-  },
   {
     id: 'page-seo-title',
     label: 'Titolo SEO della pagina',
@@ -223,9 +209,9 @@ const PAGE_CHECKS: CheckItem[] = [
     description: 'Il titolo della pagina dovrebbe essere tra 40 e 70 caratteri (ideale: 50-60)',
     category: 'seo',
     scope: 'page',
+    skipIf: ({ page }) => !((page?.seo as any)?.title?.trim()),
     check: ({ page }) => {
       const title = (page?.seo as any)?.title?.trim() || '';
-      if (!title) return true; // non applicabile — il check presenza gestisce il caso vuoto
       return title.length >= 40 && title.length <= 70;
     },
     fix: { label: 'Modifica SEO pagina', action: 'open-section', target: 'seo' },
@@ -245,9 +231,9 @@ const PAGE_CHECKS: CheckItem[] = [
     description: 'La descrizione della pagina dovrebbe essere tra 110 e 160 caratteri',
     category: 'seo',
     scope: 'page',
+    skipIf: ({ page }) => !((page?.seo as any)?.description?.trim()),
     check: ({ page }) => {
       const desc = (page?.seo as any)?.description?.trim() || '';
-      if (!desc) return true; // non applicabile — il check presenza gestisce il caso vuoto
       return desc.length >= 110 && desc.length <= 160;
     },
     fix: { label: 'Modifica SEO pagina', action: 'open-section', target: 'seo' },
@@ -275,20 +261,24 @@ export function getPageChecks(): CheckItem[] {
 
 export function runGlobalChecks(project: Project, pages: Page[], siteGlobals?: SiteGlobal[]): CheckResult[] {
   const ctx: CheckContext = { project, pages, siteGlobals };
-  return GLOBAL_CHECKS.map(item => ({
-    item,
-    passed: item.check(ctx),
-    href: item.href ? item.href(ctx) : undefined,
-  }));
+  return GLOBAL_CHECKS
+    .filter(item => !item.skipIf || !item.skipIf(ctx))
+    .map(item => ({
+      item,
+      passed: item.check(ctx),
+      href: item.href ? item.href(ctx) : undefined,
+    }));
 }
 
 export function runPageChecks(project: Project, pages: Page[], page: Page): CheckResult[] {
   const ctx: CheckContext = { project, pages, page };
-  return PAGE_CHECKS.map(item => ({
-    item,
-    passed: item.check(ctx),
-    href: item.href ? item.href(ctx) : undefined,
-  }));
+  return PAGE_CHECKS
+    .filter(item => !item.skipIf || !item.skipIf(ctx))
+    .map(item => ({
+      item,
+      passed: item.check(ctx),
+      href: item.href ? item.href(ctx) : undefined,
+    }));
 }
 
 export function getCompletionScore(results: CheckResult[]): number {
