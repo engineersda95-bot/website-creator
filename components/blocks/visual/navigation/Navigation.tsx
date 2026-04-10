@@ -70,6 +70,7 @@ export interface NavigationProps {
   viewport?: string;
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
+  language?: string;
 }
 
 const StaticMenuIcon = () => (
@@ -88,7 +89,8 @@ export const Navigation: React.FC<NavigationProps> = ({
   allPages,
   viewport,
   isStatic,
-  imageMemoryCache
+  imageMemoryCache,
+  language
 }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
   const blockId = `nav-${block.id.replace(/[^a-zA-Z0-9]/g, '')}`;
@@ -130,9 +132,14 @@ export const Navigation: React.FC<NavigationProps> = ({
 
   const LogoWrapper = ({ children }: { children: React.ReactNode }) => {
     if (isEditing) return <div className="cursor-pointer flex items-center gap-3">{children}</div>;
+    
+    const defLang = project?.settings?.defaultLanguage || 'it';
+    const currentLang = language || (content as any)._language || defLang;
+    const homeUrl = currentLang === defLang ? '/' : `/${currentLang}`;
+    
     return (
       <a 
-        {...formatLink(content.logoLinkHome !== false ? (content.logoUrl || '/') : undefined, !isEditing)} 
+        {...formatLink(content.logoLinkHome !== false ? (content.logoUrl || homeUrl) : undefined, !isEditing)} 
         className={cn("no-underline flex items-center gap-3", content.logoLinkHome === false && "pointer-events-none")}
       >
         {children}

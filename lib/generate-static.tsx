@@ -353,6 +353,7 @@ export function renderBlock(block: Block, allPages: Page[], project: Project | u
       isStatic={true}
       imageMemoryCache={{}}
       allBlogPosts={blogPosts || []}
+      language={pageLang}
     />
   ));
 }

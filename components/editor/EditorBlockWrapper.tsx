@@ -111,6 +111,7 @@ export const EditorBlockWrapper = React.memo(({
         imageMemoryCache={imageMemoryCache}
         onInlineEdit={onInlineEdit}
         allBlogPosts={editorBlogPosts}
+        language={currentPage?.language}
       />
 
       {/* Block Controls — hidden for global blocks (navigation/footer) */}
