@@ -12,7 +12,8 @@ import {
   ArrowLeft, Save, Loader2, Eye, EyeOff, Trash2,
   Settings, Search,
   X, Mic, MicOff, Sparkles, RotateCcw,
-  Bold, Italic, Heading2, Heading3, List, ListOrdered, Quote, Link as LinkIcon, Code, Minus
+  Bold, Italic, Heading2, Heading3, List, ListOrdered, Quote, Link as LinkIcon, Code, Minus,
+  PanelLeft
 } from 'lucide-react';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { useEditorStore } from '@/store/useEditorStore';
@@ -108,8 +109,8 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
       if (mode === 'ai') {
         const translated = await translateBlogPostWithAI({
           title: post.title,
-          excerpt: post.excerpt,
-          body: (post.blocks[0] as any)?.content?.text || '',
+          excerpt: post.excerpt ?? '',
+          body: (post.blocks?.[0] as any)?.content?.text || '',
           sourceLang: post.language || 'it',
           targetLang,
         });
@@ -147,7 +148,7 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
 
   // ── TipTap WYSIWYG editor ──────────────────────────────────────────────────
   // Convert legacy markdown to HTML on first load (backward compat)
-  const rawBody = (initialPost.blocks[0] as any)?.content?.text || '';
+  const rawBody = (initialPost.blocks?.[0] as any)?.content?.text || '';
   const initialHtml = rawBody.trim().startsWith('<') || rawBody === ''
     ? rawBody
     : marked.parse(rawBody, { breaks: true }) as string;
@@ -167,7 +168,7 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       const textBlock = {
-        id: post.blocks[0]?.id || crypto.randomUUID(),
+        id: post.blocks?.[0]?.id || crypto.randomUUID(),
         type: 'text' as const,
         content: { text: html },
         style: {},
@@ -288,7 +289,7 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
     const html = marked.parse(aiResult, { breaks: true }) as string;
     editor?.commands.setContent(html);
     const textBlock = {
-      id: post.blocks[0]?.id || crypto.randomUUID(),
+      id: post.blocks?.[0]?.id || crypto.randomUUID(),
       type: 'text' as const,
       content: { text: html },
       style: {},
@@ -640,7 +641,7 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
                     <div className="flex flex-wrap gap-1.5">
                       {(post.authors || []).map((author, i) => (
                         <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 text-zinc-700 text-[11px] font-semibold rounded-lg">
-                          {author}
+                          {author.name}
                           <button onClick={() => updatePost({ authors: (post.authors || []).filter((_, idx) => idx !== i) })} className="text-zinc-400 hover:text-red-500 transition-colors">
                             <X size={10} />
                           </button>
@@ -655,15 +656,15 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
                         if (e.key === 'Enter') {
                           e.preventDefault();
                           const val = (e.target as HTMLInputElement).value.trim();
-                          if (val && !(post.authors || []).includes(val)) {
-                            updatePost({ authors: [...(post.authors || []), val] });
+                          if (val && !(post.authors || []).some(a => a.name === val)) {
+                            updatePost({ authors: [...(post.authors || []), { name: val, slug: val.toLowerCase().replace(/\s+/g, '-') }] });
                             (e.target as HTMLInputElement).value = '';
                           }
                         }
                       }}
                     />
                     <datalist id="existing-authors">
-                      {existingAuthors.filter(a => !(post.authors || []).includes(a)).map(a => (
+                      {existingAuthors.filter(a => !(post.authors || []).some(auth => auth.name === a)).map(a => (
                         <option key={a} value={a} />
                       ))}
                     </datalist>
