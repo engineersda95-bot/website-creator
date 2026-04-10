@@ -10,17 +10,19 @@ import {
   getCompletionScore,
   CATEGORY_LABELS,
   CATEGORY_COLORS,
+  runBlogPostChecks,
 } from '@/lib/site-checklist';
-import { Project, Page } from '@/types/editor';
+import { Project, Page, BlogPost } from '@/types/editor';
 
 interface ChecklistModalProps {
   project: Project;
   pages: Page[];
   onClose: () => void;
   initialPageId?: string;
+  initialPost?: BlogPost;
 }
 
-export const ChecklistModal: React.FC<ChecklistModalProps> = ({ project, pages, onClose, initialPageId }) => {
+export const ChecklistModal: React.FC<ChecklistModalProps> = ({ project, pages, onClose, initialPageId, initialPost }) => {
   const [activePageId, setActivePageId] = useState<string | null>(initialPageId || null);
 
   const globalResults = useMemo(() => runGlobalChecks(project, pages), [project, pages]);
@@ -116,6 +118,10 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({ project, pages, 
   const singlePageResults = singlePage ? runPageChecks(project, pages, singlePage) : null;
   const singlePageScore = singlePageResults ? getCompletionScore(singlePageResults) : 0;
 
+  // Single post mode
+  const singlePostResults = initialPost ? runBlogPostChecks(project, initialPost) : null;
+  const singlePostScore = singlePostResults ? getCompletionScore(singlePostResults) : 0;
+
   if (singlePage && singlePageResults) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -137,6 +143,33 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({ project, pages, 
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
             {renderResults(singlePageResults)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (initialPost && singlePostResults) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative w-full max-w-lg max-h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200 flex flex-col">
+          <div className="px-6 py-4 flex items-center justify-between border-b border-zinc-100 shrink-0">
+            <div className="flex items-center gap-4">
+              <ScoreRing score={singlePostScore} size={42} />
+              <div>
+                <h2 className="text-sm font-bold text-zinc-900">{initialPost.title || initialPost.slug}</h2>
+                <p className="text-[11px] text-zinc-400">
+                  {singlePostScore === 100 ? 'Articolo completo!' : `${singlePostResults.filter(r => r.passed).length}/${singlePostResults.length} completati`}
+                </p>
+              </div>
+            </div>
+            <button onClick={onClose} className="p-1.5 hover:bg-zinc-100 rounded-md transition-colors text-zinc-400">
+              <X size={16} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
+            {renderResults(singlePostResults)}
           </div>
         </div>
       </div>

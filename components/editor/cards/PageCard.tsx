@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FileText, Clock, Languages, Loader2, Trash2, Search } from 'lucide-react';
 import { Page } from '@/types/editor';
 import { cn } from '@/lib/utils';
+import { ScoreBadge } from '@/components/shared/ScoreBadge';
 
 interface PageCardProps {
   page: Page;
@@ -60,18 +61,7 @@ export function PageCard({ page, projectId, formatDate, onOpenSeo, onDelete, onT
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-zinc-400 font-mono">/{page.slug}</span>
           {score !== undefined && (
-            <button
-              onClick={() => onScoreClick?.()}
-              className={cn(
-                "flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border transition-all hover:shadow-sm",
-                score === 100 ? "bg-emerald-50 text-emerald-600 border-emerald-200" :
-                score >= 60 ? "bg-blue-50 text-blue-600 border-blue-200" :
-                "bg-amber-50 text-amber-600 border-amber-200"
-              )}
-              title="Completamento pagina"
-            >
-              {score}%
-            </button>
+            <ScoreBadge score={score} onClick={onScoreClick} />
           )}
         </div>
         <div className="flex items-center gap-1">

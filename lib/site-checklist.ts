@@ -33,6 +33,8 @@ export interface CheckContext {
   siteGlobals?: SiteGlobal[];
   // For page-scoped checks
   page?: Page;
+  // For blog-scoped checks
+  blogPost?: BlogPost;
 }
 
 export interface CheckResult {
@@ -249,6 +251,64 @@ const PAGE_CHECKS: CheckItem[] = [
   },
 ];
 
+// ─── BLOG CHECKS (per-post) ─────────────────────────────────────────────
+
+const BLOG_POST_CHECKS: CheckItem[] = [
+  {
+    id: 'blog-seo-title',
+    label: 'Titolo SEO articolo',
+    description: 'Un titolo specifico per questo articolo migliora il posizionamento',
+    category: 'seo',
+    scope: 'page', // using 'page' scope conceptually for localized checking
+    check: ({ blogPost }) => !!(blogPost?.seo as any)?.title?.trim() || !!blogPost?.title?.trim(),
+    fix: { label: 'Modifica SEO articolo', action: 'open-section', target: 'seo' },
+  },
+  {
+    id: 'blog-seo-title-quality',
+    label: 'Lunghezza titolo SEO ottimale',
+    description: 'Il titolo dell\'articolo dovrebbe essere tra 40 e 70 caratteri (ideale: 50-60)',
+    category: 'seo',
+    scope: 'page',
+    skipIf: ({ blogPost }) => !((blogPost?.seo as any)?.title?.trim() || blogPost?.title?.trim()),
+    check: ({ blogPost }) => {
+      const title = (blogPost?.seo as any)?.title?.trim() || blogPost?.title?.trim() || '';
+      return title.length >= 40 && title.length <= 70;
+    },
+    fix: { label: 'Modifica SEO articolo', action: 'open-section', target: 'seo' },
+  },
+  {
+    id: 'blog-seo-description',
+    label: 'Descrizione SEO articolo',
+    description: 'La descrizione appare nei risultati di ricerca per questo articolo',
+    category: 'seo',
+    scope: 'page',
+    check: ({ blogPost }) => !!(blogPost?.seo as any)?.description?.trim() || !!blogPost?.excerpt?.trim(),
+    fix: { label: 'Modifica SEO articolo', action: 'open-section', target: 'seo' },
+  },
+  {
+    id: 'blog-seo-desc-quality',
+    label: 'Lunghezza descrizione SEO ottimale',
+    description: 'La descrizione dell\'articolo dovrebbe essere tra 110 e 160 caratteri',
+    category: 'seo',
+    scope: 'page',
+    skipIf: ({ blogPost }) => !((blogPost?.seo as any)?.description?.trim() || blogPost?.excerpt?.trim()),
+    check: ({ blogPost }) => {
+      const desc = (blogPost?.seo as any)?.description?.trim() || blogPost?.excerpt?.trim() || '';
+      return desc.length >= 110 && desc.length <= 160;
+    },
+    fix: { label: 'Modifica SEO articolo', action: 'open-section', target: 'seo' },
+  },
+  {
+    id: 'blog-seo-image',
+    label: 'Immagine social articolo',
+    description: 'Aggiungi un\'immagine di copertina o specifica per social network (Anteprime link)',
+    category: 'seo',
+    scope: 'page',
+    check: ({ blogPost }) => !!(blogPost?.seo as any)?.image?.trim() || !!blogPost?.cover_image?.trim(),
+    fix: { label: 'Aggiungi copertina o SEO', action: 'open-section', target: 'seo' },
+  },
+];
+
 // ─── API ─────────────────────────────────────────────────────────────────
 
 export function getGlobalChecks(): CheckItem[] {
@@ -273,6 +333,18 @@ export function runGlobalChecks(project: Project, pages: Page[], siteGlobals?: S
 export function runPageChecks(project: Project, pages: Page[], page: Page): CheckResult[] {
   const ctx: CheckContext = { project, pages, page };
   return PAGE_CHECKS
+    .filter(item => !item.skipIf || !item.skipIf(ctx))
+    .map(item => ({
+      item,
+      passed: item.check(ctx),
+      href: item.href ? item.href(ctx) : undefined,
+    }));
+}
+
+export function runBlogPostChecks(project: Project, post: BlogPost): CheckResult[] {
+  // Blog posts don't rely on full 'pages' array context right now for their specific SEO fields
+  const ctx: CheckContext = { project, pages: [], blogPost: post };
+  return BLOG_POST_CHECKS
     .filter(item => !item.skipIf || !item.skipIf(ctx))
     .map(item => ({
       item,

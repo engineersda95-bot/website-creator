@@ -4,9 +4,10 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { BlogPost } from '@/types/editor';
+import { Page, Project, BlogPost } from '@/types/editor';
 import { cn, toPx } from '@/lib/utils';
 import { toast } from '@/components/shared/Toast';
+import { SeoFields } from '@/components/shared/SeoFields';
 import { confirm } from '@/components/shared/ConfirmDialog';
 import {
   ArrowLeft, Save, Loader2, Eye, EyeOff, Trash2,
@@ -53,16 +54,28 @@ function SafeEditorContent({ editor }: { editor: any }) {
 
 export function BlogPostEditorClient({ initialUser, initialProject, initialPost }: BlogPostEditorClientProps) {
   const router = useRouter();
-  const { setProject, uploadImage } = useEditorStore();
+  const { setProject, uploadImage, isUploading } = useEditorStore();
 
   useEffect(() => {
     setProject(initialProject);
   }, [initialProject]);
 
   const handleCoverUpload = async (base64: string) => {
+    if (!base64) {
+      updatePost({ cover_image: '' });
+      return;
+    }
     const path = await uploadImage(base64);
-    if (path && !path.startsWith('data:')) updatePost({ cover_image: path });
-    else toast('Errore upload immagine', 'error');
+    if (path && !path.startsWith('data:')) {
+      const updates: Partial<BlogPost> = { cover_image: path };
+      // Se non c'è un'immagine SEO impostata, usiamo la copertina come default anche esplicito
+      if (!post.seo?.image) {
+        updates.seo = { ...(post.seo || {}), image: path };
+      }
+      updatePost(updates);
+    } else {
+      toast('Errore upload immagine', 'error');
+    }
   };
 
   const [post, setPost] = useState<BlogPost>(initialPost);
@@ -1193,27 +1206,18 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
 
             {sidebarSection === 'seo' && (
               <>
-                <div>
-                  <label className={labelClass}>Titolo SEO</label>
-                  <input value={post.seo?.title || ''} onChange={(e) => updateSeo({ title: e.target.value })} className={inputClass} placeholder={post.title || 'Titolo per Google'} />
-                  <p className="text-[9px] text-zinc-400 mt-1">{(post.seo?.title || post.title || '').length}/60</p>
-                </div>
-                <div>
-                  <label className={labelClass}>Descrizione SEO</label>
-                  <textarea value={post.seo?.description || ''} onChange={(e) => updateSeo({ description: e.target.value })} className={cn(inputClass, "h-20 resize-none")} placeholder={post.excerpt || 'Descrizione per Google'} />
-                  <p className="text-[9px] text-zinc-400 mt-1">{(post.seo?.description || '').length}/160</p>
-                </div>
-                <div>
-                  <label className={labelClass}>Immagine OG</label>
-                  <input value={post.seo?.image || ''} onChange={(e) => updateSeo({ image: e.target.value })} className={inputClass} placeholder="Default: cover image" />
-                </div>
-                <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl">
-                  <div>
-                    <div className="text-[10px] font-bold text-zinc-700">Indicizzabile</div>
-                    <div className="text-[9px] text-zinc-400">Visibile su Google</div>
-                  </div>
-                  <input type="checkbox" checked={post.seo?.indexable !== false} onChange={(e) => updateSeo({ indexable: e.target.checked })} className="w-4 h-4 rounded border-zinc-300 text-zinc-900" />
-                </div>
+                <SeoFields
+                  seo={post.seo || {}}
+                  onChange={(updates) => updateSeo(updates)}
+                  project={initialProject}
+                  uploadImage={uploadImage}
+                  isUploading={isUploading}
+                  compact={true}
+                  allowIndexToggle={true}
+                  defaultImage={post.cover_image || ''}
+                  titlePlaceholder={post.title || 'Titolo per Google...'}
+                  descriptionPlaceholder={post.excerpt || 'Descrizione per Google...'}
+                />
 
                 {/* Google preview */}
                 <div className="p-3 bg-zinc-50 rounded-xl space-y-1">

@@ -3,51 +3,46 @@
 import React from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ImageUpload } from '@/components/shared/ImageUpload';
-import { resolveImageUrl } from '@/lib/image-utils';
-import { useEditorStore } from '@/store/useEditorStore';
 import { SeoFields } from '@/components/shared/SeoFields';
-import { Page } from '@/types/editor';
+import { BlogPost } from '@/types/editor';
 
-interface PageSeoModalProps {
-  page: Page;
+interface BlogPostSeoModalProps {
+  post: BlogPost;
   project: any;
   onClose: () => void;
-  updatePageSEO: (pageId: string, seo: any) => Promise<void>;
+  updateBlogPostSEO: (postId: string, seo: any) => Promise<void>;
   uploadImage: (val: string, filename?: string) => Promise<string>;
   isUploading: boolean;
 }
 
-export const PageSeoModal = ({ page, project, onClose, updatePageSEO, uploadImage, isUploading }: PageSeoModalProps) => {
+export const BlogPostSeoModal = ({ post, project, onClose, updateBlogPostSEO, uploadImage, isUploading }: BlogPostSeoModalProps) => {
   const [localSeo, setLocalSeo] = React.useState({
-    title: page.seo?.title || '',
-    description: page.seo?.description || '',
-    image: page.seo?.image || ''
+    title: post.seo?.title || post.title || '',
+    description: post.seo?.description || post.excerpt || '',
+    image: post.seo?.image || '',
+    indexable: post.seo?.indexable !== false
   });
 
   const [isSavingSeo, setIsSavingSeo] = React.useState(false);
 
   const handleSaveSeo = async () => {
     setIsSavingSeo(true);
-    await updatePageSEO(page.id, localSeo);
+    await updateBlogPostSEO(post.id, localSeo);
     setIsSavingSeo(false);
     onClose();
   };
 
-  const titleLen = localSeo.title?.length || 0;
-  const descLen = localSeo.description?.length || 0;
-
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-2xl bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300 border border-zinc-200/50">
-        <div className="px-8 py-6 flex items-center justify-between border-b border-zinc-100">
+      <div className="relative w-full max-w-2xl bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300 border border-zinc-200/50 flex flex-col max-h-full">
+        <div className="px-8 py-6 flex items-center justify-between border-b border-zinc-100 shrink-0">
           <div>
             <h2 className="text-xl font-bold text-zinc-900 tracking-tight">Impostazioni SEO</h2>
             <p className="text-xs text-zinc-400 mt-0.5 font-medium flex items-center gap-1.5">
-              <span className="px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 font-bold uppercase">{page.title}</span>
+              <span className="px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 font-bold uppercase">{post.title || 'Articolo'}</span>
               <span className="text-zinc-300">/</span>
-              <span className="font-mono">/{page.slug}</span>
+              <span className="font-mono">/blog/{post.slug}</span>
             </p>
           </div>
           <button
@@ -58,7 +53,7 @@ export const PageSeoModal = ({ page, project, onClose, updatePageSEO, uploadImag
           </button>
         </div>
 
-        <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <div className="p-8 space-y-8 overflow-y-auto custom-scrollbar flex-1">
           <SeoFields
             seo={localSeo}
             onChange={(updates) => setLocalSeo(prev => ({ ...prev, ...updates }))}
@@ -66,11 +61,14 @@ export const PageSeoModal = ({ page, project, onClose, updatePageSEO, uploadImag
             uploadImage={uploadImage}
             isUploading={isUploading}
             compact={false}
-            allowIndexToggle={false} // Assuming it wasn't there originally for page modal
+            allowIndexToggle={true}
+            defaultImage={post.cover_image || ''}
+            titlePlaceholder={post.title || 'Titolo per Google...'}
+            descriptionPlaceholder={post.excerpt || 'Descrizione per Google...'}
           />
         </div>
 
-        <div className="px-8 py-6 border-t border-zinc-100 flex items-center justify-between bg-zinc-50/50">
+        <div className="px-8 py-6 border-t border-zinc-100 flex items-center justify-between bg-zinc-50/50 shrink-0">
           <button
             onClick={onClose}
             className="px-6 py-2.5 text-sm font-bold text-zinc-500 hover:text-zinc-900 transition-colors uppercase tracking-widest active:scale-95"

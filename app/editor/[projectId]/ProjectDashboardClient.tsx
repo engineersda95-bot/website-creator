@@ -9,7 +9,7 @@ import {
   ArrowLeft, Plus, FileText, ExternalLink, Rocket, Save,
   Loader2, Trash2, Languages, LayoutGrid, Clock, Palette, Globe, X,
   Monitor, Tablet, Smartphone, Check, Settings,
-  CheckCircle2, Circle, ChevronDown, Bell, BookOpen, PenLine, Eye, EyeOff, Calendar
+  CheckCircle2, Circle, ChevronDown, Bell, BookOpen, PenLine, Eye, EyeOff, Calendar, Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { deployToCloudflare } from '@/app/actions/deploy';
@@ -22,6 +22,7 @@ import { Page, Project, BlogPost } from '@/types/editor';
 import { toast } from '@/components/shared/Toast';
 import { PageCard } from '@/components/editor/cards/PageCard';
 import { PageSeoModal } from '@/components/editor/modals/PageSeoModal';
+import { BlogPostSeoModal } from '@/components/editor/modals/BlogPostSeoModal';
 import { LanguageSection } from '@/components/blocks/sidebar/settings/LanguageSection';
 import { AdvancedSection } from '@/components/blocks/sidebar/settings/AdvancedSection';
 import { DomainSection } from '@/components/blocks/sidebar/settings/DomainSection';
@@ -33,7 +34,8 @@ import { TranslateBlogPostModal } from '@/components/editor/modals/TranslateBlog
 import type { UserLimits } from '@/lib/permissions';
 import { ChecklistModal } from '@/components/editor/ChecklistModal';
 import { CompletionBadge, SiteChecklist } from '@/components/editor/SiteChecklist';
-import { getCompletionScore, runGlobalChecks, runPageChecks, CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/site-checklist';
+import { getCompletionScore, runGlobalChecks, runPageChecks, runBlogPostChecks, CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/site-checklist';
+import { ScoreBadge } from '@/components/shared/ScoreBadge';
 
 
 const FontLoader = React.memo(({ font }: { font: string }) => {
@@ -111,7 +113,9 @@ export function ProjectDashboardClient({
   const [activeTab, setActiveTab] = useState<'pages' | 'blog' | 'checklist' | 'settings'>('pages');
   const [showChecklist, setShowChecklist] = useState(false);
   const [checklistPageId, setChecklistPageId] = useState<string | undefined>(undefined);
+  const [checklistPost, setChecklistPost] = useState<BlogPost | null>(null);
   const [seoOpenId, setSeoOpenId] = useState<string | null>(null);
+  const [seoOpenPostId, setSeoOpenPostId] = useState<string | null>(null);
   const [translatePage, setTranslatePage] = useState<Page | null>(null);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
   const [blogLangFilter, setBlogLangFilter] = useState<string>('all');
@@ -200,6 +204,14 @@ export function ProjectDashboardClient({
     setPages(pages.map(p => p.id === pageId ? { ...p, seo: newSeo } : p));
     // Persist to DB
     await supabase.from('pages').update({ seo: newSeo }).eq('id', pageId);
+  };
+
+  const handleUpdateBlogPostSEO = async (postId: string, seo: { title?: string; description?: string; image?: string, indexable?: boolean }) => {
+    const post = blogPosts.find(p => p.id === postId);
+    if (!post) return;
+    const newSeo = { ...(post.seo || {}), ...seo };
+    setBlogPosts(blogPosts.map(p => p.id === postId ? { ...p, seo: newSeo } : p));
+    await supabase.from('blog_posts').update({ seo: newSeo }).eq('id', postId);
   };
 
 
@@ -689,11 +701,14 @@ export function ProjectDashboardClient({
 
                       {/* Action bar — same style as PageCard */}
                       <div className="px-4 py-3 border-t border-zinc-100 flex items-center justify-between bg-zinc-50/30">
-                        <span className="text-[11px] text-zinc-400 font-mono">/blog/{post.slug}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-zinc-400 font-mono">/blog/{post.slug}</span>
+                          <ScoreBadge score={getCompletionScore(runBlogPostChecks(localProject, post))} onClick={() => { setChecklistPost(post); setShowChecklist(true); }} />
+                        </div>
                         <div className="flex items-center gap-1">
                           {isMultilingual && (
                             <button
-                              onClick={() => setTranslateBlogPost(post)}
+                              onClick={(e) => { e.preventDefault(); setTranslateBlogPost(post); }}
                               className="p-1.5 rounded-md text-zinc-400 hover:text-blue-500 hover:bg-white transition-all shadow-sm"
                               title="Traduci articolo"
                             >
@@ -701,7 +716,18 @@ export function ProjectDashboardClient({
                             </button>
                           )}
                           <button
-                            onClick={async () => {
+                            onClick={(e) => { e.preventDefault(); setSeoOpenPostId(post.id); }}
+                            className="p-1.5 rounded-md text-zinc-300 hover:text-zinc-500 hover:bg-white transition-all shadow-sm"
+                            title="Impostazioni SEO"
+                          >
+                            <div className="flex items-center gap-1 px-1">
+                              <Search size={14} />
+                              <span className="text-[10px] font-bold uppercase">SEO</span>
+                            </div>
+                          </button>
+                          <button
+                            onClick={async (e) => {
+                              e.preventDefault();
                               if (!await (confirm as any)({ title: 'Elimina articolo', message: `Vuoi eliminare "${post.title}"?`, confirmLabel: 'Elimina', variant: 'danger' })) return;
                               setDeletingBlogPostId(post.id);
                               await supabase.from('blog_posts').delete().eq('id', post.id);
@@ -896,12 +922,28 @@ export function ProjectDashboardClient({
         );
       })()}
 
+      {seoOpenPostId && (() => {
+        const post = blogPosts.find(p => p.id === seoOpenPostId);
+        if (!post) return null;
+        return (
+          <BlogPostSeoModal
+            post={post}
+            project={localProject}
+            onClose={() => setSeoOpenPostId(null)}
+            updateBlogPostSEO={handleUpdateBlogPostSEO}
+            uploadImage={uploadImage}
+            isUploading={isUploading}
+          />
+        );
+      })()}
+
       {showChecklist && (
         <ChecklistModal
           project={localProject}
           pages={pages}
-          onClose={() => { setShowChecklist(false); setChecklistPageId(undefined); }}
+          onClose={() => { setShowChecklist(false); setChecklistPageId(undefined); setChecklistPost(null); }}
           initialPageId={checklistPageId}
+          initialPost={checklistPost || undefined}
         />
       )}
 
