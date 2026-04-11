@@ -1,117 +1,37 @@
-# Sicurezza — Audit, Vulnerabilita e Azioni Correttive
+# Sicurezza — Audit e Azioni Correttive
 
-> Analisi completa della superficie di attacco di SitiVetrina.
->
-> Legenda stato: ✅ Risolto · ⚠️ Già mitigato · 🔴 Da fare · 🟡 Bassa priorità
+> Legenda: ✅ Risolto · ⚠️ Già ok / non è un problema reale · 🔴 Da fare · 🟡 Bassa priorità
 
 ---
 
-## Riepilogo
+## Risolti
 
-Gravita CRITICA: 3 problemi (2 risolti, 1 già mitigato)
-Gravita ALTA: 2 problemi (1 risolto, 1 da fare)
-Gravita MEDIA: 2 problemi (da fare)
-Gravita BASSA: 4 problemi (invariati)
+### Command Injection nel deploy ✅
+[`app/actions/deploy.ts`](../app/actions/deploy.ts) — `execSync` con stringa interpolata sostituito con `execFileSync` con array di argomenti su Linux/produzione (Vercel). Su Windows locale rimane `execSync` con stringa, protetto da validazione regex `^[a-z0-9-]+$` sul subdomain prima della chiamata. In produzione i caratteri shell nel subdomain non possono mai essere interpretati.
 
----
+### Rate limiting deploy ✅
+[`app/actions/deploy.ts`](../app/actions/deploy.ts) — Controllo su `last_published_at`: se sono passati meno di 30 secondi dall'ultimo deploy, l'action restituisce errore. Usa il campo già esistente, zero dipendenze esterne.
 
-## CRITICO
+### Crediti AI per validazione ✅
+[`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts) — `validateProjectDescription` ora richiede autenticazione, controlla `canUseAI` e incrementa `ai_used_this_month` al termine. In precedenza un utente poteva chiamarla infinite volte senza consumare crediti.
 
-### 1. API Keys nel file .env esposti nel repository ⚠️
+> ⚠️ **DA DECIDERE:** il flusso completo (validazione + generazione) consuma ora 2 crediti invece di 1. La validazione chiama Gemini ed ha un costo reale, quindi è corretto farla pagare. Se si vuole che il flusso costi 1 credito totale, occorre non incrementare nella generazione quando è già stata fatta la validazione nella stessa sessione — richiede stato server-side tra le due chiamate.
 
-**Dove:** `.env`
-
-Non rilevante: il progetto è un SaaS privato, gli utenti accedono all'editor dal dominio pubblico e non alla codebase. Il file `.env` è locale e non è mai stato nel repository pubblico.
-
-**Unica azione raccomandata:** Verificare che `.env` sia in `.gitignore` e non sia mai stato committato per errore.
+### Rate limiting login ✅
+Configurato nel dashboard Supabase (Auth → Rate Limits). Zero codice.
 
 ---
 
-### 2. Command Injection nel deploy ✅
+## Da fare
 
-**Dove:** [`app/actions/deploy.ts`](../app/actions/deploy.ts)
+### Validazione MIME type upload 🔴
+Gli upload passano tutti per `optimizeImageToWebP` che in pratica rigetta qualsiasi file non-immagine durante la conversione — quindi il rischio è già molto contenuto. Manca però una validazione esplicita server-side del tipo di file prima della conversione.
 
-**RISOLTO.** `execSync` con interpolazione di stringa sostituito con `execFileSync` passando gli argomenti come array. Node esegue il processo direttamente senza shell intermediaria — i caratteri speciali nel subdomain sono ora letterali e non possono essere interpretati come comandi.
+**Azione:** verificare il MIME type del file prima di passarlo a `optimizeImageToWebP`. Whitelist: `image/jpeg`, `image/png`, `image/webp`, `image/gif`. SVG da valutare — può contenere script JS.
 
-**Fix applicato:**
-```typescript
-execFileSync('npx', ['--yes', 'wrangler@3', 'pages', 'deploy', tempDir,
-  `--project-name=${projectName}`, '--branch=main'], { ... });
-```
+### Policy DELETE mancante sulla tabella projects 🔴
+`supabase/schema.sql` — La tabella ha policy SELECT, INSERT, UPDATE ma non DELETE. Funziona ora perché le Server Actions usano service role key che bypassa RLS. Se in futuro viene aggiunta una delete lato client senza passare per una Server Action protetta, chiunque potrebbe eliminare progetti altrui.
 
----
-
-### 3. SSRF in fetchImageAsBase64 ⚠️
-
-**Dove:** [`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts)
-
-**GIÀ MITIGATO.** È presente una validazione `ALLOWED_DOMAINS` che blocca URL non appartenenti a domini trusted. Il rischio SSRF verso reti interne è contenuto.
-
-**Vulnerabilità residua:** `hostname.endsWith(d)` accetta anche `supabase.co.attacker.com`. Fix:
-```typescript
-parsed.hostname === d || parsed.hostname.endsWith(`.${d}`)
-```
-
-**Mancano ancora:** timeout (server può restare appeso su asset lenti) e size limit (asset multi-GB caricati in memoria prima di essere rifiutati). Impatto pratico basso dato il whitelist domini.
-
----
-
-## ALTO
-
-### 4. Nessun rate limiting 🔴
-
-**Dove:** Tutto il backend
-
-Stato parziale:
-- **Login:** nessun limite → brute force illimitato
-- **AI generation:** ✅ limite mensile già presente (`max_ai_per_month`)
-- **Validazione AI:** ✅ ora richiede credito AI (fix applicato in questa sessione)
-- **Deploy:** ✅ rate limit di 30 secondi tra deploy applicato tramite `last_published_at`
-- **Creazione progetti/pagine:** nessun limite burst (solo limite totale da piano)
-
-**Da fare:**
-- Login: max 5 tentativi/minuto per IP (Vercel Edge Middleware o Supabase Auth config)
-
----
-
-### 5. Domini custom senza verifica di proprietà 🔴
-
-**Dove:** [`app/actions/deploy.ts`](../app/actions/deploy.ts), `supabase/add_custom_domain.sql`
-
-L'utente può associare qualsiasi dominio al proprio progetto senza dimostrare di esserne il proprietario.
-
-**Rischio:** subdomain takeover, conflitti tra utenti, domini di terzi associati abusivamente.
-
-**Azione:**
-1. Generare un token univoco (`sitivetrina-verify-abc123`)
-2. L'utente crea un record TXT: `_sitivetrina-verify.dominio.com TXT abc123`
-3. Il server verifica il record DNS prima di aggiungere il dominio a Cloudflare
-4. Aggiungere campo `domain_verification_token` alla tabella projects
-
----
-
-## MEDIO
-
-### 6. Nessuna validazione tipo file negli upload 🔴
-
-**Dove:** Storage Supabase, upload immagini
-
-Non c'è validazione server-side del tipo di file caricato. Le policy RLS controllano chi può caricare, ma non cosa.
-
-**Azione:**
-- Validazione MIME type server-side: whitelist `image/jpeg`, `image/png`, `image/webp`, `image/gif`
-- Attenzione SVG: può contenere script JS, valutare se bloccare o sanitizzare
-- Size limit server-side (già presente lato client a 5MB)
-
----
-
-### 7. Policy DELETE mancante sulla tabella projects 🟡
-
-**Dove:** `supabase/schema.sql`
-
-La tabella `projects` ha policy per SELECT, INSERT, UPDATE ma non per DELETE. Funziona perché le Server Actions usano service role key che bypassa RLS. Non è un rischio attivo, ma è una bomba ad orologeria se in futuro viene aggiunta una delete lato client.
-
-**Azione:**
 ```sql
 CREATE POLICY "Users can delete their own projects"
 ON projects FOR DELETE
@@ -120,110 +40,67 @@ USING (auth.uid() = user_id);
 
 ---
 
-## BASSO
+## Bassa priorità
 
-### 8. Console.error con dati sensibili 🟡
+### SSRF in `fetchImageAsBase64` 🟡
+[`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts) — Già mitigato da whitelist `ALLOWED_DOMAINS`. Vulnerabilità residua: `hostname.endsWith(d)` accetta anche `supabase.co.attacker.com`. Fix esatto:
+```typescript
+parsed.hostname === d || parsed.hostname.endsWith(`.${d}`)
+```
+Mancano anche timeout (5s) e size limit (10MB). Impatto pratico basso dato il whitelist.
 
-**Dove:** [`app/actions/deploy.ts`](../app/actions/deploy.ts), [`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts)
+### Domini custom senza verifica di proprietà 🟡
+Un utente può associare qualsiasi dominio al proprio progetto senza dimostrarne la proprietà. Richiede generazione token, verifica record DNS TXT, UI dedicata. Alta complessità, bassa priorità fino a che la feature non è diffusa.
 
-I `console.error` in produzione possono loggare path del filesystem e messaggi di errore con dettagli interni.
+### AI debug mode in produzione 🟡
+[`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts) — Se `AI_DEBUG_SAVE_PROMPTS=true`, salva prompt e risposte su disco con dati degli utenti. Aggiungere check esplicito:
+```typescript
+if (process.env.NODE_ENV === 'production') return;
+```
 
-**Azione:** Usare un logger strutturato che maschera i dati sensibili in produzione.
+### Console.error con dati interni 🟡
+[`app/actions/deploy.ts`](../app/actions/deploy.ts), [`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts) — I log di errore in produzione possono esporre path filesystem e dettagli interni. Considerare un logger strutturato che maschera i dati sensibili.
 
----
+### File temporanei non sempre puliti 🟡
+[`app/actions/deploy.ts`](../app/actions/deploy.ts) — La temp dir viene pulita nel `finally`, ma un crash Node (OOM, sigkill) lascia file in `/tmp/siti-vetrina-deploy-*`. Cron job periodico che rimuove directory più vecchie di 1 ora.
 
-### 9. File temporanei non sempre puliti 🟡
-
-**Dove:** [`app/actions/deploy.ts`](../app/actions/deploy.ts)
-
-La temp directory viene pulita nel `finally` block. Se il processo Node.js crasha (OOM, sigkill), i file restano in `/tmp/siti-vetrina-deploy-*`.
-
-**Azione:** Cron job periodico che rimuove directory più vecchie di 1 ora.
-
----
-
-### 10. AI debug mode in produzione 🟡
-
-**Dove:** [`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts)
-
-Se `AI_DEBUG_SAVE_PROMPTS=true`, salva prompt e risposte AI su disco, potenzialmente con dati business degli utenti.
-
-**Azione:** Aggiungere check esplicito `if (process.env.NODE_ENV === 'production') return;` all'inizio della funzione `aiDebugSave`.
+### Script custom utenti (Pro/Agency) 🟡
+`lib/generate-static.tsx` — Feature intenzionale e gated a piano Pro/Agency. Gli utenti possono iniettare JS arbitrario nei loro siti. Aggiungere disclaimer ToS esplicito all'attivazione.
 
 ---
 
-### 11. customScriptsHead/Body — JS arbitrario nei siti 🟡
+## Non sono problemi reali
 
-**Dove:** `types/editor.ts`, `lib/generate-static.tsx`
+### API Keys nel .env ⚠️
+Il progetto è un SaaS privato — gli utenti accedono all'editor dal dominio pubblico, non alla codebase. Il `.env` è locale. Non è una vulnerabilità purché non sia mai committato nel repository.
 
-Feature intenzionale (gated a Pro/Agency), ma permette agli utenti di iniettare JS arbitrario nei loro siti su dominio `.pages.dev`.
-
-**Azione:** Disclaimer/ToS esplicito all'attivazione, monitoring asincrono dei siti pubblicati.
+### Mancanza di rate limiting su creazione progetti/pagine ⚠️
+I piani hanno già un limite massimo di progetti e pagine per utente (`max_projects`, `max_pages_per_project`). Un utente non può creare più di quanto il suo piano consente. Il burst rate non è un vettore di attacco reale in questo contesto.
 
 ---
 
 ## Cosa è già sicuro
 
-### Autenticazione
-- Supabase Auth con email/password
-- Middleware protegge le route `/editor/*`
-- Tutte le Server Actions verificano `supabase.auth.getUser()` prima di mutare dati
-- Session gestita via cookie sicuro da Supabase
-
-### Row-Level Security
-- projects: solo propri
-- pages: solo di propri progetti
-- site_globals: solo di propri progetti
-- profiles: solo il proprio
-- plans: lettura pubblica (intenzionale)
-- storage: lettura pubblica (intenzionale per siti live), scrittura solo propri
-
-### Input sanitization
+- Supabase Auth con email/password, session via cookie sicuro
+- Middleware protegge tutte le route `/editor/*`
+- Tutte le Server Actions verificano `getUser()` prima di mutare dati
+- RLS attiva su tutte le tabelle (projects, pages, site_globals, profiles, storage)
+- `user_id` nelle insert sempre dal JWT server-side, mai dal client
 - Nessun `dangerouslySetInnerHTML` con input utente non controllato
-- Contenuti utente renderizzati tramite componenti React (escaping automatico)
-- Validazione lunghezza input AI
-- Slug e subdomain filtrati (solo caratteri alfanumerici e trattini)
-
-### Separazione client/server
-- Le API key sensibili (Cloudflare, Gemini) sono solo in variabili server-side
-- Le Server Actions (`'use server'`) non espongono logica al client
-- Il Supabase anon key ha accesso limitato dalle policy RLS
+- Slug e subdomain filtrati (`^[a-z0-9-]+$`)
+- API key sensibili (Cloudflare, Gemini) solo in variabili server-side
 
 ---
 
-## Priorità di intervento aggiornata
+## Priorità di intervento
 
-**Già risolti in questa sessione:**
-1. ✅ Command injection in deploy (`execFileSync` con array)
-2. ✅ Rate limiting deploy (check `last_published_at` < 30s)
-3. ✅ Credito AI per validazione (ora costa 1 credito come la generazione)
-   - ⚠️ **DA DECIDERE:** il flusso completo (validazione + generazione) ora consuma 2 crediti invece di 1. La validazione è una chiamata Gemini reale quindi ha senso farla costare, ma va comunicato agli utenti o va rivisto il conteggio (es. non incrementare nella generazione se la validazione è già stata fatta nella stessa sessione).
+**Già risolti:** command injection, rate limit deploy, crediti AI validazione, rate limit login
 
-**Da fare prima del lancio pubblico:**
-4. 🔴 Rate limiting login (brute force)
-5. 🔴 Validazione tipo file negli upload
+**Fare prima del lancio:**
+1. 🔴 Policy DELETE su projects (5 minuti, SQL)
+2. 🔴 Validazione MIME type upload esplicita
 
 **Entro il primo mese:**
-6. 🔴 Verifica proprietà domini custom
-7. 🔴 Policy DELETE su projects
-8. Fix residuo SSRF (`endsWith` → `=== d || endsWith(.d)`)
-9. Timeout + size limit in `fetchImageAsBase64`
-
-**Miglioramenti continui:**
-10. Logger strutturato
-11. Cleanup temp files periodico
-12. Disabilitare AI debug in produzione esplicitamente
-13. Monitoring script custom per abusi
-
----
-
-## File coinvolti
-
-| File | Vulnerabilità | Stato |
-|------|--------------|-------|
-| `app/actions/deploy.ts` | command injection, rate limit, cleanup | ✅ command injection e rate limit risolti |
-| `app/actions/ai-generator.ts` | SSRF, debug mode, crediti validazione | ✅ crediti risolti, ⚠️ SSRF mitigato |
-| `supabase/schema.sql` | policy DELETE mancante | 🔴 da fare |
-| `supabase/add_custom_domain.sql` | nessuna verifica proprietà | 🔴 da fare |
-| `lib/supabase/middleware.ts` | rate limiting login | 🔴 da fare |
-| `lib/generate-static.tsx` | custom scripts sanitization | 🟡 bassa priorità |
+3. 🟡 Fix SSRF `endsWith` → `=== d || endsWith(.d)` + timeout + size limit
+4. 🟡 Disabilitare AI debug in produzione esplicitamente
+5. 🟡 Verifica proprietà domini custom (solo se la feature diventa self-service diffusa)

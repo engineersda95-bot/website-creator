@@ -23,16 +23,17 @@ export default async function PageEditorPage({
 
   if (!project) redirect('/editor');
 
-  // Fetch all pages and site_globals for this project
-  const [{ data: pages }, { data: siteGlobals }] = await Promise.all([
-    supabase.from('pages').select('*').eq('project_id', projectId).order('created_at', { ascending: true }),
+  // Fetch target page (full) + other pages stubs (no blocks) + site_globals in parallel
+  const [{ data: targetPage }, { data: pageStubs }, { data: siteGlobals }] = await Promise.all([
+    supabase.from('pages').select('*').eq('id', pageId).eq('project_id', projectId).single(),
+    supabase.from('pages').select('id, slug, title, language, translations_group_id').eq('project_id', projectId).order('created_at', { ascending: true }),
     supabase.from('site_globals').select('*').eq('project_id', projectId),
   ]);
 
-  const allPages = pages || [];
-  const targetPage = allPages.find(p => p.id === pageId);
-
   if (!targetPage) redirect(`/editor/${projectId}`);
+
+  // Merge: stubs array with targetPage (full) replacing its stub entry
+  const allPages = (pageStubs || []).map(p => p.id === pageId ? targetPage : p);
 
   return (
     <EditorClient
