@@ -3,7 +3,7 @@
  * Aggiungi/rimuovi/riordina i check facilmente qui.
  */
 
-import { Project, Page, SiteGlobal, BlockType } from '@/types/editor';
+import { Project, Page, SiteGlobal, BlockType, BlogPost } from '@/types/editor';
 
 export interface CheckItem {
   id: string;
