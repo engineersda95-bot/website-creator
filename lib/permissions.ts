@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 
 export interface UserLimits {
@@ -20,12 +21,12 @@ export interface PermissionCheck {
   reason?: string;
 }
 
-export async function getUserLimits(userId: string): Promise<UserLimits | null> {
+export const getUserLimits = cache(async (userId: string): Promise<UserLimits | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc('get_user_limits', { p_user_id: userId });
   if (error || !data?.length) return null;
   return data[0] as UserLimits;
-}
+});
 
 export async function canCreateProject(userId: string): Promise<PermissionCheck> {
   const supabase = await createClient();

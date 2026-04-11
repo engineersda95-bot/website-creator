@@ -450,8 +450,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       set({ copiedBlock: block });
       try {
         localStorage.setItem('sv_copied_block', JSON.stringify(block));
+        window.dispatchEvent(new Event('sv_copied_block_changed'));
       } catch {
         // Block too large for localStorage (e.g. contains base64 images) — in-memory only
+        window.dispatchEvent(new Event('sv_copied_block_changed'));
       }
     }
   },

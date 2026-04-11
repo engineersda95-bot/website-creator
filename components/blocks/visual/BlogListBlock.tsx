@@ -197,74 +197,79 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
       />
 
       <div className="relative z-10 w-full mx-auto">
-        {/* Title row: title+subtitle left, CTA right */}
+        {/* Header: title+CTA on same row, subtitle below */}
         {(content.title || content.subtitle || showViewAll) && (
           <div
             data-siti-anim={animType}
             data-siti-anim-duration={animDuration}
             data-siti-anim-delay={baseDelay}
             className={cn(
-              "flex items-start gap-6",
               (content.showSearch !== false || content.showCategoryFilter !== false) ? "mb-8" : content.subtitle ? "mb-8" : "mb-6",
-              style.align === 'center' ? "justify-center" : style.align === 'right' ? "flex-row-reverse" : "justify-between"
             )}
             style={{ '--siti-anim-duration': animDuration + 's', '--siti-anim-delay': baseDelay + 's' } as any}
           >
-            {/* Title + subtitle */}
-            <div className={cn("flex-1", style.align === 'center' ? "text-center" : style.align === 'right' ? "text-right" : "text-left")}>
-              {content.title && (
-                onInlineEdit ? (
-                  <InlineEditable
-                    fieldId="title"
-                    value={content.title || ''}
-                    onChange={(v) => onInlineEdit('title', v)}
-                    className="mb-3 tracking-tighter transition-all duration-500 leading-tight rt-content"
-                    style={{ fontSize: 'var(--title-fs)', fontWeight: 'var(--title-fw)', color: 'inherit' }}
-                    placeholder="Titolo..."
-                  />
-                ) : (
-                  <div
-                    className="mb-3 tracking-tighter transition-all duration-500 leading-tight rt-content"
-                    style={{ fontSize: 'var(--title-fs)', fontWeight: 'var(--title-fw)', color: 'inherit' }}
-                    dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
-                  />
-                )
-              )}
-              {content.subtitle && (
-                onInlineEdit ? (
-                  <InlineEditable
-                    fieldId="subtitle"
-                    value={content.subtitle || ''}
-                    onChange={(v) => onInlineEdit('subtitle', v)}
-                    className="opacity-60 max-w-2xl leading-relaxed transition-all duration-500 rt-content"
-                    style={{ fontSize: 'var(--subtitle-fs)', color: 'inherit', marginLeft: style.align === 'center' ? 'auto' : '0', marginRight: style.align === 'center' ? 'auto' : '0' }}
-                    placeholder="Sottotitolo..."
-                    richText
-                    multiline
-                  />
-                ) : (
-                  <div
-                    className="opacity-60 max-w-2xl leading-relaxed transition-all duration-500 rt-content"
-                    style={{ fontSize: 'var(--subtitle-fs)', color: 'inherit', marginLeft: style.align === 'center' ? 'auto' : '0', marginRight: style.align === 'center' ? 'auto' : '0' }}
-                    dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
-                  />
-                )
-              )}
-            </div>
-
-            {/* CTA "Vedi tutti" — aligned to top-right of title row */}
-            {showViewAll && viewAllCtaLabel && (
-              <div className="flex-shrink-0 self-start pt-1">
-                <CTA
-                  label={viewAllCtaLabel}
-                  url={viewAllCtaUrl}
-                  project={project}
-                  viewport={viewport}
-                  theme={viewAllCtaTheme as any}
-                  isStatic={isStatic}
-                  {...getCTAOverrides(content, style, 'viewAllCta', viewAllCtaTheme)}
-                />
+            {/* Title + CTA row */}
+            {(content.title || showViewAll) && (
+              <div className={cn(
+                "flex items-start gap-6",
+                content.subtitle ? "mb-3" : "",
+                style.align === 'center' ? "justify-center" : style.align === 'right' ? "flex-row-reverse" : "justify-between"
+              )}>
+                <div className={cn("flex-1", style.align === 'center' ? "text-center" : style.align === 'right' ? "text-right" : "text-left")}>
+                  {content.title && (
+                    onInlineEdit ? (
+                      <InlineEditable
+                        fieldId="title"
+                        value={content.title || ''}
+                        onChange={(v) => onInlineEdit('title', v)}
+                        className="tracking-tighter transition-all duration-500 leading-tight rt-content"
+                        style={{ fontSize: 'var(--title-fs)', fontWeight: 'var(--title-fw)', color: 'inherit' }}
+                        placeholder="Titolo..."
+                      />
+                    ) : (
+                      <div
+                        className="tracking-tighter transition-all duration-500 leading-tight rt-content"
+                        style={{ fontSize: 'var(--title-fs)', fontWeight: 'var(--title-fw)', color: 'inherit' }}
+                        dangerouslySetInnerHTML={{ __html: formatRichText(content.title) }}
+                      />
+                    )
+                  )}
+                </div>
+                {showViewAll && viewAllCtaLabel && (
+                  <div className="flex-shrink-0 self-start pt-1">
+                    <CTA
+                      label={viewAllCtaLabel}
+                      url={viewAllCtaUrl}
+                      project={project}
+                      viewport={viewport}
+                      theme={viewAllCtaTheme as any}
+                      isStatic={isStatic}
+                      {...getCTAOverrides(content, style, 'viewAllCta', viewAllCtaTheme)}
+                    />
+                  </div>
+                )}
               </div>
+            )}
+            {/* Subtitle always below the title+CTA row */}
+            {content.subtitle && (
+              onInlineEdit ? (
+                <InlineEditable
+                  fieldId="subtitle"
+                  value={content.subtitle || ''}
+                  onChange={(v) => onInlineEdit('subtitle', v)}
+                  className="opacity-60 max-w-2xl leading-relaxed transition-all duration-500 rt-content"
+                  style={{ fontSize: 'var(--subtitle-fs)', color: 'inherit', marginLeft: style.align === 'center' ? 'auto' : '0', marginRight: style.align === 'center' ? 'auto' : '0' }}
+                  placeholder="Sottotitolo..."
+                  richText
+                  multiline
+                />
+              ) : (
+                <div
+                  className="opacity-60 max-w-2xl leading-relaxed transition-all duration-500 rt-content"
+                  style={{ fontSize: 'var(--subtitle-fs)', color: 'inherit', marginLeft: style.align === 'center' ? 'auto' : '0', marginRight: style.align === 'center' ? 'auto' : '0' }}
+                  dangerouslySetInnerHTML={{ __html: formatRichText(content.subtitle) }}
+                />
+              )
             )}
           </div>
         )}

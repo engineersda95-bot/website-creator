@@ -349,9 +349,11 @@ export function generateBlogPostHtml(
     "@type": "BlogPosting",
     "headline": post.title,
     "description": post.excerpt,
+    "url": `${baseUrl}/blog/${post.slug}`,
     "image": ogImage ? (ogImage.startsWith('http') ? ogImage : baseUrl + ogImage) : undefined,
     "datePublished": post.published_at || post.created_at,
     "dateModified": post.updated_at,
+    "articleSection": (post.categories || []).length > 0 ? (post.categories || []) : undefined,
     "author": (post.authors || []).length > 0 ? (post.authors || []).map(a => ({ "@type": "Person", "name": a.name })) : undefined,
     "publisher": { "@type": "Organization", "name": settings?.metaTitle || project?.name },
     "mainEntityOfPage": { "@type": "WebPage", "@id": `${baseUrl}/blog/${post.slug}` }

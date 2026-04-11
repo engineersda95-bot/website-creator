@@ -16,7 +16,7 @@ const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 export async function deployToCloudflare(projectId: string) {
   const supabase = await createClient();
 
-  const { execSync } = require('child_process');
+  const { execSync, execFileSync } = require('child_process');
   const fs = require('fs');
   const path = require('path');
   const os = require('os');
@@ -45,6 +45,14 @@ export async function deployToCloudflare(projectId: string) {
 
     if (projectError || !project) throw new Error('Could not find project to deploy or unauthorized access');
 
+    // Rate limiting: max 1 deploy every 30 seconds per project
+    if (project.last_published_at) {
+      const secondsSinceLastDeploy = (Date.now() - new Date(project.last_published_at).getTime()) / 1000;
+      if (secondsSinceLastDeploy < 30) {
+        return { success: false, error: `Attendi ${Math.ceil(30 - secondsSinceLastDeploy)} secondi prima di pubblicare di nuovo.` };
+      }
+    }
+
     // Fetch site_globals (nav/footer per language) for this project
     const { data: siteGlobals } = await supabase
       .from('site_globals')
@@ -62,6 +70,7 @@ export async function deployToCloudflare(projectId: string) {
     const blogPosts: BlogPost[] = blogPostsData || [];
 
     const projectName = project.subdomain;
+    if (!/^[a-z0-9-]+$/.test(projectName)) throw new Error('Nome progetto non valido.');
     const isFirstPublish = !project.live_url;
 
     // 2. Ensure project exists on Cloudflare and get the actual subdomain
@@ -241,26 +250,23 @@ export async function deployToCloudflare(projectId: string) {
 
     // Second pass: download unique assets from Supabase Storage
     console.log(`Downloading ${assetsToDownload.size} unique assets from Supabase...`);
-    for (const assetFilename of assetsToDownload) {
+    await Promise.all(Array.from(assetsToDownload).map(async (assetFilename) => {
       const bucketPath = `${project.user_id}/${projectId}/${assetFilename}`;
       const localPath = path.join(assetsDir, assetFilename);
-
       try {
         const { data, error: downloadError } = await supabase.storage
           .from('project-assets')
           .download(bucketPath);
-
         if (downloadError) {
           console.warn(`Could not download asset ${bucketPath}:`, downloadError.message);
-          continue;
+          return;
         }
-
         const buffer = Buffer.from(await data.arrayBuffer());
         fs.writeFileSync(localPath, buffer);
       } catch (e: any) {
         console.error(`Failed to download ${assetFilename}:`, e.message);
       }
-    }
+    }));
 
     // 3.2. Generate static Tailwind CSS
     console.log('Generating production Tailwind CSS via standalone binary...');
@@ -318,18 +324,17 @@ export async function deployToCloudflare(projectId: string) {
       fs.writeFileSync(path.join(assetsDir, 'styles.css'), '/* Tailwind generation failed */');
     }
 
-    const command = `npx --yes wrangler@3 pages deploy "${tempDir}" --project-name="${projectName}" --branch="main"`;
-
-    const output = execSync(command, {
-      cwd: '/tmp', // Executing from /tmp allows wrangler to ignore the read-only /var/task folder
-      env: {
-        ...commonEnv,
-        WRANGLER_SEND_METRICS: 'false',
-        WRANGLER_SEND_TELEMETRY: 'false',
-        WRANGLER_LOG_PATH: '/tmp/wrangler-deploy.log',
-      },
-      encoding: 'utf-8'
-    });
+    const wranglerArgs = ['--yes', 'wrangler@3', 'pages', 'deploy', tempDir, `--project-name=${projectName}`, '--branch=main'];
+    const wranglerEnv = {
+      ...commonEnv,
+      WRANGLER_SEND_METRICS: 'false',
+      WRANGLER_SEND_TELEMETRY: 'false',
+      WRANGLER_LOG_PATH: '/tmp/wrangler-deploy.log',
+    };
+    const isWindows = process.platform === 'win32';
+    const output = isWindows
+      ? execSync(`npx ${wranglerArgs.join(' ')}`, { cwd: '/tmp', env: wranglerEnv, encoding: 'utf-8' })
+      : execFileSync('npx', wranglerArgs, { cwd: '/tmp', env: wranglerEnv, encoding: 'utf-8' });
     console.log('Wrangler Output:', output);
 
     const urlMatch = output.match(/https?:\/\/[^\s]+\.[^\s]+/);

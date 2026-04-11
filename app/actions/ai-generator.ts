@@ -1058,6 +1058,13 @@ Extra Pages: ${data.extraPages?.map(p => `- ${p.name}: ${p.description}`).join('
     return JSON.parse(result.response.text());
   };
 
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { isReady: false, questions: [], error: 'Non autenticato' };
+
+  const aiCheck = await canUseAI(user.id);
+  if (!aiCheck.allowed) return { isReady: false, questions: [], error: aiCheck.reason };
+
   aiDebugSave('validation', 'prompt', prompt);
 
   try {
@@ -1078,6 +1085,7 @@ Extra Pages: ${data.extraPages?.map(p => `- ${p.name}: ${p.description}`).join('
     aiDebugSave('validation', 'meta', { model: usedModel, elapsedMs: Date.now() - valStartMs, isReady: result?.isReady, questions: result?.questions?.length ?? 0 });
     console.log(`[AI Validation] isReady: ${result?.isReady}, questions: ${result?.questions?.length ?? 0}`);
     // writeCache(cacheKey, result);
+    await supabase.rpc('increment_ai_usage', { p_user_id: user.id });
     return result;
   } catch (error: any) {
     console.error('[AI Validation] Error:', error);

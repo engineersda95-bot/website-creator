@@ -59,10 +59,10 @@ export const EditorCanvas: React.FC = () => {
     const checkCopied = () => setHasCopiedBlock(!!localStorage.getItem('sv_copied_block'));
     checkCopied();
     window.addEventListener('storage', checkCopied);
-    const interval = setInterval(checkCopied, 1000);
+    window.addEventListener('sv_copied_block_changed', checkCopied);
     return () => {
       window.removeEventListener('storage', checkCopied);
-      clearInterval(interval);
+      window.removeEventListener('sv_copied_block_changed', checkCopied);
     };
   }, []);
 
