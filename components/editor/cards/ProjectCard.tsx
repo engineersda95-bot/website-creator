@@ -5,11 +5,11 @@ import { getProjectDomain } from "@/lib/url-utils";
 import { cn } from "@/lib/utils";
 import { Clock, Globe, Loader2, Settings as SettingsIcon, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { LanguageBadge } from "@/components/shared/LanguageBadge";
 
 interface ProjectCardProps {
   project: any;
   formatDate: (d: string) => string;
-  onEdit: (id: string) => void;
   onDelete: (id: string, name: string) => Promise<void>;
   isDeleting?: boolean;
 }
@@ -17,14 +17,10 @@ interface ProjectCardProps {
 export function ProjectCard({
   project,
   formatDate,
-  onEdit,
   onDelete,
   isDeleting,
 }: ProjectCardProps) {
   const projectLangs = project.settings?.languages || [project.settings?.defaultLanguage || "it"];
-  const languages = projectLangs
-    .map((code: string) => LANGUAGES.find((l) => l.value === code))
-    .filter(Boolean);
   const liveUrl = project.live_url ? getProjectDomain(project) : "";
 
   return (
@@ -59,23 +55,9 @@ export function ProjectCard({
       </Link>
       <div className="px-4 py-2.5 border-t border-zinc-100 flex items-center justify-between">
         <div className="flex items-center gap-1">
-          {languages.map((lang: any) => (
-            <div
-              key={lang.value}
-              className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-50 border border-zinc-100 rounded-md"
-            >
-              <span className="text-[14px] leading-none" title={lang.label}>
-                {lang.flag}
-              </span>
-            </div>
+          {projectLangs.map((lang: string) => (
+            <LanguageBadge key={lang} languageCode={lang} showCode={true} />
           ))}
-          <button
-            onClick={() => onEdit(project.id)}
-            className="p-1.5 text-zinc-400 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
-            title="Impostazioni attività"
-          >
-            <SettingsIcon size={14} />
-          </button>
         </div>
         <button
           onClick={() => onDelete(project.id, project.name)}

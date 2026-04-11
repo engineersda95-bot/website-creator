@@ -21,6 +21,7 @@ import { resolveImageUrl } from '@/lib/image-utils';
 import { Page, Project, BlogPost } from '@/types/editor';
 import { toast } from '@/components/shared/Toast';
 import { PageCard } from '@/components/editor/cards/PageCard';
+import { LanguageBadge } from '@/components/shared/LanguageBadge';
 import { PageSeoModal } from '@/components/editor/modals/PageSeoModal';
 import { BlogPostSeoModal } from '@/components/editor/modals/BlogPostSeoModal';
 import { LanguageSection } from '@/components/blocks/sidebar/settings/LanguageSection';
@@ -685,7 +686,7 @@ export function ProjectDashboardClient({
                               : <span className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full"><EyeOff size={10} />Bozza</span>
                             }
                             {isMultilingual && post.language && (
-                              <span className="text-[10px] font-bold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full uppercase">{(post.language || '').split('-')[0]}</span>
+                              <LanguageBadge languageCode={post.language} showCode={true} className="shadow-none border-none bg-zinc-100 rounded-full px-2" />
                             )}
                           </div>
                           <h3 className="font-bold text-zinc-900 text-sm line-clamp-2 mb-1">{post.title}</h3>

@@ -54,8 +54,22 @@ export function FontManager({ value, onChange, label = "Fonte Principale" }: Fon
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [wrapperRef]);
 
-  // Generate unique set of fonts to load (selected + hovered)
-  const fontsToLoad = Array.from(new Set([value, hoveredFont].filter(Boolean) as string[]));
+  // Accumulate fonts to load so they never unmount, preventing flickering during search
+  const [loadedFonts, setLoadedFonts] = useState<Set<string>>(new Set([value]));
+
+  useEffect(() => {
+    setLoadedFonts(prev => {
+      const next = new Set(prev);
+      next.add(value);
+      if (hoveredFont) next.add(hoveredFont);
+      filteredFonts.forEach(f => next.add(f));
+      // if size hasn't changed, return prev to avoid re-renders
+      if (next.size === prev.size) return prev;
+      return next;
+    });
+  }, [value, hoveredFont, filteredFonts]);
+
+  const fontsToLoad = Array.from(loadedFonts).filter(Boolean) as string[];
 
   return (
     <div className="space-y-3" ref={wrapperRef}>

@@ -26,7 +26,9 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { improveTextWithAI, translateBlogPostWithAI, type AITextAction, type AITextTone } from '@/app/actions/ai-generator';
 import { SimpleSlider } from '@/components/blocks/sidebar/ui/SimpleSlider';
+import { LanguageBadge } from '@/components/shared/LanguageBadge';
 import { marked } from 'marked';
+import { LANGUAGES } from '@/lib/editor-constants';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -172,7 +174,6 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
 
   const siteLanguages: string[] = initialProject.settings?.languages || [initialProject.settings?.defaultLanguage || 'it'];
   const isMultilingual = siteLanguages.length > 1;
-  const langNames: Record<string, string> = { it: '🇮🇹 IT', en: '🇬🇧 EN', fr: '🇫🇷 FR', de: '🇩🇪 DE', es: '🇪🇸 ES' };
   // Normalize language codes to short form (e.g. "en-gb" → "en")
   const normalizeLang = (lang: string) => lang?.split('-')[0]?.toLowerCase() || 'it';
   const postLang = normalizeLang(post.language || 'it');
@@ -801,23 +802,22 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
           </span>
           {/* Language switcher */}
           {isMultilingual && (
-            <div className="flex items-center gap-0.5 ml-2">
+            <div className="flex items-center bg-zinc-100 p-0.5 ml-3 rounded-md border border-zinc-200/50">
               {/* Current language */}
-              <span className="text-[10px] font-bold text-white bg-zinc-900 px-2 py-0.5 rounded">
-                {langNames[postLang] || postLang.toUpperCase()}
-              </span>
+              <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-white text-zinc-900 rounded-[4px] shadow-sm border border-zinc-200/50">
+                {postLang.split('-')[0]}
+              </div>
               {/* Existing translations */}
               {siblingTranslations.map(s => (
                 <Link
                   key={s.id}
                   href={`/editor/${initialProject.id}/blog/${s.id}`}
-                  className="text-[10px] font-bold text-zinc-500 hover:text-zinc-700 px-2 py-0.5 rounded hover:bg-zinc-100 transition-all"
                   title={s.title}
+                  className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-800 transition-colors block"
                 >
-                  {langNames[normalizeLang(s.language)] || normalizeLang(s.language).toUpperCase()}
+                  {normalizeLang(s.language).split('-')[0]}
                 </Link>
               ))}
-              {/* Traduzione articolo: disponibile dalla scheda nella lista articoli del progetto */}
             </div>
           )}
         </div>
@@ -1583,7 +1583,7 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
               <h2 className="text-[14px] font-bold text-zinc-900">
-                Crea versione {langNames[createLangModal] || createLangModal.toUpperCase()}
+                Crea versione {LANGUAGES.find(l => l.value === createLangModal)?.flag || createLangModal?.toUpperCase()}
               </h2>
               <button onClick={() => setCreateLangModal(null)} className="p-1 text-zinc-400 hover:text-zinc-700 rounded-lg transition-all">
                 <X size={16} />

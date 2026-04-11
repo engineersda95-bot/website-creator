@@ -17,7 +17,6 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { getBlocksFromTemplate, TEMPLATES, TEMPLATE_SETTINGS, TEMPLATE_PAGES } from '@/lib/templates';
 import { TemplateWireframe, TemplatePreviewModal } from '@/components/editor/TemplatePreview';
 import { ProjectCard } from '@/components/editor/cards/ProjectCard';
-import { ProjectQuickEditModal } from '@/components/editor/modals/ProjectQuickEditModal';
 import { AIGeneratorModal } from '@/components/editor/modals/AIGeneratorModal';
 import { confirm } from '@/components/shared/ConfirmDialog';
 import { toast } from '@/components/shared/Toast';
@@ -82,7 +81,6 @@ export function ProjectListClient({
   const [isCreating, setIsCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
-  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (initialUser) setUser(initialUser);
@@ -592,7 +590,6 @@ export function ProjectListClient({
                 key={proj.id}
                 project={proj}
                 formatDate={formatDate}
-                onEdit={(id) => setEditingProjectId(id)}
                 isDeleting={deletingId === proj.id}
                 onDelete={async (id, name) => {
                   if (!await confirm({ title: 'Elimina sito', message: `Vuoi eliminare "${name}"? Tutti i dati verranno persi.`, confirmLabel: 'Elimina', variant: 'danger' })) return;
@@ -616,19 +613,6 @@ export function ProjectListClient({
           onClose={() => setPreviewTemplateId(null)}
         />
       )}
-
-        {/* Quick Edit Modal */}
-        {editingProjectId && (
-          <ProjectQuickEditModal
-            projectId={editingProjectId}
-            project={projects.find(p => p.id === editingProjectId)}
-            onClose={() => setEditingProjectId(null)}
-            onSave={(updatedProj: any) => {
-              setProjects(projects.map(p => p.id === updatedProj.id ? updatedProj : p));
-              setEditingProjectId(null);
-            }}
-          />
-        )}
 
         {/* AI Generator Modal */}
         {showAIGenerator && (

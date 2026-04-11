@@ -6,6 +6,7 @@ import { FileText, Clock, Languages, Loader2, Trash2, Search } from 'lucide-reac
 import { Page } from '@/types/editor';
 import { cn } from '@/lib/utils';
 import { ScoreBadge } from '@/components/shared/ScoreBadge';
+import { LanguageBadge } from '@/components/shared/LanguageBadge';
 
 interface PageCardProps {
   page: Page;
@@ -21,13 +22,7 @@ interface PageCardProps {
 }
 
 export function PageCard({ page, projectId, formatDate, onOpenSeo, onDelete, onTranslate, isDeleting, onInternalNavigate, score, onScoreClick }: PageCardProps) {
-  const langEmoji: Record<string, string> = {
-    it: '🇮🇹',
-    en: '🇬🇧',
-    fr: '🇫🇷',
-    de: '🇩🇪',
-    es: '🇪🇸',
-  };
+  // Removed langEmoji
 
   return (
     <div
@@ -43,9 +38,7 @@ export function PageCard({ page, projectId, formatDate, onOpenSeo, onDelete, onT
             <FileText size={18} />
           </div>
           {page.language && (
-            <div className="flex items-center justify-center w-8 h-8 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold text-zinc-600 uppercase">
-              {langEmoji[page.language] || page.language}
-            </div>
+            <LanguageBadge languageCode={page.language} showCode={true} className="shadow-none border-zinc-100 bg-zinc-50" />
           )}
         </div>
         <h3 className="text-sm font-bold text-zinc-900 transition-colors truncate">
