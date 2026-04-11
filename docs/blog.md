@@ -210,7 +210,7 @@ Caratteristiche:
 
 Tutte e tre le funzioni accettano `siteGlobals: SiteGlobal[]` e usano `renderBlock` (esportata da `generate-static.tsx`) per iniettare nav e footer nella lingua corretta — stesso meccanismo delle pagine normali. Il CSS `* { margin:0; padding:0 }` è stato rimosso e sostituito con selettori scoped (`.blog-page`, `article`) per evitare che la reset globale rompa il layout hamburger della nav.
 
-Le pagine autore (`generateBlogAuthorPages`) sono state rimosse dal deploy (nessuno le aveva richieste).
+Le pagine autore (`generateBlogAuthorPages`) sono state completamente eliminate dal codice sorgente (nessuno le aveva richieste ed erano codice morto inattivo).
 
 ---
 
