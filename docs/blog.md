@@ -16,9 +16,9 @@ ProjectDashboardClient (tab Blog)
 BlogPostEditorClient (editor singolo articolo)
   ├── Titolo, Excerpt, Cover image (ImageUpload in sidebar → useEditorStore.uploadImage → WebP)
   ├── Body: TipTap WYSIWYG (HTML salvato in blocks[0].content.text)
-  ├── Toolbar: Bold/Italic/Code/H2/H3/Lista/Citazione/Link/Separatore/Voce
-  ├── Sidebar: Copertina (ImageUpload), Dettagli (slug, categorie, autori, stato) + SEO
-  └── Header: Pubblica/Bozza, Salva, Elimina, switch lingua
+  ├── Toolbar: Bold/Italic/H2/H3/H4/Lista/Citazione/Link/Codice/Separatore/ImmagineInline/AllineamentoTesto/ColoreTesto/Voce
+  ├── Sidebar 3 tab: Dettagli (slug, categorie, autori, lingua) | SEO | Stile articoli (project-level)
+  └── Header: Pubblica/Bozza (auto-save), Salva, Elimina, switch lingua, Anteprima (overlay con viewport switcher)
 
 Deploy (app/actions/deploy.ts)
   ├── generateBlogListingHtml()  → /blog/index.html (per lingua)
@@ -45,6 +45,7 @@ Tabella creata da `supabase/migration_blog.sql` (eseguire dopo `permissions_syst
 | published_at | TIMESTAMPTZ | Impostato al momento della pubblicazione |
 | blocks | JSONB | `Block[]` — nella pratica un solo blocco `type:'text'` con `content.text` in **HTML** (ex markdown, vedi sotto) |
 | seo | JSONB | `{ title?, description?, image?, indexable? }` |
+| display_settings | JSONB | **Obsoleto** — non più letto/scritto. Le impostazioni stile sono ora in `project.settings.blogPostDisplay`. |
 | language | TEXT | Codice ISO breve: `'it'`, `'en'`, `'fr'` ... |
 | translation_group | UUID | Collega articoli che sono traduzioni dello stesso contenuto |
 | created_at / updated_at | TIMESTAMPTZ | `updated_at` aggiornato da trigger |
@@ -81,22 +82,56 @@ File: `app/editor/[projectId]/blog/[postId]/BlogPostEditorClient.tsx`
 ### TipTap WYSIWYG
 
 L'editor usa TipTap v3 (`@tiptap/react`) con le estensioni:
-- `StarterKit` — heading, bold, italic, lists, blockquote, hr, code, history (⌘Z/⌘Y)
+- `StarterKit` — heading (H2/H3/H4), bold, italic, lists, blockquote, hr, code, history (⌘Z/⌘Y)
 - `Underline`
 - `TipTapLink` — link inseribili via prompt, non cliccabili durante l'editing
 - `Placeholder`
+- `TextAlign` — allineamento L/C/R/Justify per paragrafo/heading
+- `TextStyle` + `Color` — colore testo inline
+- `InlineImage` (custom su `@tiptap/extension-image`) — immagini nel corpo con attributi `aspectRatio` e `align`; sidebar contestuale per modificarli
 
-Il contenuto viene sincronizzato con `post.blocks` tramite `onUpdate`. Non serve nessun bottone "anteprima" — quello che si vede nell'editor è quello che appare sul sito pubblicato (same CSS `.blog-tiptap-editor .ProseMirror` in `globals.css`).
+Il contenuto viene sincronizzato con `post.blocks` tramite `onUpdate`.
 
 ### Dettatura vocale
 
 Il bottone **Voce** nella toolbar attiva la Web Speech Recognition API:
-- Nessuna condizione di focus — click sul bottone e si parla direttamente
-- Il testo viene inserito nel punto corrente del cursore via `editor.chain().focus().insertContent()`
-- `shouldRecordRef` traccia lo stato desiderato: se il browser interrompe il riconoscimento per silenzio o errori transitori (es. `network`), il riconoscimento riparte automaticamente finché l'utente non preme di nuovo il bottone
-- Errori `network` silenziosi (no toast) — ripartenza automatica
-- Errore `not-allowed` → toast con istruzioni permesso microfono
+- Il testo viene inserito nel cursore al completamento di ogni frase (`isFinal`); spazio pre-parola aggiunto solo se il carattere precedente non è già uno spazio
+- Placeholder "🎙 Sto ascoltando..." nell'editor quando attivo (solo se editor vuoto)
+- `shouldRecordRef` traccia lo stato: se il browser interrompe per silenzio/errori transitori, riparte automaticamente
+- Errori `network` silenziosi — ripartenza automatica
+- Errore `not-allowed` → toast con istruzioni
 - Supportato solo su Chrome/Edge (Web Speech API)
+
+### Anteprima articolo
+
+Overlay full-screen attivabile dal bottone "Anteprima" nell'header:
+- Viewport switcher Desktop/Tablet/Mobile centrato nell'header (icone Monitor/Tablet/Smartphone)
+- Tipografia responsive: le CSS variables (`--global-h1-fs` ecc.) sono calcolate direttamente in base al viewport selezionato (le media query non funzionano su div — override inline)
+- Immagini: `/assets/` risolti in URL Supabase pubblici
+- Cover hero o contained, TOC, body con padding da `project.settings.blogPostDisplay`
+
+### Stile articoli (project-level)
+
+Le impostazioni di presentazione degli articoli sono in `project.settings.blogPostDisplay` (JSONB già esistente — nessuna migration). Si configurano dal tab "Stile" nell'editor articolo e si applicano a **tutti gli articoli del progetto**:
+
+| Campo | Default | Descrizione |
+|-------|---------|-------------|
+| `coverImageMode` | `'hero'` | `'hero'` = full-width, `'contained'` = dentro l'article con border-radius |
+| `bodyMaxWidth` | nessun limite | Larghezza max corpo in px |
+| `bodyPaddingX` | 24 | Padding laterale desktop (px) |
+| `bodyPaddingXMobile` | 16 | Padding laterale mobile (px) |
+| `bodyPaddingY` | 80 | Padding verticale desktop (px) |
+| `bodyPaddingYMobile` | 48 | Padding verticale mobile (px) |
+| `showToc` | false | Mostra TOC automatico dagli heading |
+
+### SEO Score
+
+Nella sidebar tab SEO è presente uno score grezzo che verifica:
+- Titolo SEO: lunghezza ottimale 30–60 caratteri
+- Descrizione SEO: lunghezza ottimale 120–160 caratteri  
+- Immagine OG: presente/assente
+
+Non analizza contenuto del corpo, keyword density o leggibilità.
 
 ### Gestione traduzioni
 
@@ -157,7 +192,7 @@ Caratteristiche:
 - Cover image con `loading="lazy"` e placeholder SVG se assente
 - Rispetta colori tema (`primaryColor`, `themeColors`), font (`fontFamily`)
 
-### generateBlogPostHtml(post, allPosts, allPages, project, siteGlobals)
+### generateBlogPostHtml(post, allPages, project, langPrefix, siteGlobals, isStatic)
 
 Genera `/blog/{slug}/index.html` per ogni articolo pubblicato.
 
@@ -168,6 +203,8 @@ Caratteristiche:
 - SEO: `<title>`, `<meta description>`, Open Graph, `<link rel="canonical">`
 - Schema.org `Article` strutturato
 - Breadcrumb (Home → Blog → Titolo)
+- Legge `project.settings.blogPostDisplay` per cover mode, padding, max-width
+- `isStatic=false` usa URL Supabase pubblici per le immagini (usato nella preview editor)
 
 ### Nav e Footer nelle pagine statiche
 
@@ -220,33 +257,29 @@ Vedi sezione dedicata **[Scalabilità Blog](#scalabilità-blog--paginazione-rice
 
 Vedi sezione dedicata **[Scalabilità Blog](#scalabilità-blog--paginazione-ricerca-e-deploy-incrementale)** per analisi completa.
 
-### Immagini nel corpo
+### SEO score articoli
 
-TipTap non ha upload immagini integrato — si può inserire solo testo/link. Soluzione futura: custom TipTap extension per upload immagine inline con inserimento del path `/assets/...` nel documento.
-
-### Anteprima articolo finale
-
-L'editor mostra il contenuto formattato ma non la pagina completa con nav/footer/tema del sito. Soluzione futura: modal o tab separata che chiama `generateBlogPostHtml()` client-side e la mostra in un `<iframe>`.
-
-### Tipografia globale nel body
-
-H2/H3 nel blog post HTML statico non ereditano `h2Size`/`h3Size` da `project.settings.typography`. Soluzione futura: iniettare CSS variables nel `<style>` del post come si fa per le pagine normali.
+Lo score attuale è grezzo (titolo, descrizione, immagine OG). Non analizza: keyword nel corpo, densità, leggibilità, heading structure. Da migliorare in futuro.
 
 ### Normalizzazione categorie
 
-Attualmente `"Tech"` e `"tech"` sono due categorie distinte nel DB. Il filtro nel listing usa `.toLowerCase()` ma l'editor non normalizza. Se si vuole consistenza: normalizzare in lowercase al momento dell'inserimento in `updatePost({ categories: [...] })`.
+Attualmente `"Tech"` e `"tech"` sono due categorie distinte nel DB. Il filtro nel listing usa `.toLowerCase()` ma l'editor non normalizza. Se si vuole consistenza: normalizzare in lowercase al momento dell'inserimento.
 
 ### Slug autori
 
-`authors` è usato come array di nomi stringa. Il campo `slug` nel tipo `{ name, slug, bio?, avatar? }[]` non viene né generato né utilizzato dal codice attuale. Necessario quando si vorranno pagine autore dedicate (`/blog/author/{slug}/`).
+`authors` è usato come array di oggetti `{ name, slug, ... }`. Il campo `slug` non viene generato né usato. Necessario solo per future pagine autore dedicate (`/blog/author/{slug}/`).
 
 ### Suggerimenti categorie/autori — scalabilità
 
-Il fetch di tutti i valori esistenti avviene ad ogni apertura dell'editor. Con centinaia di articoli la query resta leggera (no `blocks`), ma la soluzione definitiva è una tabella `blog_taxonomies` aggiornata da trigger.
+Il fetch avviene ad ogni apertura editor. Con centinaia di articoli la query resta leggera (no `blocks`), ma la soluzione definitiva è una tabella `blog_taxonomies` aggiornata da trigger.
 
 ### Cleanup storage
 
-La edge function `cleanup-storage` non scansiona `blog_posts` per le immagini referenziate (`cover_image`). Le cover degli articoli eliminati possono diventare orfane. Da aggiungere alla logica di cleanup.
+La edge function `cleanup-storage` non scansiona `blog_posts.cover_image`. Le cover degli articoli eliminati possono diventare orfane in Supabase Storage.
+
+### Colonna `display_settings` obsoleta
+
+La colonna `display_settings JSONB` su `blog_posts` non è più letta né scritta (le impostazioni sono ora in `project.settings.blogPostDisplay`). Può essere rimossa con `ALTER TABLE blog_posts DROP COLUMN display_settings` quando opportuno.
 
 ---
 
@@ -533,7 +566,6 @@ Le pagine `/blog/page/2/`, `/blog/page/3/` ecc. devono avere:
    ├── Fetch blog_posts WHERE status = 'published'
    ├── Per ogni lingua: generateBlogListingHtml() → /blog/index.html
    ├── Per ogni articolo: generateBlogPostHtml() → /blog/{slug}/index.html
-   ├── generateBlogAuthorPages() → pagine autori
    ├── Upload su Cloudflare Pages via Wrangler
    └── Sitemap aggiornata con URL blog
 ```

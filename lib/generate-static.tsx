@@ -1,12 +1,12 @@
 import 'server-only';
-import { Block, Page, Project, ProjectSettings, SiteGlobal } from '@/types/editor';
+import { Block, Page, PageStub, Project, ProjectSettings, SiteGlobal } from '@/types/editor';
 import React from 'react';
 import { toPx } from '@/lib/utils';
 import { generateBlockCSS, computeCommonVars } from '@/lib/responsive-utils';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { getProjectDomain } from '@/lib/url-utils';
 
-export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: Project, siteGlobals: SiteGlobal[] = [], blogPosts?: any[]): string {
+export function generateStaticHtml(page: Page, pageVariants: PageStub[] = [], project?: Project, siteGlobals: SiteGlobal[] = [], blogPosts?: any[]): string {
   const { renderToStaticMarkup } = require('react-dom/server');
 
   const settings = (project?.settings || {}) as ProjectSettings;
@@ -42,7 +42,7 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
   const commonVars = computeCommonVars(allBlocksToRender, project);
   const commonVarsCss = Object.entries(commonVars).map(([k, v]) => `${k}:${v};`).join('');
 
-  const blocksHtml = allBlocksToRender.map(block => renderBlock(block, allPages, project, renderToStaticMarkup, commonVars, blogPosts, pageLang)).join('\n');
+  const blocksHtml = allBlocksToRender.map(block => renderBlock(block, project, renderToStaticMarkup, commonVars, blogPosts, pageLang)).join('\n');
   const font = settings.fontFamily || 'Outfit';
   const pColor = settings.primaryColor || '#3b82f6';
   const sColor = settings.secondaryColor || '#10b981';
@@ -56,17 +56,8 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
   const langSubpath = pageLang === defLang ? '' : `/${pageLang}`;
   const fullPageUrl = `${baseUrl}${langSubpath}${pagePath}`;
 
-  // Find all variants: prefer translations_group_id, fallback to slug matching
-  const allVariants = allPages.filter(p => {
-    if (page.translations_group_id && p.translations_group_id) {
-      return page.translations_group_id === p.translations_group_id;
-    }
-    if (page.slug === 'home' && p.slug === 'home') return true;
-    return p.slug === page.slug;
-  });
-
-  // x-default points to the default-language variant
-  const defaultVariant = allVariants.find(v => (v.language || defLang) === defLang) || allVariants[0];
+  // pageVariants: sibling pages (same translation group) for hreflang
+  const defaultVariant = pageVariants.find((v: PageStub) => (v.language || defLang) === defLang) || pageVariants[0];
   const xDefaultPath = defaultVariant?.slug === 'home' ? '' : `/${defaultVariant?.slug || page.slug}`;
 
   return `
@@ -77,13 +68,13 @@ export function generateStaticHtml(page: Page, allPages: Page[] = [], project?: 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="canonical" href="${fullPageUrl}">
 
-    ${allVariants.map(v => {
+    ${pageVariants.map((v: PageStub) => {
       const vLang = v.language || defLang;
       const vSubpath = vLang === defLang ? '' : `/${vLang}`;
       const vPath = v.slug === 'home' ? '' : `/${v.slug}`;
       return `<link rel="alternate" hreflang="${vLang}" href="${baseUrl}${vSubpath}${vPath}" />`;
     }).join('\n    ')}
-    <link rel="alternate" hreflang="x-default" href="${baseUrl}${xDefaultPath}" />
+    ${pageVariants.length > 1 ? `<link rel="alternate" hreflang="x-default" href="${baseUrl}${xDefaultPath}" />` : ''}
 
     <title>${page.seo?.title || settings?.metaTitle || page.title}</title>
     <meta name="description" content="${page.seo?.description || settings?.metaDescription || ''}">
@@ -329,7 +320,7 @@ const StaticRegistry: Record<string, React.FC<any>> = Object.entries(BLOCK_DEFIN
   return acc;
 }, {} as Record<string, React.FC<any>>);
 
-export function renderBlock(block: Block, allPages: Page[], project: Project | undefined, renderToStaticMarkup: any, commonVars?: Record<string, string>, blogPosts?: any[], pageLang?: string): string {
+export function renderBlock(block: Block, project: Project | undefined, renderToStaticMarkup: any, commonVars?: Record<string, string>, blogPosts?: any[], pageLang?: string): string {
   const { type } = block;
   const blockId = `block-${block.id.substring(0, 8)}`;
   const responsiveCss = generateBlockCSS(blockId, block, project, commonVars);
@@ -349,7 +340,7 @@ export function renderBlock(block: Block, allPages: Page[], project: Project | u
       content={effectiveBlock.content}
       block={effectiveBlock}
       project={project}
-      allPages={allPages}
+      allPages={[]}
       isStatic={true}
       imageMemoryCache={{}}
       allBlogPosts={blogPosts || []}
@@ -358,36 +349,38 @@ export function renderBlock(block: Block, allPages: Page[], project: Project | u
   ));
 }
 
-export function generateSitemap(pages: Page[], project: Project, blogPosts?: any[]): string {
+export function generateSitemap(pages: PageStub[], project: Project, blogPosts?: any[]): string {
   const baseUrl = getProjectDomain(project);
   const defLang = project.settings?.defaultLanguage || 'it';
   const now = new Date().toISOString().split('T')[0];
 
   const urls = pages
-    .filter(page => page?.seo?.indexable !== false)
-    .map(page => {
+    .filter((page: any) => page?.seo?.indexable !== false)
+    .map((page: any) => {
       const pageLang = page.language || defLang;
       const langSubpath = pageLang === defLang ? '' : `/${pageLang}`;
       const pagePath = page.slug === 'home' ? '' : `/${page.slug}`;
       const url = `${baseUrl}${langSubpath}${pagePath}`;
 
-      const allVariants = pages.filter(p => {
+      const allVariants: PageStub[] = pages.filter((p: PageStub) => {
         if (page.translations_group_id && p.translations_group_id) {
           return page.translations_group_id === p.translations_group_id;
         }
         if (page.slug === 'home' && p.slug === 'home') return true;
         return p.slug === page.slug;
       });
-      const alternateLinks = allVariants.map(v => {
+      const alternateLinks = allVariants.length > 1 ? allVariants.map((v: PageStub) => {
         const vLang = v.language || defLang;
         const vSubpath = vLang === defLang ? '' : `/${vLang}`;
         const vPath = v.slug === 'home' ? '' : `/${v.slug}`;
         return `    <xhtml:link rel="alternate" hreflang="${vLang}" href="${baseUrl}${vSubpath}${vPath}" />`;
-      }).join('\n');
+      }).join('\n') : '';
 
-      const defaultVar = allVariants.find(v => (v.language || defLang) === defLang) || allVariants[0];
+      const defaultVar = allVariants.find((v: PageStub) => (v.language || defLang) === defLang) || allVariants[0];
       const xDefaultPath = defaultVar?.slug === 'home' ? '' : `/${defaultVar?.slug || page.slug}`;
-      const xDefaultLink = `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${xDefaultPath}" />`;
+      const xDefaultLink = allVariants.length > 1
+        ? `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${xDefaultPath}" />`
+        : '';
 
       return `
   <url>
@@ -400,26 +393,44 @@ ${xDefaultLink}
   </url>`;
     }).join('');
 
-  // Blog post URLs
-  const blogUrls = (blogPosts || [])
-    .filter(p => p.status === 'published' && p.seo?.indexable !== false)
-    .map(post => {
+  // Blog post URLs — with hreflang for translated siblings
+  const publishedPosts = (blogPosts || []).filter((p: any) => p.status === 'published' && p.seo?.indexable !== false);
+  const blogUrls = publishedPosts.map((post: any) => {
       const postLang = post.language || defLang;
       const langPrefix = postLang === defLang ? '' : `/${postLang}`;
+      // Find sibling translations via translation_group
+      const siblings = post.translation_group
+        ? publishedPosts.filter((p: any) => p.translation_group === post.translation_group)
+        : [post];
+      const alternateLinks = siblings.length > 1 ? siblings.map((s: any) => {
+        const sLang = s.language || defLang;
+        const sPrefix = sLang === defLang ? '' : `/${sLang}`;
+        return `    <xhtml:link rel="alternate" hreflang="${sLang}" href="${baseUrl}${sPrefix}/blog/${s.slug}" />`;
+      }).join('\n') : '';
+      const defaultSibling = siblings.find((s: any) => (s.language || defLang) === defLang) || siblings[0];
+      const xDefaultLink = siblings.length > 1
+        ? `    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/blog/${defaultSibling.slug}" />`
+        : '';
       return `
   <url>
     <loc>${baseUrl}${langPrefix}/blog/${post.slug}</loc>
     <lastmod>${post.updated_at ? post.updated_at.split('T')[0] : now}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+${alternateLinks}
+${xDefaultLink}
   </url>`;
     }).join('');
 
-  // Blog listing URLs per language (one entry per language that has published posts)
+  // Blog listing URLs per language — only for languages that don't already have a 'blog' page in the sitemap
   const siteLanguages = project.settings?.languages || [defLang];
+  const blogPageSlugs = new Set(pages.filter((p: any) => p.slug === 'blog').map((p: any) => p.language || defLang));
   const blogListUrls = (blogPosts && blogPosts.length > 0)
     ? siteLanguages
-        .filter(lang => (blogPosts || []).some((p: any) => (p.language || defLang) === lang && p.status === 'published'))
+        .filter(lang =>
+          !blogPageSlugs.has(lang) &&
+          (blogPosts || []).some((p: any) => (p.language || defLang) === lang && p.status === 'published')
+        )
         .map(lang => {
           const langPrefix = lang === defLang ? '' : `/${lang}`;
           return `

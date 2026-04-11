@@ -4,7 +4,8 @@ import { generateStaticHtml, generateSitemap, generateRobotsTxt } from '@/lib/ge
 import { generateBlogListingHtml, generateBlogPostHtml } from '@/lib/generate-blog-static';
 import { getProjectDomain } from '@/lib/url-utils';
 import { createClient } from '@/lib/supabase/server';
-import { Page, SiteGlobal, BlogPost } from '@/types/editor';
+import { Page, PageStub, SiteGlobal, BlogPost } from '@/types/editor';
+
 import crypto from 'crypto';
 
 
@@ -101,6 +102,24 @@ export async function deployToCloudflare(projectId: string) {
     const siteLanguages = project.settings?.languages || [defaultLanguage];
     const isMultilingual = siteLanguages.length > 1;
 
+    // Build lightweight page stubs for hreflang (no blocks payload)
+    const pageStubs: PageStub[] = pages.map((p: any) => ({
+      id: p.id,
+      slug: p.slug,
+      language: p.language,
+      translations_group_id: p.translations_group_id,
+    }));
+
+    // Pre-group blog post siblings by translation_group for efficient hreflang lookup
+    const postSiblingMap = new Map<string, BlogPost[]>();
+    for (const post of blogPosts) {
+      const group = post.translation_group;
+      if (group) {
+        if (!postSiblingMap.has(group)) postSiblingMap.set(group, []);
+        postSiblingMap.get(group)!.push(post);
+      }
+    }
+
     for (const page of pages) {
       // Filter blog posts by page language for multilingual sites
       const pageLangForPosts = page.language || defaultLanguage;
@@ -108,7 +127,16 @@ export async function deployToCloudflare(projectId: string) {
         ? blogPosts.filter(p => (p.language || defaultLanguage) === pageLangForPosts)
         : blogPosts;
 
-      const htmlContent = generateStaticHtml(page as Page, pages as any as Page[], project, globals, pageBlogPosts);
+      // Pass only sibling stubs (same translation group) for hreflang
+      const pageLangVal = page.language || defaultLanguage;
+      const pageVariants = pageStubs.filter(s =>
+        page.translations_group_id
+          ? s.translations_group_id === page.translations_group_id
+          : (page.slug === 'home' ? s.slug === 'home' : s.slug === page.slug)
+      );
+
+      const htmlContent = generateStaticHtml(page as Page, pageVariants, project, globals, pageBlogPosts);
+      void pageLangVal; // used above
       collectAssets(htmlContent);
 
       const pageLang = page.language || defaultLanguage;
@@ -155,12 +183,17 @@ export async function deployToCloudflare(projectId: string) {
           if (defaultBlogPage) {
             // Clone the default blog page with the target language
             const clonedPage = { ...defaultBlogPage, language: lang } as Page;
-            const listingHtml = generateStaticHtml(clonedPage, pages as any as Page[], project, globals, langPosts);
+            const cloneVariants = pageStubs.filter(s =>
+              defaultBlogPage.translations_group_id
+                ? s.translations_group_id === defaultBlogPage.translations_group_id
+                : s.slug === defaultBlogPage.slug
+            );
+            const listingHtml = generateStaticHtml(clonedPage, cloneVariants, project, globals, langPosts);
             fs.writeFileSync(path.join(blogDir, 'index.html'), listingHtml);
             collectAssets(listingHtml);
             console.log(`Generated ${langSubfolder ? langSubfolder + '/' : ''}blog/index.html (cloned from default)`);
           } else {
-            const listingHtml = generateBlogListingHtml(langPosts, pages as Page[], project, langUrlPrefix, globals);
+            const listingHtml = generateBlogListingHtml(langPosts, project, langUrlPrefix, globals);
             fs.writeFileSync(path.join(blogDir, 'index.html'), listingHtml);
             collectAssets(listingHtml);
             console.log(`Generated ${langSubfolder ? langSubfolder + '/' : ''}blog/index.html (standalone)`);
@@ -169,7 +202,10 @@ export async function deployToCloudflare(projectId: string) {
 
         // Individual post pages
         for (const post of langPosts) {
-          const postHtml = generateBlogPostHtml(post, project, langUrlPrefix, pages as Page[], globals);
+          const siblings = post.translation_group
+            ? (postSiblingMap.get(post.translation_group) || [post])
+            : [post];
+          const postHtml = generateBlogPostHtml(post, project, langUrlPrefix, siblings, globals);
           fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), postHtml);
           collectAssets(postHtml);
           console.log(`Generated ${langSubfolder ? langSubfolder + '/' : ''}blog/${post.slug}.html`);
@@ -178,8 +214,8 @@ export async function deployToCloudflare(projectId: string) {
       }
     }
 
-    // 3.2. Generate Sitemap, Robots.txt & _headers (for Cloudflare mime types)
-    const sitemapContent = generateSitemap(pages as any as Page[], project, blogPosts);
+    // 3.2. Generate Sitemap, Robots.txt, _headers & _redirects
+    const sitemapContent = generateSitemap(pageStubs, project, blogPosts);
     const robotsContent = generateRobotsTxt(project, pages as any as Page[]);
     const headersContent = `
 /sitemap.xml
@@ -188,9 +224,19 @@ export async function deployToCloudflare(projectId: string) {
   Content-Type: text/plain
 `.trim();
 
+    // For multilingual sites, redirect /{defaultLang}/* → /* so the default language
+    // subfolder doesn't serve broken pages (the default lang lives at root).
+    const redirectsContent = isMultilingual
+      ? [
+          `/${defaultLanguage} / 301`,
+          `/${defaultLanguage}/* /:splat 301`,
+        ].join('\n')
+      : '';
+
     fs.writeFileSync(path.join(tempDir, 'sitemap.xml'), sitemapContent);
     fs.writeFileSync(path.join(tempDir, 'robots.txt'), robotsContent);
     fs.writeFileSync(path.join(tempDir, '_headers'), headersContent);
+    if (redirectsContent) fs.writeFileSync(path.join(tempDir, '_redirects'), redirectsContent);
     console.log('Generated sitemap.xml, robots.txt and _headers');
 
     // Second pass: download unique assets from Supabase Storage

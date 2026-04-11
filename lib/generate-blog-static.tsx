@@ -1,5 +1,5 @@
 import 'server-only';
-import { BlogPost, Project, Page, ProjectSettings, SiteGlobal } from '@/types/editor';
+import { BlogPost, Project, ProjectSettings, SiteGlobal } from '@/types/editor';
 import { toPx } from '@/lib/utils';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { getProjectDomain } from '@/lib/url-utils';
@@ -12,7 +12,6 @@ import { marked } from 'marked';
  */
 export function generateBlogListingHtml(
   posts: BlogPost[],
-  allPages: Page[],
   project: Project,
   langPrefix: string = '',
   siteGlobals: SiteGlobal[] = []
@@ -38,11 +37,11 @@ export function generateBlogListingHtml(
     const footerGlobal = siteGlobals.find(g => g.language === pageLang && g.type === 'footer');
     if (navGlobal) {
       const navBlock = { id: 'global-nav', type: 'navigation', content: navGlobal.content, style: navGlobal.style };
-      listingNavHtml = renderBlock(navBlock as any, allPages, project, renderToStaticMarkup);
+      listingNavHtml = renderBlock(navBlock as any, project, renderToStaticMarkup);
     }
     if (footerGlobal) {
       const footerBlock = { id: 'global-footer', type: 'footer', content: { ...footerGlobal.content, _navLogoFallback: footerGlobal.content?.logoImage ? undefined : siteGlobals.find(g => g.language === pageLang && g.type === 'navigation')?.content?.logoImage, _language: pageLang }, style: footerGlobal.style };
-      listingFooterHtml = renderBlock(footerBlock as any, allPages, project, renderToStaticMarkup);
+      listingFooterHtml = renderBlock(footerBlock as any, project, renderToStaticMarkup);
     }
   }
 
@@ -241,7 +240,7 @@ export function generateBlogPostHtml(
   post: BlogPost,
   project: Project,
   langPrefix: string = '',
-  allPages: Page[] = [],
+  postSiblings: BlogPost[] = [],
   siteGlobals: SiteGlobal[] = [],
   isStatic: boolean = true
 ): string {
@@ -279,11 +278,11 @@ export function generateBlogPostHtml(
     const footerGlobal = siteGlobals.find(g => g.language === postLang && g.type === 'footer');
     if (navGlobal) {
       const navBlock = { id: 'global-nav', type: 'navigation', content: navGlobal.content, style: navGlobal.style };
-      navHtml = renderBlock(navBlock as any, allPages, project, renderToStaticMarkup);
+      navHtml = renderBlock(navBlock as any, project, renderToStaticMarkup);
     }
     if (footerGlobal) {
       const footerBlock = { id: 'global-footer', type: 'footer', content: { ...footerGlobal.content, _navLogoFallback: footerGlobal.content?.logoImage ? undefined : navGlobal?.content?.logoImage, _language: postLang }, style: footerGlobal.style };
-      footerHtml = renderBlock(footerBlock as any, allPages, project, renderToStaticMarkup);
+      footerHtml = renderBlock(footerBlock as any, project, renderToStaticMarkup);
     }
   }
 
@@ -320,6 +319,15 @@ export function generateBlogPostHtml(
   <title>${seoTitle}</title>
   <meta name="description" content="${seoDesc}">
   <link rel="canonical" href="${baseUrl}${langPrefix}/blog/${post.slug}">
+  ${postSiblings.length > 1 ? postSiblings.map(s => {
+    const sLang = s.language || settings?.defaultLanguage || 'it';
+    const sPrefix = sLang === (settings?.defaultLanguage || 'it') ? '' : `/${sLang}`;
+    return `<link rel="alternate" hreflang="${sLang}" href="${baseUrl}${sPrefix}/blog/${s.slug}" />`;
+  }).join('\n  ') : ''}
+  ${postSiblings.length > 1 ? (() => {
+    const defSibling = postSiblings.find(s => (s.language || settings?.defaultLanguage || 'it') === (settings?.defaultLanguage || 'it')) || postSiblings[0];
+    return `<link rel="alternate" hreflang="x-default" href="${baseUrl}/blog/${defSibling.slug}" />`;
+  })() : ''}
   ${post.seo?.indexable === false ? '<meta name="robots" content="noindex, nofollow">' : '<meta name="robots" content="index, follow">'}
 
   <meta property="og:title" content="${seoTitle}">

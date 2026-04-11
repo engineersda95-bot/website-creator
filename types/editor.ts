@@ -137,6 +137,14 @@ export interface ProjectSettings {
   };
 }
 
+/** Lightweight page descriptor — used in static generation instead of full Page objects */
+export interface PageStub {
+  id: string;
+  slug: string;
+  language?: string;
+  translations_group_id?: string;
+}
+
 export interface Project {
   id: string;
   user_id: string;
