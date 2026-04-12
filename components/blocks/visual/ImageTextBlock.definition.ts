@@ -42,7 +42,7 @@ export const imageTextDefinition: BlockDefinition = {
       '--text-order': val('imagePosition', 'left') === 'left' ? '1' : '0',
       '--image-radius': toPx(val('imageBorderRadius', 24)),
       '--image-aspect': block.content?.imageAspectRatio || val('imageAspectRatio', '16/9'),
-      '--text-v-align': viewport === 'mobile' ? 'flex-start' : (val('verticalAlign', 'center') === 'top' ? 'flex-start' : val('verticalAlign', 'center') === 'bottom' ? 'flex-end' : 'center'),
+      '--text-v-align': (val('verticalAlign', 'center') === 'top' ? 'flex-start' : val('verticalAlign', 'center') === 'bottom' ? 'flex-end' : 'center'),
     };
   }
 };

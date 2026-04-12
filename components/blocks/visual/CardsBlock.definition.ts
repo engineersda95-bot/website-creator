@@ -62,7 +62,7 @@ export const cardsDefinition: BlockDefinition = {
       '--card-subtitle-fs': toPx(val('cardSubtitleSize', '1rem'), '1rem'),
       '--image-radius': toPx(val('imageBorderRadius', 24), '24px'),
       '--image-aspect': block.content?.imageAspectRatio || val('imageAspectRatio', '16/9'),
-      '--text-v-align': viewport === 'mobile' ? 'flex-start' : (val('verticalAlign', 'center') === 'top' ? 'flex-start' : val('verticalAlign', 'center') === 'bottom' ? 'flex-end' : 'center'),
+      '--text-v-align': (val('verticalAlign', 'center') === 'top' ? 'flex-start' : val('verticalAlign', 'center') === 'bottom' ? 'flex-end' : 'center'),
     };
   }
 };

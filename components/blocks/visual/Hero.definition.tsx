@@ -102,7 +102,7 @@ export const heroDefinition: BlockDefinition = {
     return {
       ...vars,
       '--hero-min-height': toPx(val('minHeight', '600px')),
-      '--text-v-align': viewport === 'mobile' ? 'flex-start' : (val('verticalAlign', 'center') === 'top' ? 'flex-start' : val('verticalAlign', 'center') === 'bottom' ? 'flex-end' : 'center'),
+      '--text-v-align': (val('verticalAlign', 'center') === 'top' ? 'flex-start' : val('verticalAlign', 'center') === 'bottom' ? 'flex-end' : 'center'),
     };
   }
 };
