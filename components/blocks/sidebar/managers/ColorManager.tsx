@@ -4,6 +4,7 @@ import React from 'react';
 import { Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ColorManagerProps } from '@/types/sidebar';
+import { ColorInput } from '../ui/ColorInput';
 
 export function ColorManager({ 
    getStyleValue, 
@@ -84,38 +85,26 @@ export function ColorManager({
 
          <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
-               <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo</label>
-                  <input
-                     type="color"
-                     className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                     value={currentBg}
-                     onChange={(e) => updateStyle({ [bgKey]: e.target.value })}
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo</label>
-                  <input
-                     type="color"
-                     className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                     value={currentText}
-                     onChange={(e) => updateStyle({ [textKey]: e.target.value })}
-                  />
-               </div>
+               <ColorInput 
+                  label="Sfondo"
+                  value={currentBg}
+                  onChange={(val) => updateStyle({ [bgKey]: val })}
+               />
+               <ColorInput 
+                  label="Testo"
+                  value={currentText}
+                  onChange={(val) => updateStyle({ [textKey]: val })}
+               />
             </div>
 
             {getStyleValue(bgTypeKey, 'solid') === 'gradient' && (
                <div className="animate-in slide-in-from-top-2 duration-300 space-y-4 pt-4 border-t border-zinc-50">
                   <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Fine</label>
-                        <input
-                           type="color"
-                           className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                           value={getStyleValue(bgColor2Key, '#f3f4f6')}
-                           onChange={(e) => updateStyle({ [bgColor2Key]: e.target.value })}
-                        />
-                     </div>
+                     <ColorInput 
+                        label="Fine"
+                        value={getStyleValue(bgColor2Key, '#f3f4f6')}
+                        onChange={(val) => updateStyle({ [bgColor2Key]: val })}
+                     />
                      <div className="space-y-2">
                         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Direzione</label>
                         <select

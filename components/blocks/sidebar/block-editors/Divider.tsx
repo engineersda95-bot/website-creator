@@ -16,7 +16,8 @@ import {
   UnifiedSection as Section, 
   useUnifiedSections, 
   CategoryHeader, 
-  ManagerWrapper
+  ManagerWrapper,
+  ColorInput
 } from '../SharedSidebarComponents';
 
 interface DividerProps {
@@ -70,13 +71,11 @@ export const Divider: React.FC<DividerProps> = ({
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase block">Colore Linea</label>
-            <input
-              type="color"
-              className="w-full h-8 border-2 border-zinc-50 rounded-lg cursor-pointer bg-transparent"
+          <div className="space-y-4">
+            <ColorInput 
+              label="Colore Linea"
               value={getStyleValue('dividerColor', defaultTextColor)}
-              onChange={(e) => updateStyle({ dividerColor: e.target.value })}
+              onChange={(val) => updateStyle({ dividerColor: val })}
             />
             <button
               onClick={() => updateStyle({ dividerColor: undefined })}

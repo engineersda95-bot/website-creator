@@ -27,7 +27,8 @@ import {
   UnifiedSection as Section, 
   useUnifiedSections, 
   CategoryHeader, 
-  ManagerWrapper
+  ManagerWrapper,
+  ColorInput
 } from '../SharedSidebarComponents';
 import { useEditorStore } from '@/store/useEditorStore';
 
@@ -277,29 +278,31 @@ export const Benefits: React.FC<BenefitsProps> = ({
 
         {isCard && (
           <div className="grid grid-cols-2 gap-3 pt-4 border-t border-zinc-100 animate-in fade-in slide-in-from-top-2">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-zinc-400 uppercase">Sfondo Card</label>
-              <div className="flex gap-1.5">
-                <input
-                  type="color"
-                  className="flex-1 h-8 border border-zinc-200 rounded-lg cursor-pointer bg-transparent"
-                  value={content.cardBgColor || '#ffffff'}
-                  onChange={(e) => updateContent({ cardBgColor: e.target.value })}
-                />
-                <button onClick={() => updateContent({ cardBgColor: undefined })} className="p-1.5 text-zinc-400 hover:text-zinc-900 transition-all border border-dashed rounded-lg"><Trash2 size={10}/></button>
-              </div>
+            <div className="space-y-2">
+              <ColorInput 
+                label="Sfondo Card"
+                value={content.cardBgColor || '#ffffff'}
+                onChange={(val) => updateContent({ cardBgColor: val })}
+              />
+              <button 
+                onClick={() => updateContent({ cardBgColor: undefined })} 
+                className="w-full py-1.5 text-[9px] font-bold text-zinc-400 border border-dashed rounded-lg hover:bg-zinc-50 hover:text-zinc-900 transition-all uppercase tracking-wider"
+              >
+                Reset
+              </button>
             </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-zinc-400 uppercase">Testo Card</label>
-              <div className="flex gap-1.5">
-                <input
-                  type="color"
-                  className="flex-1 h-8 border border-zinc-200 rounded-lg cursor-pointer bg-transparent"
-                  value={content.cardTextColor || '#000000'}
-                  onChange={(e) => updateContent({ cardTextColor: e.target.value })}
-                />
-                <button onClick={() => updateContent({ cardTextColor: undefined })} className="p-1.5 text-zinc-400 hover:text-zinc-900 transition-all border border-dashed rounded-lg"><Trash2 size={10}/></button>
-              </div>
+            <div className="space-y-2">
+              <ColorInput 
+                label="Testo Card"
+                value={content.cardTextColor || '#000000'}
+                onChange={(val) => updateContent({ cardTextColor: val })}
+              />
+              <button 
+                onClick={() => updateContent({ cardTextColor: undefined })} 
+                className="w-full py-1.5 text-[9px] font-bold text-zinc-400 border border-dashed rounded-lg hover:bg-zinc-50 hover:text-zinc-900 transition-all uppercase tracking-wider"
+              >
+                Reset
+              </button>
             </div>
           </div>
         )}

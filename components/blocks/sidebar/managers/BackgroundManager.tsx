@@ -6,8 +6,8 @@ import { resolveImageUrl } from '@/lib/image-utils';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { cn } from '@/lib/utils';
 import { Eye, EyeOff } from 'lucide-react';
-
 import { BackgroundManagerProps } from '@/types/sidebar';
+import { ColorInput } from '../ui/ColorInput';
 
 export function BackgroundManager({ selectedBlock, updateContent, updateStyle, getStyleValue }: BackgroundManagerProps) {
    const { uploadImage, isUploading } = useEditorStore();
@@ -118,25 +118,17 @@ export function BackgroundManager({ selectedBlock, updateContent, updateStyle, g
                   {!getStyleValue('overlayDisabled', false) && (
                      <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
                         <div className="grid grid-cols-2 gap-4">
-                           <div>
-                              <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block tracking-tighter">Colore {getStyleValue('overlayType', 'solid') === 'gradient' ? 'Inizio' : 'Overlay'}</label>
-                              <input
-                                 type="color"
-                                 className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                                 value={getStyleValue('overlayColor', '#000000')}
-                                 onChange={(e) => updateStyle({ overlayColor: e.target.value })}
-                              />
-                           </div>
+                           <ColorInput 
+                              label={`Colore ${getStyleValue('overlayType', 'solid') === 'gradient' ? 'Inizio' : 'Overlay'}`}
+                              value={getStyleValue('overlayColor', '#000000')}
+                              onChange={(val) => updateStyle({ overlayColor: val })}
+                           />
                            {getStyleValue('overlayType', 'solid') === 'gradient' && (
-                              <div>
-                                 <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block tracking-tighter">Colore Fine</label>
-                                 <input
-                                    type="color"
-                                    className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                                    value={getStyleValue('overlayColor2', '#111111')}
-                                    onChange={(e) => updateStyle({ overlayColor2: e.target.value })}
-                                 />
-                              </div>
+                              <ColorInput 
+                                 label="Colore Fine"
+                                 value={getStyleValue('overlayColor2', '#111111')}
+                                 onChange={(val) => updateStyle({ overlayColor2: val })}
+                              />
                            )}
                         </div>
 

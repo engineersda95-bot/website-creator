@@ -4,6 +4,7 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn, formatRichText } from '@/lib/utils';
 import { Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, Link, Unlink, Type, Smile } from 'lucide-react';
+import { ColorInput } from '../blocks/sidebar/ui/ColorInput';
 
 const COMMON_EMOJIS = ['😀','😍','🎉','👍','⭐','🔥','💡','✅','❤️','🚀','📞','📧','📍','🕐','💰','🎯','✨','🏠','🍕','💪'];
 
@@ -137,12 +138,10 @@ const RichTextToolbar: React.FC<{ containerRef: React.RefObject<HTMLElement | nu
           <Type size={14} />
         </Btn>
         {showColorPicker && (
-          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 p-2 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl" onMouseDown={(e) => e.preventDefault()}>
-            <input
-              type="color"
-              className="w-7 h-7 rounded cursor-pointer block border-0 bg-transparent"
-              onInput={(e) => exec('foreColor', (e.target as HTMLInputElement).value)}
-              defaultValue="#ffffff"
+          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 p-2 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl w-[160px]" onMouseDown={(e) => e.preventDefault()}>
+            <ColorInput 
+              value={document.queryCommandValue('foreColor') || '#ffffff'}
+              onChange={(val) => exec('foreColor', val)}
             />
           </div>
         )}

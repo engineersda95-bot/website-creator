@@ -17,7 +17,8 @@ import {
   AnchorManager,
   RichTextarea,
   PatternManager,
-  CTAManager
+  CTAManager,
+  ColorInput
 } from '../SharedSidebarComponents';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { cn } from '@/lib/utils';
@@ -179,13 +180,11 @@ export const Promo: React.FC<PromoProps> = ({
             </div>
             {!getStyleValue('overlayDisabled', true) && (
               <div className="space-y-3">
-                <div>
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block tracking-tighter">Colore Overlay</label>
-                  <input
-                    type="color"
-                    className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
+                <div className="space-y-4">
+                  <ColorInput 
+                    label="Colore Overlay"
                     value={getStyleValue('overlayColor', '#000000')}
-                    onChange={(e) => updateStyle({ overlayColor: e.target.value })}
+                    onChange={(val) => updateStyle({ overlayColor: val })}
                   />
                 </div>
                 <div>

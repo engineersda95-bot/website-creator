@@ -27,6 +27,7 @@ import { ImageUpload } from '@/components/shared/ImageUpload';
 import { improveTextWithAI, translateBlogPostWithAI, type AITextAction, type AITextTone } from '@/app/actions/ai-generator';
 import { SimpleSlider } from '@/components/blocks/sidebar/ui/SimpleSlider';
 import { LanguageBadge } from '@/components/shared/LanguageBadge';
+import { ColorInput } from '@/components/blocks/sidebar/ui/ColorInput';
 import { marked } from 'marked';
 import { LANGUAGES } from '@/lib/editor-constants';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -86,6 +87,7 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
   const [sidebarSection, setSidebarSection] = useState<'config' | 'seo' | 'style'>('config');
   const [showCanvasPreview, setShowCanvasPreview] = useState(false);
   const [previewViewport, setPreviewViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   // Project-level blog post display settings (shared across all articles)
   const [projectSettings, setProjectSettings] = useState(() => initialProject.settings || {});
@@ -951,8 +953,11 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
               {/* Text color */}
               <div className="relative flex items-center">
                 <button
-                  onMouseDown={(e) => { e.preventDefault(); colorInputRef.current?.click(); }}
-                  className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 hover:bg-zinc-200/60 transition-all relative"
+                  onMouseDown={(e) => { e.preventDefault(); setShowColorPicker(!showColorPicker); }}
+                  className={cn(
+                    "p-1.5 rounded-md transition-all relative",
+                    showColorPicker ? "bg-zinc-900 text-white" : "text-zinc-500 hover:text-zinc-800 hover:bg-zinc-200/60"
+                  )}
                   title="Colore testo"
                 >
                   <Palette size={14} />
@@ -963,17 +968,21 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
                   />
                 </button>
                 <button
-                  onMouseDown={(e) => { e.preventDefault(); editor?.chain().focus().unsetColor().run(); }}
+                  onMouseDown={(e) => { e.preventDefault(); editor?.chain().focus().unsetColor().run(); setShowColorPicker(false); }}
                   className="p-1 rounded-md text-zinc-300 hover:text-zinc-500 transition-all text-[10px] font-bold"
                   title="Rimuovi colore"
                 >✕</button>
-                <input
-                  ref={colorInputRef}
-                  type="color"
-                  className="absolute opacity-0 w-0 h-0 pointer-events-none"
-                  value={editor?.getAttributes('textStyle').color || '#000000'}
-                  onChange={(e) => editor?.chain().focus().setColor(e.target.value).run()}
-                />
+
+                {showColorPicker && (
+                  <div className="absolute top-full left-0 mt-2 p-3 bg-white border border-zinc-200 rounded-xl shadow-xl z-[100] animate-in fade-in zoom-in-95 duration-200 w-[180px]">
+                    <ColorInput 
+                      value={editor?.getAttributes('textStyle').color || '#000000'}
+                      onChange={(val) => {
+                        editor?.chain().focus().setColor(val).run();
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Voice dictation inline with toolbar */}

@@ -5,6 +5,7 @@ import { Layers } from 'lucide-react';
 import { SectionHeader } from '../ui/SectionHeader';
 
 import { BorderShadowManagerProps } from '@/types/sidebar';
+import { ColorInput } from '../ui/ColorInput';
 
 export function BorderShadowManager({ getStyleValue, updateStyle }: BorderShadowManagerProps) {
    return (
@@ -32,15 +33,11 @@ export function BorderShadowManager({ getStyleValue, updateStyle }: BorderShadow
             </div>
             {getStyleValue('borderWidth', 0) > 0 && (
                <div className="grid grid-cols-2 gap-4 animate-in fade-in zoom-in-95 duration-200">
-                  <div>
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Colore Bordo</label>
-                     <input
-                        type="color"
-                        className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                        value={getStyleValue('borderColor', '#e5e7eb')}
-                        onChange={(e) => updateStyle({ borderColor: e.target.value })}
-                     />
-                  </div>
+                  <ColorInput 
+                     label="Colore Bordo"
+                     value={getStyleValue('borderColor', '#e5e7eb')}
+                     onChange={(val) => updateStyle({ borderColor: val })}
+                  />
                   <div>
                      <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Spessore (px)</label>
                      <input

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Palette, Layout, Type, Settings as SettingsIcon, Mic, MicOff, Plus, Loader2, Sparkles, Wand2, Info, Image as ImageIcon, AlertCircle, X, ChevronRight, ChevronLeft, Check, Trash2, ChevronDown, ChevronUp, Settings } from 'lucide-react';
 import { FontManager } from '../../blocks/sidebar/ui/FontManager';
 import { cn } from '@/lib/utils';
+import { ColorInput } from '../../blocks/sidebar/ui/ColorInput';
 import { BUSINESS_TYPES } from '@/lib/editor-constants';
 import { generateProjectWithAI, validateProjectDescription } from '@/app/actions/ai-generator';
 import { supabase } from '@/lib/supabase';
@@ -69,7 +70,6 @@ const SUGGESTED_PAGES: Record<string, { name: string; description: string }[]> =
   ],
 };
 
-// Removed SITE_OBJECTIVES select options as it's now a free-text input
 
 const TONE_OPTIONS = [
   { value: 'professional', label: 'Professionale' },
@@ -1108,51 +1108,84 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Accento</label>
-                          <div className="flex items-center gap-3 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all">
-                            {accentColor ? (
-                              <input type="color" className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none" value={accentColor} onChange={e => setAccentColor(e.target.value)} />
-                            ) : (
-                              <button onClick={() => setAccentColor('#3b82f6')} className="w-8 h-8 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 hover:border-zinc-400 hover:text-zinc-600 transition-all">
-                                <Plus size={12} />
-                              </button>
-                            )}
-                            <div className="flex-1 min-w-0">
-                               {accentColor ? <span className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-tighter">{accentColor}</span> : <span className="text-[10px] text-zinc-400 italic">Predefinito (AI)</span>}
+                          {accentColor ? (
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                               <div className="flex-1">
+                                  <ColorInput value={accentColor} onChange={setAccentColor} />
+                               </div>
+                               <button 
+                                  onClick={() => setAccentColor(null)} 
+                                  className="w-10 h-10 flex items-center justify-center text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shrink-0"
+                                  title="Reset color"
+                               >
+                                  <X size={14} />
+                               </button>
                             </div>
-                            {accentColor && <button onClick={() => setAccentColor(null)} className="text-zinc-300 hover:text-red-500"><X size={12} /></button>}
-                          </div>
+                          ) : (
+                            <button 
+                               onClick={() => setAccentColor('#3b82f6')} 
+                               className="flex items-center gap-3 px-3 py-2 w-full bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all group"
+                            >
+                               <div className="w-8 h-8 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 group-hover:border-zinc-400 group-hover:text-zinc-600 transition-all">
+                                  <Plus size={12} />
+                               </div>
+                               <span className="text-[10px] text-zinc-400 italic">Predefinito (AI)</span>
+                            </button>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Sfondo</label>
-                          <div className="flex items-center gap-3 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all">
-                            {bgColor ? (
-                              <input type="color" className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none" value={bgColor} onChange={e => setBgColor(e.target.value)} />
-                            ) : (
-                              <button onClick={() => setBgColor('#ffffff')} className="w-8 h-8 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 hover:border-zinc-400 hover:text-zinc-600 transition-all">
-                                <Plus size={12} />
-                              </button>
-                            )}
-                            <div className="flex-1 min-w-0">
-                               {bgColor ? <span className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-tighter">{bgColor}</span> : <span className="text-[10px] text-zinc-400 italic">Predefinito (AI)</span>}
+                          {bgColor ? (
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                               <div className="flex-1">
+                                  <ColorInput value={bgColor} onChange={setBgColor} />
+                               </div>
+                               <button 
+                                  onClick={() => setBgColor(null)} 
+                                  className="w-10 h-10 flex items-center justify-center text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shrink-0"
+                                  title="Reset color"
+                               >
+                                  <X size={14} />
+                               </button>
                             </div>
-                            {bgColor && <button onClick={() => setBgColor(null)} className="text-zinc-300 hover:text-red-500"><X size={12} /></button>}
-                          </div>
+                          ) : (
+                            <button 
+                               onClick={() => setBgColor('#ffffff')} 
+                               className="flex items-center gap-3 px-3 py-2 w-full bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all group"
+                            >
+                               <div className="w-8 h-8 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 group-hover:border-zinc-400 group-hover:text-zinc-600 transition-all">
+                                  <Plus size={12} />
+                               </div>
+                               <span className="text-[10px] text-zinc-400 italic">Predefinito (AI)</span>
+                            </button>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Testo</label>
-                          <div className="flex items-center gap-3 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all">
-                            {textColor ? (
-                              <input type="color" className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none" value={textColor} onChange={e => setTextColor(e.target.value)} />
-                            ) : (
-                              <button onClick={() => setTextColor('#111111')} className="w-8 h-8 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 hover:border-zinc-400 hover:text-zinc-600 transition-all">
-                                <Plus size={12} />
-                              </button>
-                            )}
-                            <div className="flex-1 min-w-0">
-                               {textColor ? <span className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-tighter">{textColor}</span> : <span className="text-[10px] text-zinc-400 italic">Auto (AI)</span>}
+                          {textColor ? (
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                               <div className="flex-1">
+                                  <ColorInput value={textColor} onChange={setTextColor} />
+                               </div>
+                               <button 
+                                  onClick={() => setTextColor(null)} 
+                                  className="w-10 h-10 flex items-center justify-center text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shrink-0"
+                                  title="Reset color"
+                                >
+                                  <X size={14} />
+                                </button>
                             </div>
-                            {textColor && <button onClick={() => setTextColor(null)} className="text-zinc-300 hover:text-red-500"><X size={12} /></button>}
-                          </div>
+                          ) : (
+                            <button 
+                               onClick={() => setTextColor('#111111')} 
+                               className="flex items-center gap-3 px-3 py-2 w-full bg-zinc-50 border border-zinc-200 rounded-xl hover:bg-white transition-all group"
+                            >
+                               <div className="w-8 h-8 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 group-hover:border-zinc-400 group-hover:text-zinc-600 transition-all">
+                                  <Plus size={12} />
+                               </div>
+                               <span className="text-[10px] text-zinc-400 italic">Auto (AI)</span>
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div className="text-[10px] text-zinc-400 bg-amber-50/50 p-2.5 rounded-lg border border-amber-100/50">

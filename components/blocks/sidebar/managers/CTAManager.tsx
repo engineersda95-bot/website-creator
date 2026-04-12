@@ -2,6 +2,7 @@ import { Link as LinkIcon, Palette, Settings2, MousePointer2, Check } from 'luci
 import { cn } from '@/lib/utils';
 import { CTAManagerProps } from '@/types/sidebar';
 import { SectionHeader } from '../ui/SectionHeader';
+import { ColorInput } from '../ui/ColorInput';
 
 export function CTAManager({ 
    content, 
@@ -76,24 +77,16 @@ export function CTAManager({
                   <section className="pt-8 border-t border-zinc-100">
                      <SectionHeader icon={Palette} title="Colori Personalizzati" colorClass="text-blue-500" />
                      <div className="grid grid-cols-2 gap-4 mt-6">
-                        <div className="space-y-4">
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider pl-1 block">Sfondo</label>
-                           <input 
-                              type="color" 
-                              className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                              value={getVal('BgColor', '#3b82f6')}
-                              onChange={(e) => updateVal('BgColor', e.target.value)}
-                           />
-                        </div>
-                        <div className="space-y-4">
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider pl-1 block">Testo</label>
-                           <input 
-                              type="color" 
-                              className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                              value={getVal('TextColor', '#ffffff')}
-                              onChange={(e) => updateVal('TextColor', e.target.value)}
-                           />
-                        </div>
+                        <ColorInput 
+                           label="Sfondo"
+                           value={getVal('BgColor', '#3b82f6')}
+                           onChange={(val) => updateVal('BgColor', val)}
+                        />
+                        <ColorInput 
+                           label="Testo"
+                           value={getVal('TextColor', '#ffffff')}
+                           onChange={(val) => updateVal('TextColor', val)}
+                        />
                      </div>
                   </section>
 

@@ -20,6 +20,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ColorInput } from './ColorInput';
 
 interface RichEditorProps {
   label?: string;
@@ -176,14 +177,12 @@ export function RichEditor({ label, value, onChange, placeholder }: RichEditorPr
             </ToolbarButton>
             
             {showColorPicker && (
-              <div className="absolute top-full left-0 mt-1 p-3 bg-white border border-zinc-200 rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200">
-                <input 
-                  type="color" 
-                  className="w-8 h-8 rounded cursor-pointer block"
-                  onInput={(e) => {
-                    editor.chain().focus().setColor((e.target as HTMLInputElement).value).run();
-                  }}
+              <div className="absolute top-full left-0 mt-1 p-3 bg-white border border-zinc-200 rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 w-[180px]">
+                <ColorInput 
                   value={editor.getAttributes('textStyle').color || '#000000'}
+                  onChange={(val) => {
+                    editor.chain().focus().setColor(val).run();
+                  }}
                 />
               </div>
             )}

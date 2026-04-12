@@ -21,6 +21,7 @@ import {
   BackgroundManager,
   BorderShadowManager,
   ColorManager,
+  ColorInput,
   CTAManager,
   LayoutFields,
   LayoutGridSlider,
@@ -330,22 +331,20 @@ export const Pricing: React.FC<PricingProps> = ({
             showTitle={false}
           />
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-1">
-              <Star size={10} className="text-amber-400 fill-amber-400" /> Colore Evidenziatore (Piani Pro)
-            </label>
-            <div className="flex gap-3 items-center">
-              <input
-                type="color"
-                className="w-full h-8 border border-zinc-200 rounded-lg cursor-pointer bg-transparent"
-                value={getStyleValue('highlightColor', '#000000')}
-                onChange={(e) => updateStyle({ highlightColor: e.target.value })}
-              />
+          <div className="space-y-4">
+            <div className="flex gap-2 items-center">
+              <div className="flex-1">
+                <ColorInput 
+                  label="Colore Evidenziatore (Piani Pro)"
+                  value={getStyleValue('highlightColor', '#000000')}
+                  onChange={(val) => updateStyle({ highlightColor: val })}
+                />
+              </div>
               <button
                 onClick={() => updateStyle({ highlightColor: project?.settings?.primaryColor || '#000000' })}
-                className="px-3 py-1.5 border rounded-lg text-[9px] uppercase font-bold tracking-wider hover:bg-zinc-50 transition-all whitespace-nowrap"
+                className="mt-5 px-3 h-10 border border-zinc-200 rounded-xl text-[9px] uppercase font-bold tracking-wider hover:bg-zinc-50 transition-all whitespace-nowrap bg-white"
               >
-                Usa Brand
+                Brand
               </button>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { BACKGROUND_PATTERNS, PatternType } from '@/lib/background-patterns';
 import { useEditorStore } from '@/store/useEditorStore';
 import { Grid } from 'lucide-react';
+import { ColorInput } from '../ui/ColorInput';
 
 interface PatternManagerProps {
   getStyleValue: (key: string, defaultValue: any) => any;
@@ -57,15 +58,11 @@ export function PatternManager({ getStyleValue, updateStyle }: PatternManagerPro
       {currentPattern !== 'none' && (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-[12px] font-bold text-zinc-400 uppercase mb-2 block">Colore Pattern</label>
-              <input
-                type="color"
-                className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                value={patternColor}
-                onChange={(e) => updateStyle({ patternColor: e.target.value })}
-              />
-            </div>
+            <ColorInput 
+              label="Colore Pattern"
+              value={patternColor}
+              onChange={(val) => updateStyle({ patternColor: val })}
+            />
             <div>
                <label className="text-[12px] font-bold text-zinc-400 uppercase mb-3 block flex justify-between">
                   <span>Opacità</span>

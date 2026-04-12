@@ -17,6 +17,7 @@ export { SimpleInput } from './ui/SimpleInput';
 export { RichTextarea } from './ui/RichTextarea';
 export { IconManager } from './ui/IconManager';
 export { UnifiedSection, useUnifiedSections, CategoryHeader, ManagerWrapper } from './ui/UnifiedSection';
+export { ColorInput } from './ui/ColorInput';
 
 // Style Managers
 export { AdvancedMargins } from './managers/AdvancedMargins';

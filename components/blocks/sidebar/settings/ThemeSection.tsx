@@ -4,6 +4,7 @@ import React from 'react';
 import { Palette, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SectionHeader } from '../ui/SectionHeader';
+import { ColorInput } from '../ui/ColorInput';
 import { ProjectSettings } from '@/types/editor';
 import { t } from '@/lib/i18n';
 
@@ -45,32 +46,36 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
                      <h4 className="text-[12px] font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
                         <Sun size={12} className="text-amber-400" /> {t('theme_colors', lang)} {t('light', lang)}
                      </h4>
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                           <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo</label>
-                           <input type="color" className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent" value={project?.settings?.themeColors?.light?.bg || '#ffffff'} onChange={(e) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, light: { bg: e.target.value, text: project?.settings?.themeColors?.light?.text || '#000000' } } })} />
-                        </div>
-                        <div className="space-y-2">
-                           <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo</label>
-                           <input type="color" className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent" value={project?.settings?.themeColors?.light?.text || '#000000'} onChange={(e) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, light: { text: e.target.value, bg: project?.settings?.themeColors?.light?.bg || '#ffffff' } } })} />
-                        </div>
-                     </div>
+                      <div className="grid grid-cols-2 gap-4">
+                         <ColorInput 
+                            label="Sfondo"
+                            value={project?.settings?.themeColors?.light?.bg || '#ffffff'}
+                            onChange={(val) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, light: { bg: val, text: project?.settings?.themeColors?.light?.text || '#000000' } } })}
+                         />
+                         <ColorInput 
+                            label="Testo"
+                            value={project?.settings?.themeColors?.light?.text || '#000000'}
+                            onChange={(val) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, light: { text: val, bg: project?.settings?.themeColors?.light?.bg || '#ffffff' } } })}
+                         />
+                      </div>
                   </div>
 
                   <div className="space-y-4 pt-4 border-t border-zinc-50">
                      <h4 className="text-[12px] font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
                         <Moon size={12} className="text-indigo-400" /> {t('theme_colors', lang)} {t('dark', lang)}
                      </h4>
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                           <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Sfondo</label>
-                           <input type="color" className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent" value={project?.settings?.themeColors?.dark?.bg || '#0c0c0e'} onChange={(e) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, dark: { bg: e.target.value, text: project?.settings?.themeColors?.dark?.text || '#ffffff' } } })} />
-                        </div>
-                        <div className="space-y-2">
-                           <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Testo</label>
-                           <input type="color" className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent" value={project?.settings?.themeColors?.dark?.text || '#ffffff'} onChange={(e) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, dark: { text: e.target.value, bg: project?.settings?.themeColors?.dark?.bg || '#0c0c0e' } } })} />
-                        </div>
-                     </div>
+                      <div className="grid grid-cols-2 gap-4">
+                         <ColorInput 
+                            label="Sfondo"
+                            value={project?.settings?.themeColors?.dark?.bg || '#0c0c0e'}
+                            onChange={(val) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, dark: { bg: val, text: project?.settings?.themeColors?.dark?.text || '#ffffff' } } })}
+                         />
+                         <ColorInput 
+                            label="Testo"
+                            value={project?.settings?.themeColors?.dark?.text || '#ffffff'}
+                            onChange={(val) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, dark: { text: val, bg: project?.settings?.themeColors?.dark?.bg || '#0c0c0e' } } })}
+                         />
+                      </div>
                   </div>
                </div>
             </div>
@@ -80,49 +85,32 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({
          <section className="pt-8 border-t border-zinc-100 animate-in fade-in slide-in-from-right-4 duration-500 delay-200">
             <SectionHeader icon={Palette} title={t('brand_colors', lang)} colorClass="text-blue-500" />
             <div className="space-y-6">
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('primary', lang)}</label>
-                     <input
-                        type="color"
-                        className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                        value={project?.settings?.primaryColor || '#3b82f6'}
-                        onChange={(e) => updateProjectSettings({ primaryColor: e.target.value })}
-                     />
-                  </div>
-                  <div className="space-y-2">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('secondary', lang)}</label>
-                     <input
-                        type="color"
-                        className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                        value={project?.settings?.secondaryColor || '#10b981'}
-                        onChange={(e) => updateProjectSettings({ secondaryColor: e.target.value })}
-                     />
-                  </div>
-               </div>
-               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-50">
-                  <div className="space-y-2">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('text', lang)} {t('buttons', lang)}</label>
-                     <input
-                        type="color"
-                        className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                        value={project?.settings?.themeColors?.buttonText || '#ffffff'}
-                        onChange={(e) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, buttonText: e.target.value } })}
-                     />
-                  </div>
-                  <div className="space-y-2">
-                     <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">{t('text', lang)} {t('secondary', lang)}</label>
-                     <input
-                        type="color"
-                        className="w-full h-10 border-2 border-zinc-50 rounded-xl cursor-pointer bg-transparent"
-                        value={project?.settings?.themeColors?.buttonTextSecondary || '#ffffff'}
-                        onChange={(e) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, buttonTextSecondary: e.target.value } })}
-                     />
-                  </div>
-               </div>
+                <div className="grid grid-cols-2 gap-4">
+                   <ColorInput 
+                      label={t('primary', lang)}
+                      value={project?.settings?.primaryColor || '#3b82f6'}
+                      onChange={(val) => updateProjectSettings({ primaryColor: val })}
+                   />
+                   <ColorInput 
+                      label={t('secondary', lang)}
+                      value={project?.settings?.secondaryColor || '#10b981'}
+                      onChange={(val) => updateProjectSettings({ secondaryColor: val })}
+                   />
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-50">
+                   <ColorInput 
+                      label={`${t('text', lang)} ${t('buttons', lang)}`}
+                      value={project?.settings?.themeColors?.buttonText || '#ffffff'}
+                      onChange={(val) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, buttonText: val } })}
+                   />
+                   <ColorInput 
+                      label={`${t('text', lang)} ${t('secondary', lang)}`}
+                      value={project?.settings?.themeColors?.buttonTextSecondary || '#ffffff'}
+                      onChange={(val) => updateProjectSettings({ themeColors: { ...project?.settings?.themeColors, buttonTextSecondary: val } })}
+                   />
+                </div>
             </div>
          </section>
       </div>
    );
 };
-
