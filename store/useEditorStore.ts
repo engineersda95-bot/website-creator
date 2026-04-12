@@ -72,7 +72,7 @@ function injectGlobals(blocks: Block[], language: string, siteGlobals: SiteGloba
   const lang = language || 'it';
   const nav = siteGlobals.find(g => g.language === lang && g.type === 'navigation');
   const footer = siteGlobals.find(g => g.language === lang && g.type === 'footer');
-  const cleaned = blocks.filter(b => b.type !== 'navigation' && b.type !== 'footer');
+  const cleaned = blocks.filter(b => b?.type !== 'navigation' && b?.type !== 'footer');
   const footerContent = footer
     ? { ...footer.content, _navLogoFallback: footer.content?.logoImage ? undefined : nav?.content?.logoImage, _language: lang }
     : undefined;
@@ -85,7 +85,7 @@ function injectGlobals(blocks: Block[], language: string, siteGlobals: SiteGloba
 
 // Strip nav/footer from blocks before saving page to DB
 function stripGlobals(blocks: Block[]): Block[] {
-  return blocks.filter(b => b.type !== 'navigation' && b.type !== 'footer');
+  return blocks.filter(b => b?.type !== 'navigation' && b?.type !== 'footer');
 }
 
 const triggerAutoSave = (get: () => EditorState, set?: any) => {
@@ -275,8 +275,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const lang = currentPage.language || 'it';
 
     // Save nav/footer to site_globals (centralized) — strip them from page blocks
-    const navBlock = currentPage.blocks.find(b => b.type === 'navigation');
-    const footerBlock = currentPage.blocks.find(b => b.type === 'footer');
+    const navBlock = currentPage.blocks.find(b => b?.type === 'navigation');
+    const footerBlock = currentPage.blocks.find(b => b?.type === 'footer');
     const globalsToSave: any[] = [];
     if (navBlock) globalsToSave.push({ project_id: currentPage.project_id, language: lang, type: 'navigation', content: navBlock.content, style: navBlock.style, updated_at: new Date().toISOString() });
     if (footerBlock) globalsToSave.push({ project_id: currentPage.project_id, language: lang, type: 'footer', content: footerBlock.content, style: footerBlock.style, updated_at: new Date().toISOString() });

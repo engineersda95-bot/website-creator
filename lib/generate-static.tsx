@@ -31,7 +31,7 @@ export function generateStaticHtml(page: Page, pageVariants: PageStub[] = [], pr
         style: footerGlobal.style,
       }
     : undefined;
-  const pageContent = page.blocks.filter(b => b.type !== 'navigation' && b.type !== 'footer');
+  const pageContent = page.blocks.filter(b => b?.type !== 'navigation' && b?.type !== 'footer');
   const allBlocksToRender: Block[] = [
     ...(navBlock ? [navBlock] : []),
     ...pageContent,
@@ -121,19 +121,19 @@ export function generateStaticHtml(page: Page, pageVariants: PageStub[] = [], pr
     ${(() => {
       // Preload the first above-fold image for faster LCP.
       // Priority: hero background → first promo item image → first image-text image.
-      const heroBlock = allBlocksToRender.find((b: any) => b.type === 'hero');
+      const heroBlock = allBlocksToRender.find((b: any) => b?.type === 'hero');
       const heroImg = heroBlock?.content?.backgroundImage;
       if (heroImg) {
         const resolved = resolveImageUrl(heroImg, project || null, {}, true);
         return `<link rel="preload" as="image" href="${resolved}" fetchpriority="high">`;
       }
-      const promoBlock = allBlocksToRender.find((b: any) => b.type === 'promo');
+      const promoBlock = allBlocksToRender.find((b: any) => b?.type === 'promo');
       const promoImg = promoBlock?.content?.items?.[0]?.image;
       if (promoImg) {
         const resolved = resolveImageUrl(promoImg, project || null, {}, true);
         return `<link rel="preload" as="image" href="${resolved}" fetchpriority="high">`;
       }
-      const imageTextBlock = allBlocksToRender.find((b: any) => b.type === 'image-text' || b.type === 'imagetext');
+      const imageTextBlock = allBlocksToRender.find((b: any) => b?.type === 'image-text' || b?.type === 'imagetext');
       const imageTextImg = imageTextBlock?.content?.backgroundImage || imageTextBlock?.content?.image;
       if (imageTextImg) {
         const resolved = resolveImageUrl(imageTextImg, project || null, {}, true);

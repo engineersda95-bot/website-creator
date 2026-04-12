@@ -55,7 +55,7 @@ const GLOBAL_CHECKS: CheckItem[] = [
     scope: 'global',
     check: ({ pages, siteGlobals }) => siteGlobals !== undefined
       ? siteGlobals.some(g => g.type === 'navigation')
-      : pages.some(p => p.blocks?.some(b => b.type === 'navigation')),
+      : pages.some(p => p.blocks?.some(b => b?.type === 'navigation')),
   },
   {
     id: 'has-footer',
@@ -65,7 +65,7 @@ const GLOBAL_CHECKS: CheckItem[] = [
     scope: 'global',
     check: ({ pages, siteGlobals }) => siteGlobals !== undefined
       ? siteGlobals.some(g => g.type === 'footer')
-      : pages.some(p => p.blocks?.some(b => b.type === 'footer')),
+      : pages.some(p => p.blocks?.some(b => b?.type === 'footer')),
   },
   {
     id: 'has-contact',
@@ -73,7 +73,7 @@ const GLOBAL_CHECKS: CheckItem[] = [
     description: 'I visitatori devono poter contattarti facilmente',
     category: 'content',
     scope: 'global',
-    check: ({ pages }) => pages.some(p => p.blocks?.some(b => b.type === 'contact')),
+    check: ({ pages }) => pages.some(p => p.blocks?.some(b => b?.type === 'contact')),
   },
 
   // SEO

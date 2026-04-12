@@ -78,7 +78,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
 }) => {
    const { style } = getBlockStyles(block, project, viewport || 'desktop');
 
-   const navLogoImage = (content as any)._navLogoFallback || allPages?.flatMap(p => p.blocks).find(b => b.type === 'navigation')?.content?.logoImage;
+   const navLogoImage = (content as any)._navLogoFallback || allPages?.flatMap(p => p.blocks || []).find(b => b?.type === 'navigation')?.content?.logoImage;
    const displayLogoImage = content.logoImage || navLogoImage;
 
    const links = content.links || [];
