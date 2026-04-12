@@ -23,8 +23,23 @@ Configurato nel dashboard Supabase (Auth → Rate Limits). Zero codice.
 ---
 
 ## Da fare
+26: 
+27: ### Check permessi server-side e bypass limiti piano 🔴
+28: Molti controlli sui limiti dei piani (multilingua, domini custom, rimozione branding, script personalizzati) sono implementati solo lato UI o mancano nelle Server Actions.
+29: 
+30: **Problemi individuati:**
+31: - `translatePage` e `createPage` non verificano `can_multilang` lato server (un utente free può tradurre pagine via API/console).
+32: - Le impostazioni progetto (branding, custom domain) vengono salvate via client-side Supabase senza trigger DB che validino il piano dell'utente.
+33: - `deployToCloudflare` non verifica la "compliance" del progetto al piano prima di pubblicare (se un utente ha forzato un dominio custom nei settings, il deploy lo attiva).
+34: - Limiti quantitativi (max pagine/articoli) non sono protetti da trigger DB, solo da logica applicativa bypassabile via API diretta.
+35: 
+36: **Azione:**
+37: 1. Aggiungere check `can_multilang` in `app/actions/pages.ts`.
+38: 2. Implementare Trigger PostgreSQL per impedire l'attivazione di feature Pro/Agency se il `plan_id` del profilo non lo consente.
+39: 3. Aggiungere un check di validazione piano all'inizio di `deployToCloudflare`.
+40: 
+41: ### Validazione MIME type upload 🔴
 
-### Validazione MIME type upload 🔴
 Gli upload passano tutti per `optimizeImageToWebP` che in pratica rigetta qualsiasi file non-immagine durante la conversione — quindi il rischio è già molto contenuto. Manca però una validazione esplicita server-side del tipo di file prima della conversione.
 
 **Azione:** verificare il MIME type del file prima di passarlo a `optimizeImageToWebP`. Whitelist: `image/jpeg`, `image/png`, `image/webp`, `image/gif`. SVG da valutare — può contenere script JS.
@@ -97,8 +112,9 @@ I piani hanno già un limite massimo di progetti e pagine per utente (`max_proje
 **Già risolti:** command injection, rate limit deploy, crediti AI validazione, rate limit login
 
 **Fare prima del lancio:**
-1. 🔴 Policy DELETE su projects (5 minuti, SQL)
-2. 🔴 Validazione MIME type upload esplicita
+1. 🔴 **Bypass limiti piano e check server-side** (Critico per il business)
+2. 🔴 Policy DELETE su projects (5 minuti, SQL)
+3. 🔴 Validazione MIME type upload esplicita
 
 **Entro il primo mese:**
 3. 🟡 Fix SSRF `endsWith` → `=== d || endsWith(.d)` + timeout + size limit

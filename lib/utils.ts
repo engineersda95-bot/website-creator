@@ -210,3 +210,25 @@ export function fuzzySearch(query: string, text: string): boolean {
   return normText.includes(normQuery);
 }
 
+/**
+ * Optimizes user-inserted HTML scripts by adding 'defer' to any <script src="..."> tag
+ * that doesn't already have it or 'async'. This improves Lighthouse scores.
+ */
+export function optimizeScripts(html: string): string {
+  if (!html) return '';
+  
+  // Search for script tags with a src attribute
+  return html.replace(/<script\s+([^>]*?)src=["'](.*?)["']([^>]*?)>/gi, (match, before, src, after) => {
+    const combinedAttrs = (before + ' ' + after).toLowerCase();
+    
+    // If it already has defer or async, or is not a JS file (unlikely), leave it alone
+    if (combinedAttrs.includes('defer') || combinedAttrs.includes('async')) {
+      return match;
+    }
+    
+    // Add defer attribute
+    return `<script ${before.trim()} src="${src}" ${after.trim()} defer>`;
+  });
+}
+
+

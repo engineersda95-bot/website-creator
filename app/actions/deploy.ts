@@ -300,7 +300,7 @@ export async function deployToCloudflare(projectId: string) {
           fs.chmodSync(binaryPath, '755');
         }
 
-        execSync(`${binaryPath} -o "${path.join(assetsDir, 'styles.css')}"`, { 
+        execSync(`${binaryPath} -m -o "${path.join(assetsDir, 'styles.css')}"`, { 
           input: inputCssContent,
           env: commonEnv,
           encoding: 'utf-8' 
@@ -310,7 +310,7 @@ export async function deployToCloudflare(projectId: string) {
         const localInputPath = path.join(process.cwd(), `tailwind-input-${projectId}.css`);
         fs.writeFileSync(localInputPath, inputCssContent);
         try {
-          execSync(`npx --yes @tailwindcss/cli -i "${localInputPath}" -o "${path.join(assetsDir, 'styles.css')}"`, {
+          execSync(`npx --yes @tailwindcss/cli -m -i "${localInputPath}" -o "${path.join(assetsDir, 'styles.css')}"`, {
             env: commonEnv,
             encoding: 'utf-8'
           });
@@ -323,6 +323,62 @@ export async function deployToCloudflare(projectId: string) {
       console.warn('Tailwind CSS generation failed:', e.message);
       fs.writeFileSync(path.join(assetsDir, 'styles.css'), '/* Tailwind generation failed */');
     }
+
+    // --- PERFORMANCE OPTIMIZATION: LOCAL FONT HOSTING ---
+    // Specifically downloads Google Fonts and serves them locally for speed and GDPR.
+    const fontName = project.settings?.fontFamily || 'Outfit';
+    const googleFontUrl = `https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, '+')}:wght@400;500;600;700;800&display=swap`;
+    const fontsSubDir = path.join(assetsDir, 'fonts');
+    let localFontStyleTag = '';
+
+    try {
+      console.log(`Downloading local fonts for ${fontName}...`);
+      if (!fs.existsSync(fontsSubDir)) fs.mkdirSync(fontsSubDir, { recursive: true });
+
+      const cssRes = await fetch(googleFontUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
+      });
+      
+      if (cssRes.ok) {
+        let fontCss = await cssRes.text();
+        const fontUrlMatches = [...fontCss.matchAll(/url\((https:\/\/fonts\.gstatic\.com\/.*?)\)/g)];
+        
+        for (const [fullMatch, remoteUrl] of fontUrlMatches) {
+          const fontFilename = path.basename(new URL(remoteUrl).pathname);
+          const fontLocalPath = path.join(fontsSubDir, fontFilename);
+          if (!fs.existsSync(fontLocalPath)) {
+            const fontRes = await fetch(remoteUrl);
+            if (fontRes.ok) fs.writeFileSync(fontLocalPath, Buffer.from(await fontRes.arrayBuffer()));
+          }
+          fontCss = fontCss.replace(remoteUrl, `/assets/fonts/${fontFilename}`);
+        }
+        localFontStyleTag = `<style>\n${fontCss}\n</style>`;
+      }
+
+      // Safe Post-processing: Replace ONLY the Google Font link
+      if (localFontStyleTag) {
+        const googleFontLinkRegex = /<link href="https:\/\/fonts\.googleapis\.com\/css2\?family=[^"]+" rel="stylesheet">/gi;
+        const processDir = (dir: string) => {
+          const files = fs.readdirSync(dir);
+          for (const file of files) {
+            const fullPath = path.join(dir, file);
+            if (fs.statSync(fullPath).isDirectory()) {
+              if (file !== 'assets') processDir(fullPath);
+            } else if (file.endsWith('.html')) {
+              let html = fs.readFileSync(fullPath, 'utf8');
+              if (googleFontLinkRegex.test(html)) {
+                fs.writeFileSync(fullPath, html.replace(googleFontLinkRegex, `\n${localFontStyleTag}\n`));
+              }
+            }
+          }
+        };
+        processDir(tempDir);
+        console.log('Local fonts localized successfully.');
+      }
+    } catch (err: any) {
+      console.warn('Local font hosting failed, falling back to Google CDN:', err.message);
+    }
+    // ----------------------------------------------------
 
     const wranglerArgs = ['--yes', 'wrangler@3', 'pages', 'deploy', tempDir, `--project-name=${projectName}`, '--branch=main'];
     const wranglerEnv = {

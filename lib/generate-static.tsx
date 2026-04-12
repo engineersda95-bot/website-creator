@@ -1,7 +1,7 @@
 import 'server-only';
 import { Block, Page, PageStub, Project, ProjectSettings, SiteGlobal } from '@/types/editor';
 import React from 'react';
-import { toPx } from '@/lib/utils';
+import { toPx, optimizeScripts } from '@/lib/utils';
 import { generateBlockCSS, computeCommonVars } from '@/lib/responsive-utils';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { getProjectDomain } from '@/lib/url-utils';
@@ -289,7 +289,7 @@ export function generateStaticHtml(page: Page, pageVariants: PageStub[] = [], pr
 
         .img-ready { background: transparent !important; }
     </style>
-    ${settings?.customScriptsHead || ''}
+    ${optimizeScripts(settings?.customScriptsHead || '')}
 </head>
 <body class="antialiased min-h-screen" style="background-color: ${settings?.appearance === 'dark' ? (settings?.themeColors?.dark?.bg || '#0c0c0e') : (settings?.themeColors?.light?.bg || '#ffffff')}; color: ${settings?.appearance === 'dark' ? (settings?.themeColors?.dark?.text || '#ffffff') : (settings?.themeColors?.light?.text || '#000000')};">
     <main>
@@ -306,13 +306,12 @@ export function generateStaticHtml(page: Page, pageVariants: PageStub[] = [], pr
     </div>
     ` : ''}
 
-    <script>var _hs=function(){var ns=document.querySelectorAll('nav.fixed'),sc=window.scrollY>20;ns.forEach(function(n){if(sc){n.style.background='var(--block-bg)';n.style.boxShadow='0 10px 30px -10px rgba(0,0,0,0.1)';n.style.backdropFilter='blur(10px)';n.style.paddingTop='12px';n.style.paddingBottom='12px';}else{var t=n.getAttribute('data-transparent')==='true';n.style.background=t?'transparent':'var(--block-bg)';n.style.boxShadow='none';n.style.backdropFilter='none';n.style.paddingTop='var(--nav-padding)';n.style.paddingBottom='var(--nav-padding)';}});};window.addEventListener('load',_hs);_hs();document.addEventListener('click',function(e){var b=e.target.closest('[data-menu-toggle]');if(!b)return;var n=b.closest('nav'),m=n?n.querySelector('[data-menu]'):null;if(!m)return;var o=m.getAttribute('data-open')==='true',s=!o;m.setAttribute('data-open',s);b.setAttribute('data-open',s);});var _vh=window.innerHeight,_ao=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var el=e.target;requestAnimationFrame(function(){el.classList.add('siti-anim-active');});_ao.unobserve(el);}});},{threshold:0.05,rootMargin:'0px 0px -60px 0px'});document.querySelectorAll('[data-siti-anim]').forEach(function(el){var a=el.getAttribute('data-siti-anim');if(a==='none'){el.classList.add('siti-anim-active');return;}var r=el.getBoundingClientRect();if(r.top<_vh&&r.bottom>0){el.classList.add('siti-anim-active');}else{_ao.observe(el);}});</script>
-    ${settings?.customScriptsBody || ''}
+    <script>var _hs=function(){var ns=document.querySelectorAll('nav.fixed'),sc=window.scrollY>20;ns.forEach(function(n){if(sc){n.style.background='var(--block-bg)';n.style.boxShadow='0 10px 30px -10px rgba(0,0,0,0.1)';n.style.backdropFilter='blur(10px)';n.style.paddingTop='12px';n.style.paddingBottom='12px';}else{var t=n.getAttribute('data-transparent')==='true';n.style.background=t?'transparent':'var(--block-bg)';n.style.boxShadow='none';n.style.backdropFilter='none';n.style.paddingTop='var(--nav-padding)';n.style.paddingBottom='var(--nav-padding)';}});};window.addEventListener('load',_hs);document.addEventListener('click',function(e){var b=e.target.closest('[data-menu-toggle]');if(!b)return;var n=b.closest('nav'),m=n?n.querySelector('[data-menu]'):null;if(!m)return;var o=m.getAttribute('data-open')==='true',s=!o;m.setAttribute('data-open',s);b.setAttribute('data-open',s);});var _ao=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var el=e.target;requestAnimationFrame(function(){el.classList.add('siti-anim-active');});_ao.unobserve(el);}});},{threshold:0.1,rootMargin:'0px 0px -50px 0px'});_hs();document.querySelectorAll('[data-siti-anim]').forEach(function(el){if(el.getAttribute('data-siti-anim')==='none'){el.classList.add('siti-anim-active');}else{_ao.observe(el);}});</script>
+    ${optimizeScripts(settings?.customScriptsBody || '')}
 </body>
 </html>
   `.trim();
 }
-
 import { BLOCK_DEFINITIONS } from './block-definitions';
 
 const StaticRegistry: Record<string, React.FC<any>> = Object.entries(BLOCK_DEFINITIONS).reduce((acc, [type, def]) => {

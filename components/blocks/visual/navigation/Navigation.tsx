@@ -263,6 +263,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                   <a 
                     key={i} 
                     {...formatLink(social.url, isStatic)} 
+                    aria-label={social.platform}
                     className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit flex items-center justify-center p-0"
                     style={{ fontSize: '0px', height: 'var(--social-icon-size, 20px)' }}
                   >
@@ -298,6 +299,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             {/* Hamburger Button (Static) */}
             <button 
               data-menu-toggle
+              aria-label="Apri menu"
               className="rounded-lg relative z-[10005] flex items-center justify-center transition-all active:scale-95 text-inherit outline-none"
               style={{ display: 'var(--nav-hamburger-display)' as any }}
             >
@@ -364,6 +366,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                             <a 
                               key={i} 
                               {...formatLink(social.url, true)} 
+                              aria-label={social.platform}
                               className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit flex items-center justify-center"
                               style={{ height: 'var(--social-icon-size, 24px)', width: 'var(--social-icon-size, 24px)' }}
                             >

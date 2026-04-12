@@ -190,7 +190,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({ content, block, project,
               scrolling={content.type === 'custom' ? 'yes' : 'no'}
               allowFullScreen
               loading="lazy"
-              title={content.title || 'Embedded content'}
+              title={content.title || `Contenuto incorporato (${content.type})`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             />
           ) : (

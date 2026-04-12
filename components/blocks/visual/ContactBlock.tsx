@@ -315,6 +315,7 @@ export const ContactBlock: React.FC<ContactBlockProps> = ({ content, block, proj
           >
             <iframe 
               src={mapUrl} 
+              title="Mappa di Google"
               className="w-full h-full grayscale-[0.2] filter hover:grayscale-0 transition-[filter] duration-700" 
               frameBorder="0" 
               scrolling="no" 

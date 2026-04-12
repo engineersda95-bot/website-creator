@@ -1,6 +1,6 @@
 import 'server-only';
 import { BlogPost, Project, ProjectSettings, SiteGlobal } from '@/types/editor';
-import { toPx } from '@/lib/utils';
+import { toPx, optimizeScripts } from '@/lib/utils';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { getProjectDomain } from '@/lib/url-utils';
 import { generateStaticHtml, renderBlock } from './generate-static';
@@ -130,6 +130,7 @@ export function generateBlogListingHtml(
     .blog-search:focus { border-color: ${pColor}; }
     .blog-search::placeholder { opacity: 0.3; }
   </style>
+  ${optimizeScripts(settings?.customScriptsHead || '')}
 </head>
 <body>
   ${listingNavHtml}
@@ -206,6 +207,7 @@ export function generateBlogListingHtml(
       applyFilters();
     })();
   </script>
+  ${optimizeScripts(settings?.customScriptsBody || '')}
 </body>
 </html>`;
 }
@@ -420,6 +422,7 @@ export function generateBlogPostHtml(
     .blog-toc-link:hover { opacity: 1; }
     @media (max-width: 768px) { article { padding-left: ${bodyPaddingXMobile}px !important; padding-right: ${bodyPaddingXMobile}px !important; padding-top: ${bodyPaddingYMobile}px !important; padding-bottom: ${bodyPaddingYMobile}px !important; } }
   </style>
+  ${optimizeScripts(settings?.customScriptsHead || '')}
 </head>
 <body>
   ${navHtml}
@@ -446,6 +449,7 @@ export function generateBlogPostHtml(
   </article>
 
   ${footerHtml}
+  ${optimizeScripts(settings?.customScriptsBody || '')}
 </body>
 </html>`;
 }

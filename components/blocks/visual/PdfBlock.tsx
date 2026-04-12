@@ -153,8 +153,9 @@ export const PdfBlock = ({ block, project, isStatic, viewport, onInlineEdit }: a
             <iframe
               src={embedUrl}
               className="w-full h-full border-none"
-              title={title || 'PDF Viewer'}
+              title={title || 'Visualizzatore PDF'}
               allow="autoplay"
+              loading="lazy"
             />
           </div>
         ) : (
