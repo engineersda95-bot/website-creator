@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils';
 import { useEditorStore } from '@/store/useEditorStore';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { PageSwitcher } from '@/components/editor/PageSwitcher';
+import { CompletionBadge } from '@/components/editor/SiteChecklist';
+import { getCompletionScore, runGlobalChecks, runPageChecks } from '@/lib/site-checklist';
 import { getProjectDomain } from '@/lib/url-utils';
 import { confirm } from '@/components/shared/ConfirmDialog';
 
@@ -85,6 +87,16 @@ export function EditorHeader({
           "w-2 h-2 rounded-full shrink-0 ml-1",
           siteStatus === 'pubblicato' ? "bg-emerald-500" : "bg-amber-400"
         )} title={siteStatus === 'pubblicato' ? 'Online' : 'Bozza'} />
+
+        {/* Completion score badge */}
+        {(() => {
+          const allPages = useEditorStore.getState().projectPages || [];
+          const cp = useEditorStore.getState().currentPage;
+          const score = cp
+            ? getCompletionScore(runPageChecks(targetProject, allPages, cp))
+            : getCompletionScore(runGlobalChecks(targetProject, allPages));
+          return <CompletionBadge score={score} onClick={onChecklistClick} />;
+        })()}
 
         {project?.live_url && (
           <a

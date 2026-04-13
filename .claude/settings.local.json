@@ -22,7 +22,10 @@
       "Bash(grep -l \"blog_posts\" c:/Users/Gabriele/Desktop/projects/website-creator/supabase/*.sql)",
       "WebFetch(domain:community.cloudflare.com)",
       "WebFetch(domain:developers.cloudflare.com)",
-      "WebFetch(domain:dash.cloudflare.com)"
+      "WebFetch(domain:dash.cloudflare.com)",
+      "Bash(wc:*)",
+      "Bash(npx next:*)",
+      "Bash(npm install:*)"
     ]
   }
 }
