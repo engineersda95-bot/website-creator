@@ -332,11 +332,11 @@ export const ContactFormBlock: React.FC<ContactFormBlockProps> = ({
         className={submitBtnClass}
         style={{
           // Explicit browser resets first
-          appearance: 'none',
-          WebkitAppearance: 'none',
           border: 'none',
           outline: 'none',
-          // CTA system styles
+          appearance: 'none',
+          WebkitAppearance: 'none',
+          // CTA system styles (may override resets above)
           ...submitBtnStyle,
           // Final overrides
           cursor: isStatic ? 'pointer' : 'default',
