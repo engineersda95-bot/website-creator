@@ -77,11 +77,11 @@ export function SocialLinksManager({ links = [], onChange }: SocialLinksManagerP
                         </div>
                         <input 
                            className="w-full p-2 border border-zinc-200 rounded-lg text-[10px] bg-white transition-all outline-none focus:border-zinc-900" 
-                           placeholder="URL Profilo..." 
-                           value={social.url} 
+                           placeholder={social.platform === 'whatsapp' ? 'Numero (es: +39 333 1234567)' : 'URL Profilo...'}
+                           value={social.url}
                            onChange={(e) => {
                               const ns = [...links]; ns[i].url = e.target.value; onChange(ns);
-                           }} 
+                           }}
                         />
                      </div>
                   </div>

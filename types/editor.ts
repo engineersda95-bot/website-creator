@@ -22,7 +22,8 @@ export type BlockType =
   'pdf' |
   'pricing' |
   'promo' |
-  'blog-list';
+  'blog-list' |
+  'contact-form';
 
 export interface Block {
   id: string;

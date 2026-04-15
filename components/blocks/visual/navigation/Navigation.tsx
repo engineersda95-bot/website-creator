@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn, toPx, formatLink } from '@/lib/utils';
+import { cn, toPx, formatLink, normalizeWhatsAppUrl } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Page, Block } from '@/types/editor';
 import { MobileMenu } from './MobileMenu';
@@ -262,7 +262,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 return (
                   <a 
                     key={i} 
-                    {...formatLink(social.url, isStatic)} 
+                    {...formatLink(social.platform === 'whatsapp' ? normalizeWhatsAppUrl(social.url) : social.url, isStatic)}
                     aria-label={social.platform}
                     className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit flex items-center justify-center p-0"
                     style={{ fontSize: '0px', height: 'var(--social-icon-size, 20px)' }}
@@ -365,7 +365,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                           return (
                             <a 
                               key={i} 
-                              {...formatLink(social.url, true)} 
+                              {...formatLink(social.platform === 'whatsapp' ? normalizeWhatsAppUrl(social.url) : social.url, true)}
                               aria-label={social.platform}
                               className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit flex items-center justify-center"
                               style={{ height: 'var(--social-icon-size, 24px)', width: 'var(--social-icon-size, 24px)' }}

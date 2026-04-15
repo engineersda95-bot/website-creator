@@ -159,6 +159,17 @@ export function getButtonClass(project: any, animationOverride?: string) {
   );
 }
 
+/** Normalizes a WhatsApp value (phone number or existing URL) to https://wa.me/<digits> */
+export function normalizeWhatsAppUrl(value: string | undefined): string {
+  if (!value) return '';
+  const v = value.trim();
+  if (v.startsWith('https://wa.me/') || v.startsWith('http://wa.me/')) return v;
+  // Strip everything except digits and leading +
+  const digits = v.replace(/[^\d+]/g, '').replace(/^\+/, '');
+  if (!digits) return v;
+  return `https://wa.me/${digits}`;
+}
+
 export function formatLink(url: string | undefined, isStatic: boolean = true): { href: string; target?: string; rel?: string; onClick?: (e: any) => void } {
   if (!isStatic) {
     return { 

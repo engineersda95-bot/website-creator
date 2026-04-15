@@ -22,6 +22,7 @@ import { pricingDefinition } from '@/components/blocks/visual/PricingBlock.defin
 import { galleryDefinition } from '@/components/blocks/visual/GalleryBlock.definition';
 import { promoDefinition } from '@/components/blocks/visual/PromoBlock.definition';
 import { blogListDefinition } from '@/components/blocks/visual/BlogListBlock.definition';
+import { contactFormDefinition } from '@/components/blocks/visual/ContactFormBlock.definition';
 
 export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   hero: heroDefinition,
@@ -44,6 +45,7 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   gallery: galleryDefinition,
   promo: promoDefinition,
   'blog-list': blogListDefinition,
+  'contact-form': contactFormDefinition,
 
   // Placeholders for unimplemented/transitioning blocks
   map: { type: 'map', label: 'Mappa', icon: MapPin, visual: null, defaults: { content: {}, style: {} } },

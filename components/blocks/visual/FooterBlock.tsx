@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { cn, formatLink, formatRichText } from '@/lib/utils';
+import { cn, formatLink, formatRichText, normalizeWhatsAppUrl } from '@/lib/utils';
 import { getBlockStyles } from '@/lib/hooks/useBlockStyles';
 import { Project, Block, Page } from '@/types/editor';
 import { resolveImageUrl } from '@/lib/image-utils';
@@ -169,7 +169,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
                            {content.socialLinks.map((social, i) => {
                                const Icon = SOCIAL_ICONS[social.platform.toLowerCase()] || Mail;
                                return (
-                                 <a key={i} {...formatLink(social.url, isStatic)} aria-label={social.platform} className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit">
+                                 <a key={i} {...formatLink(social.platform === 'whatsapp' ? normalizeWhatsAppUrl(social.url) : social.url, isStatic)} aria-label={social.platform} className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit">
                                      <Icon 
                                        width="var(--social-icon-size, 20px)" 
                                        height="var(--social-icon-size, 20px)" 
@@ -261,7 +261,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
                               {content.socialLinks.map((social, i) => {
                                  const Icon = SOCIAL_ICONS[social.platform.toLowerCase()] || Mail;
                                  return (
-                                    <a key={i} {...formatLink(social.url, isStatic)} aria-label={social.platform} className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit">
+                                    <a key={i} {...formatLink(social.platform === 'whatsapp' ? normalizeWhatsAppUrl(social.url) : social.url, isStatic)} aria-label={social.platform} className="opacity-70 hover:opacity-100 hover:scale-110 transition-all text-inherit">
                                        <Icon 
                                           width="var(--social-icon-size, 20px)" 
                                           height="var(--social-icon-size, 20px)" 

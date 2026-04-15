@@ -83,22 +83,22 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const [language, setLanguage] = useState('it');
 
   // Form State
-  const [businessName, setBusinessName] = useState('Ristorante da Mario');
+  const [businessName, setBusinessName] = useState('');
   const [businessType, setBusinessType] = useState('LocalBusiness');
   const [businessLogoUrl, setBusinessLogoUrl] = useState<string | null>(null);
-  const [businessEmail, setBusinessEmail] = useState('info@damario.it');
-  const [businessPhone, setBusinessPhone] = useState('+39 012 3456789');
-  const [businessAddress, setBusinessAddress] = useState('Via Roma 123');
-  const [businessCity, setBusinessCity] = useState('Milano');
-  const [businessZip, setBusinessZip] = useState('20100');
-  const [businessCountry, setBusinessCountry] = useState('Italia');
-  const [instagram, setInstagram] = useState('https://instagram.com/damario');
-  const [facebook, setFacebook] = useState('https://facebook.com/damario');
+  const [businessEmail, setBusinessEmail] = useState('');
+  const [businessPhone, setBusinessPhone] = useState('');
+  const [businessAddress, setBusinessAddress] = useState('');
+  const [businessCity, setBusinessCity] = useState('');
+  const [businessZip, setBusinessZip] = useState('');
+  const [businessCountry, setBusinessCountry] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [facebook, setFacebook] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [twitter, setTwitter] = useState('');
   const [linkedin, setLinkedin] = useState('');
 
-  const [description, setDescription] = useState('Un accogliente ristorante italiano specializzato in piatti tipici della tradizione milanese, con ingredienti a km zero e un\'atmosfera familiare.');
+  const [description, setDescription] = useState('');
   const [siteObjective, setSiteObjective] = useState('');
   const [useAnchorNav, setUseAnchorNav] = useState(true);
   const [tone, setTone] = useState('professional');
