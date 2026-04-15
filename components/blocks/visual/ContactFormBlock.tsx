@@ -332,7 +332,6 @@ export const ContactFormBlock: React.FC<ContactFormBlockProps> = ({
         className={submitBtnClass}
         style={{
           // Explicit browser resets first
-          border: 'none',
           outline: 'none',
           appearance: 'none',
           WebkitAppearance: 'none',
