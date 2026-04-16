@@ -91,7 +91,7 @@ body {
 
 /* Rich text: reset browser defaults for <p>, <ul>, <ol> from formatRichText or TipTap.
    Mirrors generate-static.tsx so editor preview = published site. */
-.rt-content p { margin: 0; padding: 0; line-height: inherit; }
+.rt-content p { margin: 0; padding: 0; line-height: inherit; overflow-wrap: break-word; }
 .rt-content p + p { margin-top: 0.5em; }
 .rt-content p:empty { display: none !important; }
 

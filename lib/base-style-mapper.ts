@@ -103,11 +103,32 @@ export function getBaseStyleVars(style: any, block: any, project?: Project, view
     '--global-body-fs': toPx(project?.settings?.typography?.bodySize, '1rem'),
   };
 
-  // Responsive Gap Tuning
-  if (viewport === 'mobile' && (!block.responsiveStyles?.mobile || block.responsiveStyles.mobile.gap === undefined)) {
-    const currentGap = num('gap', 64);
-    if (currentGap > 32) {
-      vars['--block-gap'] = toPx(32);
+  // Responsive Spacing Tuning (Safety Overrides)
+  if (viewport === 'mobile' || viewport === 'tablet') {
+    const isMobile = viewport === 'mobile';
+    const rv = block.responsiveStyles?.[viewport] as any;
+
+    // Gap
+    if (!rv || rv.gap === undefined) {
+      const currentGap = num('gap', 64);
+      const limit = isMobile ? 32 : 48;
+      if (currentGap > limit) vars['--block-gap'] = toPx(limit);
+    }
+    // Horizontal Padding
+    if (!rv || rv.hPadding === undefined) {
+      const currentHPadding = num('hPadding', 32);
+      const limit = isMobile ? 24 : 40;
+      const target = isMobile ? 20 : 32;
+      if (currentHPadding > limit) vars['--block-px'] = toPx(target);
+    }
+    // Vertical Padding
+    if (!rv || rv.padding === undefined) {
+      const currentVPadding = num('padding', 80);
+      const limit = isMobile ? 48 : 64;
+      if (currentVPadding > limit) {
+        vars['--block-pt'] = toPx(limit);
+        vars['--block-pb'] = toPx(limit);
+      }
     }
   }
 

@@ -124,9 +124,10 @@ const ChevronSVG = () => (
   </svg>
 );
 
-const renderField = (field: FormField, index: number, isStatic?: boolean) => {
+const renderField = (field: FormField, index: number, isStatic?: boolean, viewport?: string) => {
+  const isStacked = viewport === 'mobile' || viewport === 'tablet';
   const alwaysFull = field.type === 'textarea' || field.type === 'checkbox';
-  const colSpan = alwaysFull || field.width === 'full' ? 'span 2' : 'span 1';
+  const colSpan = isStacked ? 'span 1' : (alwaysFull || field.width === 'full' ? 'span 2' : 'span 1');
   // Use field.label as name so Web3Forms shows the readable label in the email
   const fieldName = field.label || field.id;
 
@@ -318,9 +319,14 @@ export const ContactFormBlock: React.FC<ContactFormBlockProps> = ({
   const submitBtnStyle = getButtonStyle(project, activeColor, viewport, themeForStyle, isStatic || false, ctaOverrides);
   const submitBtnClass = getButtonClass(project, ctaOverrides.animation);
 
+  const isStacked = viewport === 'mobile' || viewport === 'tablet';
   const formGrid = (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-      {fields.map((field, i) => renderField(field, i, isStatic))}
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: isStacked ? '1fr' : '1fr 1fr', 
+      gap: isStacked ? '12px' : '16px' 
+    }}>
+      {fields.map((field, i) => renderField(field, i, isStatic, viewport))}
     </div>
   );
 

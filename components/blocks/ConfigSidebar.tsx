@@ -12,6 +12,7 @@ import {
 import { cn, getStyleValue as getStyleValueUtil } from '@/lib/utils';
 import { GlobalSettings } from './sidebar/GlobalSettings';
 import { BLOCK_DEFINITIONS } from '@/lib/block-definitions';
+import { ViewportBanner } from './sidebar/ui/ViewportBanner';
 
 export const ConfigSidebar: React.FC = () => {
    const { 
@@ -56,6 +57,7 @@ export const ConfigSidebar: React.FC = () => {
                "w-80 flex flex-col h-full shrink-0 transition-opacity duration-300",
                rightSidebarCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
             )}>
+               <ViewportBanner viewport={viewport} />
                <GlobalSettings
                   project={project}
                   updateProjectSettings={updateProjectSettings}
@@ -122,6 +124,8 @@ export const ConfigSidebar: React.FC = () => {
                <X size={16} />
             </button>
          </div>
+
+         <ViewportBanner viewport={viewport} />
 
          {/* Editor content */}
          <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
