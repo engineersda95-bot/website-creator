@@ -52,6 +52,7 @@ const PreviewFeatured: React.FC<{ className?: string }> = ({ className }) => (
 export const galleryDefinition: BlockDefinition = {
   type: 'gallery',
   label: 'Galleria',
+  description: 'Griglia di immagini con lightbox. Ideale per portfolio, prodotti e ambienti.',
   icon: LayoutTemplate,
   visual: GalleryBlock,
   unifiedEditor: Gallery,

@@ -538,9 +538,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       responsiveStyles: defaultResponsiveStyles || {}
     };
 
-
     const newBlocks = [...currentPage.blocks];
-    const insertPos = atIndex !== undefined ? atIndex : newBlocks.length;
+    let insertPos: number;
+    if (atIndex !== undefined) {
+      insertPos = atIndex;
+    } else {
+      const footerIdx = newBlocks.findIndex(b => b.type === 'footer');
+      insertPos = footerIdx !== -1 ? footerIdx : newBlocks.length;
+    }
     newBlocks.splice(insertPos, 0, newBlock);
 
     const newCurrentPage = { ...currentPage, blocks: newBlocks };

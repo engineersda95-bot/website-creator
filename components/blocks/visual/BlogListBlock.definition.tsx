@@ -5,9 +5,27 @@ import { BlogListUnified } from '../sidebar/block-editors/BlogListUnified';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 
+const Thumbnail: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 200 120" className={className} fill="none">
+    <rect width="200" height="120" fill="#fafafa" />
+    <rect x="8" y="12" width="86" height="48" rx="6" fill="#e4e4e7" />
+    <rect x="106" y="12" width="86" height="48" rx="6" fill="#e4e4e7" />
+    <rect x="8" y="66" width="50" height="5" rx="1.5" fill="#18181b" />
+    <rect x="106" y="66" width="50" height="5" rx="1.5" fill="#18181b" />
+    <rect x="8" y="76" width="82" height="3" rx="1" fill="#a1a1aa" />
+    <rect x="106" y="76" width="82" height="3" rx="1" fill="#a1a1aa" />
+    <rect x="8" y="83" width="70" height="3" rx="1" fill="#a1a1aa" />
+    <rect x="106" y="83" width="70" height="3" rx="1" fill="#a1a1aa" />
+    <rect x="8" y="93" width="30" height="3" rx="1" fill="#d4d4d8" />
+    <rect x="106" y="93" width="30" height="3" rx="1" fill="#d4d4d8" />
+  </svg>
+);
+
 export const blogListDefinition: BlockDefinition = {
   type: 'blog-list',
   label: 'Blog',
+  description: 'Lista degli ultimi articoli del blog con immagine, titolo e anteprima del testo.',
+  thumbnail: Thumbnail,
   icon: PenLine,
   visual: BlogListBlock,
   contentEditor: null,

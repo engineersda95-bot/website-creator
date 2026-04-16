@@ -76,6 +76,7 @@ const PreviewNumbered: React.FC<{ className?: string }> = ({ className }) => (
 export const faqDefinition: BlockDefinition = {
   type: 'faq',
   label: 'FAQ',
+  description: 'Domande frequenti con risposte espandibili. Riduce le richieste di supporto.',
   icon: FileText,
   visual: FAQBlock,
   unifiedEditor: Faq,

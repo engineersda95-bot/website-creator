@@ -16,50 +16,47 @@ import {
   ChevronRight,
   ChevronLeft,
   MousePointer2,
-  Columns,
   Plus,
   Menu,
   FileText,
   ShoppingBag,
   Minus,
-  GripVertical
+  GripVertical,
+  X
 } from 'lucide-react';
 import { getBlockLibrary } from '@/lib/block-definitions';
 import { BlockDefinition, BlockVariant } from '@/types/block-definition';
-import { VariantPicker } from '@/components/editor/VariantPicker';
+
+import { BlockLibraryCard } from '@/components/blocks/BlockLibraryCard';
 
 export const BlockSidebar: React.FC = () => {
   const { addBlock, currentPage, selectedBlockId, selectBlock, leftSidebarCollapsed, setLeftSidebarCollapsed, reorderBlocks } = useEditorStore();
-  const [variantPicker, setVariantPicker] = React.useState<BlockDefinition | null>(null);
   const [dragIdx, setDragIdx] = React.useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = React.useState<number | null>(null);
+  const [previewTarget, setPreviewTarget] = React.useState<{ blockDef: BlockDefinition; variantIdx: number } | null>(null);
 
   const blockLibrary = getBlockLibrary();
 
   const scrollToNewBlock = () => {
     setTimeout(() => {
       const wrappers = document.querySelectorAll('#editor-content .block-wrapper');
-      const last = wrappers[wrappers.length - 1];
-      last?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // penultimate = new block, last = footer
+      const target = wrappers[wrappers.length - 2] ?? wrappers[wrappers.length - 1];
+      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
   };
 
-  const handleAddBlock = (blockDef: BlockDefinition) => {
-    if (blockDef.variants && blockDef.variants.length > 0) {
-      setVariantPicker(blockDef);
+  const handleAddBlock = (blockDef: BlockDefinition, variant?: BlockVariant) => {
+    const v = variant ?? blockDef.variants?.[0];
+    if (v) {
+      addBlock(blockDef.type, undefined, {
+        content: { variant: v.id, ...(v.contentOverride || {}) },
+        style: v.styleOverride,
+      });
     } else {
       addBlock(blockDef.type);
-      scrollToNewBlock();
     }
-  };
-
-  const handleVariantSelect = (variant: BlockVariant) => {
-    if (!variantPicker) return;
-    addBlock(variantPicker.type, undefined, {
-      content: { variant: variant.id, ...(variant.contentOverride || {}) },
-      style: variant.styleOverride,
-    });
-    setVariantPicker(null);
+    setPreviewTarget(null);
     scrollToNewBlock();
   };
 
@@ -136,7 +133,6 @@ export const BlockSidebar: React.FC = () => {
                         onClick={() => {
                           selectBlock(block.id);
                           setTimeout(() => {
-                            // Find the block wrapper in the canvas by iterating block-wrappers
                             const wrappers = document.querySelectorAll('#editor-content .block-wrapper');
                             const el = wrappers[idx];
                             el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -201,17 +197,12 @@ export const BlockSidebar: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2">
                 {blockLibrary.map((block) => (
-                  <button
+                  <BlockLibraryCard
                     key={block.type}
-                    onClick={() => handleAddBlock(block)}
-                    className="flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border border-zinc-100 hover:border-zinc-300 hover:bg-zinc-50 transition-all group text-center relative"
-                  >
-                    <block.icon size={18} className="text-zinc-400 group-hover:text-zinc-700 transition-colors" />
-                    <span className="text-[11px] font-medium text-zinc-500 group-hover:text-zinc-700 leading-tight">{block.label}</span>
-                    {block.variants && block.variants.length > 0 && (
-                      <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-400" />
-                    )}
-                  </button>
+                    blockDef={block}
+                    onAdd={handleAddBlock}
+                    onPreview={(bd) => setPreviewTarget({ blockDef: bd, variantIdx: 0 })}
+                  />
                 ))}
               </div>
             </div>
@@ -225,16 +216,70 @@ export const BlockSidebar: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* PREVIEW PANEL */}
+      {previewTarget && (() => {
+        const { blockDef, variantIdx } = previewTarget;
+        const hasVariants = !!blockDef.variants?.length;
+        const activeVariant = hasVariants ? blockDef.variants![variantIdx] : undefined;
+        const ThumbnailComponent = activeVariant?.preview ?? blockDef.thumbnail ?? null;
+        const description = activeVariant?.description ?? blockDef.description ?? null;
+        return (
+          <div className="absolute inset-0 z-40 bg-white flex flex-col animate-in slide-in-from-bottom-2 duration-200">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 shrink-0">
+              <div>
+                <span className="text-[13px] font-semibold text-zinc-800">{blockDef.label}</span>
+                {activeVariant && (
+                  <span className="ml-2 text-[11px] text-zinc-400">{activeVariant.label}</span>
+                )}
+              </div>
+              <button onClick={() => setPreviewTarget(null)} className="p-1 rounded-lg hover:bg-zinc-100 transition-colors">
+                <X size={14} className="text-zinc-500" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 custom-scrollbar">
+              {ThumbnailComponent && (
+                <div className="w-full rounded-xl overflow-hidden border border-zinc-100 shadow-sm">
+                  <ThumbnailComponent className="w-full h-auto" />
+                </div>
+              )}
+
+              {hasVariants && (
+                <div className="flex gap-1.5 flex-wrap">
+                  {blockDef.variants!.map((v, i) => (
+                    <button
+                      key={v.id}
+                      onClick={() => setPreviewTarget({ blockDef, variantIdx: i })}
+                      className={cn(
+                        'text-[10px] px-2.5 py-1 rounded-full border transition-all',
+                        i === variantIdx
+                          ? 'bg-zinc-900 text-white border-zinc-900'
+                          : 'border-zinc-200 text-zinc-500 hover:border-zinc-400'
+                      )}
+                    >
+                      {v.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {description && (
+                <p className="text-[12px] text-zinc-500 leading-relaxed">{description}</p>
+              )}
+
+              <button
+                onClick={() => handleAddBlock(blockDef, activeVariant)}
+                className="w-full py-2.5 bg-zinc-900 text-white text-[12px] font-medium rounded-xl hover:bg-zinc-700 transition-colors"
+              >
+                Aggiungi blocco
+              </button>
+            </div>
+          </div>
+        );
+      })()}
     </aside>
 
-    {variantPicker && variantPicker.variants && (
-      <VariantPicker
-        blockLabel={variantPicker.label}
-        variants={variantPicker.variants}
-        onSelect={handleVariantSelect}
-        onClose={() => setVariantPicker(null)}
-      />
-    )}
     </>
   );
 };

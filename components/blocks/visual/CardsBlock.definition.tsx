@@ -4,10 +4,31 @@ import { Cards } from '../sidebar/block-editors/Cards';
 import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
+import React from 'react';
+
+const Thumbnail: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 200 120" className={className} fill="none">
+    <rect width="200" height="120" fill="#fafafa" />
+    <rect x="8" y="24" width="56" height="72" rx="6" fill="#ffffff" stroke="#e4e4e7" />
+    <rect x="8" y="24" width="56" height="34" rx="6" fill="#e4e4e7" />
+    <rect x="14" y="65" width="34" height="5" rx="1.5" fill="#18181b" />
+    <rect x="14" y="75" width="40" height="3" rx="1" fill="#a1a1aa" />
+    <rect x="72" y="24" width="56" height="72" rx="6" fill="#ffffff" stroke="#e4e4e7" />
+    <rect x="72" y="24" width="56" height="34" rx="6" fill="#e4e4e7" />
+    <rect x="78" y="65" width="34" height="5" rx="1.5" fill="#18181b" />
+    <rect x="78" y="75" width="40" height="3" rx="1" fill="#a1a1aa" />
+    <rect x="136" y="24" width="56" height="72" rx="6" fill="#ffffff" stroke="#e4e4e7" />
+    <rect x="136" y="24" width="56" height="34" rx="6" fill="#e4e4e7" />
+    <rect x="142" y="65" width="34" height="5" rx="1.5" fill="#18181b" />
+    <rect x="142" y="75" width="40" height="3" rx="1" fill="#a1a1aa" />
+  </svg>
+);
 
 export const cardsDefinition: BlockDefinition = {
   type: 'cards',
   label: 'Carosello / Cards',
+  description: 'Griglia di card con immagine, titolo e sottotitolo. Ideale per servizi, prodotti o team.',
+  thumbnail: Thumbnail,
   icon: Grid,
   visual: CardsBlock,
   unifiedEditor: Cards,
@@ -51,7 +72,7 @@ export const cardsDefinition: BlockDefinition = {
   styleMapper: (style, block, project, viewport) => {
     const { vars, style: s } = getBaseStyleVars(style, block, project, viewport);
     const val = (key: string, def: any) => s[key] !== undefined && s[key] !== null ? s[key] : def;
-    
+
     return {
       ...vars,
       '--card-bg': val('cardBgColor', 'transparent'),

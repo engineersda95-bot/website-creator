@@ -1,3 +1,4 @@
+import React from 'react';
 import { Send } from 'lucide-react';
 import { ContactFormBlock } from './ContactFormBlock';
 import { ContactForm } from '../sidebar/block-editors/ContactForm';
@@ -5,9 +6,26 @@ import { BlockDefinition } from '@/types/block-definition';
 import { getBaseStyleVars } from '@/lib/base-style-mapper';
 import { toPx } from '@/lib/utils';
 
+const Thumbnail: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 200 120" className={className} fill="none">
+    <rect width="200" height="120" fill="#fafafa" />
+    <rect x="38" y="10" width="124" height="8" rx="2" fill="#18181b" />
+    <rect x="38" y="28" width="124" height="14" rx="4" fill="#ffffff" stroke="#e4e4e7" />
+    <rect x="44" y="33" width="60" height="3" rx="1" fill="#d4d4d8" />
+    <rect x="38" y="48" width="124" height="14" rx="4" fill="#ffffff" stroke="#e4e4e7" />
+    <rect x="44" y="53" width="50" height="3" rx="1" fill="#d4d4d8" />
+    <rect x="38" y="68" width="124" height="26" rx="4" fill="#ffffff" stroke="#e4e4e7" />
+    <rect x="44" y="74" width="70" height="3" rx="1" fill="#d4d4d8" />
+    <rect x="58" y="102" width="84" height="13" rx="6.5" fill="#18181b" />
+    <rect x="68" y="106.5" width="64" height="4" rx="1.5" fill="#ffffff" />
+  </svg>
+);
+
 export const contactFormDefinition: BlockDefinition = {
   type: 'contact-form',
   label: 'Form Contatti',
+  description: 'Modulo di contatto personalizzabile con campi configurabili e invio email diretto.',
+  thumbnail: Thumbnail,
   icon: Send,
   visual: ContactFormBlock,
   unifiedEditor: ContactForm,
@@ -17,7 +35,6 @@ export const contactFormDefinition: BlockDefinition = {
       subtitle: '',
       accessKey: '',
       formSubject: 'Nuovo messaggio dal sito',
-      // CTA submit button
       submit: 'Invia messaggio',
       submitTheme: 'primary',
       successMessage: 'Grazie! Ti risponderemo presto.',
