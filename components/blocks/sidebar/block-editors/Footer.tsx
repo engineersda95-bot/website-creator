@@ -177,7 +177,7 @@ export const Footer: React.FC<FooterProps> = ({
         <LayoutFields getStyleValue={getStyleValue} updateStyle={updateStyle} />
       </Section>
 
-      <Section icon={Type} label="Typography" id="typography" isOpen={openSection === 'typography'} onToggle={toggleSection}>
+      <Section icon={Type} label="Tipografia" id="typography" isOpen={openSection === 'typography'} onToggle={toggleSection}>
         <TypographyFields
           label="Dimensione Logo"
           sizeKey="titleSize"

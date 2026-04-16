@@ -18,7 +18,8 @@ import {
   RichTextarea,
   PatternManager,
   CTAManager,
-  ColorInput
+  ColorInput,
+  LinkSelector
 } from '../SharedSidebarComponents';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { cn } from '@/lib/utils';
@@ -251,10 +252,10 @@ export const Promo: React.FC<PromoProps> = ({
                   onChange={(val: string) => updateItem(i, { text: val })}
                   placeholder="Descrizione promo..."
                 />
-                <SimpleInput 
+                <LinkSelector 
                   label="URL (Link/Azione)"
                   value={item.url || ''}
-                  onChange={(val) => updateItem(i, { url: val })}
+                  onChange={(val: string) => updateItem(i, { url: val })}
                   placeholder="/... o https://..."
                 />
 

@@ -29,6 +29,7 @@ import {
   SimpleInput,
   SimpleSlider,
   TypographyFields,
+  LinkSelector,
   UnifiedSection as Section, 
   useUnifiedSections, 
   CategoryHeader, 
@@ -195,10 +196,10 @@ export const Cards: React.FC<CardsProps> = ({
                 placeholder="Titolo del servizio..."
               />
 
-              <SimpleInput
+              <LinkSelector
                 label="URL (Link/Azione)"
                 value={item.url || ''}
-                onChange={(val) => updateItem(index, { url: val })}
+                onChange={(val: string) => updateItem(index, { url: val })}
                 placeholder="/... (relativo) o https://... (assoluto)"
               />
 

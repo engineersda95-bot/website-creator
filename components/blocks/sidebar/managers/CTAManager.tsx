@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { CTAManagerProps } from '@/types/sidebar';
 import { SectionHeader } from '../ui/SectionHeader';
 import { ColorInput } from '../ui/ColorInput';
+import { LinkSelector } from '../ui/LinkSelector';
 
 export function CTAManager({ 
    content, 
@@ -191,20 +192,10 @@ export function CTAManager({
                      onChange={(e) => updateContent({ [ctaKey!]: e.target.value })}
                   />
                </div>
-               <div className="space-y-4">
-                  <label className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest pl-1 block">Link / URL</label>
-                  <div className="relative group">
-                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 transition-colors">
-                        <LinkIcon size={16} />
-                     </div>
-                     <input
-                        className="w-full pl-12 pr-4 py-4 border border-zinc-200 rounded-2xl text-sm bg-zinc-50 font-black focus:bg-white focus:border-zinc-900 transition-all outline-none"
-                        placeholder="Es: /servizi o https://..."
-                        value={content[urlKey!] || (ctaKey === 'cta' ? content.ctaLink : '') || ''}
-                        onChange={(e) => updateContent({ [urlKey!]: e.target.value })}
-                     />
-                  </div>
-               </div>
+               <LinkSelector
+                  value={content[urlKey!] || (ctaKey === 'cta' ? content.ctaLink : '') || ''}
+                  onChange={(val) => updateContent({ [urlKey!]: val })}
+               />
             </div>
          </section>
       </div>

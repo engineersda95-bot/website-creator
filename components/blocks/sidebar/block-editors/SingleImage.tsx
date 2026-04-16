@@ -19,8 +19,10 @@ import {
   ImageStyleFields,
   LayoutFields,
   PatternManager,
+  RichTextarea,
   SimpleInput,
   SimpleSlider,
+  LinkSelector,
   UnifiedSection as Section, 
   useUnifiedSections, 
   CategoryHeader, 
@@ -70,10 +72,10 @@ export const SingleImage: React.FC<SingleImageProps> = ({
       </Section>
 
       <Section icon={Link} label="Azione (Link)" id="link" isOpen={openSection === 'link'} onToggle={toggleSection}>
-        <SimpleInput
+        <LinkSelector
           label="URL Destinazione"
           value={selectedBlock.content.url || ''}
-          onChange={(val) => updateContent({ url: val })}
+          onChange={(val: string) => updateContent({ url: val })}
           placeholder="https://... o /pagina"
         />
         <p className="text-[10px] text-zinc-400 italic pl-1">Lascia vuoto se l'immagine non deve essere cliccabile.</p>

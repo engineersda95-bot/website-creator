@@ -310,7 +310,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         </div>
       </Section>
 
-      <Section icon={Type} label="Typography" id="typography" isOpen={openSection === 'typography'} onToggle={toggleSection}>
+      <Section icon={Type} label="Tipografia" id="typography" isOpen={openSection === 'typography'} onToggle={toggleSection}>
         <TypographyFields
           label="Dimensione Link"
           sizeKey="fontSize"
