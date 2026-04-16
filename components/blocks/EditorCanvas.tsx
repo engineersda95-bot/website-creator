@@ -248,6 +248,7 @@ export const EditorCanvas: React.FC = () => {
             --global-h6-fs: ${toPx(project?.settings?.typography?.h6Size, '1.1rem')};
             --global-body-fs: ${toPx(project?.settings?.typography?.bodySize, '1rem')};
           }
+          #editor-content .insert-menu, #editor-content .insert-menu * { font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important; }
           #editor-content .insert-menu * { color: #18181b !important; }
           #editor-content .insert-menu button:hover * { color: #ffffff !important; }
           #editor-content .block-wrapper:hover { outline: 2px solid #3b82f6; }
@@ -358,29 +359,31 @@ export const EditorCanvas: React.FC = () => {
                 </button>
 
                 {showMenuAt === 0 && (
-                  <div className="insert-menu absolute top-10 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.2)] rounded-3xl p-3 grid grid-cols-2 gap-2 min-w-[320px] animate-in zoom-in-95 fade-in duration-200 z-[80]">
-                    <div className="col-span-2 px-3 py-1 mb-1 border-b border-zinc-100">
-                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Inserisci Blocco Inizio</span>
+                  <div className="absolute top-10 left-0 right-0 flex justify-center pointer-events-none z-[80]" style={{ scale: String(1 / scale), transformOrigin: '50% 0%' }}>
+                    <div className="insert-menu bg-white/90 backdrop-blur-xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.2)] rounded-3xl p-4 grid grid-cols-2 gap-2 w-[460px] animate-in zoom-in-95 fade-in duration-200 pointer-events-auto font-sans" style={{ fontFamily: 'var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif' }}>
+                      <div className="col-span-2 px-3 py-1 mb-1 border-b border-zinc-100">
+                        <span className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">Inserisci Blocco Inizio</span>
+                      </div>
+                      {INSERT_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.type}
+                          onClick={() => { addBlock(opt.type as any, 0); setShowMenuAt(null); }}
+                          className="flex items-center gap-3 p-3 rounded-2xl hover:bg-zinc-900 hover:text-white transition-all group text-left border border-zinc-100 text-zinc-900"
+                        >
+                          <div className="p-2 bg-zinc-50 rounded-xl group-hover:bg-white/10 transition-colors">
+                            <opt.icon size={16} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-xs font-semibold uppercase tracking-tight">{opt.label}</span>
+                          </div>
+                        </button>
+                      ))}
+                      {hasCopiedBlock && (
+                        <button onClick={() => { pasteBlock(0); setShowMenuAt(null); }} className="col-span-2 flex items-center justify-center gap-3 p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100 mt-1">
+                          <ClipboardIcon size={16} /><span className="text-xs font-semibold uppercase tracking-widest">Incolla Blocco Copiato</span>
+                        </button>
+                      )}
                     </div>
-                    {INSERT_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.type}
-                        onClick={() => { addBlock(opt.type as any, 0); setShowMenuAt(null); }}
-                        className="flex items-center gap-3 p-3 rounded-2xl hover:bg-zinc-900 hover:text-white transition-all group text-left border border-zinc-100 text-zinc-900"
-                      >
-                        <div className="p-2 bg-zinc-50 rounded-xl group-hover:bg-white/10 transition-colors">
-                          <opt.icon size={16} />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-[10px] font-black uppercase tracking-tight">{opt.label}</span>
-                        </div>
-                      </button>
-                    ))}
-                    {hasCopiedBlock && (
-                      <button onClick={() => { pasteBlock(0); setShowMenuAt(null); }} className="col-span-2 flex items-center justify-center gap-3 p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100 mt-1">
-                        <ClipboardIcon size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Incolla Blocco Copiato</span>
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
@@ -420,30 +423,32 @@ export const EditorCanvas: React.FC = () => {
                     </button>
 
                     {showMenuAt === index + 1 && (
-                      <div className="insert-menu absolute top-10 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-2xl border border-zinc-200 shadow-[0_30px_70px_rgba(0,0,0,0.25)] rounded-[2rem] p-3 grid grid-cols-2 gap-2 min-w-[340px] animate-in zoom-in-90 fade-in slide-in-from-top-4 duration-300 z-[90]">
-                        <div className="col-span-2 px-3 py-1 mb-1 border-b border-zinc-100 flex justify-between items-center">
-                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Aggiungi Sezione</span>
-                          <button onClick={() => setShowMenuAt(null)} className="text-zinc-400 hover:text-zinc-900 transition-colors"><Trash2 size={12} /></button>
+                      <div className="absolute top-10 left-0 right-0 flex justify-center pointer-events-none z-[90]" style={{ scale: String(1 / scale), transformOrigin: '50% 0%' }}>
+                        <div className="insert-menu bg-white/95 backdrop-blur-2xl border border-zinc-200 shadow-[0_30px_70px_rgba(0,0,0,0.25)] rounded-[2rem] p-4 grid grid-cols-2 gap-2 w-[460px] animate-in zoom-in-90 fade-in slide-in-from-top-4 duration-300 pointer-events-auto font-sans" style={{ fontFamily: 'var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif' }}>
+                          <div className="col-span-2 px-3 py-1 mb-1 border-b border-zinc-100 flex justify-between items-center">
+                            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">Aggiungi Sezione</span>
+                            <button onClick={() => setShowMenuAt(null)} className="text-zinc-400 hover:text-zinc-900 transition-colors"><Trash2 size={14} /></button>
+                          </div>
+                          {INSERT_OPTIONS.map((opt) => (
+                            <button
+                              key={opt.type}
+                              onClick={() => { addBlock(opt.type as any, index + 1); setShowMenuAt(null); }}
+                              className="flex items-center gap-3 p-3 rounded-2xl hover:bg-zinc-900 hover:text-white transition-all group text-left border border-zinc-100 hover:border-zinc-900 text-zinc-900"
+                            >
+                              <div className="p-2 bg-zinc-50 rounded-xl group-hover:bg-white/10 transition-colors">
+                                <opt.icon size={16} />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-xs font-semibold uppercase tracking-tight">{opt.label}</span>
+                              </div>
+                            </button>
+                          ))}
+                          {hasCopiedBlock && (
+                            <button onClick={() => { pasteBlock(index + 1); setShowMenuAt(null); }} className="col-span-2 flex items-center justify-center gap-3 p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100 mt-1">
+                              <ClipboardIcon size={16} /><span className="text-xs font-semibold uppercase tracking-widest">Incolla Blocco Copiato</span>
+                            </button>
+                          )}
                         </div>
-                        {INSERT_OPTIONS.map((opt) => (
-                          <button
-                            key={opt.type}
-                            onClick={() => { addBlock(opt.type as any, index + 1); setShowMenuAt(null); }}
-                            className="flex items-center gap-3 p-3 rounded-2xl hover:bg-zinc-900 hover:text-white transition-all group text-left border border-zinc-100 hover:border-zinc-900 text-zinc-900"
-                          >
-                            <div className="p-2 bg-zinc-50 rounded-xl group-hover:bg-white/10 transition-colors">
-                              <opt.icon size={16} />
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-[10px] font-black uppercase tracking-tight">{opt.label}</span>
-                            </div>
-                          </button>
-                        ))}
-                        {hasCopiedBlock && (
-                          <button onClick={() => { pasteBlock(index + 1); setShowMenuAt(null); }} className="col-span-2 flex items-center justify-center gap-3 p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100 mt-1">
-                            <ClipboardIcon size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Incolla Blocco Copiato</span>
-                          </button>
-                        )}
                       </div>
                     )}
                   </div>}
