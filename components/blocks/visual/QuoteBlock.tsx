@@ -298,23 +298,23 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
         })()}
 
         {isSlider ? (
-          <div className="relative group/quote overflow-hidden">
-            <div className="absolute top-1/2 left-2 md:-left-6 -translate-y-1/2 z-30 transition-all duration-300">
+          <div className="relative group/quote">
+            <div className="absolute top-1/2 left-2 md:-left-6 -translate-y-1/2 z-30 transition-all duration-300 pointer-events-none">
               <button
                 data-arrow="left"
                 className={cn(
-                  "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow",
+                  "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow pointer-events-auto",
                   isDark ? "bg-zinc-900 border-white/10" : "bg-white border-black/5"
                 )}
               >
                 <ChevronLeft size={24} style={{ color: style.textColor }} />
               </button>
             </div>
-            <div className="absolute top-1/2 right-2 md:-right-6 -translate-y-1/2 z-30 transition-all duration-300">
+            <div className="absolute top-1/2 right-2 md:-right-6 -translate-y-1/2 z-30 transition-all duration-300 pointer-events-none">
               <button
                 data-arrow="right"
                 className={cn(
-                  "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow",
+                  "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow pointer-events-auto",
                   isDark ? "bg-zinc-900 border-white/10" : "bg-white border-black/5"
                 )}
               >
@@ -322,35 +322,37 @@ export const QuoteBlock: React.FC<QuoteBlockProps> = ({ block, project, viewport
               </button>
             </div>
 
-            <div
-              className={cn(
-                "w-full flex gap-8 pb-4 items-stretch overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-container no-scrollbar transition-all",
-                "flex-row"
-              )}
-            >
-              {items.map((item: any, i: number) => {
-                const itemDelay = baseDelay + 0.1 + (i * 0.05);
-                return (
-                  <div
-                    key={i}
-                    style={{
-                      ...cardStyles,
-                      '--siti-anim-duration': animDuration + 's',
-                      '--siti-anim-delay': itemDelay + 's'
-                    } as any}
-                    data-siti-anim={animType}
-                    data-siti-anim-duration={animDuration}
-                    data-siti-anim-delay={itemDelay}
-                    className={cn(
-                      "p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm shrink-0 min-w-0 snap-center",
-                      sliderWidth,
-                      colsD === 1 && "lg:max-w-4xl lg:mx-auto"
-                    )}
-                  >
-                    <CardContent item={item} index={i} />
-                  </div>
-                );
-              })}
+            <div className="overflow-hidden">
+              <div
+                className={cn(
+                  "w-full flex gap-8 pb-4 items-stretch overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-container no-scrollbar transition-all",
+                  "flex-row"
+                )}
+              >
+                {items.map((item: any, i: number) => {
+                  const itemDelay = baseDelay + 0.1 + (i * 0.05);
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        ...cardStyles,
+                        '--siti-anim-duration': animDuration + 's',
+                        '--siti-anim-delay': itemDelay + 's'
+                      } as any}
+                      data-siti-anim={animType}
+                      data-siti-anim-duration={animDuration}
+                      data-siti-anim-delay={itemDelay}
+                      className={cn(
+                        "p-8 md:p-10 rounded-[3rem] border border-black/5 dark:border-white/5 flex flex-col shadow-sm shrink-0 min-w-0 snap-center",
+                        sliderWidth,
+                        colsD === 1 && "lg:max-w-4xl lg:mx-auto"
+                      )}
+                    >
+                      <CardContent item={item} index={i} />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ) : (

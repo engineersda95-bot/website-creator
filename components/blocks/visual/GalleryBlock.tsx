@@ -88,9 +88,7 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
             style.imageHover && 'transition-transform duration-700 group-hover:scale-105'
           )}
         />
-        {style.imageHover && (
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none" />
-        )}
+        {/* Removed hover overlay to keep transparent images clean */}
       </div>
     );
   };
@@ -198,25 +196,27 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({
         {/* ─── SLIDER — horizontal carousel ─── */}
         {variant === 'slider' && (
           <div className="relative group/gallery">
-            <div className="absolute top-1/2 left-2 -translate-y-1/2 z-30">
-              <button data-arrow="left" className="p-3 bg-white/90 backdrop-blur-sm shadow-lg rounded-full border border-black/5 transition-all hover:scale-110 active:scale-90 cursor-pointer">
-                <ChevronLeft size={20} />
+            <div className="absolute top-1/2 left-2 md:-left-6 -translate-y-1/2 z-30 transition-all duration-300 pointer-events-none">
+              <button data-arrow="left" className="p-4 bg-white/80 backdrop-blur-sm shadow-lg rounded-full border border-black/5 transition-all hover:scale-110 active:scale-90 cursor-pointer pointer-events-auto">
+                <ChevronLeft size={24} />
               </button>
             </div>
-            <div className="absolute top-1/2 right-2 -translate-y-1/2 z-30">
-              <button data-arrow="right" className="p-3 bg-white/90 backdrop-blur-sm shadow-lg rounded-full border border-black/5 transition-all hover:scale-110 active:scale-90 cursor-pointer">
-                <ChevronRight size={20} />
+            <div className="absolute top-1/2 right-2 md:-right-6 -translate-y-1/2 z-30 transition-all duration-300 pointer-events-none">
+              <button data-arrow="right" className="p-4 bg-white/80 backdrop-blur-sm shadow-lg rounded-full border border-black/5 transition-all hover:scale-110 active:scale-90 cursor-pointer pointer-events-auto">
+                <ChevronRight size={24} />
               </button>
             </div>
-            <div className="flex gap-[var(--gallery-gap)] overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar pb-2">
-              {images.map((img: any, idx: number) => (
-                <div key={idx} className="shrink-0 snap-center" style={{ width: `calc((100% - var(--gallery-gap, 16px) * 2) / var(--gallery-columns, 3))` }}>
-                  {renderImage(img, idx, {
-                    noMargin: true,
-                    aspectOverride: defaultAspectClass || 'aspect-[3/4]',
-                  })}
-                </div>
-              ))}
+            <div className="overflow-hidden">
+              <div className="flex gap-[var(--gallery-gap)] overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar pb-2">
+                {images.map((img: any, idx: number) => (
+                  <div key={idx} className="shrink-0 snap-center" style={{ width: `calc((100% - var(--gallery-gap, 16px) * 2) / var(--gallery-columns, 3))` }}>
+                    {renderImage(img, idx, {
+                      noMargin: true,
+                      aspectOverride: defaultAspectClass || 'aspect-[3/4]',
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
             <div dangerouslySetInnerHTML={{ __html: `<script>
               (function() {

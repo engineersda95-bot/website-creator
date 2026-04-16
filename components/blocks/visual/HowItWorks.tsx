@@ -296,23 +296,23 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
             })}
           </div>
         ) : isSlider ? (
-          <div className="relative group/slider overflow-hidden">
-            <div className="absolute top-1/2 left-2 md:left-4 lg:-left-6 -translate-y-1/2 z-30 transition-all duration-300">
+          <div className="relative group/slider">
+            <div className="absolute top-1/2 left-2 md:-left-6 -translate-y-1/2 z-30 transition-all duration-300 pointer-events-none">
               <button 
                 data-arrow="left" 
                 className={cn(
-                  "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow",
+                  "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow pointer-events-auto",
                   isDark ? "bg-zinc-900 border-white/10" : "bg-white border-black/5"
                 )}
               >
                 <ChevronLeft size={24} style={{ color: style.textColor }} />
               </button>
             </div>
-            <div className="absolute top-1/2 right-2 md:right-4 lg:-right-6 -translate-y-1/2 z-30 transition-all duration-300">
+            <div className="absolute top-1/2 right-2 md:-right-6 -translate-y-1/2 z-30 transition-all duration-300 pointer-events-none">
               <button 
                 data-arrow="right" 
                 className={cn(
-                  "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow",
+                  "p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full border transition-all hover:scale-110 active:scale-90 cursor-pointer group/arrow pointer-events-auto",
                   isDark ? "bg-zinc-900 border-white/10" : "bg-white border-black/5"
                 )}
               >
@@ -320,33 +320,35 @@ export const HowItWorks: React.FC<HowItWorksBlockProps> = ({
               </button>
             </div>
 
-            <div
-              className={cn(
-                "w-full flex pb-4 items-stretch flex-row overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all"
-              )}
-              style={{ gap: 'var(--block-gap, 2rem)', paddingLeft: `${style.sliderPadding ?? 48}px`, paddingRight: `${style.sliderPadding ?? 48}px` }}
-            >
-              {items.map((item: any, i: number) => {
-                const itemDelay = baseDelay + 0.1 + (i * 0.05);
-                return (
-                  <div 
-                    key={i} 
-                    data-siti-anim={animType}
-                    data-siti-anim-duration={animDuration}
-                    data-siti-anim-delay={itemDelay}
-                    className={cn(
-                      "flex flex-col min-w-0 shrink-0 snap-center",
-                      sliderWidth
-                    )}
-                    style={{
-                      '--siti-anim-duration': animDuration + 's',
-                      '--siti-anim-delay': itemDelay + 's'
-                    } as any}
-                  >
-                    <StepItem item={item} index={i} layoutType="grid" />
-                  </div>
-                );
-              })}
+            <div className="overflow-hidden">
+              <div
+                className={cn(
+                  "w-full flex pb-4 items-stretch flex-row overflow-x-auto snap-x snap-mandatory scroll-container no-scrollbar transition-all"
+                )}
+                style={{ gap: 'var(--block-gap, 2rem)', paddingLeft: `${style.sliderPadding ?? 48}px`, paddingRight: `${style.sliderPadding ?? 48}px` }}
+              >
+                {items.map((item: any, i: number) => {
+                  const itemDelay = baseDelay + 0.1 + (i * 0.05);
+                  return (
+                    <div 
+                      key={i} 
+                      data-siti-anim={animType}
+                      data-siti-anim-duration={animDuration}
+                      data-siti-anim-delay={itemDelay}
+                      className={cn(
+                        "flex flex-col min-w-0 shrink-0 snap-center",
+                        sliderWidth
+                      )}
+                      style={{
+                        '--siti-anim-duration': animDuration + 's',
+                        '--siti-anim-delay': itemDelay + 's'
+                      } as any}
+                    >
+                      <StepItem item={item} index={i} layoutType="grid" />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <div dangerouslySetInnerHTML={{ __html: `<script>

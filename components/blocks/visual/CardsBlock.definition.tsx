@@ -51,7 +51,7 @@ export const cardsDefinition: BlockDefinition = {
       titleTag: 'h2',
       imageAspectRatio: '16/9',
       imageBorderRadius: 24,
-      imageShadow: true,
+      imageShadow: false,
       imageHover: true,
       cardTitleBold: false,
       itemTitleTag: 'h3',
