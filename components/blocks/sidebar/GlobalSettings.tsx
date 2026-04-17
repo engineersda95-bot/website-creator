@@ -3,10 +3,13 @@
 import { useEditorStore } from "@/store/useEditorStore";
 import { ProjectSettings } from "@/types/editor";
 import {
+  Globe,
+  Languages,
   MousePointer,
   Palette,
   Search,
   Smartphone,
+  Store,
   Type,
 } from "lucide-react";
 import React from "react";
@@ -18,7 +21,7 @@ import {
 // Modular Sections
 import { t } from "@/lib/i18n";
 import { ButtonDesignSection } from "./settings/ButtonDesignSection";
-import { SeoSection } from "./settings/SeoSection";
+import { BusinessSeoSection, FaviconSection, SeoSection } from "./settings/SeoSection";
 import { ThemeSection } from "./settings/ThemeSection";
 import { TypographySection } from "./settings/TypographySection";
 
@@ -44,12 +47,6 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
   if (isPage) {
     return (
       <div className="w-full space-y-8 py-2">
-        <SeoSection
-          project={project}
-          updateProjectSettings={updateProjectSettings}
-          isUploading={isUploading}
-          uploadImage={uploadImage}
-        />
         <TypographySection
           project={project}
           updateProjectSettings={updateProjectSettings}
@@ -62,6 +59,12 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
           project={project}
           updateProjectSettings={updateProjectSettings}
           viewport={viewport}
+        />
+        <SeoSection
+          project={project}
+          updateProjectSettings={updateProjectSettings}
+          isUploading={isUploading}
+          uploadImage={uploadImage}
         />
       </div>
     );
@@ -84,23 +87,6 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
 
       {/* Sections */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <Section
-          icon={Search}
-          label="SEO & Meta"
-          id="seo"
-          isOpen={openSection === "seo"}
-          onToggle={toggleSection}
-        >
-          <div className="[&>section]:pt-0 [&>section]:border-t-0 [&>section>div:first-child]:hidden">
-            <SeoSection
-              project={project}
-              updateProjectSettings={updateProjectSettings}
-              isUploading={isUploading}
-              uploadImage={uploadImage}
-            />
-          </div>
-        </Section>
-
         <Section
           icon={Type}
           label="Tipografia"
@@ -146,7 +132,42 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
             />
           </div>
         </Section>
+
+        <Section
+          icon={Globe}
+          label="Favicon"
+          id="favicon"
+          isOpen={openSection === "favicon"}
+          onToggle={toggleSection}
+        >
+          <div className="[&>section]:pt-0 [&>section]:border-t-0 [&>section>div:first-child]:hidden">
+            <FaviconSection
+              project={project}
+              updateProjectSettings={updateProjectSettings}
+              isUploading={isUploading}
+              uploadImage={uploadImage}
+            />
+          </div>
+        </Section>
+
+        <Section
+          icon={Search}
+          label="Dati Attività e SEO"
+          id="seo"
+          isOpen={openSection === "seo"}
+          onToggle={toggleSection}
+        >
+          <div className="[&>section]:pt-0 [&>section]:border-t-0 [&>section>div:first-child]:hidden">
+            <BusinessSeoSection
+              project={project}
+              updateProjectSettings={updateProjectSettings}
+              isUploading={isUploading}
+              uploadImage={uploadImage}
+            />
+          </div>
+        </Section>
       </div>
     </div>
   );
 };
+

@@ -20,7 +20,33 @@ interface SeoSectionProps {
    uploadImage: (val: string, filename?: string) => Promise<string>;
 }
 
-export const SeoSection: React.FC<SeoSectionProps> = ({
+export const FaviconSection: React.FC<SeoSectionProps> = ({
+   project,
+   updateProjectSettings,
+   uploadImage
+}) => {
+   const lang = project?.settings?.defaultLanguage || 'it';
+   return (
+      <section className="animate-in fade-in slide-in-from-right-4 duration-500">
+         {/* Headers are wrapped in divs as first-child to be hidden by sidebar logic if needed */}
+         <div className="hidden">
+            <SectionHeader icon={Languages} title="Favicon & Icone" colorClass="text-indigo-500" />
+         </div>
+         <div className="space-y-6">
+            <ImageUpload
+               label="Favicon Globale (1:1)"
+               value={resolveImageUrl(project?.settings?.favicon, project, useEditorStore.getState().imageMemoryCache)}
+               onChange={async (val: string, filename?: string) => {
+                  const relativePath = await uploadImage(val, filename as string);
+                  updateProjectSettings({ favicon: relativePath });
+               }}
+            />
+         </div>
+      </section>
+   );
+};
+
+export const BusinessSeoSection: React.FC<SeoSectionProps> = ({
    project,
    updateProjectSettings,
    isUploading,
@@ -28,10 +54,9 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
 }) => {
    const lang = project?.settings?.defaultLanguage || 'it';
    return (
-      <section className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-12">
-         {/* Headers are wrapped in divs as first-child to be hidden by sidebar logic if needed */}
-         <div>
-            <SectionHeader icon={Globe} title={t('seo_social', lang)} colorClass="text-teal-500" />
+      <section className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-10">
+         <div className="hidden">
+            <SectionHeader icon={Search} title="SEO & Business" colorClass="text-amber-500" />
          </div>
 
          <div className="space-y-6">
@@ -79,19 +104,12 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
             />
          </div>
 
-         {/* Global Project SEO / Favicon */}
-         <div className="space-y-8 pt-10 border-t border-zinc-100">
-            <SectionHeader icon={Languages} title="Favicon & Icone" colorClass="text-indigo-500" />
-            <div className="space-y-6">
-               <ImageUpload
-                  label="Favicon Globale (1:1)"
-                  value={resolveImageUrl(project?.settings?.favicon, project, useEditorStore.getState().imageMemoryCache)}
-                  onChange={async (val: string, filename?: string) => {
-                     const relativePath = await uploadImage(val, filename);
-                     updateProjectSettings({ favicon: relativePath });
-                  }}
-               />
-            </div>
+         {/* Information text about SEO default settings */}
+         <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex gap-3">
+            <Info size={16} className="text-indigo-600 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-indigo-900 leading-relaxed font-medium">
+               Queste sono le impostazioni SEO di default che vengono ereditate da tutte le pagine. Se vai sulla lista pagine e clicchi sul pulsante SEO puoi sovrascrivere la SEO per la singola pagina.
+            </p>
          </div>
 
          {/* Structured Data (Schema.org) */}
@@ -225,7 +243,7 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
 
                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex gap-3">
                   <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-emerald-800 leading-relaxed">
+                  <p className="text-[11px] text-emerald-800 leading-relaxed font-medium">
                      Compila per massimizzare la visibilità locale su Google e altri motori di ricerca.
                   </p>
                </div>
@@ -234,3 +252,13 @@ export const SeoSection: React.FC<SeoSectionProps> = ({
       </section>
    );
 };
+
+export const SeoSection: React.FC<SeoSectionProps> = (props) => {
+   return (
+      <div className="space-y-12">
+         <FaviconSection {...props} />
+         <BusinessSeoSection {...props} />
+      </div>
+   );
+};
+
