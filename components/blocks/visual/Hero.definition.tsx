@@ -103,7 +103,9 @@ export const heroDefinition: BlockDefinition = {
       title: 'La tua Visione, Reale',
       subtitle: 'Costruiamo esperienze digitali che lasciano il segno.',
       cta: 'Inizia Ora',
-      ctaUrl: '#'
+      ctaUrl: '#',
+      carouselEnabled: false,
+      slides: []
     },
     style: {
       padding: 120,
@@ -115,7 +117,11 @@ export const heroDefinition: BlockDefinition = {
       patternScale: 40,
       animationType: 'none',
       animationDuration: 0.8,
-      animationDelay: 0
+      animationDelay: 0,
+      carouselAutoplay: true,
+      carouselInterval: 5000,
+      carouselArrows: true,
+      carouselDots: true,
     }
   },
   variants: [

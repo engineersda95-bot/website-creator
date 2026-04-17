@@ -1,4 +1,5 @@
 
+// v2 - Managed Carousel Interactivity
 import React from 'react';
 import { cn, formatRichText } from '@/lib/utils';
 import { InlineEditable } from '@/components/shared/InlineEditable';
@@ -7,6 +8,7 @@ import { Project, Block } from '@/types/editor';
 import { SitiImage } from '@/components/shared/SitiImage';
 import { CTA, getCTAOverrides } from '@/components/shared/CTA';
 import { BACKGROUND_PATTERNS } from '@/lib/background-patterns';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface HeroProps {
   content: {
@@ -22,6 +24,20 @@ interface HeroProps {
     backgroundAlt?: string;
     sectionId?: string;
     variant?: 'centered' | 'split' | 'stacked';
+    carouselEnabled?: boolean;
+    slides?: Array<{
+      id: string;
+      title: string;
+      subtitle: string;
+      cta: string;
+      ctaUrl?: string;
+      ctaTheme?: 'primary' | 'secondary';
+      cta2?: string;
+      cta2Url?: string;
+      cta2Theme?: 'primary' | 'secondary';
+      backgroundImage?: string;
+      backgroundAlt?: string;
+    }>;
   };
   block: Block;
   isEditing?: boolean;
@@ -30,6 +46,8 @@ interface HeroProps {
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
   onInlineEdit?: (field: string, value: string) => void;
+  // Specific prop for slide edit (internal use)
+  onSlideEdit?: (slideId: string, field: string, value: string) => void;
 }
 
 // ─── Shared background + overlay layer ──────────────────────────────────
@@ -406,9 +424,217 @@ const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, i
 };
 
 // ═══════════════════════════════════════════════════════════════════════
-// MAIN EXPORT — switches on variant
+// CAROUSEL WRAPPER — horizontal slider with fade transitions
+// ═══════════════════════════════════════════════════════════════════════
+const CarouselHero: React.FC<HeroProps> = (props) => {
+  const { content, block, project, viewport, isStatic } = props;
+  const { style } = getBlockStyles(block, project, viewport || 'desktop');
+  const slides = content.slides || [];
+
+  // Preview Sync: check if the sidebar has indicated an active slide to show
+  const activePreviewIndex = (content as any).activeSlideIndex !== undefined ? (content as any).activeSlideIndex : 0;
+
+  if (slides.length === 0) {
+    return <CenteredHero {...props} />;
+  }
+
+  const autoplay = style.carouselAutoplay !== false;
+  const interval = style.carouselInterval || 5000;
+  const showArrows = style.carouselArrows !== false;
+  const showDots = style.carouselDots !== false;
+
+  return (
+    <div className="relative w-full overflow-hidden group/hero-carousel h-full min-h-[var(--hero-min-height)] hero-carousel-container">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .hero-slide {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.7s ease-in-out;
+          z-index: 0;
+        }
+        .hero-slide[data-active="true"] {
+          opacity: 100;
+          pointer-events: auto;
+          z-index: 10;
+        }
+        .hero-dot {
+          height: 6px;
+          border-radius: 9999px;
+          background: rgba(255, 255, 255, 0.3);
+          transition: all 0.3s ease;
+          outline: none;
+          cursor: pointer;
+        }
+        .hero-dot[data-active="true"] {
+          width: 32px;
+          background: white;
+        }
+        .hero-dot:not([data-active="true"]):hover {
+          background: rgba(255, 255, 255, 0.5);
+        }
+        @media (max-width: 768px) {
+          [data-carousel-prev], [data-carousel-next] {
+            display: none !important;
+          }
+        }
+      `}} />
+
+      {/* Slides Container */}
+      <div className="relative w-full h-full min-h-[var(--hero-min-height)] slides-wrapper">
+        {slides.map((slide: any, idx: number) => {
+          const isActive = idx === activePreviewIndex;
+          return (
+            <div
+              key={slide.id || idx}
+              data-index={idx}
+              data-active={isActive ? "true" : "false"}
+              className="hero-slide"
+            >
+              <Hero 
+                {...props} 
+                content={{ 
+                  ...content, 
+                  ...slide, 
+                  backgroundImage: slide.backgroundImage || (idx === 0 ? content.backgroundImage : undefined),
+                  backgroundAlt: slide.backgroundAlt || (idx === 0 ? content.backgroundAlt : undefined),
+                  carouselEnabled: false 
+                }} 
+                isEditing={false}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Navigation Arrows */}
+      {showArrows && slides.length > 1 && (
+        <>
+          <button
+            data-carousel-prev
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white opacity-0 group-hover/hero-carousel:opacity-100 transition-all hover:bg-white/20 active:scale-95"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <button
+            data-carousel-next
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white opacity-0 group-hover/hero-carousel:opacity-100 transition-all hover:bg-white/20 active:scale-95"
+            aria-label="Next slide"
+          >
+            <ChevronRight size={24} />
+          </button>
+        </>
+      )}
+
+      {/* Navigation Dots */}
+      {showDots && slides.length > 1 && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+          {slides.map((_: any, idx: number) => (
+            <button
+              key={idx}
+              data-dot-index={idx}
+              data-active={idx === activePreviewIndex ? "true" : "false"}
+              className="hero-dot w-2"
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
+      )}
+
+      <script 
+        key={`carousel-script-${activePreviewIndex}-${autoplay}-${interval}`}
+        dangerouslySetInnerHTML={{ __html: `
+        (function() {
+          var container = document.currentScript.closest('.hero-carousel-container');
+          if (!container) return;
+          
+          // Cleanup existing timers if any (important for hot-reload/editor)
+          if (window._heroCarouselTimers && window._heroCarouselTimers[container.id]) {
+            clearInterval(window._heroCarouselTimers[container.id]);
+          }
+          if (!window._heroCarouselTimers) window._heroCarouselTimers = {};
+
+          var slides = container.querySelectorAll('.hero-slide');
+          var dots = container.querySelectorAll('.hero-dot');
+          var prev = container.querySelector('[data-carousel-prev]');
+          var next = container.querySelector('[data-carousel-next]');
+          var total = slides.length;
+          var interval = ${interval};
+          var isEditingSlide = ${activePreviewIndex !== 0};
+          var autoplay = ${autoplay} && !isEditingSlide;
+          var timer;
+          var currentIndex = ${activePreviewIndex};
+
+          // Sync initial state based on server-side activePreviewIndex
+          slides.forEach(function(s, i) { 
+            s.setAttribute('data-active', i === currentIndex ? 'true' : 'false'); 
+          });
+          dots.forEach(function(d, i) { 
+            d.setAttribute('data-active', i === currentIndex ? 'true' : 'false'); 
+          });
+
+          function update(newIndex) {
+            if (slides[currentIndex]) slides[currentIndex].setAttribute('data-active', 'false');
+            if (dots[currentIndex]) dots[currentIndex].setAttribute('data-active', 'false');
+            
+            currentIndex = (newIndex + total) % total;
+            
+            if (slides[currentIndex]) slides[currentIndex].setAttribute('data-active', 'true');
+            if (dots[currentIndex]) dots[currentIndex].setAttribute('data-active', 'true');
+            resetTimer();
+          }
+
+          function resetTimer() {
+            if (timer) clearInterval(timer);
+            if (autoplay) {
+              timer = setInterval(function() { update(currentIndex + 1); }, interval);
+              window._heroCarouselTimers[container.id] = timer;
+            }
+          }
+
+          if (prev) prev.onclick = function() { update(currentIndex - 1); };
+          if (next) next.onclick = function() { update(currentIndex + 1); };
+          
+          dots.forEach(function(dot, idx) {
+            dot.onclick = function() {
+              if (idx !== currentIndex) update(idx);
+            };
+          });
+
+          // Touch Support
+          var touchStartX = 0;
+          container.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+          }, { passive: true });
+
+          container.addEventListener('touchend', function(e) {
+            var touchEndX = e.changedTouches[0].screenX;
+            var diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+              if (diff > 0) update(currentIndex + 1);
+              else update(currentIndex - 1);
+            }
+          }, { passive: true });
+
+          resetTimer();
+        })();
+      `}} />
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// MAIN EXPORT — switches on variant or carousel
 // ═══════════════════════════════════════════════════════════════════════
 export const Hero: React.FC<HeroProps> = (props) => {
+  if (props.content.carouselEnabled && (props.content.slides?.length || 0) > 0) {
+    return <CarouselHero {...props} />;
+  }
+  
   const variant = props.content.variant || 'centered';
   
   switch (variant) {
