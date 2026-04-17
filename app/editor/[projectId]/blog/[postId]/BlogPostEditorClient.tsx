@@ -13,16 +13,13 @@ import {
   ArrowLeft, Save, Loader2, Eye, EyeOff, Trash2,
   Settings, Search, Layout, MonitorPlay,
   X, Mic, MicOff, Sparkles, RotateCcw,
-  Bold, Italic, Heading2, Heading3, Heading4, List, ListOrdered, Quote, Link as LinkIcon, Code, Minus,
+  Bold, Italic, Heading2, Heading3, Heading4, List, ListOrdered, Quote, Link as LinkIcon, Code, Minus, Youtube,
   Image as ImageIcon, AlignLeft, AlignCenter, AlignRight, AlignJustify,
   PanelLeft, Palette, Monitor, Tablet, Smartphone
 } from 'lucide-react';
-import TipTapImage from '@tiptap/extension-image';
-import { mergeAttributes } from '@tiptap/core';
-import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react';
-import type { NodeViewProps } from '@tiptap/react';
 import { resolveImageUrl } from '@/lib/image-utils';
 import { useEditorStore } from '@/store/useEditorStore';
+import { InlineImage, InlineYoutube, getYouTubeId } from '@/components/editor/blog/BlogExtensions';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { improveTextWithAI, translateBlogPostWithAI, type AITextAction, type AITextTone } from '@/app/actions/ai-generator';
 import { SimpleSlider } from '@/components/blocks/sidebar/ui/SimpleSlider';
@@ -51,7 +48,9 @@ interface BlogPostEditorClientProps {
  * effectively preventing the 'flushSync' error in React 19.
  */
 function SafeEditorContent({ editor }: { editor: any }) {
-  if (!editor || editor.isDestroyed) return null;
+  if (!editor || editor.isDestroyed) {
+    return <div className="min-h-[500px] bg-white" />;
+  }
   return <EditorContent editor={editor} />;
 }
 
@@ -89,6 +88,9 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
   const [previewViewport, setPreviewViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [showColorPicker, setShowColorPicker] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   // Project-level blog post display settings (shared across all articles)
   const [projectSettings, setProjectSettings] = useState(() => initialProject.settings || {});
   const [isSavingProjectSettings, setIsSavingProjectSettings] = useState(false);
@@ -110,8 +112,7 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
   const colorInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // showSource removed — editor is now TipTap WYSIWYG
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+
 
   // Guard: warn on unsaved changes before leaving (refresh/close tab)
   const hasChangesRef = useRef(false);
@@ -239,201 +240,153 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
     ? rawBody
     : marked.parse(rawBody, { breaks: true }) as string;
 
-  // ── Inline image NodeView ─────────────────────────────────────────────────
-  const ImageNodeView = ({ node, updateAttributes, deleteNode, selected }: NodeViewProps) => {
-    const { imageMemoryCache } = useEditorStore();
-    const src = node.attrs.src || '';
-    const align = node.attrs.align || 'center';
-    const alt = node.attrs.alt || '';
-    const imgWidth = node.attrs.width as number | null; // percentage, null = natural size
-    const displaySrc = resolveImageUrl(src, initialProject, imageMemoryCache, false);
+  const updatePost = useCallback((updates: Partial<BlogPost>) => {
+    setPost(prev => ({ ...prev, ...updates }));
+    setHasChanges(true);
+  }, []);
 
-    // Drag-to-resize state
-    const isDragging = useRef(false);
-    const startX = useRef(0);
-    const startWidth = useRef(0);
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    const handleResizeStart = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      isDragging.current = true;
-      startX.current = e.clientX;
-      // Current width in px, or natural width of image
-      const imgEl = containerRef.current?.querySelector('img');
-      startWidth.current = imgEl?.offsetWidth ?? 300;
-      const parentWidth = containerRef.current?.parentElement?.offsetWidth ?? 600;
-
-      const onMove = (ev: MouseEvent) => {
-        if (!isDragging.current) return;
-        const dx = ev.clientX - startX.current;
-        const newPx = Math.max(60, startWidth.current + dx);
-        const newPct = Math.min(100, Math.round((newPx / parentWidth) * 100));
-        updateAttributes({ width: newPct });
-      };
-      const onUp = () => {
-        isDragging.current = false;
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('mouseup', onUp);
-      };
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
-    };
-
-    const wrapperStyle: React.CSSProperties = {
-      display: 'flex',
-      justifyContent: align === 'left' ? 'flex-start' : align === 'right' ? 'flex-end' : 'center',
-      margin: '1.5em 0',
-    };
-    const imgContainerStyle: React.CSSProperties = {
-      position: 'relative',
-      display: 'inline-block',
-      width: imgWidth ? `${imgWidth}%` : 'auto',
-      maxWidth: '100%',
-    };
-    const imgStyle: React.CSSProperties = {
-      display: 'block',
-      width: imgWidth ? '100%' : 'auto',
-      maxWidth: '100%',
-      height: 'auto',
-      borderRadius: '8px',
-      outline: selected ? '2px solid #3b82f6' : 'none',
-      outlineOffset: '2px',
-    };
-
-    return (
-      <NodeViewWrapper style={wrapperStyle} data-inline-image-wrap="" data-align={align}>
-        <div ref={containerRef} style={imgContainerStyle}>
-          <img src={displaySrc} alt={alt} style={imgStyle} data-inline-image="" data-img-width={imgWidth ?? ''} />
-
-          {/* Floating toolbar — visible only when selected */}
-          {selected && (
-            <div
-              contentEditable={false}
-              style={{
-                position: 'absolute', top: '-44px', left: '50%', transform: 'translateX(-50%)',
-                display: 'flex', alignItems: 'center', gap: '2px',
-                background: '#18181b', borderRadius: '10px', padding: '4px 6px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.25)', zIndex: 50, whiteSpace: 'nowrap',
-              }}
-            >
-              {/* Alignment */}
-              {([['left', AlignLeft], ['center', AlignCenter], ['right', AlignRight]] as const).map(([val, Icon]) => (
-                <button
-                  key={val}
-                  onMouseDown={(e) => { e.preventDefault(); updateAttributes({ align: val }); }}
-                  style={{
-                    padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center',
-                    background: align === val ? '#ffffff' : 'transparent',
-                    color: align === val ? '#18181b' : '#a1a1aa',
-                    border: 'none', cursor: 'pointer', transition: 'all 0.15s',
-                  }}
-                ><Icon size={12} /></button>
-              ))}
-
-              <div style={{ width: '1px', height: '16px', background: '#3f3f46', margin: '0 2px' }} />
-
-              {/* Width display */}
-              <span style={{ fontSize: '10px', color: '#a1a1aa', padding: '0 4px', fontVariantNumeric: 'tabular-nums' }}>
-                {imgWidth ? `${imgWidth}%` : 'Auto'}
-              </span>
-
-              {/* Reset width */}
-              {imgWidth && (
-                <button
-                  onMouseDown={(e) => { e.preventDefault(); updateAttributes({ width: null }); }}
-                  style={{ padding: '3px 6px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, background: 'transparent', color: '#a1a1aa', border: 'none', cursor: 'pointer' }}
-                >↺</button>
-              )}
-
-              <div style={{ width: '1px', height: '16px', background: '#3f3f46', margin: '0 2px' }} />
-
-              {/* Alt text */}
-              <input
-                value={alt}
-                onMouseDown={(e) => e.stopPropagation()}
-                onChange={(e) => updateAttributes({ alt: e.target.value })}
-                placeholder="Alt text..."
-                style={{
-                  background: 'transparent', border: '1px solid #3f3f46', borderRadius: '6px',
-                  color: '#e4e4e7', fontSize: '10px', padding: '2px 6px', width: '90px', outline: 'none',
-                }}
-              />
-
-              <div style={{ width: '1px', height: '16px', background: '#3f3f46', margin: '0 2px' }} />
-
-              {/* Delete */}
-              <button
-                onMouseDown={(e) => { e.preventDefault(); deleteNode(); }}
-                style={{ padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center', background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer' }}
-              ><Trash2 size={12} /></button>
-            </div>
-          )}
-
-          {/* Resize handle — right edge, visible when selected */}
-          {selected && (
-            <div
-              contentEditable={false}
-              onMouseDown={handleResizeStart}
-              style={{
-                position: 'absolute', right: '-5px', top: '50%', transform: 'translateY(-50%)',
-                width: '10px', height: '32px', background: '#3b82f6', borderRadius: '4px',
-                cursor: 'ew-resize', zIndex: 51,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              <div style={{ width: '2px', height: '16px', background: 'rgba(255,255,255,0.7)', borderRadius: '1px' }} />
-            </div>
-          )}
-        </div>
-      </NodeViewWrapper>
-    );
+  const tb = {
+    bold:      () => (editor?.chain() as any).focus().toggleBold().run(),
+    italic:    () => (editor?.chain() as any).focus().toggleItalic().run(),
+    underline: () => (editor?.chain() as any).focus().toggleUnderline().run(),
+    code:      () => (editor?.chain() as any).focus().toggleCode().run(),
+    h2:        () => (editor?.chain() as any).focus().toggleHeading({ level: 2 }).run(),
+    h3:        () => (editor?.chain() as any).focus().toggleHeading({ level: 3 }).run(),
+    h4:        () => (editor?.chain() as any).focus().toggleHeading({ level: 4 }).run(),
+    ul:        () => (editor?.chain() as any).focus().toggleBulletList().run(),
+    ol:        () => (editor?.chain() as any).focus().toggleOrderedList().run(),
+    quote:     () => (editor?.chain() as any).focus().toggleBlockquote().run(),
+    hr:        () => (editor?.chain() as any).focus().setHorizontalRule().run(),
+    alignLeft:    () => (editor?.chain() as any).focus().setTextAlign('left').run(),
+    alignCenter:  () => (editor?.chain() as any).focus().setTextAlign('center').run(),
+    alignRight:   () => (editor?.chain() as any).focus().setTextAlign('right').run(),
+    alignJustify: () => (editor?.chain() as any).focus().setTextAlign('justify').run(),
+    setColor:     (color: string) => (editor?.chain() as any).focus().setColor(color).run(),
+    unsetColor:   () => (editor?.chain() as any).focus().unsetColor().run(),
+    link:    () => {
+      const url = window.prompt('URL del link:');
+      if (!url) return;
+      (editor?.chain() as any).focus().setLink({ href: url }).run();
+    },
+    youtube: () => {
+      const url = window.prompt('Inserisci l\'URL del video YouTube:');
+      if (!url) return;
+      (editor?.chain() as any).focus().insertContent({
+        type: 'inlineYoutube',
+        attrs: { url }
+      }).run();
+    }
   };
 
-  const InlineImage = TipTapImage.extend({
-    addAttributes() {
-      return {
-        ...this.parent?.(),
-        // width: percentage (number) or null = natural size
-        width: {
-          default: null,
-          parseHTML: el => { const v = el.getAttribute('data-img-width'); return v ? parseInt(v) : null; },
-          renderHTML: attrs => attrs.width != null ? { 'data-img-width': String(attrs.width) } : {},
-        },
-        // align: stored as 'data-align' on wrapper — we emit it on the img so it round-trips
-        align: {
-          default: 'center',
-          parseHTML: el => el.getAttribute('data-align') ?? 'center',
-          renderHTML: attrs => ({ 'data-align': attrs.align || 'center' }),
-        },
-      };
-    },
-    renderHTML({ HTMLAttributes }) {
-      const { 'data-align': align, 'data-img-width': imgWidth, ...rest } = HTMLAttributes;
-      const w = imgWidth ? parseInt(String(imgWidth)) : null;
-      const imgStyle = w ? `width: ${w}%; max-width: 100%; height: auto;` : 'max-width: 100%; height: auto;';
-      return ['div', { 'data-inline-image-wrap': '', 'data-align': align || 'center' },
-        ['img', mergeAttributes(rest, { 'data-inline-image': '', ...(w ? { 'data-img-width': String(w) } : {}), style: imgStyle })]
-      ];
-    },
-    parseHTML() {
-      return [{ tag: 'img[data-inline-image]' }];
-    },
-    addNodeView() {
-      return ReactNodeViewRenderer(ImageNodeView);
-    },
-  });
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target?.result as string;
+      if (!base64) return;
+      const path = await uploadImage(base64);
+      if (path && !path.startsWith('data:')) {
+        // Store the /assets/ relative path — NodeView resolves it to displayable URL at render time
+        editor?.chain().focus().setImage({ src: path, alt: file.name.replace(/\.[^.]+$/, '') } as any).run();
+      } else {
+        toast('Errore upload immagine', 'error');
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    const { error } = await supabase
+      .from('blog_posts')
+      .update({
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        cover_image: post.cover_image,
+        categories: post.categories,
+        authors: post.authors,
+        status: post.status,
+        published_at: post.published_at,
+        blocks: post.blocks,
+        seo: post.seo,
+        language: post.language,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', post.id);
+
+    if (error) toast('Errore nel salvataggio', 'error');
+    else {
+      setHasChanges(false);
+      toast('Articolo salvato', 'success');
+    }
+    setIsSaving(false);
+  };
+
+  const handleDelete = async () => {
+    if (!await confirm({ title: 'Elimina articolo', message: `Vuoi eliminare "${post.title}"?`, confirmLabel: 'Elimina', variant: 'danger' })) return;
+    await supabase.from('blog_posts').delete().eq('id', post.id);
+    router.push(`/editor/${initialProject.id}`);
+  };
+
+  const toggleStatusAndSave = async () => {
+    const newStatus = post.status === 'published' ? 'draft' : 'published';
+
+    // Confirm before changing status
+    const confirmed = await confirm({
+      title: newStatus === 'published' ? 'Pubblica articolo' : 'Rimetti in bozza',
+      message: newStatus === 'published'
+        ? `Vuoi pubblicare "${post.title}"? Sarà visibile sul sito dopo il prossimo deploy.`
+        : `Vuoi rimettere "${post.title}" in bozza? Non sarà più visibile sul sito.`,
+      confirmLabel: newStatus === 'published' ? 'Pubblica' : 'Metti in bozza',
+      variant: newStatus === 'published' ? 'default' : 'danger',
+    });
+    if (!confirmed) return;
+
+    const finalSlug = post.slug || generateSlug(post.title || 'articolo');
+
+    const newPublishedAt = newStatus === 'published'
+      ? (post.published_at || new Date().toISOString())
+      : null;
+
+    // Update state directly — don't go through updatePost to avoid setting hasChanges
+    setPost(prev => ({ ...prev, status: newStatus, published_at: newPublishedAt, slug: finalSlug }));
+
+    const { error } = await supabase
+      .from('blog_posts')
+      .update({ status: newStatus, published_at: newPublishedAt, slug: finalSlug })
+      .eq('id', post.id);
+    if (error) {
+      setPost(prev => ({ ...prev, status: post.status, published_at: post.published_at, slug: post.slug }));
+      if (error.code === '23505' || error.message?.includes('slug')) {
+        toast('URL già usato da un altro articolo — modifica lo slug nella sidebar prima di pubblicare', 'error');
+      } else {
+        toast('Errore nel cambio stato', 'error');
+      }
+    } else {
+      toast(newStatus === 'published' ? 'Articolo pubblicato' : 'Articolo riportato in bozza', 'success');
+    }
+  };
+
+  const updateSeo = useCallback((updates: Partial<BlogPost['seo']>) => {
+    setPost(prev => ({ ...prev, seo: { ...prev.seo, ...updates } }));
+    setHasChanges(true);
+  }, []);
+
+  // ── Extensions array ──────────────────────────────────────────────────────
   const extensions = useMemo(() => [
     StarterKit,
     Underline,
     TipTapLink.configure({ openOnClick: false }),
     Placeholder.configure({ placeholder: 'Scrivi il tuo articolo...' }),
     InlineImage.configure({ inline: false }),
+    InlineYoutube,
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
     TextStyle,
     Color,
-  ], []);
+  ] as any[], []);
 
   const editorProps = useMemo(() => ({
     attributes: { class: 'rt-content prose prose-sm max-w-none outline-none min-h-[500px] px-8 py-6' },
@@ -441,10 +394,11 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
 
   const editor = useEditor({
     immediatelyRender: false,
+    shouldRerenderOnTransaction: false,
     extensions,
     content: "", // Start empty to avoid flushSync during initial mount in React 19
     editorProps,
-    onUpdate: ({ editor }) => {
+    onUpdate: ({ editor }: { editor: any }) => {
       const html = editor.getHTML();
       const textBlock = {
         id: post.blocks?.[0]?.id || crypto.randomUUID(),
@@ -457,7 +411,7 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
         updatePost({ blocks: [textBlock] });
       }, 0);
     },
-  });
+  } as any);
 
   // Set initial content after mount to avoid React 19 rendering conflicts
   useEffect(() => {
@@ -651,130 +605,6 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
   };
 
 
-  const updatePost = useCallback((updates: Partial<BlogPost>) => {
-    setPost(prev => ({ ...prev, ...updates }));
-    setHasChanges(true);
-  }, []);
-
-  // TipTap toolbar helpers
-  const tb = {
-    bold:    () => editor?.chain().focus().toggleBold().run(),
-    italic:  () => editor?.chain().focus().toggleItalic().run(),
-    code:    () => editor?.chain().focus().toggleCode().run(),
-    h2:      () => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
-    h3:      () => editor?.chain().focus().toggleHeading({ level: 3 }).run(),
-    h4:      () => editor?.chain().focus().toggleHeading({ level: 4 }).run(),
-    ul:      () => editor?.chain().focus().toggleBulletList().run(),
-    ol:      () => editor?.chain().focus().toggleOrderedList().run(),
-    quote:   () => editor?.chain().focus().toggleBlockquote().run(),
-    hr:      () => editor?.chain().focus().setHorizontalRule().run(),
-    alignLeft:    () => editor?.chain().focus().setTextAlign('left').run(),
-    alignCenter:  () => editor?.chain().focus().setTextAlign('center').run(),
-    alignRight:   () => editor?.chain().focus().setTextAlign('right').run(),
-    alignJustify: () => editor?.chain().focus().setTextAlign('justify').run(),
-    setColor:     (color: string) => editor?.chain().focus().setColor(color).run(),
-    unsetColor:   () => editor?.chain().focus().unsetColor().run(),
-    link:    () => {
-      const url = window.prompt('URL del link:');
-      if (!url) return;
-      editor?.chain().focus().setLink({ href: url }).run();
-    },
-  };
-
-  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const base64 = ev.target?.result as string;
-      if (!base64) return;
-      const path = await uploadImage(base64);
-      if (path && !path.startsWith('data:')) {
-        // Store the /assets/ relative path — NodeView resolves it to displayable URL at render time
-        editor?.chain().focus().setImage({ src: path, alt: file.name.replace(/\.[^.]+$/, '') } as any).run();
-      } else {
-        toast('Errore upload immagine', 'error');
-      }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
-
-  const updateSeo = useCallback((updates: Partial<BlogPost['seo']>) => {
-    setPost(prev => ({ ...prev, seo: { ...prev.seo, ...updates } }));
-    setHasChanges(true);
-  }, []);
-
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    const { error } = await supabase
-      .from('blog_posts')
-      .update({
-        title: post.title,
-        slug: post.slug,
-        excerpt: post.excerpt,
-        cover_image: post.cover_image,
-        categories: post.categories,
-        authors: post.authors,
-        status: post.status,
-        published_at: post.published_at,
-        blocks: post.blocks,
-        seo: post.seo,
-        language: post.language,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', post.id);
-
-    if (error) toast('Errore nel salvataggio', 'error');
-    else setHasChanges(false);
-    setIsSaving(false);
-  };
-
-  const handleDelete = async () => {
-    if (!await confirm({ title: 'Elimina articolo', message: `Vuoi eliminare "${post.title}"?`, confirmLabel: 'Elimina', variant: 'danger' })) return;
-    await supabase.from('blog_posts').delete().eq('id', post.id);
-    router.push(`/editor/${initialProject.id}`);
-  };
-
-  const toggleStatusAndSave = async () => {
-    const newStatus = post.status === 'published' ? 'draft' : 'published';
-
-    // Confirm before changing status
-    const confirmed = await confirm({
-      title: newStatus === 'published' ? 'Pubblica articolo' : 'Rimetti in bozza',
-      message: newStatus === 'published'
-        ? `Vuoi pubblicare "${post.title}"? Sarà visibile sul sito dopo il prossimo deploy.`
-        : `Vuoi rimettere "${post.title}" in bozza? Non sarà più visibile sul sito.`,
-      confirmLabel: newStatus === 'published' ? 'Pubblica' : 'Metti in bozza',
-      variant: newStatus === 'published' ? 'default' : 'danger',
-    });
-    if (!confirmed) return;
-
-    const finalSlug = post.slug || generateSlug(post.title || 'articolo');
-
-    const newPublishedAt = newStatus === 'published'
-      ? (post.published_at || new Date().toISOString())
-      : null;
-
-    // Update state directly — don't go through updatePost to avoid setting hasChanges
-    setPost(prev => ({ ...prev, status: newStatus, published_at: newPublishedAt, slug: finalSlug }));
-
-    const { error } = await supabase
-      .from('blog_posts')
-      .update({ status: newStatus, published_at: newPublishedAt, slug: finalSlug })
-      .eq('id', post.id);
-    if (error) {
-      setPost(prev => ({ ...prev, status: post.status, published_at: post.published_at, slug: post.slug }));
-      if (error.code === '23505' || error.message?.includes('slug')) {
-        toast('URL già usato da un altro articolo — modifica lo slug nella sidebar prima di pubblicare', 'error');
-      } else {
-        toast('Errore nel cambio stato', 'error');
-      }
-    } else {
-      toast(newStatus === 'published' ? 'Articolo pubblicato' : 'Articolo riportato in bozza', 'success');
-    }
-  };
 
   const generateSlug = (title: string) =>
     title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 80);
@@ -936,6 +766,14 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
                 <ImageIcon size={14} />
               </button>
 
+              <button
+                onMouseDown={(e) => { e.preventDefault(); tb.youtube(); }}
+                className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 hover:bg-zinc-200/60 transition-all font-bold"
+                title="Inserisci video YouTube"
+              >
+                <Youtube size={14} />
+              </button>
+
               <div className="w-px h-4 bg-zinc-200 mx-1" />
 
               {/* Text alignment */}
@@ -1009,7 +847,14 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
             {/* TipTap WYSIWYG editor - Encapsulated in SafeEditorContent to prevent React 19 flushSync errors */}
             <div className={cn("blog-tiptap-editor border border-t-0 border-zinc-200 rounded-b-xl bg-white overflow-hidden", isRecording && "is-recording")}>
               {isRecording && <style>{`.is-recording .ProseMirror p.is-editor-empty:first-child::before { content: '🎙 Sto ascoltando...'; }`}</style>}
-              <SafeEditorContent editor={editor} />
+              <style>{`
+                @media (max-width: 768px) {
+                  .youtube-node-container, .image-node-container {
+                    width: 100% !important;
+                  }
+                }
+              `}</style>
+              {mounted && <SafeEditorContent editor={editor} />}
             </div>
 
             {/* Hidden file input for inline image upload */}
@@ -1263,12 +1108,11 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
             const resolved = resolveImageUrl(src, initialProject, cache, false);
             return `src="${resolved}"`;
           })
-          .replace(/<div([^>]*data-inline-image-wrap[^>]*)>/g, (_: string, attrs: string) => {
-            const alignMatch = attrs.match(/data-align="([^"]+)"/);
-            const align = alignMatch ? alignMatch[1] : 'center';
-            const justifyMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' };
-            const justify = justifyMap[align] || 'center';
-            return `<div${attrs} style="display:flex;justify-content:${justify};margin:1em 0;">`;
+          .replace(/<div([^>]*data-inline-youtube[^>]*)>([\s\S]*?)<\/div>/g, (_: string, attrs: string, content: string) => {
+            if (content.includes('youtube-node-container')) return `<div${attrs}>${content}</div>`;
+            const widthMatch = attrs.match(/data-youtube-width="([^"]+)"/);
+            const width = widthMatch ? widthMatch[1] : '80';
+            return `<div${attrs}><div class="youtube-node-container" style="width:${width}%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);position:relative;">${content}</div></div>`;
           });
 
         // Simple TOC extraction for preview
@@ -1337,6 +1181,19 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
           .blog-body [data-inline-image-wrap][data-align="center"] { justify-content: center !important; }
           .blog-body [data-inline-image-wrap][data-align="right"] { justify-content: flex-end !important; }
           .blog-body [data-inline-image] { height: auto !important; border-radius: 8px; display: block !important; max-width: 100%; }
+          
+          /* Forced responsive override for in-editor preview (ignores actual window media queries) */
+          ${previewViewport !== 'desktop' ? `
+            .youtube-node-container, .blog-body [data-inline-image] {
+              width: 100% !important;
+            }
+          ` : ''}
+
+          @media (max-width: 768px) {
+            .youtube-node-container, .blog-body [data-inline-image] {
+              width: 100% !important;
+            }
+          }
           .blog-toc { background: color-mix(in srgb, ${themeText} 4%, transparent); border-radius: 12px; padding: 16px 20px; margin: 0 0 40px; }
           .blog-toc ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
           .blog-toc li { margin: 0; font-size: 0.85rem; }

@@ -288,13 +288,21 @@ export function generateBlogPostHtml(
     }
   }
 
-  // Render body blocks (markdown → HTML), inject heading ids
   const rawBodyHtml = (post.blocks || []).map(block => {
     if (block.type === 'text' && block.content?.text) {
       const text = block.content.text;
       const isMarkdown = !/<[a-z][\s\S]*>/i.test(text.trim().slice(0, 50));
       const rendered = isMarkdown ? marked.parse(text, { breaks: true }) as string : text;
-      return rendered;
+      // Resolve asset paths and inject alignment/styling for inline images and youtube
+      return rendered
+        .replace(/src="([^"]+)"/g, (_: string, src: string) => `src="${resolveImageUrl(src, project, {}, isStatic)}"`)
+        /* Ensure YouTube embeds always have the correct structural wrapper even if saved with old extension versions */
+        .replace(/<div([^>]*data-inline-youtube[^>]*)>([\s\S]*?)<\/div>/g, (_: string, attrs: string, content: string) => {
+          if (content.includes('youtube-node-container')) return `<div${attrs}>${content}</div>`;
+          const widthMatch = attrs.match(/data-youtube-width="([^"]+)"/);
+          const width = widthMatch ? widthMatch[1] : '80';
+          return `<div${attrs}><div class="youtube-node-container" style="width:${width}%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);position:relative;">${content}</div></div>`;
+        });
     }
     return '';
   }).join('\n');
@@ -412,6 +420,15 @@ export function generateBlogPostHtml(
     .blog-body [data-inline-image-wrap][data-align="center"] { justify-content: center; }
     .blog-body [data-inline-image-wrap][data-align="right"] { justify-content: flex-end; }
     .blog-body [data-inline-image] { height: auto; border-radius: 8px; display: block; max-width: 100%; }
+    .blog-body [data-inline-youtube] { display: flex; margin: 1.5em 0; }
+    .blog-body [data-inline-youtube][data-align="left"] { justify-content: flex-start; }
+    .blog-body [data-inline-youtube][data-align="center"] { justify-content: center; }
+    .blog-body [data-inline-youtube][data-align="right"] { justify-content: flex-end; }
+    .blog-body [data-inline-youtube] iframe { width: 100%; height: 100%; border: 0; display: block; }
+    @media (max-width: 768px) {
+      .blog-body [data-inline-youtube] > div { width: 100% !important; }
+      .blog-body [data-inline-image] { width: 100% !important; }
+    }
     .blog-toc { background: color-mix(in srgb, ${themeText} 4%, transparent); border-radius: 12px; padding: 16px 20px; margin: 0 0 40px; }
     .blog-toc-title { display: none; }
     .blog-toc-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
