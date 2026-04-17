@@ -427,7 +427,7 @@ const StackedHero: React.FC<HeroProps> = ({ content, block, project, viewport, i
 // CAROUSEL WRAPPER — horizontal slider with fade transitions
 // ═══════════════════════════════════════════════════════════════════════
 const CarouselHero: React.FC<HeroProps> = (props) => {
-  const { content, block, project, viewport, isStatic } = props;
+  const { content, block, project, viewport, isStatic, isEditing } = props;
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
   const slides = content.slides || [];
 
@@ -545,84 +545,91 @@ const CarouselHero: React.FC<HeroProps> = (props) => {
         </div>
       )}
 
-      <script 
-        key={`carousel-script-${activePreviewIndex}-${autoplay}-${interval}`}
-        dangerouslySetInnerHTML={{ __html: `
-        (function() {
-          var container = document.currentScript.closest('.hero-carousel-container');
-          if (!container) return;
-          
-          // Cleanup existing timers if any (important for hot-reload/editor)
-          if (window._heroCarouselTimers && window._heroCarouselTimers[container.id]) {
-            clearInterval(window._heroCarouselTimers[container.id]);
-          }
-          if (!window._heroCarouselTimers) window._heroCarouselTimers = {};
+      {/* Script per l'interattività - rimosso in editing per evitare warning React e conflitti */}
+      {!isEditing && (
+        <div 
+          key={`carousel-script-${activePreviewIndex}-${autoplay}-${interval}`}
+          style={{ display: 'none' }}
+          dangerouslySetInnerHTML={{ __html: `
+            <script>
+              (function() {
+                var container = document.currentScript.closest('.hero-carousel-container');
+                if (!container) return;
+                
+                // Cleanup existing timers if any (important for hot-reload)
+                if (window._heroCarouselTimers && window._heroCarouselTimers[container.id]) {
+                  clearInterval(window._heroCarouselTimers[container.id]);
+                }
+                if (!window._heroCarouselTimers) window._heroCarouselTimers = {};
 
-          var slides = container.querySelectorAll('.hero-slide');
-          var dots = container.querySelectorAll('.hero-dot');
-          var prev = container.querySelector('[data-carousel-prev]');
-          var next = container.querySelector('[data-carousel-next]');
-          var total = slides.length;
-          var interval = ${interval};
-          var isEditingSlide = ${activePreviewIndex !== 0};
-          var autoplay = ${autoplay} && !isEditingSlide;
-          var timer;
-          var currentIndex = ${activePreviewIndex};
+                var slides = container.querySelectorAll('.hero-slide');
+                var dots = container.querySelectorAll('.hero-dot');
+                var prev = container.querySelector('[data-carousel-prev]');
+                var next = container.querySelector('[data-carousel-next]');
+                var total = slides.length;
+                var interval = ${interval};
+                var isEditingSlide = ${activePreviewIndex !== 0};
+                var autoplay = ${autoplay} && !isEditingSlide;
+                var timer;
+                var currentIndex = ${activePreviewIndex};
 
-          // Sync initial state based on server-side activePreviewIndex
-          slides.forEach(function(s, i) { 
-            s.setAttribute('data-active', i === currentIndex ? 'true' : 'false'); 
-          });
-          dots.forEach(function(d, i) { 
-            d.setAttribute('data-active', i === currentIndex ? 'true' : 'false'); 
-          });
+                // Sync initial state based on server-side activePreviewIndex
+                slides.forEach(function(s, i) { 
+                  s.setAttribute('data-active', i === currentIndex ? 'true' : 'false'); 
+                });
+                dots.forEach(function(d, i) { 
+                  d.setAttribute('data-active', i === currentIndex ? 'true' : 'false'); 
+                });
 
-          function update(newIndex) {
-            if (slides[currentIndex]) slides[currentIndex].setAttribute('data-active', 'false');
-            if (dots[currentIndex]) dots[currentIndex].setAttribute('data-active', 'false');
-            
-            currentIndex = (newIndex + total) % total;
-            
-            if (slides[currentIndex]) slides[currentIndex].setAttribute('data-active', 'true');
-            if (dots[currentIndex]) dots[currentIndex].setAttribute('data-active', 'true');
-            resetTimer();
-          }
+                function update(newIndex) {
+                  if (slides[currentIndex]) slides[currentIndex].setAttribute('data-active', 'false');
+                  if (dots[currentIndex]) dots[currentIndex].setAttribute('data-active', 'false');
+                  
+                  currentIndex = (newIndex + total) % total;
+                  
+                  if (slides[currentIndex]) slides[currentIndex].setAttribute('data-active', 'true');
+                  if (dots[currentIndex]) dots[currentIndex].setAttribute('data-active', 'true');
+                  resetTimer();
+                }
 
-          function resetTimer() {
-            if (timer) clearInterval(timer);
-            if (autoplay) {
-              timer = setInterval(function() { update(currentIndex + 1); }, interval);
-              window._heroCarouselTimers[container.id] = timer;
-            }
-          }
+                function resetTimer() {
+                  if (timer) clearInterval(timer);
+                  if (autoplay) {
+                    timer = setInterval(function() { update(currentIndex + 1); }, interval);
+                    window._heroCarouselTimers[container.id] = timer;
+                  }
+                }
 
-          if (prev) prev.onclick = function() { update(currentIndex - 1); };
-          if (next) next.onclick = function() { update(currentIndex + 1); };
-          
-          dots.forEach(function(dot, idx) {
-            dot.onclick = function() {
-              if (idx !== currentIndex) update(idx);
-            };
-          });
+                if (prev) prev.onclick = function() { update(currentIndex - 1); };
+                if (next) next.onclick = function() { update(currentIndex + 1); };
+                
+                dots.forEach(function(dot, idx) {
+                  dot.onclick = function() {
+                    if (idx !== currentIndex) update(idx);
+                  };
+                });
 
-          // Touch Support
-          var touchStartX = 0;
-          container.addEventListener('touchstart', function(e) {
-            touchStartX = e.changedTouches[0].screenX;
-          }, { passive: true });
+                // Touch Support
+                var touchStartX = 0;
+                container.addEventListener('touchstart', function(e) {
+                  touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
 
-          container.addEventListener('touchend', function(e) {
-            var touchEndX = e.changedTouches[0].screenX;
-            var diff = touchStartX - touchEndX;
-            if (Math.abs(diff) > 50) {
-              if (diff > 0) update(currentIndex + 1);
-              else update(currentIndex - 1);
-            }
-          }, { passive: true });
+                container.addEventListener('touchend', function(e) {
+                  var touchEndX = e.changedTouches[0].screenX;
+                  var diff = touchStartX - touchEndX;
+                  if (Math.abs(diff) > 50) {
+                    if (diff > 0) update(currentIndex + 1);
+                    else update(currentIndex - 1);
+                  }
+                }, { passive: true });
 
-          resetTimer();
-        })();
-      `}} />
+                resetTimer();
+              })();
+            </script>
+          `}} 
+        />
+      )}
     </div>
   );
 };
