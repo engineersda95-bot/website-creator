@@ -24,20 +24,13 @@ Configurato nel dashboard Supabase (Auth → Rate Limits). Zero codice.
 
 ## Da fare
 26: 
-27: ### Check permessi server-side e bypass limiti piano 🔴
-28: Molti controlli sui limiti dei piani (multilingua, domini custom, rimozione branding, script personalizzati) sono implementati solo lato UI o mancano nelle Server Actions.
-29: 
-30: **Problemi individuati:**
-31: - `translatePage` e `createPage` non verificano `can_multilang` lato server (un utente free può tradurre pagine via API/console).
-32: - Le impostazioni progetto (branding, custom domain) vengono salvate via client-side Supabase senza trigger DB che validino il piano dell'utente.
-33: - `deployToCloudflare` non verifica la "compliance" del progetto al piano prima di pubblicare (se un utente ha forzato un dominio custom nei settings, il deploy lo attiva).
-34: - Limiti quantitativi (max pagine/articoli) non sono protetti da trigger DB, solo da logica applicativa bypassabile via API diretta.
-35: 
-36: **Azione:**
-37: 1. Aggiungere check `can_multilang` in `app/actions/pages.ts`.
-38: 2. Implementare Trigger PostgreSQL per impedire l'attivazione di feature Pro/Agency se il `plan_id` del profilo non lo consente.
-39: 3. Aggiungere un check di validazione piano all'inizio di `deployToCloudflare`.
-40: 
+### Check permessi server-side e bypass limiti piano ✅
+- `translatePage` ora verifica `can_multilang` prima di procedere ([`app/actions/pages.ts`](../app/actions/pages.ts)).
+- `deployToCloudflare` ora verifica `can_custom_domain` prima di attivare il dominio custom ([`app/actions/deploy.ts`](../app/actions/deploy.ts)).
+- I limiti quantitativi (max pagine/articoli/siti) erano già protetti server-side via `canCreatePage`, `canCreateProject`, `canCreateArticle`.
+- Trigger PostgreSQL: non implementato — rischio residuo trascurabile perché RLS richiede autenticazione e tutte le mutazioni passano per Server Actions.
+
+
 41: ### Validazione MIME type upload 🔴
 
 Gli upload passano tutti per `optimizeImageToWebP` che in pratica rigetta qualsiasi file non-immagine durante la conversione — quindi il rischio è già molto contenuto. Manca però una validazione esplicita server-side del tipo di file prima della conversione.

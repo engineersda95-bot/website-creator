@@ -7,6 +7,7 @@ import { resolveImageUrl } from '@/lib/image-utils';
 import { SitiImage } from '@/components/shared/SitiImage';
 import { CTA, getCTAOverrides } from '@/components/shared/CTA';
 import { BACKGROUND_PATTERNS } from '@/lib/background-patterns';
+import { LanguageSelector } from './LanguageSelector';
 import {
   Facebook,
   Instagram,
@@ -62,6 +63,7 @@ export interface NavigationProps {
     layoutType?: 'standard' | 'hamburger';
     showSocial?: boolean;
     socialLinks?: Array<{ platform: string; url: string }>;
+    showLanguageSelector?: boolean;
   };
   block: Block;
   isEditing?: boolean;
@@ -71,6 +73,7 @@ export interface NavigationProps {
   isStatic?: boolean;
   imageMemoryCache?: Record<string, string>;
   language?: string;
+  translationsGroupId?: string;
 }
 
 const StaticMenuIcon = () => (
@@ -90,7 +93,8 @@ export const Navigation: React.FC<NavigationProps> = ({
   viewport,
   isStatic,
   imageMemoryCache,
-  language
+  language,
+  translationsGroupId
 }) => {
   const { style } = getBlockStyles(block, project, viewport || 'desktop');
   const blockId = `nav-${block.id.replace(/[^a-zA-Z0-9]/g, '')}`;
@@ -225,7 +229,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
         {/* DESKTOP (AND MOBILE IF STANDARD) LINKS */}
         <div 
-          className={cn("items-center ml-auto text-inherit")}
+          className={cn("flex items-center ml-auto text-inherit")}
           style={{ 
             display: 'var(--nav-links-display)',
             gap: 'var(--nav-links-cta-gap, 32px)'
@@ -250,6 +254,17 @@ export const Navigation: React.FC<NavigationProps> = ({
               </a>
             ))}
           </div>
+
+          {/* LANGUAGE SELECTOR (IF ENABLED) */}
+          {content.showLanguageSelector && (
+            <LanguageSelector 
+              project={project}
+              currentLanguage={language}
+              isStatic={isStatic}
+              isEditing={isEditing}
+              style={{ fontSize: 'var(--lang-size)' }}
+            />
+          )}
 
           {/* SOCIAL LINKS (IF STANDARD AND ENABLED) */}
           {content.showSocial && content.socialLinks && content.socialLinks.length > 0 && (
@@ -312,29 +327,23 @@ export const Navigation: React.FC<NavigationProps> = ({
             {/* Sidebar (Static) */}
             <div 
               data-menu
-              className="fixed top-0 right-0 h-full z-[10002] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[-40px_0_80px_rgba(0,0,0,0.35)] flex flex-col translate-x-full opacity-0 overflow-hidden"
+              className="fixed inset-y-0 right-0 z-[10002] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[-40px_0_80px_rgba(0,0,0,0.35)] flex flex-col translate-x-full opacity-0 overflow-hidden"
               style={{ 
                 backgroundColor: bg !== 'transparent' ? bg : (project?.settings?.appearance === 'dark' ? "#0a0a0c" : "#ffffff"),
                 color: color !== 'transparent' ? color : (project?.settings?.appearance === 'dark' ? "#ffffff" : "#0a0a0c"),
                 width: 'var(--hamburger-width, 450px)',
-                maxWidth: '100vw'
+                maxWidth: '100vw',
+                top: 0,
+                bottom: 0,
+                margin: 0
               }}
             >
-               {/* Sidebar CSS Overrides for Mobile (Static) */}
-               <style dangerouslySetInnerHTML={{ __html: `
-                 @media (max-width: 768px) {
-                   [data-menu] { width: 100% !important; }
-                   [data-menu-overlay] { display: block !important; }
-                 }
-               ` }} />
-
-               {/* Espaziatore superiore statico */}
-               <div className="w-full shrink-0 h-4 md:h-8" />
-               <div className="h-10 md:h-12 shrink-0" />
+               {/* Sidebar Content Padding */}
+               <div className="h-20 md:h-24 shrink-0 bg-inherit" />
 
                {/* Sidebar Links (Static) */}
-               <div className="flex-1 overflow-y-auto px-12 md:px-20">
-                  <div className="flex flex-col">
+               <div className="flex-1 overflow-y-auto px-12 md:px-20 bg-inherit">
+                  <div className="flex flex-col bg-inherit">
                     {links.map((link, i) => (
                       <a 
                         key={i} 
@@ -353,6 +362,23 @@ export const Navigation: React.FC<NavigationProps> = ({
                         {link.label}
                       </a>
                     ))}
+
+                    {/* LANGUAGE SELECTOR (IF STATIC AND ENABLED) */}
+                    {content.showLanguageSelector && (
+                      <div 
+                        className="flex justify-center py-6 border-b" 
+                        style={{ borderColor: project?.settings?.appearance === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)" }}
+                      >
+                        <LanguageSelector 
+                          project={project}
+                          currentLanguage={language}
+                          isStatic={true}
+                          isEditing={isEditing}
+                          isMobile={true}
+                          style={{ fontSize: 'var(--lang-size)' }}
+                        />
+                      </div>
+                    )}
 
                     {/* SOCIAL LINKS (IF STATIC AND ENABLED) */}
                     {content.showSocial && content.socialLinks && content.socialLinks.length > 0 && (
@@ -405,6 +431,14 @@ export const Navigation: React.FC<NavigationProps> = ({
               data-menu-overlay
               className="fixed inset-0 bg-black/85 z-[10001] transition-opacity duration-700 opacity-0 pointer-events-none backdrop-blur-sm"
             />
+
+            {/* Sidebar CSS Overrides for Mobile (Static) */}
+            <style dangerouslySetInnerHTML={{ __html: `
+              @media (max-width: 768px) {
+                [data-menu] { width: 100% !important; }
+                [data-menu-overlay] { display: block !important; }
+              }
+            ` }} />
           </>
         ) : (
           <MobileMenu 
@@ -428,11 +462,15 @@ export const Navigation: React.FC<NavigationProps> = ({
             socialIconSize={style.socialIconSize}
             SOCIAL_ICONS={SOCIAL_ICONS}
             MailIcon={Mail}
+            showLanguageSelector={content.showLanguageSelector}
+            translationsGroupId={translationsGroupId}
+            allPages={allPages}
+            language={language}
           />
         )}
       </div>
       {!isEditing && (
-        <div dangerouslySetInnerHTML={{ __html: `<script>(function(){var n=document.getElementById('${blockId}');if(!n)return;var st=n.getAttribute('data-sticky')==='true',tr=n.getAttribute('data-transparent')==='true';function upd(sc){var nb=n.querySelector('[data-nav-bg]'),bg=getComputedStyle(n).getPropertyValue('--block-bg').trim()||'#ffffff',op=getComputedStyle(n).getPropertyValue('--scrolled-opacity')||'1',r=255,g=255,b=255;if(bg.startsWith('#')){r=parseInt(bg.slice(1,3),16)||255;g=parseInt(bg.slice(3,5),16)||255;b=parseInt(bg.slice(5,7),16)||255;}else if(bg.startsWith('rgb')){var m=bg.match(/\d+/g);if(m){r=m[0];g=m[1];b=m[2];}}if(sc&&st){n.style.position='fixed';n.style.top='0';if(nb){nb.style.background='rgba('+r+','+g+','+b+','+op+')';nb.style.backdropFilter='blur(10px)';}n.style.boxShadow='0 10px 30px -10px rgba(0,0,0,0.1)';}else{if(tr){n.style.position='absolute';if(nb)nb.style.background='transparent';}else{n.style.position=st?'sticky':'relative';if(nb)nb.style.background='rgba('+r+','+g+','+b+','+op+')';}n.style.top='0';n.style.boxShadow='none';if(nb)nb.style.backdropFilter='none';}n.style.paddingTop='var(--nav-padding)';n.style.paddingBottom='var(--nav-padding)';}window.addEventListener('scroll',function(){upd(window.scrollY>20);});upd(window.scrollY>20);var tg=n.querySelector('[data-menu-toggle]'),mn=n.querySelector('[data-menu]'),ov=n.querySelector('[data-menu-overlay]');if(tg&&mn){var xi=tg.querySelector('[data-menu-x]');function ui(o){if(xi){xi.classList.toggle('hidden',!o);xi.classList.toggle('block',o);}tg.querySelectorAll('svg').forEach(function(s){if(!s.parentElement.hasAttribute('data-menu-x'))s.style.display=o?'none':'block';});}function om(){mn.classList.remove('translate-x-full','opacity-0');if(ov){ov.classList.remove('opacity-0','pointer-events-none');ov.classList.add('opacity-100','pointer-events-auto');}document.body.style.overflow='hidden';ui(true);}function cm(){mn.classList.add('translate-x-full','opacity-0');if(ov){ov.classList.add('opacity-0','pointer-events-none');ov.classList.remove('opacity-100','pointer-events-auto');}document.body.style.overflow='';ui(false);}tg.addEventListener('click',function(e){e.stopPropagation();!mn.classList.contains('translate-x-full')?cm():om();});if(ov)ov.addEventListener('click',cm);mn.querySelectorAll('a[href^="#"]').forEach(function(l){l.addEventListener('click',function(){setTimeout(cm,100);});});}})();</script>`}} />
+        <div dangerouslySetInnerHTML={{ __html: `<script>(function(){var n=document.getElementById('${blockId}');if(!n)return;var st=n.getAttribute('data-sticky')==='true',tr=n.getAttribute('data-transparent')==='true';function upd(sc){var nb=n.querySelector('[data-nav-bg]'),bg=getComputedStyle(n).getPropertyValue('--block-bg').trim()||'#ffffff',op=getComputedStyle(n).getPropertyValue('--scrolled-opacity')||'1',r=255,g=255,b=255;if(bg.startsWith('#')){r=parseInt(bg.slice(1,3),16)||255;g=parseInt(bg.slice(3,5),16)||255;b=parseInt(bg.slice(5,7),16)||255;}else if(bg.startsWith('rgb')){var m=bg.match(/\d+/g);if(m){r=m[0];g=m[1];b=m[2];}}if(sc&&st){n.style.position='fixed';n.style.top='0';if(nb){nb.style.background='rgba('+r+','+g+','+b+','+op+')';nb.style.backdropFilter='blur(10px)';}n.style.boxShadow='0 10px 30px -10px rgba(0,0,0,0.1)';}else{if(tr){n.style.position='absolute';if(nb)nb.style.background='transparent';}else{n.style.position=st?'sticky':'relative';if(nb)nb.style.background='rgba('+r+','+g+','+b+','+op+')';}n.style.top='0';n.style.boxShadow='none';if(nb)nb.style.backdropFilter='none';}n.style.paddingTop='var(--nav-padding)';n.style.paddingBottom='var(--nav-padding)';}window.addEventListener('scroll',function(){upd(window.scrollY>20);});upd(window.scrollY>20);var tg=n.querySelector('[data-menu-toggle]'),mn=n.querySelector('[data-menu]'),ov=n.querySelector('[data-menu-overlay]');if(tg&&mn){var xi=tg.querySelector('[data-menu-x]');function ui(o){if(xi){xi.classList.toggle('hidden',!o);xi.classList.toggle('block',o);}tg.querySelectorAll('svg').forEach(function(s){if(!s.parentElement.hasAttribute('data-menu-x'))s.style.display=o?'none':'block';});}function om(){mn.classList.remove('translate-x-full','opacity-0');if(ov){ov.classList.remove('opacity-0','pointer-events-none');ov.classList.add('opacity-100','pointer-events-auto');}document.body.style.overflow='hidden';ui(true);}function cm(){mn.classList.add('translate-x-full','opacity-0');if(ov){ov.classList.add('opacity-0','pointer-events-none');ov.classList.remove('opacity-100','pointer-events-auto');}document.body.style.overflow='';ui(false);}tg.addEventListener('click',function(e){e.stopPropagation();!mn.classList.contains('translate-x-full')?cm():om();});if(ov)ov.addEventListener('click',cm);mn.querySelectorAll('a[href^="#"]').forEach(function(l){l.addEventListener('click',function(){setTimeout(cm,100);});});}var al=document.querySelectorAll('link[rel="alternate"]');n.querySelectorAll('[data-lang-link]').forEach(function(l){var lc=l.getAttribute('data-lang-link').toLowerCase();for(var i=0;i<al.length;i++){var h=al[i].getAttribute('hreflang')||'';if(h.toLowerCase()===lc||h.toLowerCase().startsWith(lc+'-')){var hr=al[i].getAttribute('href');if(hr){if(hr.indexOf('://')===-1||hr.indexOf(window.location.hostname)!==-1){try{var u=new URL(hr,window.location.href);l.setAttribute('href',u.pathname+u.search+u.hash);}catch(e){l.setAttribute('href',hr);}}else{l.setAttribute('href',hr);}}break;}}});})()</script>`}} />
       )}
     </nav>
   );

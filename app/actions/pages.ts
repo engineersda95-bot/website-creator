@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { canCreatePage } from '@/lib/permissions';
+import { canCreatePage, getUserLimits } from '@/lib/permissions';
 import { randomUUID } from 'crypto';
 
 interface CreatePageInput {
@@ -83,6 +83,9 @@ export async function translatePage(
     .single();
 
   if (!project) return { success: false, error: 'Sito non trovato o accesso negato' };
+
+  const limits = await getUserLimits(user.id);
+  if (!limits?.can_multilang) return { success: false, error: 'Il tuo piano non include il supporto multilingua' };
 
   const check = await canCreatePage(user.id, input.projectId);
   if (!check.allowed) return { success: false, error: check.reason };

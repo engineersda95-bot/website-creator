@@ -12,7 +12,7 @@ export const navigationDefinition: BlockDefinition = {
   visual: Navigation,
   unifiedEditor: NavigationEditor,
   defaults: {
-    content: { logoText: 'Studio', links: [], showContact: true, showSocial: false, socialLinks: [] },
+    content: { logoText: 'Studio', links: [], showContact: true, showSocial: false, socialLinks: [], showLanguageSelector: false },
     style: { 
       padding: 20, 
       hamburgerWidth: 450,
@@ -24,7 +24,8 @@ export const navigationDefinition: BlockDefinition = {
       linksCtaGap: 20,
       socialIconSize: 20,
       linksGap: 15,
-      socialLinksGap: 15
+      socialLinksGap: 15,
+      langSize: 10
     }
   },
   styleMapper: (style, block, project, viewport) => {
@@ -57,6 +58,7 @@ export const navigationDefinition: BlockDefinition = {
       '--social-icon-size': toPx(val('socialIconSize', 20)),
       '--nav-links-gap': viewport === 'mobile' ? '0px' : toPx(val('linksGap', 15)),
       '--social-links-gap': toPx(val('socialLinksGap', 15)),
+      '--lang-size': toPx(val('langSize', 10)),
     };
   }
 };

@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { cn, formatLink } from '@/lib/utils';
-import { Project } from '@/types/editor';
+import { Project, Page } from '@/types/editor';
 import { CTA } from '@/components/shared/CTA';
+import { LanguageSelector } from './LanguageSelector';
 
 interface MobileMenuProps {
   links: Array<{ label: string; url: string }>;
@@ -27,6 +28,10 @@ interface MobileMenuProps {
   socialIconSize?: number;
   SOCIAL_ICONS?: Record<string, any>;
   MailIcon?: any;
+  showLanguageSelector?: boolean;
+  translationsGroupId?: string;
+  allPages?: Page[];
+  language?: string;
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({
@@ -49,7 +54,11 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   socialLinks,
   socialIconSize,
   SOCIAL_ICONS,
-  MailIcon
+  MailIcon,
+  showLanguageSelector,
+  translationsGroupId,
+  allPages,
+  language
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
@@ -117,19 +126,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           maxWidth: isMobileViewport ? '100vw' : '85vw'
         }}
       >
-        {/* Espaziatore per compensare l'altezza della navbar */}
-        <div 
-          className="w-full shrink-0" 
-          style={{ height: 'var(--nav-padding, 20px)' }}
-        />
-
-        {/* Espaziatore superiore per compensare l'altezza della navbar */}
-        <div 
-          className="w-full shrink-0 h-4 md:h-8" 
-        />
-
-        {/* Sidebar Header Padding - Ridotto per avvicinare il primo link */}
-        <div className="h-10 md:h-12 shrink-0" />
+        {/* Sidebar Content Padding */}
+        <div className="h-20 md:h-24 shrink-0" />
 
         {/* Sidebar Links Area */}
         <div className="flex-1 overflow-y-auto px-12 md:px-20 custom-scrollbar">
@@ -145,6 +143,20 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                   {link.label}
                 </a>
               ))}
+
+              {/* LANGUAGE SELECTOR (IN HAMBURGER) */}
+              {showLanguageSelector && (
+                <div className="flex justify-center py-4 border-b" style={{ borderColor }}>
+                  <LanguageSelector 
+                    project={project}
+                    currentLanguage={language}
+                    isStatic={isStatic}
+                    isEditing={isEditing}
+                    isMobile={true}
+                    style={{ fontSize: 'var(--lang-size)' }}
+                  />
+                </div>
+              )}
 
               {/* SOCIAL LINKS (IN HAMBURGER) */}
               {showSocial && socialLinks && socialLinks.length > 0 && (

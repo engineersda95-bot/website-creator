@@ -112,6 +112,7 @@ export const EditorBlockWrapper = React.memo(({
         onInlineEdit={onInlineEdit}
         allBlogPosts={editorBlogPosts}
         language={currentPage?.language}
+        translationsGroupId={currentPage?.translations_group_id}
       />
 
       {/* Block Controls — hidden for global blocks (navigation/footer) */}

@@ -268,6 +268,31 @@ export const Navigation: React.FC<NavigationProps> = ({
         )}
       </Section>
 
+      <Section icon={Globe} label="Lingua" id="language" isOpen={openSection === 'language'} onToggle={toggleSection}>
+        <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl border border-zinc-100">
+          <label className="text-[10px] font-bold text-zinc-400 uppercase">Selettore Lingua</label>
+          <div
+            className={cn("w-10 h-5 rounded-full p-1 cursor-pointer transition-colors", content.showLanguageSelector ? "bg-zinc-900" : "bg-zinc-200")}
+            onClick={() => updateContent({ showLanguageSelector: !content.showLanguageSelector })}
+          >
+            <div className={cn("w-3 h-3 bg-white rounded-full transition-transform", content.showLanguageSelector && "translate-x-5")} />
+          </div>
+        </div>
+        {content.showLanguageSelector && (
+          <div className="px-3 pb-6">
+            <div className="flex items-center justify-between gap-4 p-3 bg-zinc-50 rounded-xl border border-zinc-100">
+              <label className="text-[10px] font-bold text-zinc-400 uppercase">Grandezza Testo (px)</label>
+              <input
+                type="number"
+                className="w-20 p-2 border border-zinc-200 rounded-lg text-xs font-bold bg-white"
+                value={getStyleValue('langSize', 10) || 10}
+                onChange={(e) => updateStyle({ langSize: parseInt(e.target.value) || 0 })}
+              />
+            </div>
+          </div>
+        )}
+      </Section>
+
       <Section icon={MousePointer} label="CTA" id="cta" badge={content.cta || 'vuoto'} isOpen={openSection === 'cta'} onToggle={toggleSection}>
         <CTAManager
           content={content}

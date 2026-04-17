@@ -4,6 +4,7 @@ import { generateStaticHtml, generateSitemap, generateRobotsTxt } from '@/lib/ge
 import { generateBlogListingHtml, generateBlogPostHtml } from '@/lib/generate-blog-static';
 import { getProjectDomain } from '@/lib/url-utils';
 import { createClient } from '@/lib/supabase/server';
+import { getUserLimits } from '@/lib/permissions';
 import { Page, PageStub, SiteGlobal, BlogPost } from '@/types/editor';
 
 import crypto from 'crypto';
@@ -44,6 +45,11 @@ export async function deployToCloudflare(projectId: string) {
       .single();
 
     if (projectError || !project) throw new Error('Could not find project to deploy or unauthorized access');
+
+    const limits = await getUserLimits((await supabase.auth.getUser()).data.user!.id);
+    if (project.settings?.customDomain && !limits?.can_custom_domain) {
+      return { success: false, error: 'Il tuo piano non include il supporto per domini custom' };
+    }
 
     // Rate limiting: max 1 deploy every 30 seconds per project
     if (project.last_published_at) {
