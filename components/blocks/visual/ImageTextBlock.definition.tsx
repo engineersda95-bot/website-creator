@@ -45,7 +45,8 @@ export const imageTextDefinition: BlockDefinition = {
       patternScale: 40,
       animationType: 'none',
       animationDuration: 0.8,
-      animationDelay: 0
+      animationDelay: 0,
+      splitRatio: 50
     }
   },
   styleMapper: (style, block, project, viewport) => {
@@ -59,6 +60,7 @@ export const imageTextDefinition: BlockDefinition = {
       '--image-radius': toPx(val('imageBorderRadius', 24)),
       '--image-aspect': block.content?.imageAspectRatio || val('imageAspectRatio', '16/9'),
       '--text-v-align': (val('verticalAlign', 'center') === 'top' ? 'flex-start' : val('verticalAlign', 'center') === 'bottom' ? 'flex-end' : 'center'),
+      '--split-ratio': `${val('splitRatio', 50)}fr ${100 - val('splitRatio', 50)}fr`,
     };
   }
 };

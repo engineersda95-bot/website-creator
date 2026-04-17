@@ -98,11 +98,12 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
         <div
           className={cn(
             "grid",
-            (viewport === 'mobile' || viewport === 'tablet') ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
+            (viewport === 'mobile' || viewport === 'tablet') ? "grid-cols-1" : ""
           )}
           style={{
             gap: 'var(--block-gap)',
             alignItems: 'var(--text-v-align)' as any,
+            gridTemplateColumns: (viewport === 'mobile' || viewport === 'tablet') ? undefined : 'var(--split-ratio)',
           }}
         >
           {/* Immagine */}

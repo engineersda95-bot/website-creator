@@ -221,6 +221,15 @@ export const ImageText: React.FC<ImageTextProps> = ({
           </div>
         </div>
         <SimpleSlider
+          label="Bilanciamento Colonne"
+          value={getStyleValue('splitRatio', 50)}
+          onChange={(val: number) => updateStyle({ splitRatio: val })}
+          min={25}
+          max={75}
+          step={1}
+          suffix="%"
+        />
+        <SimpleSlider
           label="Gap Colonne"
           value={getStyleValue('gap', 60)}
           onChange={(val: number) => updateStyle({ gap: val })}
