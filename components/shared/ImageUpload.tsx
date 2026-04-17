@@ -18,18 +18,21 @@ interface ImageUploadProps {
   onAltChange?: (alt: string) => void;
   /** Called once right after the user picks a file, with the cleaned filename */
   onFilenameSelect?: (filename: string) => void;
+  /** CSS aspect-ratio string for the preview, e.g. "16/9", "9/16", "1/1". Defaults to "16/9" */
+  previewAspect?: string;
 }
 
-export const ImageUpload: React.FC<ImageUploadProps> = ({ 
-  value, 
-  onChange, 
-  label = "Immagine", 
+export const ImageUpload: React.FC<ImageUploadProps> = ({
+  value,
+  onChange,
+  label = "Immagine",
   hidePreview = false,
   onImageLoad,
   showSEOStatus = false,
   altValue,
   onAltChange,
   onFilenameSelect,
+  previewAspect,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dimensions, setDimensions] = React.useState<{width: number, height: number} | null>(null);
@@ -84,7 +87,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       </div>
       
       {!hidePreview && value ? (
-        <div className="relative group rounded-xl overflow-hidden border border-zinc-200 aspect-video bg-zinc-100 shadow-sm">
+        <div className="relative group rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 shadow-sm"
+          style={{ aspectRatio: previewAspect ?? '16/9' }}>
           <img src={value} alt="Preview" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
              <button 
@@ -102,9 +106,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           </div>
         </div>
       ) : !hidePreview ? (
-        <button 
+        <button
           onClick={() => fileInputRef.current?.click()}
-          className="w-full aspect-video border-2 border-dashed border-zinc-200 rounded-xl flex flex-col items-center justify-center text-zinc-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50/50 transition-all group"
+          className="w-full border-2 border-dashed border-zinc-200 rounded-xl flex flex-col items-center justify-center text-zinc-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50/50 transition-all group"
+          style={{ aspectRatio: previewAspect ?? '16/9' }}
         >
           <div className="p-3 bg-zinc-50 rounded-full group-hover:bg-blue-100 transition-colors mb-2">
             <Upload size={20} />

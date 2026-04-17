@@ -23,7 +23,8 @@ export type BlockType =
   'pricing' |
   'promo' |
   'blog-list' |
-  'contact-form';
+  'contact-form' |
+  'custom-html';
 
 export interface Block {
   id: string;

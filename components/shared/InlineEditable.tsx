@@ -68,6 +68,20 @@ const RichTextToolbar: React.FC<{ containerRef: React.RefObject<HTMLElement | nu
   }, [updateToolbar]);
 
   const exec = (cmd: string, val?: string) => {
+    if (cmd === 'foreColor' && val) {
+      // execCommand('foreColor') generates <font color="rgb(...)"> in some browsers.
+      // Use insertHTML with a span instead for consistent, CSS-compatible output.
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed) {
+        const range = sel.getRangeAt(0);
+        const selectedText = range.toString();
+        const span = `<span style="color:${val}">${selectedText}</span>`;
+        document.execCommand('insertHTML', false, span);
+        containerRef.current?.focus();
+        setTimeout(() => { updateToolbar(); onContentChange?.(); }, 0);
+        return;
+      }
+    }
     document.execCommand(cmd, false, val);
     containerRef.current?.focus();
     setTimeout(() => {

@@ -8,16 +8,16 @@ import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Underline } from '@tiptap/extension-underline';
 import { Placeholder } from '@tiptap/extension-placeholder';
-import { 
-  Bold, 
-  Italic, 
-  List, 
-  ListOrdered, 
-  Link as LinkIcon, 
-  Type, 
-  Smile, 
+import {
+  Bold,
+  Italic,
+  List,
+  ListOrdered,
+  Link as LinkIcon,
+  Type,
+  Smile,
   Underline as UnderlineIcon,
-  ChevronDown
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ColorInput } from './ColorInput';

@@ -131,6 +131,7 @@ export const ConfigSidebar: React.FC = () => {
          <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
             {definition?.unifiedEditor ? (
                <definition.unifiedEditor
+                  key={selectedBlock?.id}
                   selectedBlock={selectedBlock}
                   updateContent={updateContent}
                   updateStyle={updateStyle}

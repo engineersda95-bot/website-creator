@@ -305,7 +305,6 @@ export function generateStaticHtml(page: Page, pageVariants: PageStub[] = [], pr
         </a>
     </div>
     ` : ''}
-
     <script>var _hs=function(){var ns=document.querySelectorAll('nav.fixed'),sc=window.scrollY>20;ns.forEach(function(n){if(sc){n.style.background='var(--block-bg)';n.style.boxShadow='0 10px 30px -10px rgba(0,0,0,0.1)';n.style.backdropFilter='blur(10px)';n.style.paddingTop='12px';n.style.paddingBottom='12px';}else{var t=n.getAttribute('data-transparent')==='true';n.style.background=t?'transparent':'var(--block-bg)';n.style.boxShadow='none';n.style.backdropFilter='none';n.style.paddingTop='var(--nav-padding)';n.style.paddingBottom='var(--nav-padding)';}});};window.addEventListener('load',_hs);document.addEventListener('click',function(e){var b=e.target.closest('[data-menu-toggle]');if(!b)return;var n=b.closest('nav'),m=n?n.querySelector('[data-menu]'):null;if(!m)return;var o=m.getAttribute('data-open')==='true',s=!o;m.setAttribute('data-open',s);b.setAttribute('data-open',s);});var _ao=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var el=e.target;requestAnimationFrame(function(){el.classList.add('siti-anim-active');});_ao.unobserve(el);}});},{threshold:0.1,rootMargin:'0px 0px -50px 0px'});_hs();document.querySelectorAll('[data-siti-anim]').forEach(function(el){if(el.getAttribute('data-siti-anim')==='none'){el.classList.add('siti-anim-active');}else{_ao.observe(el);}});</script>
     ${optimizeScripts(settings?.customScriptsBody || '')}
 </body>
@@ -313,11 +312,15 @@ export function generateStaticHtml(page: Page, pageVariants: PageStub[] = [], pr
   `.trim();
 }
 import { BLOCK_DEFINITIONS } from './block-definitions';
+import { CustomHtmlBlockStatic } from '@/components/blocks/visual/CustomHtmlBlock.static';
 
 const StaticRegistry: Record<string, React.FC<any>> = Object.entries(BLOCK_DEFINITIONS).reduce((acc, [type, def]) => {
   if (def.visual) acc[type] = def.visual;
   return acc;
 }, {} as Record<string, React.FC<any>>);
+
+// Override client-only blocks with their server-safe static equivalents
+StaticRegistry['custom-html'] = CustomHtmlBlockStatic;
 
 export function renderBlock(block: Block, project: Project | undefined, renderToStaticMarkup: any, commonVars?: Record<string, string>, blogPosts?: any[], pageLang?: string): string {
   const { type } = block;

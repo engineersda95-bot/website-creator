@@ -88,8 +88,16 @@ export const Hero: React.FC<HeroProps> = ({
         <SimpleInput
           label="Testo"
           placeholder="Titolo Hero"
-          value={content.title || ''}
-          onChange={(val) => updateContent({ title: val })}
+          value={content.carouselEnabled && content.slides?.[0] ? (content.slides[0].title || '') : (content.title || '')}
+          onChange={(val) => {
+            if (content.carouselEnabled && content.slides?.[0]) {
+              const newSlides = [...content.slides];
+              newSlides[0] = { ...newSlides[0], title: val };
+              updateContent({ title: val, slides: newSlides });
+            } else {
+              updateContent({ title: val });
+            }
+          }}
         />
         <TypographyFields
           label="Stile"
@@ -109,8 +117,16 @@ export const Hero: React.FC<HeroProps> = ({
         <RichTextarea
           label="Testo"
           placeholder="Sottotitolo Hero"
-          value={content.subtitle || ''}
-          onChange={(val) => updateContent({ subtitle: val })}
+          value={content.carouselEnabled && content.slides?.[0] ? (content.slides[0].subtitle || '') : (content.subtitle || '')}
+          onChange={(val) => {
+            if (content.carouselEnabled && content.slides?.[0]) {
+              const newSlides = [...content.slides];
+              newSlides[0] = { ...newSlides[0], subtitle: val };
+              updateContent({ subtitle: val, slides: newSlides });
+            } else {
+              updateContent({ subtitle: val });
+            }
+          }}
         />
         <TypographyFields
           label="Stile"
