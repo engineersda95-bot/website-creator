@@ -208,7 +208,7 @@ aiBG / aiText / aiAccent         ← aiOutput.settings (solo se hasStyleReferenc
 typeColors                       ← DEFAULT_COLORS_BY_TYPE[businessType]
 ```
 
-`DEFAULT_COLORS_BY_TYPE` in [`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts) — palette per tipo business:
+`DEFAULT_COLORS_BY_TYPE` in [`lib/ai/site-generator.ts`](../lib/ai/site-generator.ts) — palette per tipo business:
 
 | Business Type | BG | Text | Accent |
 |---|---|---|---|
@@ -410,15 +410,20 @@ File generati per ogni run:
 ## 10. File di Riferimento
 
 ### Backend / Server Actions
-- [`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts) — Server action principale: `validateProjectDescription`, `generateProjectWithAI`, post-processing, costanti deterministiche
-- [`lib/ai/prompts.ts`](../lib/ai/prompts.ts) — `AI_WEBSITE_GENERATOR_SYSTEM_PROMPT`, `AI_VALIDATION_PROMPT`
+- [`app/actions/ai-site-generator.ts`](../app/actions/ai-site-generator.ts) — Server action thin wrapper: auth, permissions, DB insert, credit increment
+- [`lib/ai/site-generator.ts`](../lib/ai/site-generator.ts) — Logica core: `generateProject`, `validateDescription`, post-processing, costanti deterministiche
+- [`lib/ai/image-pipeline.ts`](../lib/ai/image-pipeline.ts) — `validateAndCleanBackgroundImages`, upload AI images
+- [`lib/ai/prompts/site.ts`](../lib/ai/prompts/site.ts) — `SITE_SYSTEM_PROMPT`, `SITE_VALIDATION_PROMPT`, sezioni condizionali
+- [`lib/ai/text-to-image.ts`](../lib/ai/text-to-image.ts) — `generateImage` (Flux → Imagen fallback)
 - [`lib/ai/unsplash-images.ts`](../lib/ai/unsplash-images.ts) — Generazione URL immagini Unsplash per blocchi e hero
+- [`lib/ai/gemini.ts`](../lib/ai/gemini.ts) — `getGenAI`, `PRIMARY_MODEL`, `FALLBACK_MODEL`, `isRetryable`, `callJsonModel`
 
 ### UI Wizard
 - [`components/editor/modals/AIGeneratorModal.tsx`](../components/editor/modals/AIGeneratorModal.tsx) — Wizard completo: form, validazione, raccolta risposte, avvio generazione
 
 ### Tipi
-- [`types/editor.ts`](../types/editor.ts) — Interfacce `AIGenerationData`, blocchi, `ProjectSettings`
+- [`lib/ai/site-generator.ts`](../lib/ai/site-generator.ts) — `AIGenerationData` (interfaccia input principale)
+- [`types/editor.ts`](../types/editor.ts) — Blocchi, `ProjectSettings`
 
 ### Permessi
 - [`lib/permissions.ts`](../lib/permissions.ts) — `canUseAI()`, `canCreateProject()`, `UserLimits`

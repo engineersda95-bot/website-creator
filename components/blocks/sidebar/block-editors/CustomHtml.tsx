@@ -6,7 +6,7 @@ import {
   ChevronDown, ChevronRight, Layers, Palette, Settings, Send,
   Type, Image as ImageIcon, MousePointer2, Shapes, Trash2,
 } from 'lucide-react';
-import { generateHtmlBlock } from '@/app/actions/ai-html-generator';
+import { generateHtmlBlock } from '@/app/actions/ai-html-block';
 import { parseChbPlaceholders } from '@/components/blocks/visual/CustomHtmlBlock.resolve';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { resolveImageUrl } from '@/lib/image-utils';

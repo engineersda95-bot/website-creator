@@ -150,7 +150,7 @@ Crea una versione tradotta di una pagina già esistente, collegandole tramite `t
 
 ## 6. `generateProjectWithAI` — Generazione con IA
 
-**File:** [`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts)
+**File:** [`app/actions/ai-site-generator.ts`](../app/actions/ai-site-generator.ts) (wrapper) → [`lib/ai/site-generator.ts`](../lib/ai/site-generator.ts) (logica core)
 
 La Server Action più complessa del progetto. Genera un sito completo a partire da dati del business usando Google Gemini.
 
@@ -420,7 +420,9 @@ project-assets/
 - [`app/actions/projects.ts`](../app/actions/projects.ts) — `createProject`
 - [`app/actions/pages.ts`](../app/actions/pages.ts) — `createPage`, `translatePage`
 - [`app/actions/deploy.ts`](../app/actions/deploy.ts) — `deployToCloudflare`
-- [`app/actions/ai-generator.ts`](../app/actions/ai-generator.ts) — `generateProjectWithAI`, `validateProjectDescription`
+- [`app/actions/ai-site-generator.ts`](../app/actions/ai-site-generator.ts) — `generateProjectWithAI`, `validateProjectDescription`
+- [`app/actions/ai-blog.ts`](../app/actions/ai-blog.ts) — `improveTextWithAI`, `translateBlogPostWithAI`
+- [`app/actions/ai-html-block.ts`](../app/actions/ai-html-block.ts) — `generateHtmlBlock`
 
 ### Edge Functions
 - [`supabase/functions/cleanup-storage/index.ts`](../supabase/functions/cleanup-storage/index.ts) — pulizia asset orfani
@@ -432,7 +434,12 @@ project-assets/
 
 ### Generazione
 - [`lib/generate-static.tsx`](../lib/generate-static.tsx) — generazione HTML statico
-- [`lib/ai/prompts.ts`](../lib/ai/prompts.ts) — system prompt AI
+- [`lib/ai/site-generator.ts`](../lib/ai/site-generator.ts) — logica core generazione sito
+- [`lib/ai/image-pipeline.ts`](../lib/ai/image-pipeline.ts) — pipeline immagini AI
+- [`lib/ai/prompts/site.ts`](../lib/ai/prompts/site.ts) — system prompt AI sito
+- [`lib/ai/prompts/html-block.ts`](../lib/ai/prompts/html-block.ts) — prompt HTML block editor
+- [`lib/ai/prompts/blog.ts`](../lib/ai/prompts/blog.ts) — prompt blog (migliora/traduci)
+- [`lib/ai/gemini.ts`](../lib/ai/gemini.ts) — client Gemini condiviso
 - [`lib/image-utils.ts`](../lib/image-utils.ts) — risoluzione URL asset
 
 ### Configurazione

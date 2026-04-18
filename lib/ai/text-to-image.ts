@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { getGenAI } from './gemini';
 
 const IMAGEN_MODELS = [
   'imagen-4.0-generate-001',
@@ -7,23 +7,22 @@ const IMAGEN_MODELS = [
   'imagen-3.0-generate-001',
 ];
 
-export type ImagenAspectRatio = '1:1' | '16:9' | '4:3' | '3:2' | '9:16' | 'landscape' | 'square' | 'portrait';
+export type ImageAspectRatio =
+  | '1:1'
+  | '16:9'
+  | '4:3'
+  | '3:2'
+  | '9:16'
+  | 'landscape'
+  | 'square'
+  | 'portrait';
 
-export interface ImagenResult {
+export interface TextToImageResult {
   data: string; // base64
   mimeType: string;
   modelUsed: string;
 }
 
-function getGenAI() {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error('GEMINI_API_KEY non configurata.');
-  return new GoogleGenerativeAI(key);
-}
-
-/**
- * Maps standard aspect ratios to model parameters.
- */
 function mapAspectRatio(ratio?: string): string {
   if (!ratio) return '1:1';
   if (ratio === '16:9' || ratio === '3:2' || ratio === 'landscape') return '16:9';
@@ -32,10 +31,10 @@ function mapAspectRatio(ratio?: string): string {
   return '1:1';
 }
 
-/**
- * Generates an image using Flux 1 Schnell via Pixazo API.
- */
-async function generateFluxImage(prompt: string, aspectRatio?: string): Promise<ImagenResult | null> {
+async function generateWithFlux(
+  prompt: string,
+  aspectRatio?: string,
+): Promise<TextToImageResult | null> {
   const apiKey = process.env.PIXAZO_API_KEY;
   if (!apiKey) return null;
 
@@ -44,16 +43,12 @@ async function generateFluxImage(prompt: string, aspectRatio?: string): Promise<
 
     let width = 1024;
     let height = 1024;
-
     if (aspectRatio === '16:9' || aspectRatio === 'landscape') {
-      width = 1024;
-      height = 576;
+      width = 1024; height = 576;
     } else if (aspectRatio === '9:16' || aspectRatio === 'portrait') {
-      width = 576;
-      height = 1024;
+      width = 576; height = 1024;
     } else if (aspectRatio === '4:3') {
-      width = 1024;
-      height = 768;
+      width = 1024; height = 768;
     }
 
     const response = await fetch('https://gateway.pixazo.ai/flux-1-schnell/v1/getData', {
@@ -64,29 +59,25 @@ async function generateFluxImage(prompt: string, aspectRatio?: string): Promise<
         'Cache-Control': 'no-cache',
       },
       body: JSON.stringify({
-        prompt: prompt,
+        prompt,
         num_steps: 20,
         seed: Math.floor(Math.random() * 1000),
-        height: height,
-        width: width,
+        height,
+        width,
       }),
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      console.warn(`[Flux] API error: ${response.status} - ${err}`);
+      console.warn(`[Flux] API error: ${response.status} - ${await response.text()}`);
       return null;
     }
 
     const json = await response.json();
     const imageUrl = json.output;
-
     if (!imageUrl) return null;
 
-    // Fetch image data
     const imgRes = await fetch(imageUrl);
     const buffer = await imgRes.arrayBuffer();
-
     return {
       data: Buffer.from(buffer).toString('base64'),
       mimeType: 'image/png',
@@ -98,64 +89,62 @@ async function generateFluxImage(prompt: string, aspectRatio?: string): Promise<
   }
 }
 
-/**
- * Primary function to generate an image. 
- * Tries Flux first (if key exists), then falls back to Imagen models.
- */
-export async function generateImagenImage(prompt: string, aspectRatio?: string): Promise<ImagenResult> {
-  // 1. Try Flux if configured
-  if (process.env.PIXAZO_API_KEY) {
-    const fluxResult = await generateFluxImage(prompt, aspectRatio);
-    if (fluxResult) return fluxResult;
-  }
-
-  // 2. Fallback to Imagen (Google Generative AI)
-  const genAI = getGenAI();
+async function generateWithImagen(
+  prompt: string,
+  aspectRatio?: string,
+): Promise<TextToImageResult> {
   const ratio = mapAspectRatio(aspectRatio);
   let lastError: any = null;
 
   for (const modelName of IMAGEN_MODELS) {
     try {
       console.log(`[Imagen] Attempting generation with ${modelName} (Ratio: ${ratio})...`);
-
-      const model = genAI.getGenerativeModel({ model: modelName });
-
+      const model = getGenAI().getGenerativeModel({ model: modelName });
       const result = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
           // @ts-ignore
           responseModalities: ['IMAGE'],
           // @ts-ignore
-          imageConfig: {
-            aspectRatio: ratio,
-          },
-        }
+          imageConfig: { aspectRatio: ratio },
+        },
       });
 
       const response = await result.response;
-
       if (response.promptFeedback?.blockReason) {
         throw new Error(`Generation blocked: ${response.promptFeedback.blockReason}`);
       }
 
       const part = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-
       if (part?.inlineData) {
         return {
           data: part.inlineData.data,
           mimeType: part.inlineData.mimeType,
-          modelUsed: modelName
+          modelUsed: modelName,
         };
       }
-
       throw new Error(`No image data from ${modelName}.`);
-
     } catch (err: any) {
       console.warn(`[Imagen] ${modelName} failed:`, err.message);
       lastError = err;
-      continue;
     }
   }
 
-  throw new Error(`All generation models failed. Last error: ${lastError?.message || 'Unknown error'}`);
+  throw new Error(
+    `All generation models failed. Last error: ${lastError?.message || 'Unknown error'}`,
+  );
+}
+
+/**
+ * Generates an image. Tries Flux first (if PIXAZO_API_KEY is set), then falls back to Imagen.
+ */
+export async function generateImage(
+  prompt: string,
+  aspectRatio?: string,
+): Promise<TextToImageResult> {
+  if (process.env.PIXAZO_API_KEY) {
+    const fluxResult = await generateWithFlux(prompt, aspectRatio);
+    if (fluxResult) return fluxResult;
+  }
+  return generateWithImagen(prompt, aspectRatio);
 }

@@ -6,7 +6,7 @@ import { FontManager } from '../../blocks/sidebar/ui/FontManager';
 import { cn } from '@/lib/utils';
 import { ColorInput } from '../../blocks/sidebar/ui/ColorInput';
 import { BUSINESS_TYPES } from '@/lib/editor-constants';
-import { generateProjectWithAI, validateProjectDescription } from '@/app/actions/ai-generator';
+import { generateProjectWithAI, validateProjectDescription } from '@/app/actions/ai-site-generator';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/shared/Toast';
 
