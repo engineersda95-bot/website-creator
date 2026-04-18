@@ -18,57 +18,7 @@ interface AIGeneratorModalProps {
 
 const STEP_LABELS = ['Info', 'Descrizione', 'Pagine', 'Stile'];
 
-const SUGGESTED_PAGES: Record<string, { name: string; description: string }[]> = {
-  LocalBusiness: [
-    { name: 'Chi Siamo', description: 'Storia, mission e valori dell\'attività' },
-    { name: 'Servizi', description: 'Lista dei servizi offerti con descrizioni' },
-    { name: 'Contatti', description: 'Modulo contatto, mappa e informazioni' },
-  ],
-  HomeAndConstructionBusiness: [
-    { name: 'Servizi', description: 'Tipologie di interventi e manutenzioni offerte' },
-    { name: 'Lavori Realizzati', description: 'Galleria di progetti completati con descrizioni' },
-    { name: 'Contatti', description: 'Form per richiesta preventivo e contatti diretti' },
-  ],
-  Restaurant: [
-    { name: 'Menu', description: 'Piatti, bevande e prezzi organizzati per categorie' },
-    { name: 'Chi Siamo', description: 'La storia del locale, lo chef e la filosofia' },
-    { name: 'Contatti', description: 'Orari, mappa, prenotazioni e contatti' },
-  ],
-  HealthAndBeautyBusiness: [
-    { name: 'Trattamenti', description: 'Lista servizi e trattamenti con descrizioni' },
-    { name: 'Il Team', description: 'Professionisti, specializzazioni e qualifiche' },
-    { name: 'Prenota', description: 'Prenotazione appuntamento e contatti' },
-  ],
-  ProfessionalService: [
-    { name: 'Servizi', description: 'Aree di competenza e servizi offerti' },
-    { name: 'Chi Sono', description: 'Esperienza, qualifiche e approccio professionale' },
-    { name: 'Contatti', description: 'Form contatto e modalità di consulenza' },
-  ],
-  EducationalOrganization: [
-    { name: 'Corsi', description: 'Catalogo corsi con programmi e durata' },
-    { name: 'Docenti', description: 'Team di insegnanti e le loro competenze' },
-    { name: 'Iscrizioni', description: 'Modalità di iscrizione e contatti' },
-  ],
-  SportsActivityLocation: [
-    { name: 'Corsi & Attività', description: 'Programma attività, orari e livelli' },
-    { name: 'Abbonamenti', description: 'Piani, prezzi e vantaggi per ogni abbonamento' },
-    { name: 'Contatti', description: 'Dove siamo, orari e form di contatto' },
-  ],
-  TravelAgency: [
-    { name: 'Destinazioni', description: 'Mete proposte con descrizioni e pacchetti' },
-    { name: 'Servizi', description: 'Tipologie di viaggio e servizi inclusi' },
-    { name: 'Prenota', description: 'Form di prenotazione e richiesta preventivo' },
-  ],
-  Store: [
-    { name: 'Prodotti', description: 'Catalogo prodotti organizzato per categorie' },
-    { name: 'Chi Siamo', description: 'Storia del negozio e i nostri valori' },
-    { name: 'Contatti', description: 'Dove trovarci, orari e assistenza clienti' },
-  ],
-  Organization: [
-    { name: 'Chi Siamo', description: 'Mission, storia e il team' },
-    { name: 'Contatti', description: 'Modulo contatto e informazioni' },
-  ],
-};
+const MAX_EXTRA_PAGES = 9; // 9 extra + Home = 10 total
 
 
 const TONE_OPTIONS = [
@@ -107,6 +57,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const [creativeMode, setCreativeMode] = useState(false);
   const [imageGenMode, setImageGenMode] = useState<'stock' | 'ai'>('stock');
   const [extraPages, setExtraPages] = useState<{ name: string; description: string }[]>([]);
+  const [isMultiPage, setIsMultiPage] = useState(false);
   const [pagesInitialized, setPagesInitialized] = useState(false);
   const [lastValidatedPages, setLastValidatedPages] = useState<string | null>(null);
   const [newPageName, setNewPageName] = useState('');
@@ -374,7 +325,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
         tone,
         strengths: filledStrengths.length > 0 ? filledStrengths : undefined,
         services: filledServices.length > 0 ? filledServices : undefined,
-        useAnchorNav: extraPages.length === 0 ? useAnchorNav : undefined,
+        useAnchorNav: !isMultiPage ? useAnchorNav : undefined,
         creativeMode: creativeMode || undefined,
         imageGenMode: imageGenMode,
         validationAnswers: validationAnswers.length > 0 ? validationAnswers : undefined,
@@ -440,12 +391,12 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const addPage = () => {
     if (newPageName.trim() && newPageDesc.trim()) {
       if (editingPageIdx !== null) {
-        // Update existing page
         const updated = [...extraPages];
         updated[editingPageIdx] = { name: newPageName.trim(), description: newPageDesc.trim() };
         setExtraPages(updated);
         setEditingPageIdx(null);
       } else {
+        if (extraPages.length >= MAX_EXTRA_PAGES) return;
         setExtraPages([...extraPages, { name: newPageName.trim(), description: newPageDesc.trim() }]);
       }
       setNewPageName('');
@@ -950,10 +901,10 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
               {/* Single vs Multi page toggle */}
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => { setExtraPages([]); cancelEditPage(); }}
+                  onClick={() => { setIsMultiPage(false); setExtraPages([]); cancelEditPage(); }}
                   className={cn(
                     "p-4 rounded-xl border-2 transition-all text-left space-y-2",
-                    extraPages.length === 0
+                    !isMultiPage
                       ? "border-zinc-900 bg-zinc-50 shadow-sm"
                       : "border-zinc-100 hover:border-zinc-300"
                   )}
@@ -964,15 +915,10 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                   </div>
                 </button>
                 <button
-                  onClick={() => {
-                    if (extraPages.length === 0) {
-                      const suggested = SUGGESTED_PAGES[businessType] || SUGGESTED_PAGES.LocalBusiness;
-                      setExtraPages(suggested.map(p => ({ ...p })));
-                    }
-                  }}
+                  onClick={() => { setIsMultiPage(true); }}
                   className={cn(
                     "p-4 rounded-xl border-2 transition-all text-left space-y-2",
-                    extraPages.length > 0
+                    isMultiPage
                       ? "border-zinc-900 bg-zinc-50 shadow-sm"
                       : "border-zinc-100 hover:border-zinc-300"
                   )}
@@ -985,7 +931,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
               </div>
 
               {/* Anchor nav auto-applied for single page — simplified UI */}
-              {extraPages.length === 0 && (
+              {!isMultiPage && (
                 <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 flex items-center gap-3">
                   <div className="p-1.5 bg-white rounded-lg shadow-sm border border-emerald-100">
                     <Check className="text-emerald-500" size={14} />
@@ -998,9 +944,9 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
               )}
 
               {/* Page list */}
-              {extraPages.length > 0 && (
+              {isMultiPage && (
                 <div className="space-y-1.5">
-                  <div className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider">Home + {extraPages.length} {extraPages.length === 1 ? 'pagina' : 'pagine'}</div>
+                  <div className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider">Home{extraPages.length > 0 ? ` + ${extraPages.length} ${extraPages.length === 1 ? 'pagina' : 'pagine'}` : ''}</div>
                   <div className="space-y-1">
                     {extraPages.map((p, i) => (
                       <div
@@ -1030,7 +976,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
               )}
 
               {/* Add/Edit page form — only in multi-page mode */}
-              {extraPages.length > 0 && <div className="space-y-2 pt-1">
+              {isMultiPage && <div className="space-y-2 pt-1">
                 <div className="flex items-center gap-3">
                   <div className="h-px flex-1 bg-zinc-100" />
                   <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider">
@@ -1065,12 +1011,12 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                 </div>
                 <div className="flex gap-2">
                   <button
-                    disabled={!newPageName.trim() || !newPageDesc.trim()}
+                    disabled={!newPageName.trim() || !newPageDesc.trim() || (editingPageIdx === null && extraPages.length >= MAX_EXTRA_PAGES)}
                     onClick={addPage}
                     className="flex-1 py-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-600 border border-zinc-200 rounded-xl text-xs font-semibold transition-all disabled:opacity-40 flex items-center justify-center gap-1.5"
                   >
                     <Plus size={13} />
-                    {editingPageIdx !== null ? 'Salva Modifica' : 'Aggiungi Pagina'}
+                    {editingPageIdx !== null ? 'Salva Modifica' : extraPages.length >= MAX_EXTRA_PAGES ? `Limite ${MAX_EXTRA_PAGES + 1} pagine raggiunto` : 'Aggiungi Pagina'}
                   </button>
                   {editingPageIdx !== null && (
                     <button
