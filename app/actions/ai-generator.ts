@@ -2,6 +2,7 @@
 
 import { AI_VALIDATION_PROMPT, AI_WEBSITE_GENERATOR_SYSTEM_PROMPT } from '@/lib/ai/prompts';
 import { getUnsplashUrl, getHeroUnsplashUrl } from '@/lib/ai/unsplash-images';
+import { generateImagenImage } from '@/lib/ai/imagen';
 import { createClient } from '@/lib/supabase/server';
 import { canUseAI, canCreateProject } from '@/lib/permissions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -53,9 +54,9 @@ function darkenHSL(hex: string, amount: number): string {
   l = Math.max(0, l - amount / 100);
   const hue2rgb = (p: number, q: number, t: number) => {
     if (t < 0) t += 1; if (t > 1) t -= 1;
-    if (t < 1/6) return p + (q - p) * 6 * t;
-    if (t < 1/2) return q;
-    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
     return p;
   };
   let rOut, gOut, bOut;
@@ -63,9 +64,9 @@ function darkenHSL(hex: string, amount: number): string {
   else {
     const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
     const p = 2 * l - q;
-    rOut = hue2rgb(p, q, h + 1/3);
+    rOut = hue2rgb(p, q, h + 1 / 3);
     gOut = hue2rgb(p, q, h);
-    bOut = hue2rgb(p, q, h - 1/3);
+    bOut = hue2rgb(p, q, h - 1 / 3);
   }
   const toHex = (c: number) => Math.round(c * 255).toString(16).padStart(2, '0');
   return `#${toHex(rOut)}${toHex(gOut)}${toHex(bOut)}`;
@@ -86,14 +87,14 @@ function isInPalette(hex: string, palette: string[]): boolean {
 
 // Available fonts — must match FontManager.tsx exactly
 const AVAILABLE_FONTS = [
-  'Outfit','Inter','Plus Jakarta Sans','DM Sans','Montserrat','Roboto','Open Sans',
-  'Poppins','Lato','Sora','Manrope','Archivo','Lexend','Urbanist','Figtree','Work Sans',
-  'Public Sans','Ubuntu','Kanit','Heebo','IBM Plex Sans','Quicksand',
-  'Playfair Display','Fraunces','Cormorant Garamond','Lora','Merriweather',
-  'Crimson Text','Spectral','Arvo','BioRhyme','Old Standard TT','Cinzel',
-  'Unbounded','Bebas Neue','Syne','Space Grotesk','Abril Fatface','Righteous',
-  'Comfortaa','Fredoka One','Space Mono','JetBrains Mono','Fira Code',
-  'Inconsolata','Caveat','Pacifico','Shadows Into Light','Grand Hotel'
+  'Outfit', 'Inter', 'Plus Jakarta Sans', 'DM Sans', 'Montserrat', 'Roboto', 'Open Sans',
+  'Poppins', 'Lato', 'Sora', 'Manrope', 'Archivo', 'Lexend', 'Urbanist', 'Figtree', 'Work Sans',
+  'Public Sans', 'Ubuntu', 'Kanit', 'Heebo', 'IBM Plex Sans', 'Quicksand',
+  'Playfair Display', 'Fraunces', 'Cormorant Garamond', 'Lora', 'Merriweather',
+  'Crimson Text', 'Spectral', 'Arvo', 'BioRhyme', 'Old Standard TT', 'Cinzel',
+  'Unbounded', 'Bebas Neue', 'Syne', 'Space Grotesk', 'Abril Fatface', 'Righteous',
+  'Comfortaa', 'Fredoka One', 'Space Mono', 'JetBrains Mono', 'Fira Code',
+  'Inconsolata', 'Caveat', 'Pacifico', 'Shadows Into Light', 'Grand Hotel'
 ];
 
 const TONE_FONT_FALLBACK: Record<string, string> = {
@@ -128,7 +129,7 @@ function aiDebugSave(type: 'validation' | 'generation', stage: 'prompt' | 'respo
 const CACHE_DIR = path.join(process.cwd(), '.ai-cache');
 
 function ensureCacheDir() {
-  try { if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true }); } catch {}
+  try { if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true }); } catch { }
 }
 
 function getCacheKey(prefix: string, data: object): string {
@@ -139,12 +140,12 @@ function getCacheKey(prefix: string, data: object): string {
 function readCache(key: string): any | null {
   try {
     if (fs.existsSync(key)) return JSON.parse(fs.readFileSync(key, 'utf-8'));
-  } catch {}
+  } catch { }
   return null;
 }
 
 function writeCache(key: string, data: any) {
-  try { ensureCacheDir(); fs.writeFileSync(key, JSON.stringify(data, null, 2), 'utf-8'); } catch {}
+  try { ensureCacheDir(); fs.writeFileSync(key, JSON.stringify(data, null, 2), 'utf-8'); } catch { }
 }
 
 export interface AIGenerationData {
@@ -178,6 +179,7 @@ export interface AIGenerationData {
   services?: string[];
   useAnchorNav?: boolean;
   creativeMode?: boolean;
+  imageGenMode?: 'stock' | 'ai';
   // Q&A collected during validation step — passed to generation for context and structured extraction
   validationAnswers?: { question: string; answer: string }[];
 }
@@ -204,19 +206,19 @@ const ALLOWED_DOMAINS = ['supabase.co', 'supabase.in'];
 
 // Canonical sectionId per block type (deterministic, language: it)
 const BLOCK_TYPE_CANONICAL_ID: Record<string, string> = {
-  contact:      'contatti',
-  faq:          'faq',
-  benefits:     'vantaggi',
-  cards:        'servizi',
+  contact: 'contatti',
+  faq: 'faq',
+  benefits: 'vantaggi',
+  cards: 'servizi',
   'how-it-works': 'come-funziona',
-  quote:        'recensioni',
-  pricing:      'prezzi',
-  promo:        'offerte',
-  text:         'chi-siamo',
+  quote: 'recensioni',
+  pricing: 'prezzi',
+  promo: 'offerte',
+  text: 'chi-siamo',
   'image-text': 'info',
-  hero:         'hero',
-  navigation:   'nav',
-  footer:       'footer',
+  hero: 'hero',
+  navigation: 'nav',
+  footer: 'footer',
 };
 
 // Deterministic pattern assignment — cycles every 3 content blocks starting from the 2nd
@@ -225,16 +227,16 @@ const PATTERN_SKIP_TYPES = new Set(['hero', 'navigation', 'footer']);
 
 // Human-readable nav label per block type (used in anchor nav)
 const BLOCK_TYPE_CANONICAL_LABEL: Record<string, string> = {
-  contact:        'Contatti',
-  faq:            'FAQ',
-  benefits:       'Vantaggi',
-  cards:          'Servizi',
+  contact: 'Contatti',
+  faq: 'FAQ',
+  benefits: 'Vantaggi',
+  cards: 'Servizi',
   'how-it-works': 'Come funziona',
-  quote:          'Recensioni',
-  pricing:        'Prezzi',
-  promo:          'Offerte',
-  text:           'Chi siamo',
-  'image-text':   'Info',
+  quote: 'Recensioni',
+  pricing: 'Prezzi',
+  promo: 'Offerte',
+  text: 'Chi siamo',
+  'image-text': 'Info',
 };
 
 export async function generateProjectWithAI(data: AIGenerationData) {
@@ -337,6 +339,13 @@ You have full creative freedom to invent content that makes the site feel real, 
 Max 10 blocks per page.
 Still FORBIDDEN: invented prices, invented phone numbers, invented addresses, bracket placeholders.
 `}
+
+${data.imageGenMode === 'ai' ? `
+### IMAGE GENERATION
+For every block that includes an image (hero, cards, image-text, promo), add an "imagePrompt" field inside the "content" object. 
+This field must contain a concise, highly descriptive English sentence describing the visual scene to be generated (Focus on the subject, lighting, and composition).
+IMPORTANT: The imagePrompt must describe ONLY visual elements, NO text, logos, or labels.
+` : ''}
 ${hasStyleReference ? `
 ### STYLE EXTRACTION
 A style reference image is attached. From it:
@@ -481,44 +490,44 @@ Do NOT output accentColor, bg, text, or fontFamily — they are set automaticall
     // --- DETERMINISTIC STYLE ---
 
     // 1. Colors: user overrides > AI output
-    const userBG     = data.bgColor     || null;
-    const userText   = data.textColor   || null;
+    const userBG = data.bgColor || null;
+    const userText = data.textColor || null;
     const userAccent = data.accentColor || null;
 
     // Per-business-type color defaults (used when AI doesn't generate themeColors)
     const DEFAULT_COLORS_BY_TYPE: Record<string, { bg: string; text: string; accent: string }> = {
-      Restaurant:                   { bg: '#fdf6f0', text: '#2d1b0e', accent: '#c0392b' },
-      LocalBusiness:                { bg: '#f8fafc', text: '#1e293b', accent: '#2563eb' },
-      ProfessionalService:          { bg: '#f8fafc', text: '#1e293b', accent: '#2563eb' },
-      HealthAndBeautyBusiness:      { bg: '#fdf4f8', text: '#3d1a2e', accent: '#c2185b' },
-      HomeAndConstructionBusiness:  { bg: '#f5f7fa', text: '#1c2b3a', accent: '#1565c0' },
-      EducationalOrganization:      { bg: '#f0f7ff', text: '#0d2d5e', accent: '#1976d2' },
-      SportsActivityLocation:       { bg: '#f0fdf4', text: '#14342b', accent: '#16a34a' },
-      TravelAgency:                 { bg: '#f0f9ff', text: '#0c3247', accent: '#0284c7' },
-      Store:                        { bg: '#fafaf9', text: '#1c1917', accent: '#d97706' },
-      Organization:                 { bg: '#f8fafc', text: '#1e293b', accent: '#7c3aed' },
+      Restaurant: { bg: '#fdf6f0', text: '#2d1b0e', accent: '#c0392b' },
+      LocalBusiness: { bg: '#f8fafc', text: '#1e293b', accent: '#2563eb' },
+      ProfessionalService: { bg: '#f8fafc', text: '#1e293b', accent: '#2563eb' },
+      HealthAndBeautyBusiness: { bg: '#fdf4f8', text: '#3d1a2e', accent: '#c2185b' },
+      HomeAndConstructionBusiness: { bg: '#f5f7fa', text: '#1c2b3a', accent: '#1565c0' },
+      EducationalOrganization: { bg: '#f0f7ff', text: '#0d2d5e', accent: '#1976d2' },
+      SportsActivityLocation: { bg: '#f0fdf4', text: '#14342b', accent: '#16a34a' },
+      TravelAgency: { bg: '#f0f9ff', text: '#0c3247', accent: '#0284c7' },
+      Store: { bg: '#fafaf9', text: '#1c1917', accent: '#d97706' },
+      Organization: { bg: '#f8fafc', text: '#1e293b', accent: '#7c3aed' },
     };
     const typeColors = DEFAULT_COLORS_BY_TYPE[data.businessType] || { bg: '#f8f9fa', text: '#1a1a2e', accent: '#3b82f6' };
 
     // Colors from AI only when a screenshot/logo was provided (style reference extraction).
     // Without a style reference, colors are always deterministic from DEFAULT_COLORS_BY_TYPE.
     // hasStyleReference is computed above before the prompt construction.
-    const aiBG     = hasStyleReference ? (aiOutput.settings?.bg    || aiOutput.settings?.themeColors?.light?.bg   || null) : null;
-    const aiText   = hasStyleReference ? (aiOutput.settings?.text  || aiOutput.settings?.themeColors?.light?.text || null) : null;
+    const aiBG = hasStyleReference ? (aiOutput.settings?.bg || aiOutput.settings?.themeColors?.light?.bg || null) : null;
+    const aiText = hasStyleReference ? (aiOutput.settings?.text || aiOutput.settings?.themeColors?.light?.text || null) : null;
     const aiAccent = hasStyleReference ? (aiOutput.settings?.accentColor || null) : null;
 
-    const themeBG   = userBG     || aiBG     || typeColors.bg;
-    const themeText = userText   || aiText   || typeColors.text;
-    const accentBG  = userAccent || aiAccent || typeColors.accent;
+    const themeBG = userBG || aiBG || typeColors.bg;
+    const themeText = userText || aiText || typeColors.text;
+    const accentBG = userAccent || aiAccent || typeColors.accent;
 
     console.log('[AI Generator] Colors source — BG:', userBG ? 'user' : aiBG ? 'AI (screenshot)' : 'default', themeBG);
     console.log('[AI Generator] Colors source — Text:', userText ? 'user' : aiText ? 'AI (screenshot)' : 'default', themeText);
     console.log('[AI Generator] Colors source — Accent:', userAccent ? 'user' : aiAccent ? 'AI (screenshot)' : 'default', accentBG);
 
     // 2. Button colors
-    const primaryCTABG   = accentBG;
+    const primaryCTABG = accentBG;
     const primaryCTAText = getContrastColor(accentBG);
-    const secondaryCTABG   = darkenHSL(accentBG, 15);
+    const secondaryCTABG = darkenHSL(accentBG, 15);
     const secondaryCTAText = getContrastColor(secondaryCTABG);
 
     // 3. Appearance: deterministic from luminance
@@ -561,7 +570,7 @@ Do NOT output accentColor, bg, text, or fontFamily — they are set automaticall
     const finalSettings = {
       ...aiOutput.settings,
       appearance: finalAppearance,
-      primaryColor:   primaryCTABG,
+      primaryColor: primaryCTABG,
       secondaryColor: secondaryCTABG,
       fontFamily,
       buttonRadius,
@@ -577,8 +586,8 @@ Do NOT output accentColor, bg, text, or fontFamily — they are set automaticall
       businessDetails: { ...aiOutput.settings?.businessDetails, ...finalBusinessDetails, businessName: finalBusinessName },
       themeColors: {
         light: { bg: !isDark ? themeBG : '#ffffff', text: !isDark ? themeText : '#000000' },
-        dark:  { bg:  isDark ? themeBG : '#0c0c0e', text:  isDark ? themeText : '#ffffff'  },
-        buttonText:          primaryCTAText,
+        dark: { bg: isDark ? themeBG : '#0c0c0e', text: isDark ? themeText : '#ffffff' },
+        buttonText: primaryCTAText,
         buttonTextSecondary: secondaryCTAText,
       },
       // Always persist typography defaults so CSS vars are applied immediately
@@ -613,7 +622,7 @@ Do NOT output accentColor, bg, text, or fontFamily — they are set automaticall
         // Overlay on ANY block with backgroundImage
         if (blockWithId.content?.backgroundImage) {
           blockWithId.style.overlayOpacity = blockWithId.style.overlayOpacity || 65;
-          blockWithId.style.overlayColor   = blockWithId.style.overlayColor   || '#000000';
+          blockWithId.style.overlayColor = blockWithId.style.overlayColor || '#000000';
           if (!blockWithId.style.textColor) {
             blockWithId.style.textColor = getContrastColor(blockWithId.style.overlayColor || '#000000');
           }
@@ -627,9 +636,9 @@ Do NOT output accentColor, bg, text, or fontFamily — they are set automaticall
             ? PATTERN_CYCLE[patternEligibleIdx % PATTERN_CYCLE.length]
             : 'none';
           if (shouldHavePattern) {
-            blockWithId.style.patternColor   = themeText;
+            blockWithId.style.patternColor = themeText;
             blockWithId.style.patternOpacity = isDark ? 8 : 7;
-            blockWithId.style.patternScale   = 15;
+            blockWithId.style.patternScale = 15;
           } else {
             delete blockWithId.style.patternColor;
             delete blockWithId.style.patternOpacity;
@@ -694,7 +703,7 @@ Do NOT output accentColor, bg, text, or fontFamily — they are set automaticall
       // CTA: take label + url from AI hero block
       const heroBlock = interiorBlocks.find((b: any) => b.type === 'hero');
       const finalCtaLabel = heroBlock?.content?.cta || '';
-      const finalCtaUrl   = heroBlock?.content?.ctaUrl || '';
+      const finalCtaUrl = heroBlock?.content?.ctaUrl || '';
 
       // Footer social links
       let finalSocialLinks = [...(finalBusinessDetails.socialLinks || [])];
@@ -707,12 +716,12 @@ Do NOT output accentColor, bg, text, or fontFamily — they are set automaticall
         type: 'navigation',
         content: {
           ...aiOutput.settings?.navigation,
-          logoText:    finalBusinessName,
-          logoType:    finalLogoType,
-          logoImage:   finalLogo,
-          links:       finalNavLinks,
+          logoText: finalBusinessName,
+          logoType: finalLogoType,
+          logoImage: finalLogo,
+          links: finalNavLinks,
           showContact: true,
-          cta:    finalCtaLabel,
+          cta: finalCtaLabel,
           ctaUrl: finalCtaUrl,
           showCTA: true,
         },
@@ -724,12 +733,12 @@ Do NOT output accentColor, bg, text, or fontFamily — they are set automaticall
         type: 'footer',
         content: {
           ...aiOutput.settings?.footer,
-          logoType:   finalLogoType,
-          logoImage:  finalLogo,
-          logoText:   finalBusinessName,
-          links:      finalNavLinks,
+          logoType: finalLogoType,
+          logoImage: finalLogo,
+          logoText: finalBusinessName,
+          links: finalNavLinks,
           socialLinks: finalSocialLinks,
-          copyright:  `© ${currentYear} ${finalBusinessName}. Tutti i diritti riservati.`,
+          copyright: `© ${currentYear} ${finalBusinessName}. Tutti i diritti riservati.`,
         },
         style: { padding: 60, backgroundColor: themeBG, textColor: themeText }
       };
@@ -788,12 +797,20 @@ Do NOT output accentColor, bg, text, or fontFamily — they are set automaticall
       }
     }
 
+    const projId = uuidv4();
+
     // Validate background images (best-effort, non-blocking)
-    await validateAndCleanBackgroundImages(enrichedPages, data.businessType);
+    const { aiImageCount } = await validateAndCleanBackgroundImages(
+      enrichedPages,
+      data.businessType,
+      data.creativeMode,
+      user.id,
+      projId,
+      data.imageGenMode
+    );
 
     // ── Save directly to DB (no round-trip through client) ───────────────────
 
-    const projId = uuidv4();
     const cleanBusinessName = (data.businessName || 'Nuovo Sito').trim();
     const subdomain = cleanBusinessName.toLowerCase()
       .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + projId.substring(0, 6);
@@ -821,7 +838,7 @@ Do NOT output accentColor, bg, text, or fontFamily — they are set automaticall
 
     // Screenshot cleanup (fire and forget)
     if (data.screenshotStoragePaths?.length) {
-      supabase.storage.from('project-assets').remove(data.screenshotStoragePaths).catch(() => {});
+      supabase.storage.from('project-assets').remove(data.screenshotStoragePaths).catch(() => { });
     }
 
     // Save project
@@ -866,7 +883,13 @@ Do NOT output accentColor, bg, text, or fontFamily — they are set automaticall
     }
 
     // Increment credits
+    // Increment credits: 1 base + 2 per AI-generated image
     await supabase.rpc('increment_ai_usage', { p_user_id: user.id });
+    if (aiImageCount > 0) {
+      for (let i = 0; i < aiImageCount * 2; i++) {
+        await supabase.rpc('increment_ai_usage', { p_user_id: user.id });
+      }
+    }
 
     return { success: true, projectId: projId };
 
@@ -900,11 +923,6 @@ function validateBlockLinks(content: any, blockType: string, validSlugs: Set<str
   return result;
 }
 
-function picsumFallback(seed: string, width = 800, height = 500): string {
-  const cleanSeed = seed.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '').slice(0, 40) || 'business';
-  return `https://picsum.photos/seed/${cleanSeed}/${width}/${height}`;
-}
-
 // Hero fallback: curated Unsplash ID per business type
 function heroFallbackUrl(businessType: string): string {
   return getHeroUnsplashUrl(businessType);
@@ -915,85 +933,156 @@ function imageFallbackUrl(businessType: string, seed: string): string {
   return getUnsplashUrl(businessType, seed);
 }
 
-// Best-effort image URL validation — fallback to Picsum on failure
-async function validateAndCleanBackgroundImages(enrichedPages: any[], businessType?: string) {
+// Best-effort image URL validation or generation via Imagen — fallback to Unsplash/Picsum on failure
+async function validateAndCleanBackgroundImages(
+  enrichedPages: any[],
+  businessType?: string,
+  creativeMode?: boolean,
+  userId?: string,
+  projectId?: string,
+  imageGenMode?: 'stock' | 'ai'
+): Promise<{ aiImageCount: number }> {
+  const supabase = await createClient();
   const checks: Promise<void>[] = [];
+  let aiImageCount = 0;
+
+  // Helper to upload base64 to Supabase Storage
+  const uploadAiImage = async (base64: string, filename: string): Promise<string> => {
+    if (!userId || !projectId) return '';
+    try {
+      const buffer = Buffer.from(base64, 'base64');
+      const path = `${userId}/${projectId}/${filename}`;
+      const { error } = await supabase.storage
+        .from('project-assets')
+        .upload(path, buffer, { contentType: 'image/jpeg', upsert: true });
+
+      if (error) throw error;
+      return `/assets/${filename}`;
+    } catch (err) {
+      console.error('[AI Image Upload] Error:', err);
+      return '';
+    }
+  };
+
+  const generationTasks: {
+    prompt: string;
+    ratio: string;
+    block: any;
+    field: string;
+    itemIdx?: number;
+    fallbackUrl: string;
+  }[] = [];
 
   for (const page of enrichedPages) {
     for (const block of page.blocks || []) {
+      const blockTitle = block.content?.title || block.content?.heading || '';
+      const aiMainSubject = block.content?.imagePrompt || block.content?.mainSubject || '';
+
+      const constructPrompt = (contextSubject: string, specificTitle?: string) => {
+        const finalTitle = specificTitle || blockTitle || "Business";
+        const subject = contextSubject || aiMainSubject || finalTitle || "a modern professional scene";
+        return `A realistic photographic scene representing ${finalTitle}.
+            Main subject: ${subject}
+            Foreground: main subject in focus
+            Background: soft blurred environment
+            Style: professional editorial photography
+            Camera: 50mm lens, shallow depth of field
+            IMPORTANT: no text, no letters, no watermark`;
+      };
 
       // Hero / section backgroundImage
       if (block.type === 'hero') {
+        const prompt = constructPrompt(aiMainSubject);
+        const fallback = heroFallbackUrl(businessType || '');
         if (!block.content?.backgroundImage) {
-          block.content = { ...block.content, backgroundImage: heroFallbackUrl(businessType || '') };
+          if (imageGenMode === 'ai') {
+            generationTasks.push({ prompt, ratio: '16:9', block, field: 'backgroundImage', fallbackUrl: fallback });
+          } else {
+            block.content = { ...block.content, backgroundImage: fallback };
+          }
           block.style.overlayOpacity = 65;
-          block.style.overlayColor   = '#000000';
-          block.style.textColor      = '#ffffff';
+          block.style.overlayColor = '#000000';
+          block.style.textColor = '#ffffff';
         } else if (block.content.backgroundImage.startsWith('http')) {
-          const fallback = heroFallbackUrl(businessType || '');
           checks.push(
             fetch(block.content.backgroundImage, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
               .then(res => { if (!res.ok) block.content.backgroundImage = fallback; })
               .catch(() => { block.content.backgroundImage = fallback; })
           );
         }
-      } else if (block.content?.backgroundImage && block.content.backgroundImage.startsWith('http')) {
-        // Non-hero section with backgroundImage — keep or clear (no forced fallback)
-        if (!block.content.backgroundImage.includes('picsum.photos')) {
-          checks.push(
-            fetch(block.content.backgroundImage, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
-              .then(res => {
-                if (!res.ok) {
-                  block.content.backgroundImage = '';
-                  delete block.style.overlayOpacity;
-                  delete block.style.overlayColor;
-                  delete block.style.textColor;
-                }
-              })
-              .catch(() => { /* keep on network error */ })
-          );
+      } else if (block.content?.backgroundImage) {
+        if (block.content.backgroundImage.startsWith('http')) {
+          if (!block.content.backgroundImage.includes('picsum.photos')) {
+            checks.push(
+              fetch(block.content.backgroundImage, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
+                .then(res => {
+                  if (!res.ok) {
+                    const prompt = constructPrompt(aiMainSubject);
+                    if (creativeMode) {
+                      generationTasks.push({ prompt, ratio: '16:9', block, field: 'backgroundImage', fallbackUrl: '' });
+                    } else {
+                      block.content.backgroundImage = '';
+                      delete block.style.overlayOpacity;
+                      delete block.style.overlayColor;
+                      delete block.style.textColor;
+                    }
+                  }
+                })
+                .catch(() => { /* keep on network error */ })
+            );
+          }
         }
       }
 
-      // image-text block: field is `image`, not `imageUrl` — migrate and add fallback
+      // image-text block
       if (block.type === 'image-text') {
-        // Migrate imageUrl → image (AI may use either field name)
         if (block.content?.imageUrl && !block.content?.image) {
           block.content.image = block.content.imageUrl;
           delete block.content.imageUrl;
-        } else if (block.content?.imageUrl) {
-          delete block.content.imageUrl;
         }
         const imgSrc = block.content?.image || '';
-        // Use sectionId (unique per block: info, info-2, etc.) + title for a unique seed
         const fallbackSeed = `${block.content?.sectionId || block.type}-${block.content?.title || 'section'}`;
+        const fallback = imageFallbackUrl(businessType || '', fallbackSeed);
+
         if (!imgSrc) {
-          block.content = { ...block.content, image: imageFallbackUrl(businessType || '', fallbackSeed) };
+          if (imageGenMode === 'ai') {
+            const prompt = constructPrompt(aiMainSubject);
+            generationTasks.push({ prompt, ratio: '4:3', block, field: 'image', fallbackUrl: fallback });
+          } else {
+            block.content = { ...block.content, image: fallback };
+          }
         } else if (imgSrc.startsWith('http')) {
           checks.push(
             fetch(imgSrc, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
-              .then(res => { if (!res.ok) block.content.image = imageFallbackUrl(businessType || '', fallbackSeed); })
-              .catch(() => { block.content.image = imageFallbackUrl(businessType || '', fallbackSeed); })
+              .then(res => { if (!res.ok) block.content.image = fallback; })
+              .catch(() => { block.content.image = fallback; })
           );
         }
       }
 
-      // Blocks with items[*].image — only for types that visually show images (not quote/faq/etc.)
+      // Blocks with items[*].image
       const IMAGE_ITEM_BLOCKS = ['cards', 'promo'];
       if (IMAGE_ITEM_BLOCKS.includes(block.type)) {
         const items = block.content?.items;
         if (Array.isArray(items)) {
-          // Include block sectionId + item index in seed so same-titled items get different images
           const blockSectionId = block.content?.sectionId || block.type;
           items.forEach((item: any, idx: number) => {
             const itemSeed = `${blockSectionId}-${idx}-${item.title || item.name || 'item'}`;
+            const fallback = imageFallbackUrl(businessType || '', itemSeed);
             if (!item.image) {
-              item.image = imageFallbackUrl(businessType || '', itemSeed);
+              if (imageGenMode === 'ai') {
+                const itemTitle = item.title || item.name || '';
+                const itemMainSubject = item.imagePrompt || item.mainSubject || '';
+                const prompt = constructPrompt(itemMainSubject || itemTitle, itemTitle);
+                generationTasks.push({ prompt, ratio: '16:9', block, field: 'items', itemIdx: idx, fallbackUrl: fallback });
+              } else {
+                item.image = fallback;
+              }
             } else if (item.image.startsWith('http')) {
               checks.push(
                 fetch(item.image, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
-                  .then(res => { if (!res.ok) item.image = imageFallbackUrl(businessType || '', itemSeed); })
-                  .catch(() => { item.image = imageFallbackUrl(businessType || '', itemSeed); })
+                  .then(res => { if (!res.ok) item.image = fallback; })
+                  .catch(() => { item.image = fallback; })
               );
             }
           });
@@ -1002,7 +1091,41 @@ async function validateAndCleanBackgroundImages(enrichedPages: any[], businessTy
     }
   }
 
+  // Run generation tasks in parallel
+  if (generationTasks.length > 0) {
+    console.log(`[Imagen] Starting parallel generation for ${generationTasks.length} images...`);
+    const results = await Promise.allSettled(
+      generationTasks.map(async (task, idx) => {
+        try {
+          const gen = await generateImagenImage(task.prompt, task.ratio as any);
+          const filename = `ai-gen-${Date.now()}-${idx}.jpg`;
+          const url = await uploadAiImage(gen.data, filename);
+          if (url) {
+            if (task.itemIdx !== undefined) {
+              task.block.content.items[task.itemIdx].image = url;
+            } else {
+              task.block.content[task.field] = url;
+            }
+            return true;
+          }
+        } catch (err) {
+          console.error(`[Imagen] Task failed for "${task.prompt}":`, err);
+        }
+        // Fallback if generation or upload fails
+        if (task.itemIdx !== undefined) {
+          task.block.content.items[task.itemIdx].image = task.fallbackUrl;
+        } else {
+          task.block.content[task.field] = task.fallbackUrl;
+        }
+        return false;
+      })
+    );
+    aiImageCount = results.filter(r => r.status === 'fulfilled' && r.value === true).length;
+    console.log(`[Imagen] Finished. Successfully generated ${aiImageCount}/${generationTasks.length} images.`);
+  }
+
   await Promise.allSettled(checks);
+  return { aiImageCount };
 }
 
 export async function validateProjectDescription(data: {

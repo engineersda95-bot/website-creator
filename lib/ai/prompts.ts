@@ -135,7 +135,9 @@ Return ONLY valid JSON, nothing else:
       "title": string,
       "slug": string,
       "seo": { "title": string, "description": string },
-      "blocks": [...]
+      "blocks": [
+        { "type": "...", "content": { ..., "imagePrompt": string }, "style": { ... } }
+      ]
     }
   ]
 }
@@ -143,7 +145,8 @@ Return ONLY valid JSON, nothing else:
 Rules:
 - Home page hero is MANDATORY.
 - Every inner page must have at least 3 content blocks.
-- No invented info. No placeholders. No navigation or footer blocks.
+- No invented info. No placeholders.
+- No navigation or footer blocks.
 `;
 
 export const AI_VALIDATION_PROMPT = `

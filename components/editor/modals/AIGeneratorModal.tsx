@@ -105,6 +105,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
   const [strengths, setStrengths] = useState<string[]>(['']);
   const [services, setServices] = useState<string[]>(['']);
   const [creativeMode, setCreativeMode] = useState(false);
+  const [imageGenMode, setImageGenMode] = useState<'stock' | 'ai'>('stock');
   const [extraPages, setExtraPages] = useState<{ name: string; description: string }[]>([]);
   const [pagesInitialized, setPagesInitialized] = useState(false);
   const [lastValidatedPages, setLastValidatedPages] = useState<string | null>(null);
@@ -375,6 +376,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
         services: filledServices.length > 0 ? filledServices : undefined,
         useAnchorNav: extraPages.length === 0 ? useAnchorNav : undefined,
         creativeMode: creativeMode || undefined,
+        imageGenMode: imageGenMode,
         validationAnswers: validationAnswers.length > 0 ? validationAnswers : undefined,
         // Pass storage paths so server can migrate assets directly
         logoStoragePath: logoStoragePath || undefined,
@@ -892,6 +894,49 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                   {creativeMode && <Check size={8} className="text-white" />}
                 </div>
               </button>
+
+              {/* Selettore Immagini AI */}
+              <div className="space-y-3">
+                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider pl-1 font-mono">Immagini del sito</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setImageGenMode('stock')}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all transition-all text-center",
+                      imageGenMode === 'stock'
+                        ? "border-zinc-900 bg-zinc-50 shadow-sm"
+                        : "border-zinc-200 bg-white hover:border-zinc-300"
+                    )}
+                  >
+                    <div className={cn("p-2 rounded-lg", imageGenMode === 'stock' ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-400")}>
+                      <ImageIcon size={18} />
+                    </div>
+                    <div>
+                      <div className={cn("text-[12px] font-bold", imageGenMode === 'stock' ? "text-zinc-900" : "text-zinc-500")}>Stock</div>
+                      <div className="text-[10px] text-zinc-400">Gratuite</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setImageGenMode('ai')}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center relative overflow-hidden",
+                      imageGenMode === 'ai'
+                        ? "border-indigo-400 bg-indigo-50 shadow-sm"
+                        : "border-zinc-200 bg-white hover:border-zinc-300"
+                    )}
+                  >
+                    <div className={cn("p-2 rounded-lg", imageGenMode === 'ai' ? "bg-indigo-500 text-white" : "bg-zinc-100 text-zinc-400")}>
+                      <Wand2 size={18} />
+                    </div>
+                    <div>
+                      <div className={cn("text-[12px] font-bold", imageGenMode === 'ai' ? "text-indigo-800" : "text-zinc-500")}>AI Generated</div>
+                      <div className="text-[10px] text-indigo-400">+2 crediti / foto</div>
+                    </div>
+                    {imageGenMode === 'ai' && <div className="absolute top-0 right-0 p-1 bg-indigo-400 text-white rounded-bl-lg animate-in fade-in zoom-in duration-300"><Check size={10} /></div>}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
