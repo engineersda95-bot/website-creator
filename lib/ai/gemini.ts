@@ -38,5 +38,12 @@ export async function callJsonModel(
     .trim()
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/\s*```\s*$/i, '');
-  return JSON.parse(raw);
+  try {
+    return JSON.parse(raw);
+  } catch {
+    const start = raw.search(/[{[]/);
+    const end = Math.max(raw.lastIndexOf('}'), raw.lastIndexOf(']'));
+    if (start !== -1 && end > start) return JSON.parse(raw.slice(start, end + 1));
+    throw new SyntaxError(`Invalid JSON from model: ${raw.slice(0, 200)}`);
+  }
 }

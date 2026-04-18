@@ -487,6 +487,11 @@ const CarouselHero: React.FC<HeroProps> = (props) => {
       <div className="relative w-full h-full min-h-[var(--hero-min-height)] slides-wrapper">
         {slides.map((slide: any, idx: number) => {
           const isActive = idx === activePreviewIndex;
+          const slideInlineEdit = props.onInlineEdit ? (field: string, val: string) => {
+            const newSlides = [...slides];
+            newSlides[idx] = { ...newSlides[idx], [field]: val };
+            props.onInlineEdit!('slides', newSlides as any);
+          } : undefined;
           return (
             <div
               key={slide.id || idx}
@@ -494,16 +499,17 @@ const CarouselHero: React.FC<HeroProps> = (props) => {
               data-active={isActive ? "true" : "false"}
               className="hero-slide"
             >
-              <Hero 
-                {...props} 
-                content={{ 
-                  ...content, 
-                  ...slide, 
+              <Hero
+                {...props}
+                content={{
+                  ...content,
+                  ...slide,
                   backgroundImage: slide.backgroundImage || (idx === 0 ? content.backgroundImage : undefined),
                   backgroundAlt: slide.backgroundAlt || (idx === 0 ? content.backgroundAlt : undefined),
-                  carouselEnabled: false 
-                }} 
+                  carouselEnabled: false
+                }}
                 isEditing={false}
+                onInlineEdit={slideInlineEdit}
               />
             </div>
           );
