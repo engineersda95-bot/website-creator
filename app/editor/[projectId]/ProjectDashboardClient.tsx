@@ -141,7 +141,13 @@ export function ProjectDashboardClient({
     if (!newTitle.trim()) return;
 
     const lang = localProject.settings?.defaultLanguage || 'it';
-    const slug = newSlug.trim() || newTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const rawSlug = newSlug.trim() || newTitle.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    const slug = rawSlug || `pagina-${Date.now()}`;
 
     const existingPage = pages.find(p => p.slug === slug && p.language === lang);
     if (existingPage) {
