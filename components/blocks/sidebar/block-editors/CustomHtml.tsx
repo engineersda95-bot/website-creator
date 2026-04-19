@@ -495,7 +495,6 @@ export const CustomHtmlEditor: React.FC<CustomHtmlEditorProps> = ({
                         }}
                         altValue={content[`cbImg_${img.index}_alt`] ?? img.alt}
                         onAltChange={alt => updateContent({ [`cbImg_${img.index}_alt`]: alt })}
-                        previewAspect={currentRatio.replace(':', '/')}
                       />
                       <LinkSelector
                         label="Link immagine"
@@ -556,16 +555,23 @@ export const CustomHtmlEditor: React.FC<CustomHtmlEditorProps> = ({
           {chbIcons.length > 0 && (
             <Section icon={Shapes} label="Icone" id="icons"
               isOpen={openSection === 'icons'} onToggle={() => toggleSection('icons')}>
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {chbIcons.map(icon => {
                   const key = `cbIcon_${icon.iconName}`;
+                  const linkKey = `cbIconLink_${icon.iconName}`;
                   const current = content[key] ?? icon.iconName;
                   return (
-                    <div key={icon.iconName}>
+                    <div key={icon.iconName} className="pb-4 border-b border-zinc-100 last:border-0 last:pb-0 space-y-2">
                       <IconManager
                         label={`Icona: ${icon.iconName}`}
                         value={current}
                         onChange={val => updateContent({ [key]: val })}
+                      />
+                      <LinkSelector
+                        label="Link icona"
+                        value={content[linkKey] ?? ''}
+                        onChange={val => updateContent({ [linkKey]: val })}
+                        size="sm"
                       />
                     </div>
                   );

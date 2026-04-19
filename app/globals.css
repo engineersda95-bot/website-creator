@@ -122,6 +122,12 @@ body {
   pointer-events: none !important;
 }
 
+/* Sidebar rich text editors: links must not be clickable while editing */
+.ProseMirror a,
+.chb-text-editor a {
+  pointer-events: none !important;
+}
+
 
 /* TipTap Editor Specifics */
 .ProseMirror { outline: none !important; }

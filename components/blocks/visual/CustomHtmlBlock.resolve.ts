@@ -231,8 +231,17 @@ export function resolveHtml(
         .replace(/\s*data-chb-icon="[^"]*"/gi, '')
         .trim();
       const svg = lucideIconToSvg(resolvedName);
-      if (!svg) return `<span${allAttrs ? ' ' + allAttrs : ''} data-chb-icon="${originalName}"></span>`;
-      return `<span${allAttrs ? ' ' + allAttrs : ''} data-chb-icon="${originalName}">${svg}</span>`;
+      const spanInner = svg || '';
+      const span = `<span${allAttrs ? ' ' + allAttrs : ''} data-chb-icon="${originalName}">${spanInner}</span>`;
+
+      const linkUrl = content[`cbIconLink_${originalName.trim()}`];
+      if (linkUrl) {
+        const linkAttrs = formatLink(linkUrl, isStatic);
+        const href = `href="${linkAttrs.href || '#'}"`;
+        const targetAttr = (linkAttrs as any).target ? `target="${(linkAttrs as any).target}" rel="${(linkAttrs as any).rel}"` : '';
+        return `<a ${href} ${targetAttr} style="display:inline-flex;text-decoration:none;transition:transform 0.2s ease;cursor:pointer;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">${span}</a>`;
+      }
+      return span;
     }
   );
 

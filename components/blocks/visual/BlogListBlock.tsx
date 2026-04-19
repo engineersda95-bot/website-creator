@@ -50,6 +50,10 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
   const colsM = block.responsiveStyles?.mobile?.columns || 1;
   const currentCols = viewport === 'desktop' ? colsD : viewport === 'tablet' ? colsT : viewport === 'mobile' ? colsM : colsD;
 
+  const gridLg = ({ 1:'lg:grid-cols-1',2:'lg:grid-cols-2',3:'lg:grid-cols-3',4:'lg:grid-cols-4',5:'lg:grid-cols-5',6:'lg:grid-cols-6' } as any)[colsD] || 'lg:grid-cols-3';
+  const gridMd = ({ 1:'md:grid-cols-1',2:'md:grid-cols-2',3:'md:grid-cols-3',4:'md:grid-cols-4',5:'md:grid-cols-5',6:'md:grid-cols-6' } as any)[colsT] || 'md:grid-cols-2';
+  const gridSm = ({ 1:'grid-cols-1',2:'grid-cols-2',3:'grid-cols-3',4:'grid-cols-4',5:'grid-cols-5',6:'grid-cols-6' } as any)[colsM] || 'grid-cols-1';
+
   const animType = style.animationType || 'none';
   const animDuration = style.animationDuration || 0.8;
   const baseDelay = style.animationDelay || 0;
@@ -312,7 +316,7 @@ export const BlogListBlock: React.FC<BlogListBlockProps> = ({
 
         {/* Posts grid */}
         {posts.length > 0 ? (
-          <div className="grid gap-8" data-blog-grid style={{ gridTemplateColumns: isStatic ? `repeat(var(--blog-columns, ${colsD}), minmax(0, 1fr))` : `repeat(${currentCols}, minmax(0, 1fr))` }}>
+          <div className={cn("grid gap-8", isStatic ? `${gridSm} ${gridMd} ${gridLg}` : '')} data-blog-grid style={isStatic ? undefined : { gridTemplateColumns: `repeat(${currentCols}, minmax(0, 1fr))` }}>
             {posts.map((post, i) => (
               <div key={post.id} data-blog-card data-categories={(post.categories || []).map(c => c.toLowerCase()).join(',')} data-authors={(post.authors || []).map(a => a.name.toLowerCase()).join(',')} data-title={(post.title || '').toLowerCase()}>
                 <PostCard post={post} index={i} />
