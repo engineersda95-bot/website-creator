@@ -6,7 +6,7 @@ import { generateProject, validateDescription, type AIGenerationData } from '@/l
 
 export async function generateProjectWithAI(
   data: AIGenerationData,
-): Promise<{ success: true; projectId: string } | { success: false; error: string }> {
+): Promise<{ success: true; projectId: string; creditsUsed: number } | { success: false; error: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'User not authenticated' };
@@ -90,13 +90,14 @@ export async function generateProjectWithAI(
       if (pagesError) console.error('[AI Generator] Pages insert error:', pagesError);
     }
 
-    // Increment credits: 1 base + 2 per AI-generated image
-    await supabase.rpc('increment_ai_usage', { p_user_id: user.id });
-    for (let i = 0; i < aiImageCount * 2; i++) {
+    // Increment credits: 1 base (validation already charged 1) + 1 per extra page + 2 per AI-generated image
+    const extraPageCount = Math.max(0, pagesToInsert.length - 1);
+    const creditsUsed = 1 + extraPageCount + aiImageCount * 2;
+    for (let i = 0; i < creditsUsed; i++) {
       await supabase.rpc('increment_ai_usage', { p_user_id: user.id });
     }
 
-    return { success: true, projectId: projId };
+    return { success: true, projectId: projId, creditsUsed };
   } catch (error: any) {
     console.error('[AI Generator] Error:', error);
     return { success: false, error: error.message || 'Errore durante la generazione con IA.' };

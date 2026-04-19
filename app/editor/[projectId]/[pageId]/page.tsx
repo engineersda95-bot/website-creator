@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { getUserLimits } from '@/lib/permissions';
 import { EditorClient } from './EditorClient';
 
 export default async function PageEditorPage({
@@ -23,11 +24,12 @@ export default async function PageEditorPage({
 
   if (!project) redirect('/editor');
 
-  // Fetch target page (full) + other pages stubs (no blocks) + site_globals in parallel
-  const [{ data: targetPage }, { data: pageStubs }, { data: siteGlobals }] = await Promise.all([
+  // Fetch target page (full) + other pages stubs (no blocks) + site_globals + userLimits in parallel
+  const [{ data: targetPage }, { data: pageStubs }, { data: siteGlobals }, userLimits] = await Promise.all([
     supabase.from('pages').select('*').eq('id', pageId).eq('project_id', projectId).single(),
     supabase.from('pages').select('id, slug, title, language, translations_group_id').eq('project_id', projectId).order('created_at', { ascending: true }),
     supabase.from('site_globals').select('*').eq('project_id', projectId),
+    getUserLimits(user.id),
   ]);
 
   if (!targetPage) redirect(`/editor/${projectId}`);
@@ -42,6 +44,8 @@ export default async function PageEditorPage({
       initialPages={allPages}
       initialPageId={pageId}
       initialSiteGlobals={siteGlobals || []}
+      initialAiUsed={userLimits?.ai_used_this_month ?? 0}
+      initialAiMax={userLimits?.max_ai_per_month ?? null}
     />
   );
 }

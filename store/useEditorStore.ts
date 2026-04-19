@@ -25,10 +25,14 @@ interface EditorState {
   version: number;
   leftSidebarCollapsed: boolean;
   rightSidebarCollapsed: boolean;
+  aiUsed: number;
+  aiMax: number | null;
 
   // Actions
   setLeftSidebarCollapsed: (v: boolean) => void;
   setRightSidebarCollapsed: (v: boolean) => void;
+  initAiCredits: (used: number, max: number | null) => void;
+  incrementAiUsed: (amount?: number) => void;
   setUnsavedChanges: (val: boolean) => void;
   setProject: (project: Project) => void;
   setSiteGlobals: (globals: SiteGlobal[]) => void;
@@ -120,8 +124,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   version: 0,
   leftSidebarCollapsed: false,
   rightSidebarCollapsed: false,
+  aiUsed: 0,
+  aiMax: null,
   setLeftSidebarCollapsed: (v) => set({ leftSidebarCollapsed: v }),
   setRightSidebarCollapsed: (v) => set({ rightSidebarCollapsed: v }),
+  initAiCredits: (used, max) => set({ aiUsed: used, aiMax: max }),
+  incrementAiUsed: (amount = 1) => set(state => ({ aiUsed: state.aiUsed + amount })),
 
   takeSnapshot: () => {
     const { currentPage, project, pageHistories } = get();

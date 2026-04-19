@@ -117,7 +117,8 @@ RULES (same as when it was created — never violate these):
 - NEVER use text-transform:uppercase on any element.
 - ALL content elements must be visible on ALL viewport sizes.
 - At @container (max-width:640px): all multi-column layouts collapse to single column.
-- Return COMPLETE updated code — preserve everything not asked to change.`;
+- Return COMPLETE updated code — preserve everything not asked to change.
+- CRITICAL: modify ONLY what the user explicitly requests. Do NOT restructure, restyle, rename, add, or remove anything else. If the user asks to change a color, change only that color. If the user asks to change a text, change only that text. Treat everything else as read-only.`;
 
 // ─── Prompt builder ───────────────────────────────────────────────────────────
 

@@ -176,6 +176,7 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
           sourceLang: post.language || 'it',
           targetLang,
         });
+        useEditorStore.getState().incrementAiUsed();
         title = translated.title;
         excerpt = translated.excerpt;
         body = translated.body;
@@ -478,6 +479,7 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
         language: post.language || 'it',
         customInstruction: aiCustom || undefined,
       });
+      useEditorStore.getState().incrementAiUsed();
       setAiResult(result);
     } catch (err: any) {
       toast(err.message || 'Errore AI', 'error');

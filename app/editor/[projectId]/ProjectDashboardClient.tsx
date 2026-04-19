@@ -58,6 +58,7 @@ export function ProjectDashboardClient({
     setUser,
     initialize,
     hydrateEditor,
+    initAiCredits,
     project: storeProject,
     setProject: storeSetProject,
     updateProjectSettings,
@@ -118,6 +119,10 @@ export function ProjectDashboardClient({
     if (initialUser) setUser(initialUser);
     initialize();
   }, [initialUser, setUser, initialize]);
+
+  useEffect(() => {
+    initAiCredits(userLimits?.ai_used_this_month ?? 0, userLimits?.max_ai_per_month ?? null);
+  }, [userLimits, initAiCredits]);
 
   useEffect(() => {
     if (initialProject && (!storeProject || storeProject.id !== initialProject.id)) {

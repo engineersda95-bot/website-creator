@@ -2,13 +2,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
-import { LogOut, ChevronDown, Layout } from 'lucide-react';
+import { LogOut, ChevronDown, Layout, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { confirm } from '@/components/shared/ConfirmDialog';
 
 export const UserMenu: React.FC = () => {
-  const { user, logout } = useEditorStore();
+  const { user, logout, aiUsed, aiMax } = useEditorStore();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -36,6 +36,12 @@ export const UserMenu: React.FC = () => {
           {initial}
         </div>
         <span className="text-[12px] font-bold text-zinc-600 hidden md:inline">{user.email?.split('@')[0]}</span>
+        {aiMax !== null && (
+          <span className="hidden md:flex items-center gap-1 text-[10px] font-semibold text-violet-500 bg-violet-50 border border-violet-100 rounded-full px-1.5 py-0.5">
+            <Sparkles size={9} />
+            {aiUsed}/{aiMax}
+          </span>
+        )}
         <ChevronDown size={12} className={cn("text-zinc-400 transition-transform", isOpen && "rotate-180")} />
       </button>
 
@@ -44,6 +50,18 @@ export const UserMenu: React.FC = () => {
           <div className="px-4 py-3 border-b border-zinc-100">
             <p className="text-sm font-black text-zinc-900 truncate uppercase tracking-tight">{user.email?.split('@')[0]}</p>
             <p className="text-[11px] text-zinc-400 truncate mt-0.5 font-medium">{user.email}</p>
+            {aiMax !== null && (
+              <div className="flex items-center gap-1.5 mt-2">
+                <Sparkles size={10} className="text-violet-400 shrink-0" />
+                <div className="flex-1 h-1 bg-zinc-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-violet-500 rounded-full transition-all"
+                    style={{ width: `${Math.min((aiUsed / aiMax) * 100, 100)}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-zinc-400 font-medium shrink-0">{aiUsed}/{aiMax}</span>
+              </div>
+            )}
           </div>
 
           <div className="py-1">

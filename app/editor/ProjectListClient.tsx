@@ -56,7 +56,7 @@ export function ProjectListClient({
   projectCount: number;
 }) {
   const router = useRouter();
-  const { setUser, initialize } = useEditorStore();
+  const { setUser, initialize, initAiCredits } = useEditorStore();
   const [projects, setProjects] = useState(initialProjects);
   const [showCreate, setShowCreate] = useState(false);
   const [showAIGenerator, setShowAIGenerator] = useState(false);
@@ -85,7 +85,9 @@ export function ProjectListClient({
   React.useEffect(() => {
     if (initialUser) setUser(initialUser);
     initialize();
-  }, [initialUser, setUser, initialize]);
+    initAiCredits(userLimits?.ai_used_this_month ?? 0, userLimits?.max_ai_per_month ?? null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCreateProject = async () => {
     if (!newName.trim()) return;

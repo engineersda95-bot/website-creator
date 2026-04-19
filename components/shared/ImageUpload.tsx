@@ -4,6 +4,7 @@ import React, { useRef } from 'react';
 import { Upload, X, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/shared/Toast';
+import { useEditorStore } from '@/store/useEditorStore';
 
 interface ImageUploadProps {
   value?: string;
@@ -71,6 +72,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       if (!res.ok) throw new Error(json.error || 'Errore generazione');
       const { data, mimeType } = json;
       const dataUri = `data:${mimeType};base64,${data}`;
+      useEditorStore.getState().incrementAiUsed(2);
       if (onFilenameSelect) onFilenameSelect(aiPrompt);
       onChange(dataUri, aiPrompt);
       setTab('upload');

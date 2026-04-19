@@ -6,6 +6,7 @@ import { ArrowLeft, ExternalLink, Loader2, Trash2, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getProjectDomain } from '@/lib/url-utils';
 import { Project } from '@/types/editor';
+import { UserMenu } from '@/components/auth/UserMenu';
 
 interface DashboardHeaderProps {
   project: Project;
@@ -79,6 +80,7 @@ export function DashboardHeader({
             {isPublishing ? <Loader2 className="animate-spin" size={14} /> : <Rocket size={14} />}
             {isPublishing ? 'Pubblicazione...' : 'Pubblica'}
           </button>
+          <UserMenu />
         </div>
       </div>
     </header>

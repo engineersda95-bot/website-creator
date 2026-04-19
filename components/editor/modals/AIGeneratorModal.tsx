@@ -9,6 +9,7 @@ import { BUSINESS_TYPES } from '@/lib/editor-constants';
 import { generateProjectWithAI, validateProjectDescription } from '@/app/actions/ai-site-generator';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/shared/Toast';
+import { useEditorStore } from '@/store/useEditorStore';
 
 interface AIGeneratorModalProps {
   onClose: () => void;
@@ -188,6 +189,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
         ].filter(s => s.url)
       });
 
+      useEditorStore.getState().incrementAiUsed();
       if (result.isReady || !result.questions || result.questions.length === 0) {
         setStepIndex(3);
       } else {
@@ -337,6 +339,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
       clearTimeout(timeout);
       clearInterval(interval);
       if (result.success) {
+        useEditorStore.getState().incrementAiUsed(result.creditsUsed);
         setProgress(100);
         setTimeout(() => {
           onSuccess({ projectId: result.projectId });
@@ -883,6 +886,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                     <div>
                       <div className={cn("text-[12px] font-bold", imageGenMode === 'ai' ? "text-indigo-800" : "text-zinc-500")}>AI Generated</div>
                       <div className="text-[10px] text-indigo-400">+2 crediti / foto</div>
+                      <div className={cn("text-[10px] mt-0.5", imageGenMode === 'ai' ? "text-indigo-300" : "text-zinc-300")}>{creativeMode ? 'In media 8 in home, 4 per altre pagine' : 'In media 4 in home, 3 per altre pagine'}</div>
                     </div>
                     {imageGenMode === 'ai' && <div className="absolute top-0 right-0 p-1 bg-indigo-400 text-white rounded-bl-lg animate-in fade-in zoom-in duration-300"><Check size={10} /></div>}
                   </button>
@@ -927,6 +931,7 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
                   <div className="text-[10px] text-zinc-400 leading-relaxed">
                     Ogni sezione ha la sua pagina dedicata. Ideale per attività con molti servizi, menu, team o contenuti da approfondire.
                   </div>
+                  <div className="text-[10px] text-zinc-300">+1 credito per ogni pagina aggiuntiva{imageGenMode === 'ai' ? ' + eventuali immagini AI' : ''}</div>
                 </button>
               </div>
 
@@ -1225,6 +1230,30 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
             <button onClick={() => setError(null)} className="text-red-300 hover:text-red-500 shrink-0"><X size={12} /></button>
           </div>
         )}
+
+        {/* Credit estimate — step 3 only */}
+        {stepIndex === 3 && (() => {
+          const baseCredits = 2;
+          const pageCredits = extraPages.length;
+          const imgPerHome = imageGenMode === 'ai' ? (creativeMode ? 8 : 4) : 0;
+          const imgPerExtra = imageGenMode === 'ai' ? (creativeMode ? 4 : 3) : 0;
+          const totalImages = imgPerHome + extraPages.length * imgPerExtra;
+          const imageCredits = totalImages * 2;
+          const total = baseCredits + pageCredits + imageCredits;
+          return (
+            <div className="mx-6 mb-4 px-3 py-2.5 bg-violet-50 border border-violet-100 rounded-xl flex flex-col gap-1 text-[11px] text-violet-700">
+              <div className="flex items-center gap-1.5 font-semibold">
+                <Sparkles size={11} className="text-violet-400 shrink-0" />
+                <span>Stima crediti: <strong>{total}</strong></span>
+              </div>
+              <div className="text-violet-400 leading-relaxed pl-4">
+                Include home{pageCredits > 0 ? `, ${pageCredits} ${pageCredits === 1 ? 'pagina aggiuntiva' : 'pagine aggiuntive'}` : ''}
+                {imageCredits > 0 && ` e ~${totalImages} immagini AI`}
+              </div>
+              {imageCredits > 0 && <div className="text-violet-300 text-[10px] pl-4">Il numero effettivo di immagini generate può variare.</div>}
+            </div>
+          );
+        })()}
 
         {/* Footer with navigation */}
         <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between bg-white">

@@ -31,12 +31,16 @@ export function EditorClient({
   initialPages,
   initialPageId,
   initialSiteGlobals = [],
+  initialAiUsed = 0,
+  initialAiMax = null,
 }: {
   initialUser: any;
   initialProject: any;
   initialPages: any[];
   initialPageId: string;
   initialSiteGlobals?: any[];
+  initialAiUsed?: number;
+  initialAiMax?: number | null;
 }) {
   const {
     setProject,
@@ -44,6 +48,7 @@ export function EditorClient({
     setUser,
     hydrateEditor,
     initialize,
+    initAiCredits,
     project,
     currentPage,
     projectPages,
@@ -82,6 +87,10 @@ export function EditorClient({
   useEffect(() => {
     if (initialUser && !user) setUser(initialUser);
   }, [initialUser, user, setUser]);
+
+  useEffect(() => {
+    initAiCredits(initialAiUsed, initialAiMax);
+  }, [initialAiUsed, initialAiMax, initAiCredits]);
 
   // Hydrate project + pages + specific page + site globals
   useEffect(() => {

@@ -281,6 +281,7 @@ export const CustomHtmlEditor: React.FC<CustomHtmlEditorProps> = ({
       currentJs: hasGenerated ? (content.js ?? '') : undefined,
     }).then(result => {
       if (result.success) {
+        useEditorStore.getState().incrementAiUsed();
         // Strip any stale chb-typo overrides — new HTML has different node structure
         const cleanCss = (result.data.css ?? '').replace(/\/\* chb-typo \*\/[\s\S]*/m, '').trimEnd();
         updateContent({ html: result.data.html, css: cleanCss, js: result.data.js });
