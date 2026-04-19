@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as LucideIcons from 'lucide-react';
 import { callJsonModel, isRetryable, PRIMARY_MODEL, FALLBACK_MODEL } from './gemini';
 import { getContrastColor, getLuminance, darkenHSL, isInPalette } from './color-utils';
 import { validateAndCleanBackgroundImages } from './image-pipeline';
@@ -401,6 +402,8 @@ function enrichPages(
         data.useAnchorNav,
       );
 
+      sanitizeBlockIcons(blockWithId);
+
       return blockWithId;
     });
 
@@ -463,6 +466,20 @@ function enrichPages(
 
     return { ...page, id: pageId, blocks: [navBlock, ...interiorBlocks, footerBlock] };
   });
+}
+
+// ─── Lucide icon sanitization ─────────────────────────────────────────────────
+
+const ICON_FALLBACK = 'Star';
+
+function sanitizeBlockIcons(block: any): void {
+  if (!Array.isArray(block.content?.items)) return;
+  for (const item of block.content.items) {
+    if (!item.icon) continue;
+    const normalized = item.icon.charAt(0).toUpperCase() + item.icon.slice(1);
+    const exists = !!(LucideIcons as any)[normalized] || !!(LucideIcons as any)[item.icon];
+    if (!exists) item.icon = ICON_FALLBACK;
+  }
 }
 
 // ─── Anchor / link post-assembly validation ───────────────────────────────────
