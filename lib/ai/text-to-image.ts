@@ -60,7 +60,7 @@ async function generateWithFlux(
       },
       body: JSON.stringify({
         prompt,
-        num_steps: 20,
+        num_steps: 30,
         seed: Math.floor(Math.random() * 1000),
         height,
         width,

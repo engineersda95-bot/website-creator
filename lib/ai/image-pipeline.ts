@@ -1,5 +1,7 @@
 import { generateImage } from './text-to-image';
 import { getUnsplashUrl, getHeroUnsplashUrl } from './unsplash-images';
+import { createAdminClient } from '@/lib/supabase/server';
+import sharp from 'sharp';
 
 interface GenerationTask {
   prompt: string;
@@ -11,20 +13,22 @@ interface GenerationTask {
 }
 
 async function uploadAiImage(
-  supabase: any,
   base64: string,
   filename: string,
   userId: string,
   projectId: string,
 ): Promise<string> {
   try {
-    const buffer = Buffer.from(base64, 'base64');
-    const storagePath = `${userId}/${projectId}/${filename}`;
-    const { error } = await supabase.storage
+    const adminClient = createAdminClient();
+    const inputBuffer = Buffer.from(base64, 'base64');
+    const webpBuffer = await sharp(inputBuffer).webp({ quality: 82 }).toBuffer();
+    const webpFilename = filename.replace(/\.[^.]+$/, '.webp');
+    const storagePath = `${userId}/${projectId}/${webpFilename}`;
+    const { error } = await adminClient.storage
       .from('project-assets')
-      .upload(storagePath, buffer, { contentType: 'image/jpeg', upsert: true });
+      .upload(storagePath, webpBuffer, { contentType: 'image/webp', upsert: true });
     if (error) throw error;
-    return `/assets/${filename}`;
+    return `/assets/${webpFilename}`;
   } catch (err) {
     console.error('[AI Image Upload] Error:', err);
     return '';
@@ -182,8 +186,8 @@ export async function validateAndCleanBackgroundImages(
           const gen = await generateImage(task.prompt, task.ratio as any);
           const filename = `ai-gen-${Date.now()}-${idx}.jpg`;
           const url =
-            supabase && userId && projectId
-              ? await uploadAiImage(supabase, gen.data, filename, userId, projectId)
+            userId && projectId
+              ? await uploadAiImage(gen.data, filename, userId, projectId)
               : '';
           if (url) {
             if (task.itemIdx !== undefined) {
