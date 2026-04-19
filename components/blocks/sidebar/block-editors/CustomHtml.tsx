@@ -7,6 +7,7 @@ import {
   Type, Image as ImageIcon, MousePointer2, Shapes, Trash2,
 } from 'lucide-react';
 import { generateHtmlBlock } from '@/app/actions/ai-html-block';
+import { friendlyAiError } from '@/lib/ai/gemini';
 import { parseChbPlaceholders } from '@/components/blocks/visual/CustomHtmlBlock.resolve';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { resolveImageUrl } from '@/lib/image-utils';
@@ -290,7 +291,7 @@ export const CustomHtmlEditor: React.FC<CustomHtmlEditorProps> = ({
         setChatHistory(prev => [...prev, { role: 'assistant', text: 'Sezione generata! Dimmi se vuoi modifiche.' }]);
         setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       } else {
-        setAiError(result.error);
+        setAiError(friendlyAiError(result.error ?? ''));
         setChatHistory(prev => prev.slice(0, -1));
       }
     }).finally(() => setIsPending(false));

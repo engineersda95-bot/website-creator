@@ -12,6 +12,7 @@ import { resolveImageUrl } from '@/lib/image-utils';
 import { useEditorStore } from '@/store/useEditorStore';
 import { InlineImage, InlineYoutube } from '@/components/editor/blog/BlogExtensions';
 import { improveTextWithAI, translateBlogPostWithAI } from '@/app/actions/ai-blog';
+import { friendlyAiError } from '@/lib/ai/gemini';
 import type { AITextAction, AITextTone } from '@/lib/ai/blog';
 import { marked } from 'marked';
 import { LANGUAGES } from '@/lib/editor-constants';
@@ -482,7 +483,7 @@ export function BlogPostEditorClient({ initialUser, initialProject, initialPost 
       useEditorStore.getState().incrementAiUsed();
       setAiResult(result);
     } catch (err: any) {
-      toast(err.message || 'Errore AI', 'error');
+      toast(friendlyAiError(err.message || 'Errore AI'), 'error');
     } finally {
       setAiLoading(false);
     }

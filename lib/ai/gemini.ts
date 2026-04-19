@@ -9,6 +9,20 @@ export function getGenAI(): GoogleGenerativeAI {
   return new GoogleGenerativeAI(key);
 }
 
+export function friendlyAiError(msg: string): string {
+  if (msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand'))
+    return 'Il servizio AI è temporaneamente sovraccarico. Riprova tra qualche minuto.';
+  if (msg.includes('429') || msg.includes('quota') || msg.includes('rate limit') || msg.includes('RESOURCE_EXHAUSTED'))
+    return 'Limite di richieste AI raggiunto. Riprova tra qualche minuto.';
+  if (msg.includes('500') || msg.includes('Internal Server Error'))
+    return 'Errore interno del servizio AI. Riprova tra qualche minuto.';
+  if (msg.includes('Timeout') || msg.includes('timeout'))
+    return 'Il servizio AI ha impiegato troppo tempo. Riprova.';
+  if (msg.includes('GEMINI_API_KEY') || msg.includes('API key'))
+    return 'Configurazione AI non disponibile. Contatta il supporto.';
+  return msg;
+}
+
 export function isRetryable(err: any): boolean {
   const status = err?.status || err?.response?.status || err?.httpStatusCode;
   return status === 429 || status === 503 || status === 500 || status === 403;

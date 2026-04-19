@@ -10,6 +10,7 @@ import { generateProjectWithAI, validateProjectDescription } from '@/app/actions
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/shared/Toast';
 import { useEditorStore } from '@/store/useEditorStore';
+import { friendlyAiError } from '@/lib/ai/gemini';
 
 interface AIGeneratorModalProps {
   onClose: () => void;
@@ -345,14 +346,15 @@ export function AIGeneratorModal({ onClose, onSuccess, user }: AIGeneratorModalP
           onSuccess({ projectId: result.projectId });
         }, 800);
       } else {
-        setError(result.error || 'Errore imprevisto');
+        const msg = friendlyAiError(result.error || 'Errore imprevisto');
+        toast(msg, 'error');
         setIsGenerating(false);
         setProgress(0);
       }
     } catch (err: any) {
       clearTimeout(timeout);
       clearInterval(interval);
-      setError(err.message || 'Errore tecnico');
+      toast(friendlyAiError(err.message || 'Errore tecnico'), 'error');
       setIsGenerating(false);
       setProgress(0);
     }
