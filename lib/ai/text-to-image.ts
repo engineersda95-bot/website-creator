@@ -24,8 +24,6 @@ async function generateWithFlux(
   if (!apiKey) return null;
 
   try {
-    console.log(`[Flux] Generating image with prompt: ${prompt.substring(0, 50)}...`);
-
     let width = 1024;
     let height = 1024;
     if (aspectRatio === '16:9' || aspectRatio === 'landscape') {
@@ -63,9 +61,13 @@ async function generateWithFlux(
 
     const imgRes = await fetch(imageUrl);
     const buffer = await imgRes.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const mimeType = (bytes[0] === 0xFF && bytes[1] === 0xD8) ? 'image/jpeg'
+      : (bytes[0] === 0x89 && bytes[1] === 0x50) ? 'image/png'
+      : (imgRes.headers.get('content-type') || 'image/jpeg');
     return {
       data: Buffer.from(buffer).toString('base64'),
-      mimeType: 'image/png',
+      mimeType,
       modelUsed: 'flux-1-schnell',
     };
   } catch (err) {

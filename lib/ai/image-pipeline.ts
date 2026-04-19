@@ -131,6 +131,7 @@ export async function validateAndCleanBackgroundImages(
           } else {
             block.content = { ...block.content, image: fallback };
           }
+          if (!block.content.alt && blockTitle) block.content.alt = blockTitle;
         } else if (imgSrc.startsWith('http')) {
           checks.push(
             fetch(imgSrc, { method: 'HEAD', signal: AbortSignal.timeout(3000) })
@@ -163,6 +164,7 @@ export async function validateAndCleanBackgroundImages(
               } else {
                 item.image = fallback;
               }
+              if (!item.alt && (item.title || item.name)) item.alt = item.title || item.name;
             } else if (item.image.startsWith('http')) {
               checks.push(
                 fetch(item.image, { method: 'HEAD', signal: AbortSignal.timeout(3000) })

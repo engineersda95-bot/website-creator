@@ -793,17 +793,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           reader.readAsDataURL(finalBlob);
         });
       } catch (e) {
-        console.warn('[Store] Optimization failed, using original image:', e);
         const match = base64.match(/data:image\/([^;]+);base64,/);
-        finalExtension = match ? match[1] : 'png';
-        const cleanBase64 = base64.split(',')[1] || base64;
-        const byteCharacters = atob(cleanBase64);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        finalBlob = new Blob([byteArray], { type: `image/${finalExtension}` });
+        finalExtension = match ? match[1] : 'jpeg';
+        finalBlob = await fetch(base64).then(r => r.blob());
+        finalBase64 = base64;
       }
 
       const hash = await getImageHash(base64);
@@ -817,7 +810,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
       const { error: uploadError } = await supabase.storage
         .from('project-assets')
-        .upload(bucketPath, finalBlob, { cacheControl: '3600', upsert: true });
+        .upload(bucketPath, finalBlob, { cacheControl: '3600', upsert: true, contentType: `image/${finalExtension}` });
 
       const isAlreadyExists = uploadError?.message === 'The resource already exists'
         || uploadError?.message?.includes('row-level security policy');
