@@ -11,11 +11,13 @@
 3. [Step 2 — Raccolta Risposte (UI)](#3-step-2--raccolta-risposte-ui)
 4. [Step 3 — Generazione AI](#4-step-3--generazione-ai)
 5. [Step 4 — Post-processing Deterministico](#5-step-4--post-processing-deterministico)
-6. [Tipi di Blocco Supportati](#6-tipi-di-blocco-supportati)
-7. [Modalità Operative](#7-modalità-operative)
-8. [Debug](#8-debug)
-9. [Limitazioni e Cose da Migliorare](#9-limitazioni-e-cose-da-migliorare)
-10. [File di Riferimento](#10-file-di-riferimento)
+6. [Generazione Immagini AI](#6-generazione-immagini-ai)
+7. [Crediti AI — Costi e Limiti](#7-crediti-ai--costi-e-limiti)
+8. [Tipi di Blocco Supportati](#8-tipi-di-blocco-supportati)
+9. [Modalità Operative](#9-modalità-operative)
+10. [Debug](#10-debug)
+11. [Limitazioni e Cose da Migliorare](#11-limitazioni-e-cose-da-migliorare)
+12. [File di Riferimento](#12-file-di-riferimento)
 
 ---
 
@@ -334,7 +336,132 @@ L'AI può assegnare `style.backgroundColor` ai blocchi. Il post-processing lo ac
 
 ---
 
-## 6. Tipi di Blocco Supportati
+## 6. Generazione Immagini AI
+
+### Panoramica
+
+La piattaforma supporta la generazione di immagini tramite AI in due contesti distinti:
+
+1. **Durante la generazione del sito** (`imageGenMode: 'ai'`) — il post-processing usa Flux al posto di Unsplash per hero, `image-text` e card
+2. **Uploader standard nell'editor** (tab "AI" in `ImageUpload`) — l'utente genera singole immagini da prompt testuale
+
+---
+
+### 6.1 — Generazione automatica durante il wizard
+
+Controllata dal parametro `imageGenMode: 'stock' | 'ai'` passato a `validateAndCleanBackgroundImages`.
+
+**Blocchi coinvolti:**
+
+| Blocco | Campo | Ratio |
+|---|---|---|
+| `hero` | `backgroundImage` | `16:9` |
+| `image-text` | `image` | `4:3` |
+| `cards`, `promo` | `items[*].image` | `16:9` |
+
+**Costruzione del prompt:**
+
+```
+A realistic photographic scene representing {blockTitle}.
+Main subject: {imagePrompt || mainSubject || blockTitle}
+Foreground: main subject in focus
+Background: soft blurred environment
+Style: professional editorial photography
+Camera: 50mm lens, shallow depth of field
+IMPORTANT: no text, no letters, no watermark
+```
+
+Il campo `imagePrompt` / `mainSubject` è fornito direttamente dall'AI di testo nella risposta di generazione. Se assente, si usa il `title` / `heading` del blocco.
+
+**Fallback:** se Flux fallisce o non è disponibile (`PIXAZO_API_KEY` assente), l'immagine viene rimpiazzata con l'URL Unsplash corrispondente — il sito viene comunque generato.
+
+**Upload:** le immagini generate vengono convertite in WebP (qualità 82 via sharp) e caricate su Supabase Storage come `/assets/ai-gen-{ts}-{idx}.webp` nello spazio `{userId}/{projectId}/`.
+
+**Generazione parallela:** tutti i task di un'unica run sono eseguiti in `Promise.allSettled` — un fallimento su un'immagine non blocca le altre.
+
+---
+
+### 6.2 — Generazione manuale nell'editor (ImageUpload)
+
+L'uploader standard espone una tab "AI" in tutti i punti dell'editor in cui compare `ImageUpload`.
+
+**Endpoint:** `POST /api/generate-image`
+
+**Parametri:**
+
+| Parametro | Tipo | Note |
+|---|---|---|
+| `prompt` | string | Max 300 caratteri |
+| `aspectRatio` | string | `16:9` \| `4:3` \| `1:1` \| `9:16` — default `16:9` se non riconosciuto |
+
+**Risposta:**
+
+```json
+{ "data": "<base64>", "mimeType": "image/jpeg" }
+```
+
+La risposta è inline base64 — l'immagine viene subito inviata all'`onChange` del componente come `data:{mimeType};base64,{data}`.
+
+**Ratio preimpostato:** deriva automaticamente da `previewAspect` del componente (es. `"16/9"` → `"16:9"`).
+
+**Costo:** 2 crediti AI per generazione. Il counter `ai_used_this_month` viene incrementato due volte (`increment_ai_usage` chiamata due volte). Il client aggiorna il contatore locale con `useEditorStore.getState().incrementAiUsed(2)`.
+
+---
+
+### 6.3 — Modello e Provider
+
+| Provider | Modello | API |
+|---|---|---|
+| Pixazo (primary) | `flux-1-schnell` | `gateway.pixazo.ai/flux-1-schnell/v1/getData` |
+
+Richiede la variabile d'ambiente `PIXAZO_API_KEY`. Se assente, ogni chiamata restituisce `null` e viene lanciato un errore `Image generation failed: Flux returned no result.`.
+
+Dimensioni di output per ratio:
+
+| Ratio | Width | Height |
+|---|---|---|
+| `16:9` / `landscape` | 1024 | 576 |
+| `9:16` / `portrait` | 576 | 1024 |
+| `4:3` | 1024 | 768 |
+| `1:1` / altri | 1024 | 1024 |
+
+---
+
+## 7. Crediti AI — Costi e Limiti
+
+Tutte le operazioni AI scalano dallo stesso contatore mensile `ai_used_this_month`, verificato tramite `canUseAI()` / `getUserLimits()`.
+
+### Costi per operazione
+
+| Operazione | Costo crediti |
+|---|---|
+| Validazione wizard (Step 1) | 1 |
+| Generazione sito (Step 3) | 1 |
+| Generazione HTML block | 1 |
+| Generazione immagine singola (uploader) | **2** |
+| Generazione immagine durante wizard | 0 (inclusa nel costo del sito) |
+
+> Le immagini generate automaticamente durante il wizard non consumano crediti aggiuntivi — il costo è coperto dalla generazione del sito.
+
+### Limite e piano
+
+Il limite mensile è definito da `max_ai_per_month` nel piano dell'utente (tabella `plan_limits`, letto via RPC `get_user_limits`). Se `null` → illimitato.
+
+Il check crediti per la generazione immagine manuale avviene lato server nell'API route `/api/generate-image`:
+
+```typescript
+if (limits.max_ai_per_month !== null && limits.max_ai_per_month - limits.ai_used_this_month < CREDITS_COST) {
+  return NextResponse.json({ error: 'Crediti insufficienti' }, { status: 403 });
+}
+```
+
+### Nota lato sicurezza
+
+`canUseAI()` viene verificato lato server per HTML block e per l'uploader (route API), ma **non** nella server action `generateProjectWithAI` — un utente senza piano potrebbe aggirare il controllo via API diretta.
+
+---
+
+## 8. Tipi di Blocco Supportati
 
 | Tipo | Uso tipico | Note |
 |---|---|---|
@@ -354,7 +481,7 @@ L'AI può assegnare `style.backgroundColor` ai blocchi. Il post-processing lo ac
 
 ---
 
-## 7. Modalità Operative
+## 9. Modalità Operative
 
 ### Standard (default)
 
@@ -372,7 +499,7 @@ L'AI può assegnare `style.backgroundColor` ai blocchi. Il post-processing lo ac
 
 ---
 
-## 8. Debug
+## 10. Debug
 
 ### Salvataggio prompt/output su file
 
@@ -393,7 +520,7 @@ File generati per ogni run:
 
 ---
 
-## 9. Limitazioni e Cose da Migliorare
+## 11. Limitazioni e Cose da Migliorare
 
 | Limitazione | Dettaglio |
 |---|---|
@@ -404,17 +531,22 @@ File generati per ogni run:
 | **Retry JSON limitato** | In caso di risposta AI non parsabile, 1 solo retry prima di scalare al modello fallback. Non c'è meccanismo di richiesta parziale — viene ripetuta l'intera chiamata |
 | **`can_use_ai` solo lato UI** | Il permesso AI non viene verificato lato server nella `generateProjectWithAI`. Un utente senza piano potrebbe aggirarlo via API diretta |
 | **businessType come schema.org** | `businessType` serve sia per la palette colori che per il JSON-LD. I tipi non presenti in `DEFAULT_COLORS_BY_TYPE` ricevono colori fallback generici |
+| **Generazione immagini senza fallback modello** | `text-to-image.ts` ha un solo provider (Flux via Pixazo). Se il provider è down non c'è un modello alternativo — la funzione lancia eccezione e la pipeline torna su Unsplash |
+| **Costo immagine manuale doppio** | La route `/api/generate-image` chiama `increment_ai_usage` due volte in sequenza invece di un'unica RPC con quantità. Se la seconda chiamata fallisce il costo è già parzialmente scalato |
+| **Prompt immagine non localizzato** | Il prompt di `buildImagePrompt` è sempre in inglese indipendentemente dalla lingua del sito — Flux non localizza lo stile fotografico |
+| **Immagini wizard non conteggiate nei crediti** | Le immagini generate in `imageGenMode: 'ai'` durante il wizard non incrementano `ai_used_this_month` — solo il credito della generazione testo viene scalato |
 
 ---
 
-## 10. File di Riferimento
+## 12. File di Riferimento
 
 ### Backend / Server Actions
 - [`app/actions/ai-site-generator.ts`](../app/actions/ai-site-generator.ts) — Server action thin wrapper: auth, permissions, DB insert, credit increment
 - [`lib/ai/site-generator.ts`](../lib/ai/site-generator.ts) — Logica core: `generateProject`, `validateDescription`, post-processing, costanti deterministiche
 - [`lib/ai/image-pipeline.ts`](../lib/ai/image-pipeline.ts) — `validateAndCleanBackgroundImages`, upload AI images
 - [`lib/ai/prompts/site.ts`](../lib/ai/prompts/site.ts) — `SITE_SYSTEM_PROMPT`, `SITE_VALIDATION_PROMPT`, sezioni condizionali
-- [`lib/ai/text-to-image.ts`](../lib/ai/text-to-image.ts) — `generateImage` (Flux → Imagen fallback)
+- [`lib/ai/text-to-image.ts`](../lib/ai/text-to-image.ts) — `generateImage` (Flux via Pixazo)
+- [`app/api/generate-image/route.ts`](../app/api/generate-image/route.ts) — API route per generazione immagine manuale dall'editor
 - [`lib/ai/unsplash-images.ts`](../lib/ai/unsplash-images.ts) — Generazione URL immagini Unsplash per blocchi e hero
 - [`lib/ai/gemini.ts`](../lib/ai/gemini.ts) — `getGenAI`, `PRIMARY_MODEL`, `FALLBACK_MODEL`, `isRetryable`, `callJsonModel`
 
