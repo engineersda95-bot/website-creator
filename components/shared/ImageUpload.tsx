@@ -153,7 +153,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             onChange={e => setAiRatio(e.target.value)}
             className="w-full p-2 border border-zinc-200 rounded-xl text-[11px] bg-zinc-50 focus:bg-white focus:border-violet-400 transition-all outline-none"
           >
-            {[['16:9', 'Orizzontale (16:9)'], ['4:3', 'Orizzontale (4:3)'], ['1:1', 'Quadrato (1:1)'], ['9:16', 'Verticale (9:16)']].map(([val, lbl]) => (
+            {[['16:9', 'Orizzontale 16:9'], ['21:9', 'Panoramico 21:9'], ['4:3', 'Orizzontale 4:3'], ['1:1', 'Quadrato 1:1'], ['3:4', 'Verticale 3:4'], ['9:16', 'Verticale 9:16']].map(([val, lbl]) => (
               <option key={val} value={val}>{lbl}</option>
             ))}
           </select>
