@@ -81,9 +81,9 @@ function injectGlobals(blocks: Block[], language: string, siteGlobals: SiteGloba
     ? { ...footer.content, _navLogoFallback: footer.content?.logoImage ? undefined : nav?.content?.logoImage, _language: lang }
     : undefined;
   return [
-    ...(nav ? [{ id: `global-nav-${lang}`, type: 'navigation' as BlockType, content: nav.content, style: nav.style }] : []),
+    ...(nav ? [{ id: `global-nav-${lang}`, type: 'navigation' as BlockType, content: nav.content, style: nav.style, responsiveStyles: nav.responsive_styles || {} }] : []),
     ...cleaned,
-    ...(footer ? [{ id: `global-footer-${lang}`, type: 'footer' as BlockType, content: footerContent, style: footer.style }] : []),
+    ...(footer ? [{ id: `global-footer-${lang}`, type: 'footer' as BlockType, content: footerContent, style: footer.style, responsiveStyles: footer.responsive_styles || {} }] : []),
   ];
 }
 
@@ -286,8 +286,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const navBlock = currentPage.blocks.find(b => b?.type === 'navigation');
     const footerBlock = currentPage.blocks.find(b => b?.type === 'footer');
     const globalsToSave: any[] = [];
-    if (navBlock) globalsToSave.push({ project_id: currentPage.project_id, language: lang, type: 'navigation', content: navBlock.content, style: navBlock.style, updated_at: new Date().toISOString() });
-    if (footerBlock) globalsToSave.push({ project_id: currentPage.project_id, language: lang, type: 'footer', content: footerBlock.content, style: footerBlock.style, updated_at: new Date().toISOString() });
+    if (navBlock) globalsToSave.push({ project_id: currentPage.project_id, language: lang, type: 'navigation', content: navBlock.content, style: navBlock.style, responsive_styles: navBlock.responsiveStyles || {}, updated_at: new Date().toISOString() });
+    if (footerBlock) globalsToSave.push({ project_id: currentPage.project_id, language: lang, type: 'footer', content: footerBlock.content, style: footerBlock.style, responsive_styles: footerBlock.responsiveStyles || {}, updated_at: new Date().toISOString() });
 
     if (globalsToSave.length > 0) {
       await supabase.from('site_globals').upsert(globalsToSave, { onConflict: 'project_id,language,type' });
@@ -603,7 +603,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const { siteGlobals } = get();
       const updatedGlobals = siteGlobals.map(g =>
         g.language === lang && g.type === targetBlock.type
-          ? { ...g, content: targetBlock.content, style: targetBlock.style }
+          ? { ...g, content: targetBlock.content, style: targetBlock.style, responsive_styles: targetBlock.responsiveStyles || {} }
           : g
       );
       set({ currentPage: { ...currentPage, blocks }, projectPages: updatedProjectPages, siteGlobals: updatedGlobals });
@@ -648,7 +648,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const { siteGlobals } = get();
       const updatedGlobals = siteGlobals.map(g =>
         g.language === lang && g.type === targetBlock.type
-          ? { ...g, content: targetBlock.content, style: targetBlock.style }
+          ? { ...g, content: targetBlock.content, style: targetBlock.style, responsive_styles: targetBlock.responsiveStyles || {} }
           : g
       );
       set({ currentPage: { ...currentPage, blocks }, projectPages: updatedProjectPages, siteGlobals: updatedGlobals });

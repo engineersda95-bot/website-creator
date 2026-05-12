@@ -61,6 +61,7 @@ export interface SiteGlobal {
   type: 'navigation' | 'footer';
   content: any;
   style: any;
+  responsive_styles?: any;
   updated_at: string;
 }
 

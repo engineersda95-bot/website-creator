@@ -562,6 +562,28 @@ border-color: color-mix(in srgb, currentColor 8%, transparent)
 
 **MAI** inserire classi Tailwind come `px-8`, `mb-12`, `gap-6` nei componenti visuali. Tutto deve essere controllabile dall'utente via CSS variables.
 
+### No classi Tailwind con `var(--)` o `calc(var(--))`
+
+**MAI** usare classi Tailwind arbitrarie che contengono CSS variables o `calc()` con variabili, in nessuna delle due forme supportate da Tailwind v4:
+
+```
+gap-[var(--block-gap)]     // sintassi bracket
+gap-(--block-gap)          // sintassi abbreviata v4
+```
+
+**Perché**: il worker genera il CSS Tailwind a runtime scansionando l'HTML con una regex che non riconosce le parentesi `(` `)` — entrambe le forme vengono silenziosamente ignorate nel sito pubblicato pur funzionando in preview.
+
+**Usa sempre `style` inline**:
+
+```tsx
+// ❌ SBAGLIATO — entrambe le forme non funzionano nel sito live
+<div className="gap-[var(--block-gap)] max-w-[var(--block-max-width)]">
+<div className="gap-(--block-gap) max-w-(--block-max-width)">
+
+// ✅ CORRETTO — style inline funziona sempre
+<div style={{ gap: 'var(--block-gap)', maxWidth: 'var(--block-max-width)' }}>
+```
+
 ### Conferme e notifiche
 
 ```typescript

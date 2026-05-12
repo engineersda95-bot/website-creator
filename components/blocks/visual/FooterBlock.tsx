@@ -118,52 +118,52 @@ export const FooterBlock: React.FC<FooterProps> = ({
           }}>
              {isCentered ? (
                 /* CENTERED LAYOUT (Stacked) */
-                <div className="flex flex-col items-center gap-10 w-full relative z-10">
-                   <div className="flex flex-col items-center gap-6 w-full max-w-2xl text-center">
-                     {content.showLogo !== false && (
-                         <div className="flex flex-col items-center gap-3">
-                           {(content.logoType === 'image' || content.logoType === 'both') && displayLogoImage && (
-                               <SitiImage 
-                                 src={displayLogoImage} 
-                                 project={project}
-                                 isStatic={isStatic}
-                                 imageMemoryCache={imageMemoryCache}
-                                 alt={content.logoAlt || content.logoText || 'Logo'} 
-                                 style={{ height: 'var(--logo-fs)', width: 'auto' }} 
-                                 className="object-contain shrink-0" 
-                               />
-                           )}
-                           {content.logoType !== 'image' && (
-                               <div className="font-black tracking-tighter" style={{ fontSize: 'var(--logo-text-fs)', color: 'inherit', fontWeight: 'var(--logo-fw)' as any, fontStyle: 'var(--logo-fst)' as any }}>
-                                 {content.logoText || (project?.name ? project.name : 'SitiVetrina')}
-                               </div>
+                <div className="flex flex-col items-center w-full relative z-10">
+                   {(content.showLogo !== false || onInlineEdit || content.description) && (
+                     <div className="flex flex-col items-center gap-6 w-full max-w-2xl text-center">
+                       {content.showLogo !== false && (
+                           <div className="flex flex-col items-center gap-3">
+                             {(content.logoType === 'image' || content.logoType === 'both') && displayLogoImage && (
+                                 <SitiImage
+                                   src={displayLogoImage}
+                                   project={project}
+                                   isStatic={isStatic}
+                                   imageMemoryCache={imageMemoryCache}
+                                   alt={content.logoAlt || content.logoText || 'Logo'}
+                                   style={{ height: 'var(--logo-fs)', width: 'auto' }}
+                                   className="object-contain shrink-0"
+                                 />
                              )}
-                         </div>
-                       )}
+                             {content.logoType !== 'image' && (
+                                 <div className="font-black tracking-tighter" style={{ fontSize: 'var(--logo-text-fs)', color: 'inherit', fontWeight: 'var(--logo-fw)' as any, fontStyle: 'var(--logo-fst)' as any }}>
+                                   {content.logoText || (project?.name ? project.name : 'SitiVetrina')}
+                                 </div>
+                               )}
+                           </div>
+                         )}
 
-                       {(content.description || onInlineEdit) && (
-                         onInlineEdit ? (
-                           <InlineEditable
-                             fieldId="description"
-                             value={content.description || ''}
-                             onChange={(v) => onInlineEdit('description', v)}
-                             className="rt-content opacity-70"
-                             style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
-                             placeholder="Descrizione..."
-                             richText
-                             multiline
-                           />
-                         ) : (
-                           <div
-                             className="rt-content opacity-70"
-                             style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
-                             dangerouslySetInnerHTML={{ __html: formatRichText(content.description) }}
-                           />
-                         )
-                       )}
-                   </div>
+                         {onInlineEdit ? (
+                             <InlineEditable
+                               fieldId="description"
+                               value={content.description || ''}
+                               onChange={(v) => onInlineEdit('description', v)}
+                               className="rt-content opacity-70"
+                               style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
+                               placeholder="Descrizione..."
+                               richText
+                               multiline
+                             />
+                         ) : content.description ? (
+                             <div
+                               className="rt-content opacity-70"
+                               style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
+                               dangerouslySetInnerHTML={{ __html: formatRichText(content.description) }}
+                             />
+                         ) : null}
+                     </div>
+                   )}
 
-                   <div className="flex flex-col items-center gap-6 pt-4">
+                   <div className={cn("flex flex-col items-center gap-6", (content.showLogo !== false || onInlineEdit || content.description) && "mt-6")}>
                      {content.socialLinks && content.socialLinks.length > 0 && (
                          <div className="flex gap-8 items-center justify-center">
                            {content.socialLinks.map((social, i) => {
@@ -234,8 +234,7 @@ export const FooterBlock: React.FC<FooterProps> = ({
                         </div>
                      )}
 
-                     {(content.description || onInlineEdit) && (
-                        onInlineEdit ? (
+                     {onInlineEdit ? (
                           <InlineEditable
                             fieldId="description"
                             value={content.description || ''}
@@ -246,14 +245,13 @@ export const FooterBlock: React.FC<FooterProps> = ({
                             richText
                             multiline
                           />
-                        ) : (
+                        ) : content.description ? (
                           <div
                             className="rt-content opacity-70 w-full break-words"
                             style={{ fontSize: 'var(--description-fs)', fontWeight: 'var(--description-fw)' as any, fontStyle: 'var(--description-fst)' as any }}
                             dangerouslySetInnerHTML={{ __html: formatRichText(content.description) }}
                           />
-                        )
-                      )}
+                        ) : null}
                      
                      <div className={cn("flex flex-col gap-6 w-full", style.align === 'right' ? "items-end" : "items-start")}>
                         {content.socialLinks && content.socialLinks.length > 0 && (

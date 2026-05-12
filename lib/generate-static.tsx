@@ -17,7 +17,7 @@ export function generateStaticHtml(page: Page, pageVariants: PageStub[] = [], pr
   const navGlobal = siteGlobals.find(g => g.language === pageLang && g.type === 'navigation');
   const footerGlobal = siteGlobals.find(g => g.language === pageLang && g.type === 'footer');
   const navBlock: Block | undefined = navGlobal
-    ? { id: 'global-nav', type: 'navigation', content: navGlobal.content, style: navGlobal.style }
+    ? { id: 'global-nav', type: 'navigation', content: navGlobal.content, style: navGlobal.style, responsiveStyles: navGlobal.responsive_styles || {} }
     : undefined;
   const footerBlock: Block | undefined = footerGlobal
     ? {
@@ -29,6 +29,7 @@ export function generateStaticHtml(page: Page, pageVariants: PageStub[] = [], pr
           _language: pageLang,
         },
         style: footerGlobal.style,
+        responsiveStyles: footerGlobal.responsive_styles || {},
       }
     : undefined;
   const pageContent = page.blocks.filter(b => b?.type !== 'navigation' && b?.type !== 'footer');

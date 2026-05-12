@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import {
   AlignLeft,
   Layers,
-  Mail, Map, MapPin, Phone,
+  Mail, Map, MapPin, MessageCircle, Phone,
   Palette, Settings, Play,
   Type,
 } from 'lucide-react';
@@ -102,6 +102,13 @@ export const Contact: React.FC<ContactProps> = ({
             value={content.phone || ''}
             onChange={(val) => updateContent({ phone: val })}
             icon={Phone}
+          />
+          <SimpleInput
+            label="WhatsApp"
+            placeholder="+39 333 1234567"
+            value={content.whatsapp || ''}
+            onChange={(val) => updateContent({ whatsapp: val })}
+            icon={MessageCircle}
           />
           <SimpleInput
             label="Indirizzo"
