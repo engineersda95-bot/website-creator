@@ -52,7 +52,7 @@ export const CustomHtmlBlockStatic: React.FC<Props> = ({
     textTransform: 'none',
   } as React.CSSProperties;
 
-  const resolved = resolveHtml(content.html ?? '', content, project, true, imageMemoryCache);
+  const resolved = resolveHtml(content.html ?? '', content, project, true, imageMemoryCache, block.style);
   const sizeDefaults = `#${blockId} h1{font-size:var(--global-h1-fs);}#${blockId} h2{font-size:var(--global-h2-fs);}#${blockId} h3{font-size:var(--global-h3-fs);}#${blockId} h4{font-size:var(--global-h4-fs);}#${blockId} h5{font-size:var(--global-h5-fs);}#${blockId} h6{font-size:var(--global-h6-fs);}`;
   const safeOverride = `#${blockId} .cb-wrap{text-transform:none!important;padding:0!important;margin:0!important;background:none!important;}`;
   const staticHtml = [

@@ -104,6 +104,7 @@ export function resolveHtml(
   project: Project | undefined,
   isStatic: boolean,
   imageMemoryCache: Record<string, string>,
+  blockStyle: Record<string, any> = {},
 ): string {
   if (!html) return '';
 
@@ -161,13 +162,28 @@ export function resolveHtml(
       const label = content[`cbCta_${index}_label`] ?? allAttrs.match(/data-chb-label="([^"]*)"/i)?.[1] ?? 'Scopri di più';
       const url = content[`cbCta_${index}_url`] ?? allAttrs.match(/data-chb-url="([^"]*)"/i)?.[1] ?? '#';
       const theme = content[`cbCta_${index}_theme`] ?? 'primary';
+      const isCustom = theme === 'custom';
 
       const projectSettings = (project?.settings ?? {}) as any;
-      const activeColor = theme === 'secondary'
-        ? (projectSettings.secondaryColor || '#10b981')
-        : (projectSettings.primaryColor || '#3b82f6');
+      const activeColor = isCustom
+        ? '#3b82f6'
+        : theme === 'secondary'
+          ? (projectSettings.secondaryColor || '#10b981')
+          : (projectSettings.primaryColor || '#3b82f6');
 
-      const btnStyle = getButtonStyle(project, activeColor, 'desktop', theme, isStatic, {});
+      const overrides = isCustom ? {
+        bgColor: blockStyle.ctaBgColor,
+        textColor: blockStyle.ctaTextColor,
+        radius: blockStyle.ctaRadius,
+        paddingX: blockStyle.ctaPaddingX,
+        paddingY: blockStyle.ctaPaddingY,
+        fontSize: blockStyle.ctaFontSize,
+        shadow: blockStyle.ctaShadow,
+        animation: blockStyle.ctaAnimation,
+        uppercase: blockStyle.ctaUppercase,
+      } : {};
+
+      const btnStyle = getButtonStyle(project, activeColor, 'desktop', theme, isStatic, overrides);
       const styleStr = Object.entries(btnStyle)
         .map(([k, v]) => `${k.replace(/([A-Z])/g, c => `-${c.toLowerCase()}`)}:${v}`)
         .join(';');
